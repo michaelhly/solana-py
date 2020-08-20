@@ -5,8 +5,10 @@ from base58 import b58encode, b58decode
 
 from solanaweb3.blockhash import Blockhash
 from solanaweb3.publickey import PublicKey
-from solanaweb3.utils import helpers
-from solanaweb3.utils import shortvec_encoding as shortvec
+from solanaweb3.utils import (
+    helpers,
+    shortvec_encoding as shortvec
+)
 
 
 class CompiledInstruction(NamedTuple):
@@ -149,7 +151,7 @@ class Message:
             accounts_offset += PublicKey.LENGTH
         raw_message = raw_message[accounts_offset:]
 
-        recent_blockhash = b58encode(raw_message[: PublicKey.LENGTH])
+        recent_blockhash = b58encode(raw_message[: PublicKey.LENGTH]).decode('utf-8')
         raw_message = raw_message[PublicKey.LENGTH :]
 
         instructions = []

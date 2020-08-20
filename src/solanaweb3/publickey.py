@@ -46,21 +46,16 @@ class PublicKey:
             else self._key.rjust(PublicKey.LENGTH, b"\0")
         )
 
-    def create_with_seed(
-        self, from_public_key: "PublicKey", seed: str, program_id: "PublicKey"
-    ) -> "PublicKey":
+    def create_with_seed(self, from_public_key: "PublicKey", seed: str, program_id: "PublicKey") -> "PublicKey":
         """Derive a public key from another key, a seed, and a program ID."""
         raise NotImplementedError("create_with_seed not implemented")
 
-    def create_program_address(
-        self, seeds: Union[bytearray, List[bytes]], program_id: "PublicKey"
-    ) -> "PublicKey":
+    def create_program_address(self, seeds: Union[bytearray, List[bytes]], program_id: "PublicKey") -> "PublicKey":
         """Derive a program address from seeds and a program ID."""
         raise NotImplementedError("create_program_address not implemented")
 
     def find_program_address(
-        self, seeds: Union[bytearray, List[bytes]], program_id: "PublicKey"
-    ) -> Tuple["PublicKey", int]:
+            self, seeds: Union[bytearray, List[bytes]], program_id: "PublicKey") -> Tuple["PublicKey", int]:
         """
         Find a valid program address.
 
