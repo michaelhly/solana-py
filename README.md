@@ -23,7 +23,7 @@ pylint src
 
 ## Test
 ```sh
-pytest src
+# pytest ...
 ```
 
 ## Using Jupyter Notebook
