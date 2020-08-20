@@ -10,18 +10,18 @@ class PublicKey:
 
     LENGTH = 32
 
-    def __init__(self, value: Union[bytearray, bytes, int, str]):
+    def __init__(self, value: Union[bytearray, bytes, int, str]) -> None:
         self._key = None
         if isinstance(value, str):
             self._key = base58.b58decode(value)
-            if len(self._key) != PublicKey.LENGTH:
+            if len(self._key) != self.LENGTH:
                 raise ValueError("Invalid public key input", value)
         elif isinstance(value, int):
             self._key = bytes([value])
         else:
             self._key = bytes(value)
 
-        if len(self._key) > PublicKey.LENGTH:
+        if len(self._key) > self.LENGTH:
             raise ValueError("Invalid public key input", value)
 
     def __eq__(self, other: Any) -> bool:
@@ -42,8 +42,8 @@ class PublicKey:
         """Public key in 32-bit buffer"""
         return (
             self._key
-            if len(self._key) == PublicKey.LENGTH
-            else self._key.rjust(PublicKey.LENGTH, b"\0")
+            if len(self._key) == self.LENGTH
+            else self._key.rjust(self.LENGTH, b"\0")
         )
 
     def create_with_seed(self, from_public_key: "PublicKey", seed: str, program_id: "PublicKey") -> "PublicKey":

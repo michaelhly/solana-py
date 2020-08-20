@@ -1,6 +1,7 @@
 """Library for generating a message from a sequence of instructions."""
 
 from typing import List, NamedTuple, Union
+
 from base58 import b58encode, b58decode
 
 from solanaweb3.blockhash import Blockhash
@@ -44,7 +45,7 @@ class Message:
     followed by a compact-array of instructions.
     """
 
-    def __init__(self, args: MessageArgs):
+    def __init__(self, args: MessageArgs) -> None:
         self.header = args.header
         self.account_keys = [PublicKey(key) for key in args.account_keys]
         self.recent_blockhash = args.recent_blockhash
