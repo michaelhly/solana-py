@@ -102,7 +102,7 @@ class Message:
         )
 
     def is_account_writable(self, index: int) -> bool:
-        """Check if account is write eligble"""
+        """Check if account is write eligble."""
         writable = index < (
             self.header.num_readonly_signed_accounts
             - self.header.num_readonly_signed_accounts
@@ -112,7 +112,7 @@ class Message:
         )
 
     def serialize(self) -> bytes:
-        """Serialize message to bytes"""
+        """Serialize message to bytes."""
         message_buffer = bytearray()
         # Message body
         message_buffer.extend(self.__encode_message())
@@ -125,7 +125,7 @@ class Message:
 
     @staticmethod
     def deserialize(raw_message: bytes) -> "Message":
-        """Deserialize message bytes"""
+        """Deserialize raw message bytes."""
         header_offset = 3
         if len(raw_message) < header_offset:
             raise ValueError("Byte representation of message is missing message header")
