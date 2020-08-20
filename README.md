@@ -27,7 +27,8 @@ pylint src
 ```
 
 ## Using Jupyter Notebook
-Run the following command in your pipenv shell,
+Run the following commands in your pipenv shell,
 ```sh
-PYTHONPATH=../src jupyter notebooks
+cd notebooks
+PYTHONPATH=../src jupyter notebook
 ```

@@ -1,15 +1,14 @@
 {
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "python.testing.nosetestsEnabled": false,
-    "python.formatting.provider": "black",
-    "python.formatting.black": [
-        "--check",
-        "--max-line-length",
-        "120"
-    ],
-    "python.venvPath": "$HOME/.local/share/virtualenvs/",
-    "python.jediEnabled": true,
-    "editor.formatOnSave": true,
-    "python.languageServer": "Jedi"
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.nosetestsEnabled": false,
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--check", "--max-line-length", "120"],
+  "python.linting.pylintPath": "~/.local/share/virtualenvs/pyserum-pXuUrFYZ/bin/pylint",
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintArgs": ["--max-line-length", "120"],
+  "python.venvPath": "~/.local/share/virtualenvs/",
+  "editor.formatOnSave": true,
+  "python.languageServer": "Jedi",
+  "python.jediEnabled": true
 }

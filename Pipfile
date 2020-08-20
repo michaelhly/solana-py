@@ -3,10 +3,15 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[pipenv]
+allow_prereleases = true
+
 [dev-packages]
 jupyterlab = "*"
 autopep8 = "*"
 black = "*"
+pytest = "*"
+pylint = "*"
 
 [packages]
 pynacl = "*"
