@@ -11,7 +11,7 @@ class Account:
     """An account key pair (public and secret keys)."""
 
     def __init__(self, secret_key: Union[bytes, str, List[int]]):
-        key = None
+        key: Optional[bytes] = None
         if isinstance(secret_key, list):
             key = bytes(secret_key)
         elif isinstance(secret_key, str):

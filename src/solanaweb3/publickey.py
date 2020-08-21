@@ -27,6 +27,9 @@ class PublicKey:
     def __eq__(self, other: Any) -> bool:
         return False if not isinstance(other, PublicKey) else self.to_buffer() == other.to_buffer()
 
+    def __repr__(self) -> str:
+        return str(self._key)
+
     def __str__(self) -> str:
         return self.to_base58().decode("utf-8")
 

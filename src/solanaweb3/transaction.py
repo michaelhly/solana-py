@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, NamedTuple, NewType, Optional, Tuple, Union
 
-from base58 import b58encode
+from base58 import b58decode, b58encode
 
 from solanaweb3.account import Account
 from solanaweb3.blockhash import Blockhash
@@ -14,6 +14,8 @@ TransactionSignature = NewType("TransactionSignature", str)
 
 # Maximum over-the-wire size of a Transaction
 PACKET_DATA_SIZE = 1280 - 40 - 8
+# Signatures are 64 bytes in length
+SIG_LENGTH = 64
 
 
 @dataclass
@@ -54,7 +56,7 @@ class NonceInformation(NamedTuple):
     nonce_instruction: "TransactionInstruction"
 
 
-class SignaturePubkeyPair(NamedTuple):
+class _SigPubkeyPair(NamedTuple):
     """Mapping of signature to public key
 
     pubkey: "PublicKey"\n
@@ -70,19 +72,17 @@ class TransactionCtorFields(NamedTuple):
 
     recent_blockhash: Optional[Blockhash] = None\n
     nonce_info: Optional["NonceInformation"] = None\n
-    signatures: List["SignaturePubkeyPair"] = []
+    signatures: List["_SigPubkeyPair"] = []
     """
 
     recent_blockhash: Optional[Blockhash] = None
     nonce_info: Optional["NonceInformation"] = None
-    signatures: List["SignaturePubkeyPair"] = []
+    signatures: List["_SigPubkeyPair"] = []
 
 
 class Transaction:
     """Transaction class to represent an atomic transaction."""
 
-    # Signatures are 64 bytes in length
-    __SIG_LENGTH = 64
     # Default (empty) signature
     __DEFAULT_SIG = bytes(64)
 
@@ -90,7 +90,7 @@ class Transaction:
         self,
         recent_blockhash: Optional[Blockhash],
         nonce_info: Optional["NonceInformation"],
-        signatures: List["SignaturePubkeyPair"],
+        signatures: List["_SigPubkeyPair"],
     ) -> None:
         self.instructions: List["TransactionInstruction"] = []
         self.recent_blockhash, self.nonce_info, self.signatures = (
@@ -138,7 +138,7 @@ class Transaction:
         # Prefix accountMetas with feePayer here whenever that gets implemented.
 
         # Sort. Prioritizing first by signer, then by writable and converting from set to list.
-        account_metas.sort(key=lambda account: (account.is_signer, account.is_writable))
+        account_metas.sort(key=lambda account: (not account.is_signer, not account.is_writable))
 
         # Cull duplicate accounts
         seen: Dict[str, int] = dict()
@@ -173,16 +173,15 @@ class Transaction:
             else:
                 num_readonly_unsigned_accounts += int(not a_m.is_writable)
                 unsigned_keys.append(str(a_m.pubkey))
-
         # Initialize signature array, if needed
         if not self.signatures:
-            self.signatures = [SignaturePubkeyPair(pubkey=PublicKey(key), signature=None) for key in signed_keys]
+            self.signatures = [_SigPubkeyPair(pubkey=PublicKey(key), signature=None) for key in signed_keys]
 
         account_keys: List[str] = signed_keys + unsigned_keys
         account_indices: Dict[str, int] = {str(key): i for i, key in enumerate(account_keys)}
         compiled_instructions: List["CompiledInstruction"] = [
             CompiledInstruction(
-                accounts=[account_indices[str(key)] for key in instr.keys],
+                accounts=[account_indices[str(a_m.pubkey)] for a_m in instr.keys],
                 program_id_index=account_indices[str(instr.program_id)],
                 data=b58encode(instr.data),
             )
@@ -231,7 +230,7 @@ class Transaction:
 
     def add_signature(self, pubkey: "PublicKey", signature: bytes) -> None:
         """Add an externally created signature to a transaction"""
-        if len(signature) != self.__SIG_LENGTH:
+        if len(signature) != SIG_LENGTH:
             raise ValueError("Signature does not have the correct format", signature)
         raise NotImplementedError("add_signature not implemented")
 
@@ -264,5 +263,27 @@ class Transaction:
 
     @staticmethod
     def populate(message: "Message", signatures: List[Union[str, bytes]]) -> "Transaction":
-        """Populate Transaction object from message and signatures"""
-        raise NotImplementedError("populate not implemented")
+        """Populate Transaction object from message and signatures."""
+        transaction = Transaction(*TransactionCtorFields())
+        transaction.recent_blockhash = message.recent_blockhash
+
+        for idx, sig in enumerate(signatures):
+            signature = b58encode(Transaction.__DEFAULT_SIG)
+            if sig:
+                signature = b58decode(sig) if isinstance(sig, str) else b58encode(sig)
+            transaction.signatures.append(_SigPubkeyPair(pubkey=message.account_keys[idx], signature=signature))
+
+        for instr in message.instructions:
+            account_metas: List["AccountMeta"] = []
+            for acc_idx in instr.accounts:
+                pubkey = message.account_keys[acc_idx]
+                is_signer = any((pubkey == sigkeypair.pubkey for sigkeypair in transaction.signatures))
+                account_metas.append(
+                    AccountMeta(pubkey=pubkey, is_signer=is_signer, is_writable=message.is_account_writable(acc_idx))
+                )
+            program_id = message.account_keys[instr.program_id_index]
+            transaction.instructions.append(
+                TransactionInstruction(keys=account_metas, program_id=program_id, data=b58decode(instr.data))
+            )
+
+        return transaction
