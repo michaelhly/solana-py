@@ -1,5 +1,4 @@
 """Library for generating a message from a sequence of instructions."""
-
 from typing import List, NamedTuple, Union
 
 from base58 import b58encode, b58decode
@@ -12,9 +11,9 @@ from solanaweb3.utils import helpers, shortvec_encoding as shortvec
 class CompiledInstruction(NamedTuple):
     """An instruction to execute by a program.
 
-    accounts: Union[bytes, List[int]]\n
-    program_id_index: int\n
-    data: bytes\n
+    :param accounts: Union[bytes, List[int]]\n
+    :param program_id_index: int\n
+    :param data: bytes\n
     """
 
     accounts: Union[bytes, List[int]]
@@ -25,9 +24,9 @@ class CompiledInstruction(NamedTuple):
 class MessageHeader(NamedTuple):
     """The message header, identifying signed and read-only account.
 
-    num_required_signatures: int\n
-    num_readonly_signed_accounts: int\n
-    num_readonly_unsigned_accounts: int\n
+    :param num_required_signatures: int\n
+    :param num_readonly_signed_accounts: int\n
+    :param num_readonly_unsigned_accounts: int\n
     """
 
     num_required_signatures: int
@@ -38,10 +37,10 @@ class MessageHeader(NamedTuple):
 class MessageArgs(NamedTuple):
     """Message constructor arguments.
 
-    header: MessageHeader\n
-    account_keys: List[str]\n
-    recent_blockhash: Blockhash\n
-    instructions: List[CompiledInstruction]\n
+    :param header: MessageHeader\n
+    :param account_keys: List[str]\n
+    :param recent_blockhash: Blockhash\n
+    :param instructions: List[CompiledInstruction]\n
     """
 
     header: MessageHeader
@@ -131,7 +130,7 @@ class Message:
         return bytes(message_buffer)
 
     @staticmethod
-    def deserialize(raw_message: bytes) -> "Message":
+    def deserialize(raw_message: bytes) -> Message:
         """Deserialize raw message bytes."""
         header_offset = 3
         if len(raw_message) < header_offset:

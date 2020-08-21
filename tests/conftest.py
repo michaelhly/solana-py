@@ -1,5 +1,4 @@
 """Fixtures for pytest"""
-
 import pytest
 
 from solanaweb3.account import Account

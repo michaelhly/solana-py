@@ -1,5 +1,4 @@
 """Account class to manage public-private key pair and signing messages"""
-
 from typing import List, Optional, Union
 
 from nacl import public, signing  # type: ignore
@@ -21,7 +20,7 @@ class Account:
 
         self._secret = public.PrivateKey(key) if key else public.PrivateKey.generate()
 
-    def public_key(self) -> "PublicKey":
+    def public_key(self) -> PublicKey:
         """The public key for this account."""
         return PublicKey(bytes(self._secret.public_key))
 
