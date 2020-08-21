@@ -1,26 +1,34 @@
 """Library for generating a message from a sequence of instructions."""
-
+from __future__ import annotations
 from typing import List, NamedTuple, Union
+
 from base58 import b58encode, b58decode
 
 from solanaweb3.blockhash import Blockhash
 from solanaweb3.publickey import PublicKey
-from solanaweb3.utils import (
-    helpers,
-    shortvec_encoding as shortvec
-)
+from solanaweb3.utils import helpers, shortvec_encoding as shortvec
 
 
 class CompiledInstruction(NamedTuple):
-    """An instruction to execute by a program."""
+    """An instruction to execute by a program.
 
-    program_id_index: int
+    :param accounts: Union[bytes, List[int]]\n
+    :param program_id_index: int\n
+    :param data: bytes\n
+    """
+
     accounts: Union[bytes, List[int]]
-    data: str
+    program_id_index: int
+    data: bytes
 
 
 class MessageHeader(NamedTuple):
-    """The message header, identifying signed and read-only account."""
+    """The message header, identifying signed and read-only account.
+
+    :param num_required_signatures: int\n
+    :param num_readonly_signed_accounts: int\n
+    :param num_readonly_unsigned_accounts: int\n
+    """
 
     num_required_signatures: int
     num_readonly_signed_accounts: int
@@ -28,7 +36,13 @@ class MessageHeader(NamedTuple):
 
 
 class MessageArgs(NamedTuple):
-    """Message constructor arguments."""
+    """Message constructor arguments.
+
+    :param header: MessageHeader\n
+    :param account_keys: List[str]\n
+    :param recent_blockhash: Blockhash\n
+    :param instructions: List[CompiledInstruction]\n
+    """
 
     header: MessageHeader
     account_keys: List[str]
@@ -44,7 +58,7 @@ class Message:
     followed by a compact-array of instructions.
     """
 
-    def __init__(self, args: MessageArgs):
+    def __init__(self, args: MessageArgs) -> None:
         self.header = args.header
         self.account_keys = [PublicKey(key) for key in args.account_keys]
         self.recent_blockhash = args.recent_blockhash
@@ -64,15 +78,9 @@ class Message:
         )
         return b"".join(
             MessageFormat(
-                num_required_signatures=helpers.to_uint8(
-                    self.header.num_required_signatures
-                ),
-                num_readonly_signed_accounts=helpers.to_uint8(
-                    self.header.num_readonly_signed_accounts
-                ),
-                num_readonly_unsigned_accounts=helpers.to_uint8(
-                    self.header.num_readonly_unsigned_accounts
-                ),
+                num_required_signatures=helpers.to_uint8(self.header.num_required_signatures),
+                num_readonly_signed_accounts=helpers.to_uint8(self.header.num_readonly_signed_accounts),
+                num_readonly_unsigned_accounts=helpers.to_uint8(self.header.num_readonly_unsigned_accounts),
                 pubkeys_length=shortvec.encode_length(len(self.account_keys)),
                 pubkeys=b"".join([pubkey.to_buffer() for pubkey in self.account_keys]),
                 recent_blockhash=b58decode(self.recent_blockhash),
@@ -105,10 +113,7 @@ class Message:
 
     def is_account_writable(self, index: int) -> bool:
         """Check if account is write eligble."""
-        writable = index < (
-            self.header.num_readonly_signed_accounts
-            - self.header.num_readonly_signed_accounts
-        )
+        writable = index < (self.header.num_readonly_signed_accounts - self.header.num_readonly_signed_accounts)
         return writable or self.header.num_required_signatures <= index < (
             len(self.account_keys) - self.header.num_readonly_unsigned_accounts
         )
@@ -126,7 +131,7 @@ class Message:
         return bytes(message_buffer)
 
     @staticmethod
-    def deserialize(raw_message: bytes) -> "Message":
+    def deserialize(raw_message: bytes) -> Message:
         """Deserialize raw message bytes."""
         header_offset = 3
         if len(raw_message) < header_offset:
@@ -144,14 +149,12 @@ class Message:
         account_keys = []
         accounts_length, accounts_offset = shortvec.decode_length(raw_message)
         for _ in range(accounts_length):
-            key_bytes = raw_message[
-                accounts_offset : accounts_offset + PublicKey.LENGTH
-            ]
+            key_bytes = raw_message[accounts_offset : accounts_offset + PublicKey.LENGTH]
             account_keys.append(str(PublicKey(key_bytes)))
             accounts_offset += PublicKey.LENGTH
         raw_message = raw_message[accounts_offset:]
 
-        recent_blockhash = b58encode(raw_message[: PublicKey.LENGTH]).decode('utf-8')
+        recent_blockhash = Blockhash(b58encode(raw_message[: PublicKey.LENGTH]).decode("utf-8"))
         raw_message = raw_message[PublicKey.LENGTH :]
 
         instructions = []
@@ -171,17 +174,10 @@ class Message:
             data = b58encode(raw_message[:data_length])
             raw_message = raw_message[data_length:]
 
-            instructions.append(
-                CompiledInstruction(
-                    program_id_index=program_id_index, accounts=accounts, data=data
-                )
-            )
+            instructions.append(CompiledInstruction(program_id_index=program_id_index, accounts=accounts, data=data))
 
         return Message(
             MessageArgs(
-                header=header,
-                account_keys=account_keys,
-                recent_blockhash=recent_blockhash,
-                instructions=instructions,
+                header=header, account_keys=account_keys, recent_blockhash=recent_blockhash, instructions=instructions,
             )
         )

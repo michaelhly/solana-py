@@ -12,6 +12,8 @@ autopep8 = "*"
 black = "*"
 pytest = "*"
 pylint = "*"
+pytest-tornasync = "*"
+mypy = "*"
 
 [packages]
 pynacl = "*"
