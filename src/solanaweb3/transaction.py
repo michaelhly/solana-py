@@ -1,4 +1,5 @@
 """Library to package an atomic sequence of instructions to a transaction."""
+
 from typing import List, NamedTuple, NewType, Union
 
 from base58 import b58encode
