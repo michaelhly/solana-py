@@ -1,5 +1,5 @@
 """Unit tests for solanaweb3.account"""
-from nacl.bindings import crypto_box_SECRETKEYBYTES
+from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
 
 from solanaweb3.account import Account
 
@@ -11,6 +11,7 @@ def test_generate_account():
 
 
 def test_generate_account_from_secret_key():
+    """Generate an account with provided secret key."""
     secret_key = bytes(
         [
             153,
