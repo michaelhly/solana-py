@@ -10,7 +10,7 @@ from solanaweb3.publickey import PublicKey
 class Account:
     """An account key pair (public and secret keys)."""
 
-    def __init__(self, secret_key: Union[bytes, str, List[int]]):
+    def __init__(self, secret_key: Optional[Union[bytes, str, List[int]]] = None):
         key: Optional[bytes] = None
         if isinstance(secret_key, list):
             key = bytes(secret_key)
