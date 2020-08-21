@@ -7,7 +7,7 @@ from nacl import public, signing
 from solanaweb3.publickey import PublicKey
 
 
-class Accounts:
+class Account:
     """An account key pair (public and secret keys)."""
 
     def __init__(self, secret_key: Union[bytes, str, List[int]]):
