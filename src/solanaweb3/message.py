@@ -14,12 +14,12 @@ class CompiledInstruction(NamedTuple):
 
     accounts: Union[bytes, List[int]]\n
     program_id_index: int\n
-    data: str\n
+    data: bytes\n
     """
 
     accounts: Union[bytes, List[int]]
     program_id_index: int
-    data: str
+    data: bytes
 
 
 class MessageHeader(NamedTuple):
@@ -154,7 +154,7 @@ class Message:
             accounts_offset += PublicKey.LENGTH
         raw_message = raw_message[accounts_offset:]
 
-        recent_blockhash = b58encode(raw_message[: PublicKey.LENGTH]).decode("utf-8")
+        recent_blockhash = Blockhash(b58encode(raw_message[: PublicKey.LENGTH]).decode("utf-8"))
         raw_message = raw_message[PublicKey.LENGTH :]
 
         instructions = []

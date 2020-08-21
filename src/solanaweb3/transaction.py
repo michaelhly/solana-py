@@ -1,21 +1,24 @@
 """Library to package an atomic sequence of instructions to a transaction."""
 
-from typing import List, NamedTuple, NewType, Union
+from dataclasses import dataclass
+from typing import Dict, List, NamedTuple, NewType, Optional, Tuple, Union
 
 from base58 import b58encode
 
+from solanaweb3.account import Account
 from solanaweb3.blockhash import Blockhash
 from solanaweb3.message import Message, MessageArgs, MessageHeader, CompiledInstruction
 from solanaweb3.publickey import PublicKey
 
-TransactionSignatureType = NewType("TransactionSignature", str)
+TransactionSignature = NewType("TransactionSignature", str)
 
 # Maximum over-the-wire size of a Transaction
 PACKET_DATA_SIZE = 1280 - 40 - 8
 
 
-class AccountMeta(NamedTuple):
-    """Account metadata used to define instructions.
+@dataclass
+class AccountMeta:
+    """Account metadata dataclass.
 
     pubkey: "PublicKey"\n
     is_signer: bool\n
@@ -36,7 +39,7 @@ class TransactionInstruction(NamedTuple):
     """
 
     keys: List["AccountMeta"] = []
-    program_id: "PublicKey" = None
+    program_id: Optional["PublicKey"] = None
     data: bytes = bytes(0)
 
 
@@ -48,30 +51,30 @@ class NonceInformation(NamedTuple):
     """
 
     nonce: Blockhash
-    nonce_instruction: "TransactionIntruction"
+    nonce_instruction: "TransactionInstruction"
 
 
 class SignaturePubkeyPair(NamedTuple):
     """Mapping of signature to public key
 
     pubkey: "PublicKey"\n
-    signature: bytes = None\n
+    signature: Optional[bytes] = None\n
     """
 
     pubkey: "PublicKey"
-    signature: bytes = None
+    signature: Optional[bytes] = None
 
 
 class TransactionCtorFields(NamedTuple):
     """List of Transaction object fields that may be initialized at construction.
 
-    recent_blockhash: Blockhash = None\n
-    nonce_info: "NonceInformation" = None\n
-    signatures: List["SignaturePubkeyPair"] = []\n
+    recent_blockhash: Optional[Blockhash] = None\n
+    nonce_info: Optional["NonceInformation"] = None\n
+    signatures: List["SignaturePubkeyPair"] = []
     """
 
-    recent_blockhash: Blockhash = None
-    nonce_info: "NonceInformation" = None
+    recent_blockhash: Optional[Blockhash] = None
+    nonce_info: Optional["NonceInformation"] = None
     signatures: List["SignaturePubkeyPair"] = []
 
 
@@ -85,8 +88,8 @@ class Transaction:
 
     def __init__(
         self,
-        recent_blockhash: Union[Blockhash, None],
-        nonce_info: Union["NonceInformation", None],
+        recent_blockhash: Optional[Blockhash],
+        nonce_info: Optional["NonceInformation"],
         signatures: List["SignaturePubkeyPair"],
     ) -> None:
         self.instructions: List["TransactionInstruction"] = []
@@ -96,19 +99,19 @@ class Transaction:
             signatures,
         )
 
-    def signature(self) -> Union[bytes, None]:
+    def signature(self) -> Optional[bytes]:
         """The first (payer) Transaction signature"""
         return None if not self.signatures else self.signatures[0].signature
 
-    def add(self, *args: Union["Transaction", "TransactionIntruction"]) -> None:
+    def add(self, *args: Tuple[Union["Transaction", "TransactionInstruction"], ...]) -> None:
         """Add one or more instructions to this Transaction."""
         for arg in args:
             if hasattr(arg, "instructions"):
-                self.instructions.extend(arg.instructions)
+                self.instructions.extend(arg.instructions)  # type: ignore
             elif isinstance(arg, TransactionInstruction):
                 self.instructions.append(arg)
             else:
-                raise ValueError("invalid instruction {}".format(arg))
+                raise ValueError("Invalid instruction", arg)
 
     def compile_message(self) -> "Message":
         """Compile transaction data."""
@@ -124,13 +127,13 @@ class Transaction:
         account_metas, program_ids = [], set()
         for instr in self.instructions:
             if not instr.program_id or not instr.keys:
-                raise AttributeError("Invalid instruction {}".format(instr))
-            account_metas = account_metas.extend(instr.keys)
+                raise AttributeError("Invalid instruction", instr)
+            account_metas.extend(instr.keys)
             program_ids.add(str(instr.program_id))
 
         # Append programID account metas.
         for pg_id in program_ids:
-            account_metas.add(AccountMeta(pubkey=PublicKey(pg_id), is_signer=False, is_writable=False))
+            account_metas.append(AccountMeta(PublicKey(pg_id), False, False))
 
         # Prefix accountMetas with feePayer here whenever that gets implemented.
 
@@ -138,13 +141,14 @@ class Transaction:
         account_metas.sort(key=lambda account: (account.is_signer, account.is_writable))
 
         # Cull duplicate accounts
-        seen, uniq_metas = dict(), []
+        seen: Dict[str, int] = dict()
+        uniq_metas: List["AccountMeta"] = []
         for sig in self.signatures:
             pubkey = str(sig.pubkey)
             if pubkey in seen:
                 uniq_metas[seen[pubkey]].is_signer = True
             else:
-                uniq_metas.append(AccountMeta(pubkey=sig.pubkey, is_signer=True, is_writable=True))
+                uniq_metas.append(AccountMeta(sig.pubkey, True, True))
                 seen[pubkey] = len(uniq_metas) - 1
 
         for a_m in account_metas:
@@ -157,7 +161,8 @@ class Transaction:
                 seen[pubkey] = len(uniq_metas) - 1
 
         # Split out signing from nonsigning keys and count readonlys
-        signed_keys, unsigned_keys = [], []
+        signed_keys: List[str] = []
+        unsigned_keys: List[str] = []
         num_readonly_signed_accounts = num_readonly_unsigned_accounts = 0
         for a_m in uniq_metas:
             if a_m.is_signer:
@@ -173,12 +178,12 @@ class Transaction:
         if not self.signatures:
             self.signatures = [SignaturePubkeyPair(pubkey=PublicKey(key), signature=None) for key in signed_keys]
 
-        account_keys = signed_keys.extend(unsigned_keys)
-        account_indices = {str(key): i for key, i in enumerate(account_keys)}
-        compiled_instructions = [
+        account_keys: List[str] = signed_keys + unsigned_keys
+        account_indices: Dict[str, int] = {str(key): i for i, key in enumerate(account_keys)}
+        compiled_instructions: List["CompiledInstruction"] = [
             CompiledInstruction(
                 accounts=[account_indices[str(key)] for key in instr.keys],
-                program_id_idx=account_indices[str(instr.program_id)],
+                program_id_index=account_indices[str(instr.program_id)],
                 data=b58encode(instr.data),
             )
             for instr in self.instructions
@@ -201,7 +206,7 @@ class Transaction:
         """Get raw transaction data that need to be covered by signatures"""
         return self.compile_message().serialize()
 
-    def sign_partial(self, *partial_signers: List[Union["PublicKey", "Account"]]) -> None:
+    def sign_partial(self, *partial_signers: Tuple[Union["PublicKey", "Account"], ...]) -> None:
         """Partially sign a Transaction with the specified accounts.  The `Account`
         inputs will be used to sign the Transaction immediately, while any
         `PublicKey` inputs will be referenced in the signed Transaction but need to
@@ -211,7 +216,7 @@ class Transaction:
         """
         raise NotImplementedError("sign_partial not implemented")
 
-    def sign(self, *signers: List["Account"]) -> None:
+    def sign(self, *signers: Tuple["Account", ...]) -> None:
         """Sign the Transaction with the specified accounts.  Multiple signatures may
         be applied to a Transaction. The first signature is considered "primary"
         and is used when testing for Transaction confirmation.
@@ -227,7 +232,7 @@ class Transaction:
     def add_signature(self, pubkey: "PublicKey", signature: bytes) -> None:
         """Add an externally created signature to a transaction"""
         if len(signature) != self.__SIG_LENGTH:
-            raise ValueError("Signature `{}` does not have the correct format".format(signature))
+            raise ValueError("Signature does not have the correct format", signature)
         raise NotImplementedError("add_signature not implemented")
 
     def add_signer(self, signer: "Account") -> None:
@@ -237,7 +242,7 @@ class Transaction:
         """
         msg = self.serialize_message()
         signed_msg = signer.sign(msg)
-        self.add_signature(signer.public_key, signed_msg)
+        self.add_signature(signer.public_key(), signed_msg)
 
     def __verify_signatures(self, signed_data: bytes) -> bool:
         raise NotImplementedError("__verify_signatures not implemented")

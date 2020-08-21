@@ -1,6 +1,6 @@
 """Library to interface with Solana public keys"""
 
-from typing import Any, List, Union, Tuple
+from typing import Any, List, Union, Optional, Tuple
 
 import base58
 
@@ -11,7 +11,7 @@ class PublicKey:
     LENGTH = 32
 
     def __init__(self, value: Union[bytearray, bytes, int, str]) -> None:
-        self._key = None
+        self._key: Optional[bytes] = None
         if isinstance(value, str):
             self._key = base58.b58decode(value)
             if len(self._key) != self.LENGTH:
@@ -36,6 +36,8 @@ class PublicKey:
 
     def to_buffer(self) -> bytes:
         """Public key in 32-bit buffer"""
+        if not self._key:
+            return bytes(self.LENGTH)
         return self._key if len(self._key) == self.LENGTH else self._key.rjust(self.LENGTH, b"\0")
 
     def create_with_seed(self, from_public_key: "PublicKey", seed: str, program_id: "PublicKey") -> "PublicKey":

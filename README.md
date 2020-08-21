@@ -18,17 +18,15 @@ pipenv shell
 
 ## Lint
 ```sh
-pylint src
+make lint
 ```
 
 ## Test
 ```sh
-PYTHONPATH=./src pytest
+make test
 ```
 
 ## Using Jupyter Notebook
-Run the following commands in your pipenv shell,
 ```sh
-cd notebooks
-PYTHONPATH=../src jupyter notebook
+make notebook
 ```

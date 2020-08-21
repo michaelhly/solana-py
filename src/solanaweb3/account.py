@@ -1,8 +1,8 @@
 """Account class to manage public-private key pair and signing messages"""
 
-from typing import List, Union
+from typing import List, Optional, Union
 
-from nacl import public, signing
+from nacl import public, signing  # type: ignore
 
 from solanaweb3.publickey import PublicKey
 
@@ -22,13 +22,13 @@ class Account:
         self._secret = public.PrivateKey(key) if key else public.PrivateKey.generate()
 
     def public_key(self) -> "PublicKey":
-        """The public key for this account"""
+        """The public key for this account."""
         return PublicKey(bytes(self._secret.public_key))
 
     def secret_key(self) -> bytes:
-        """The **unencrypted** secret key for this account"""
+        """The **unencrypted** secret key for this account."""
         return bytes(self._secret)
 
     def sign(self, msg: bytes) -> bytes:
-        """Sign a message with the account"""
+        """Sign a message with the account."""
         return signing.SigningKey(self.secret_key).sign(msg)

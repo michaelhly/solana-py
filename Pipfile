@@ -13,6 +13,7 @@ black = "*"
 pytest = "*"
 pylint = "*"
 pytest-tornasync = "*"
+mypy = "*"
 
 [packages]
 pynacl = "*"
