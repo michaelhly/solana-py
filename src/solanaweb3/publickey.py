@@ -25,11 +25,7 @@ class PublicKey:
             raise ValueError("Invalid public key input", value)
 
     def __eq__(self, other: Any) -> bool:
-        return (
-            False
-            if not isinstance(other, PublicKey)
-            else self.to_buffer() == other.to_buffer()
-        )
+        return False if not isinstance(other, PublicKey) else self.to_buffer() == other.to_buffer()
 
     def __str__(self) -> str:
         return self.to_base58().decode("utf-8")
@@ -40,11 +36,7 @@ class PublicKey:
 
     def to_buffer(self) -> bytes:
         """Public key in 32-bit buffer"""
-        return (
-            self._key
-            if len(self._key) == self.LENGTH
-            else self._key.rjust(self.LENGTH, b"\0")
-        )
+        return self._key if len(self._key) == self.LENGTH else self._key.rjust(self.LENGTH, b"\0")
 
     def create_with_seed(self, from_public_key: "PublicKey", seed: str, program_id: "PublicKey") -> "PublicKey":
         """Derive a public key from another key, a seed, and a program ID."""
@@ -55,7 +47,8 @@ class PublicKey:
         raise NotImplementedError("create_program_address not implemented")
 
     def find_program_address(
-            self, seeds: Union[bytearray, List[bytes]], program_id: "PublicKey") -> Tuple["PublicKey", int]:
+        self, seeds: Union[bytearray, List[bytes]], program_id: "PublicKey"
+    ) -> Tuple["PublicKey", int]:
         """
         Find a valid program address.
 
