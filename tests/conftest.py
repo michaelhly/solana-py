@@ -21,4 +21,4 @@ def test_reciever() -> PublicKey:
 @pytest.fixture(scope="session")
 def test_sender() -> Account:
     """Arbitrary known account to be used as sender."""
-    return Account(bytes([8] * 32))
+    return Account(bytes([8] * PublicKey.LENGTH))

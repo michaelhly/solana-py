@@ -1,4 +1,5 @@
 """Account class to manage public-private key pair and signing messages"""
+from __future__ import annotations
 from typing import List, Optional, Union
 
 from nacl import public, signing  # type: ignore

@@ -1,4 +1,5 @@
 """Library to package an atomic sequence of instructions to a transaction."""
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, NamedTuple, NewType, Optional, Tuple, Union
 
@@ -6,7 +7,7 @@ from base58 import b58decode, b58encode
 
 from solanaweb3.account import Account
 from solanaweb3.blockhash import Blockhash
-from solanaweb3.message import Message, MessageArgs, MessageHeader, CompiledInstruction
+from solanaweb3.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solanaweb3.publickey import PublicKey
 
 TransactionSignature = NewType("TransactionSignature", str)
