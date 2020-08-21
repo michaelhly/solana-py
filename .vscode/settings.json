@@ -1,4 +1,5 @@
 {
+  "python.envFile": "${workspaceFolder}/.env",
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python.testing.nosetestsEnabled": false,
