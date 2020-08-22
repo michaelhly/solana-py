@@ -1,3 +1,7 @@
+.PHONY: format
+format:
+	black --check --diff --line-length=120 src tests
+
 .PHONY: lint 
 lint:
 	pydocstyle --ignore=D401,D203,D213 src tests
