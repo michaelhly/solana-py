@@ -10,7 +10,7 @@ class InstructionLayout(NamedTuple):
 
     :param fmt: Format to build the instruction data
 
-    Instruction formats follow the format conventions 
+    Instruction formats follow the format conventions
     [here](https://docs.python.org/3/library/struct.html#format-strings).
     """
 
@@ -29,7 +29,7 @@ def decode_data(layout: InstructionLayout, raw_data: bytes) -> Tuple:
     try:
         data = unpack(layout.fmt, raw_data)
     except Exception as err:
-        raise RuntimeError("failed to decode instruction:", str(err))
+        raise RuntimeError("failed to decode instruction") from err
     if data[0] != layout.idx:
         raise ValueError(f"invalid instruction; instruction index mismatch {data[0]} != {layout.idx}")
     return data

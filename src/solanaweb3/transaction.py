@@ -216,8 +216,6 @@ class Transaction:
 
     def add_signature(self, pubkey: PublicKey, signature: bytes) -> None:
         """Add an externally created signature to a transaction."""
-        if len(signature) != SIG_LENGTH:
-            raise ValueError("invalid signature: signature should have 8 bytes")
         raise NotImplementedError("add_signature not implemented")
 
     def add_signer(self, signer: Account) -> None:

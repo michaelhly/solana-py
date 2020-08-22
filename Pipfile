@@ -15,6 +15,7 @@ pylint = "*"
 pytest-tornasync = "*"
 mypy = "*"
 pydocstyle = "*"
+flake8 = "*"
 
 [packages]
 pynacl = "*"

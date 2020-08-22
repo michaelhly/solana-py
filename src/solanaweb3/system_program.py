@@ -19,6 +19,7 @@ _ALLOCATE = 8
 _ALLOCATE_WITH_SEED = 9
 _ASSIGN_WITH_SEED = 10
 
+
 # Instruction Params
 class CreateAccountParams(NamedTuple):
     """Create account system transaction params.

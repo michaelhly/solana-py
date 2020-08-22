@@ -153,13 +153,13 @@ class Message:
         account_keys = []
         accounts_length, accounts_offset = shortvec.decode_length(raw_message)
         for _ in range(accounts_length):
-            key_bytes = raw_message[accounts_offset : accounts_offset + PublicKey.LENGTH]
+            key_bytes = raw_message[accounts_offset : accounts_offset + PublicKey.LENGTH]  # noqa: E203
             account_keys.append(str(PublicKey(key_bytes)))
             accounts_offset += PublicKey.LENGTH
         raw_message = raw_message[accounts_offset:]
 
         recent_blockhash = Blockhash(b58encode(raw_message[: PublicKey.LENGTH]).decode("utf-8"))
-        raw_message = raw_message[PublicKey.LENGTH :]
+        raw_message = raw_message[PublicKey.LENGTH :]  # noqa: E203
 
         instructions = []
         instruction_count, offset = shortvec.decode_length(raw_message)
