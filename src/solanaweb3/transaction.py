@@ -1,7 +1,7 @@
 """Library to package an atomic sequence of instructions to a transaction."""
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Dict, List, NamedTuple, NewType, Optional, Union
+from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
 from base58 import b58decode, b58encode
 
@@ -61,7 +61,8 @@ class NonceInformation(NamedTuple):
     nonce_instruction: TransactionInstruction
 
 
-class _SigPubkeyPair(NamedTuple):
+@dataclass
+class _SigPubkeyPair:
     pubkey: PublicKey
     signature: Optional[bytes] = None
 
@@ -83,11 +84,22 @@ class Transaction:
         self.signatures: List[_SigPubkeyPair] = signatures if signatures else []
         self.recent_blockhash, self.nonce_info = recent_blockhash, nonce_info
 
+    def __eq__(self, other: Any) -> bool:
+        """Equality defintion of Transactions."""
+        if not isinstance(other, Transaction):
+            return False
+        return (
+            self.recent_blockhash == other.recent_blockhash
+            and self.nonce_info == other.nonce_info
+            and self.signatures == other.signatures
+            and self.instructions == other.instructions
+        )
+
     def signature(self) -> Optional[bytes]:
         """First (payer) Transaction signature."""
         return None if not self.signatures else self.signatures[0].signature
 
-    def add(self, *args: Union[Transaction, TransactionInstruction]) -> None:
+    def add(self, *args: Union[Transaction, TransactionInstruction]) -> Transaction:
         """Add one or more instructions to this Transaction."""
         for arg in args:
             if hasattr(arg, "instructions"):
@@ -96,6 +108,8 @@ class Transaction:
                 self.instructions.append(arg)
             else:
                 raise ValueError("invalid instruction:", arg)
+
+        return self
 
     def compile_message(self) -> Message:
         """Compile transaction data."""
@@ -198,7 +212,22 @@ class Transaction:
 
         All the caveats from the `sign` method apply to `signPartial`
         """
-        raise NotImplementedError("sign_partial not implemented")
+
+        def partial_signer_pubkey(account_or_pubkey: Union[PublicKey, Account]):
+            return account_or_pubkey.public_key() if isinstance(account_or_pubkey, Account) else account_or_pubkey
+
+        signatures: List[_SigPubkeyPair] = [
+            _SigPubkeyPair(pubkey=partial_signer_pubkey(partial_signer)) for partial_signer in partial_signers
+        ]
+        self.signatures = signatures
+        sign_data = self.serialize_message()
+
+        for idx, partial_signer in enumerate(partial_signers):
+            if isinstance(partial_signer, Account):
+                sig = partial_signer.sign(sign_data).signature
+                if len(sig) != SIG_LENGTH:
+                    raise RuntimeError("signature has invalid length - expected 64, got", sig)
+                self.signatures[idx].signature = sig
 
     def sign(self, *signers: Account) -> None:
         """Sign the Transaction with the specified accounts.

@@ -1,5 +1,6 @@
 """Unit tests for solanaweb3.account."""
 from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
+from nacl.signing import VerifyKey  # type: ignore
 
 from solanaweb3.account import Account
 
@@ -49,4 +50,10 @@ def test_generate_account_from_secret_key():
         ]
     )
     acc = Account(secret_key)
-    assert str(acc.public_key()) == "93r5SeqYNetvTSzT7EkFBbReH4rfAYmGGTagYrkys73i"
+    assert str(acc.public_key()) == "2q7pyhPwAwZ3QMfZrnAbDhnh9mDUqycszcpf86VgQxhF"
+
+
+def test_sign_message(stubbed_sender):
+    msg = b"hello"
+    signed_msg = stubbed_sender.sign(msg)
+    assert VerifyKey(bytes(stubbed_sender.public_key())).verify(signed_msg.message, signed_msg.signature) == msg

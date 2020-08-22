@@ -86,7 +86,7 @@ class Message:
                 num_readonly_signed_accounts=helpers.to_uint8(self.header.num_readonly_signed_accounts),
                 num_readonly_unsigned_accounts=helpers.to_uint8(self.header.num_readonly_unsigned_accounts),
                 pubkeys_length=shortvec.encode_length(len(self.account_keys)),
-                pubkeys=b"".join([pubkey.to_buffer() for pubkey in self.account_keys]),
+                pubkeys=b"".join([bytes(pubkey) for pubkey in self.account_keys]),
                 recent_blockhash=b58decode(self.recent_blockhash),
             )
         )

@@ -2,8 +2,41 @@
 from base58 import b58encode
 
 import solanaweb3.transaction as txlib
+from solanaweb3.account import Account
 from solanaweb3.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solanaweb3.publickey import PublicKey
+from solanaweb3.system_program import SystemProgram, TransferParams
+
+
+def test_transfer_signatures(stubbed_blockhash):
+    """Test signing transfer transactions."""
+    acc1, acc2 = Account(), Account()
+    transfer1 = SystemProgram.transfer(
+        TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123)
+    )
+    transfer2 = SystemProgram.transfer(
+        TransferParams(from_pubkey=acc2.public_key(), to_pubkey=acc1.public_key(), lamports=123)
+    )
+    txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer1, transfer2)
+    txn.sign(acc1, acc2)
+
+    expected = txlib.Transaction(recent_blockhash=stubbed_blockhash, signatures=txn.signatures).add(
+        transfer1, transfer2
+    )
+    assert txn == expected
+
+
+def test_dedup_signatures(stubbed_blockhash):
+    """Test signature deduplication."""
+    acc1, acc2 = Account(), Account()
+    transfer1 = SystemProgram.transfer(
+        TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123)
+    )
+    transfer2 = SystemProgram.transfer(
+        TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123)
+    )
+    txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer1, transfer2)
+    txn.sign(acc1)
 
 
 def test_populate(stubbed_blockhash):

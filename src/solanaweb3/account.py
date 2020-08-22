@@ -24,12 +24,13 @@ class Account:
 
     def public_key(self) -> PublicKey:
         """Public key for this account."""
-        return PublicKey(bytes(self._secret.public_key))
+        verify_key = signing.SigningKey(self.secret_key()).verify_key
+        return PublicKey(bytes(verify_key))
 
     def secret_key(self) -> bytes:
         """**Unencrypted** secret key for this account."""
         return bytes(self._secret)
 
-    def sign(self, msg: bytes) -> bytes:
+    def sign(self, msg: bytes) -> signing.SignedMessage:
         """Sign a message with the account."""
-        return signing.SigningKey(self.secret_key).sign(msg)
+        return signing.SigningKey(self.secret_key()).sign(msg)

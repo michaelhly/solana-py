@@ -25,9 +25,15 @@ class PublicKey:
         if len(self._key) > self.LENGTH:
             raise ValueError("invalid public key input:", value)
 
+    def __bytes__(self) -> bytes:
+        """Public key in bytes."""
+        if not self._key:
+            return bytes(self.LENGTH)
+        return self._key if len(self._key) == self.LENGTH else self._key.rjust(self.LENGTH, b"\0")
+
     def __eq__(self, other: Any) -> bool:
-        """Equality definition for PublicKey."""
-        return False if not isinstance(other, PublicKey) else self.to_buffer() == other.to_buffer()
+        """Equality definition for PublicKeys."""
+        return False if not isinstance(other, PublicKey) else bytes(self) == bytes(other)
 
     def __repr__(self) -> str:
         """Representation of a PublicKey."""
@@ -39,13 +45,7 @@ class PublicKey:
 
     def to_base58(self) -> bytes:
         """Public key in base58."""
-        return base58.b58encode(self.to_buffer())
-
-    def to_buffer(self) -> bytes:
-        """Public key in 32-bit buffer."""
-        if not self._key:
-            return bytes(self.LENGTH)
-        return self._key if len(self._key) == self.LENGTH else self._key.rjust(self.LENGTH, b"\0")
+        return base58.b58encode(bytes(self))
 
     def create_with_seed(self, from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:
         """Derive a public key from another key, a seed, and a program ID."""
