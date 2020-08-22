@@ -1,7 +1,7 @@
 """Library to package an atomic sequence of instructions to a transaction."""
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Dict, List, NamedTuple, NewType, Optional, Tuple, Union
+from typing import Dict, List, NamedTuple, NewType, Optional, Union
 
 from base58 import b58decode, b58encode
 
@@ -35,13 +35,13 @@ class AccountMeta:
 class TransactionInstruction(NamedTuple):
     """List of TransactionInstruction object fields that may be initialized at construction.
 
-    :param keys: List[AccountMeta] = []\n
-    :param program_id: PublicKey = None\n
+    :param keys: List[AccountMeta]\n
+    :param program_id: PublicKey\n
     :param data: bytes = bytes(0)\n
     """
 
-    keys: List[AccountMeta] = []
-    program_id: Optional[PublicKey] = None
+    keys: List[AccountMeta]
+    program_id: PublicKey
     data: bytes = bytes(0)
 
 
@@ -67,19 +67,6 @@ class _SigPubkeyPair(NamedTuple):
     signature: Optional[bytes] = None
 
 
-class TransactionCtorFields(NamedTuple):
-    """List of Transaction object fields that may be initialized at construction.
-
-    :param recent_blockhash: Optional[Blockhash] = None\n
-    :param nonce_info: Optional[NonceInformation] = None\n
-    :param signatures: List[_SigPubkeyPair] = []\n
-    """
-
-    recent_blockhash: Optional[Blockhash] = None
-    nonce_info: Optional[NonceInformation] = None
-    signatures: List[_SigPubkeyPair] = []
-
-
 class Transaction:
     """Transaction class to represent an atomic transaction."""
 
@@ -88,22 +75,19 @@ class Transaction:
 
     def __init__(
         self,
-        recent_blockhash: Optional[Blockhash],
-        nonce_info: Optional[NonceInformation],
-        signatures: List[_SigPubkeyPair],
+        recent_blockhash: Optional[Blockhash] = None,
+        nonce_info: Optional[NonceInformation] = None,
+        signatures: Optional[List[_SigPubkeyPair]] = None,
     ) -> None:
         self.instructions: List[TransactionInstruction] = []
-        self.recent_blockhash, self.nonce_info, self.signatures = (
-            recent_blockhash,
-            nonce_info,
-            signatures,
-        )
+        self.signatures: List[_SigPubkeyPair] = signatures if signatures else []
+        self.recent_blockhash, self.nonce_info = recent_blockhash, nonce_info
 
     def signature(self) -> Optional[bytes]:
         """The first (payer) Transaction signature"""
         return None if not self.signatures else self.signatures[0].signature
 
-    def add(self, *args: Tuple[Union[Transaction, TransactionInstruction], ...]) -> None:
+    def add(self, *args: Union[Transaction, TransactionInstruction]) -> None:
         """Add one or more instructions to this Transaction."""
         for arg in args:
             if hasattr(arg, "instructions"):
@@ -111,7 +95,7 @@ class Transaction:
             elif isinstance(arg, TransactionInstruction):
                 self.instructions.append(arg)
             else:
-                raise ValueError("Invalid instruction", arg)
+                raise ValueError("invalid instruction:", arg)
 
     def compile_message(self) -> Message:
         """Compile transaction data."""
@@ -120,14 +104,14 @@ class Transaction:
             self.instructions = [self.nonce_info.nonce_instruction] + self.instructions
 
         if not self.recent_blockhash:
-            raise AttributeError("Transaction recentBlockhash required")
+            raise AttributeError("transaction recentBlockhash required")
         if len(self.instructions) < 1:
-            raise AttributeError("No instructions provided")
+            raise AttributeError("no instructions provided")
 
         account_metas, program_ids = [], set()
         for instr in self.instructions:
             if not instr.program_id or not instr.keys:
-                raise AttributeError("Invalid instruction", instr)
+                raise AttributeError("invalid instruction:", instr)
             account_metas.extend(instr.keys)
             program_ids.add(str(instr.program_id))
 
@@ -205,7 +189,7 @@ class Transaction:
         """Get raw transaction data that need to be covered by signatures"""
         return self.compile_message().serialize()
 
-    def sign_partial(self, *partial_signers: Tuple[Union[PublicKey, Account], ...]) -> None:
+    def sign_partial(self, *partial_signers: Union[PublicKey, Account]) -> None:
         """Partially sign a Transaction with the specified accounts.  The `Account`
         inputs will be used to sign the Transaction immediately, while any
         `PublicKey` inputs will be referenced in the signed Transaction but need to
@@ -215,7 +199,7 @@ class Transaction:
         """
         raise NotImplementedError("sign_partial not implemented")
 
-    def sign(self, *signers: Tuple[Account, ...]) -> None:
+    def sign(self, *signers: Account) -> None:
         """Sign the Transaction with the specified accounts.  Multiple signatures may
         be applied to a Transaction. The first signature is considered "primary"
         and is used when testing for Transaction confirmation.
@@ -231,7 +215,7 @@ class Transaction:
     def add_signature(self, pubkey: PublicKey, signature: bytes) -> None:
         """Add an externally created signature to a transaction"""
         if len(signature) != SIG_LENGTH:
-            raise ValueError("Signature does not have the correct format", signature)
+            raise ValueError("invalid signature: signature should have 8 bytes")
         raise NotImplementedError("add_signature not implemented")
 
     def add_signer(self, signer: Account) -> None:
@@ -264,7 +248,7 @@ class Transaction:
     @staticmethod
     def populate(message: Message, signatures: List[Union[str, bytes]]) -> Transaction:
         """Populate Transaction object from message and signatures."""
-        transaction = Transaction(*TransactionCtorFields())
+        transaction = Transaction()
         transaction.recent_blockhash = message.recent_blockhash
 
         for idx, sig in enumerate(signatures):
