@@ -1,4 +1,4 @@
-"""Library to interface with Solana public keys"""
+"""Library to interface with Solana public keys."""
 from __future__ import annotations
 from typing import Any, List, Union, Optional, Tuple
 
@@ -15,30 +15,30 @@ class PublicKey:
         if isinstance(value, str):
             self._key = base58.b58decode(value)
             if len(self._key) != self.LENGTH:
-                raise ValueError("Invalid public key input", value)
+                raise ValueError("invalid public key input:", value)
         elif isinstance(value, int):
             self._key = bytes([value])
         else:
             self._key = bytes(value)
 
         if len(self._key) > self.LENGTH:
-            raise ValueError("Invalid public key input", value)
+            raise ValueError("invalid public key input:", value)
 
     def __eq__(self, other: Any) -> bool:
         return False if not isinstance(other, PublicKey) else self.to_buffer() == other.to_buffer()
 
     def __repr__(self) -> str:
-        return str(self._key)
+        return str(self)
 
     def __str__(self) -> str:
         return self.to_base58().decode("utf-8")
 
     def to_base58(self) -> bytes:
-        """Public key in base58"""
+        """Public key in base58."""
         return base58.b58encode(self.to_buffer())
 
     def to_buffer(self) -> bytes:
-        """Public key in 32-bit buffer"""
+        """Public key in 32-bit buffer."""
         if not self._key:
             return bytes(self.LENGTH)
         return self._key if len(self._key) == self.LENGTH else self._key.rjust(self.LENGTH, b"\0")

@@ -1,4 +1,4 @@
-"""Unit tests for solanaweb3.transaction"""
+"""Unit tests for solanaweb3.transaction."""
 from base58 import b58encode
 
 import solanaweb3.transaction as txlib

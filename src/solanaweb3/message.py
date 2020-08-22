@@ -135,7 +135,7 @@ class Message:
         """Deserialize raw message bytes."""
         header_offset = 3
         if len(raw_message) < header_offset:
-            raise ValueError("Byte representation of message is missing message header")
+            raise ValueError("byte representation of message is missing message header")
         num_required_signatures = raw_message[0]
         num_readonly_signed_accounts = raw_message[1]
         num_readonly_unsigned_accounts = raw_message[2]

@@ -1,4 +1,4 @@
-"""Library for ShortVec encoding"""
+"""Library for ShortVec encoding."""
 from typing import Tuple
 
 

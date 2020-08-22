@@ -1,4 +1,4 @@
-"""Helper methods"""
+"""Helper functions."""
 
 
 def to_uint8(val: int) -> bytes:
