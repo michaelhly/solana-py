@@ -381,9 +381,7 @@ class SystemProgram:
 
     @staticmethod
     def create_account_with_seed(params: CreateAccountWithSeedParams) -> Transaction:
-        """Generate a Transaction that creates a new account at an address generated
-        with `from`, a seed, and programId.
-        """
+        """Generate a Transaction that creates a new account at an address."""
         raise NotImplementedError("create_account_with_seed not implemented")
 
     @staticmethod

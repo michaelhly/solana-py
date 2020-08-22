@@ -11,6 +11,7 @@ class PublicKey:
     LENGTH = 32
 
     def __init__(self, value: Union[bytearray, bytes, int, str]) -> None:
+        """Init PublicKey object."""
         self._key: Optional[bytes] = None
         if isinstance(value, str):
             self._key = base58.b58decode(value)
@@ -25,12 +26,15 @@ class PublicKey:
             raise ValueError("invalid public key input:", value)
 
     def __eq__(self, other: Any) -> bool:
+        """Equality definition for PublicKey."""
         return False if not isinstance(other, PublicKey) else self.to_buffer() == other.to_buffer()
 
     def __repr__(self) -> str:
+        """Representation of a PublicKey."""
         return str(self)
 
     def __str__(self) -> str:
+        """String definition for PublicKey."""
         return self.to_base58().decode("utf-8")
 
     def to_base58(self) -> bytes:
@@ -54,8 +58,7 @@ class PublicKey:
     def find_program_address(
         self, seeds: Union[bytearray, List[bytes]], program_id: PublicKey
     ) -> Tuple[PublicKey, int]:
-        """
-        Find a valid program address.
+        """Find a valid program address.
 
         Valid program addresses must fall off the ed25519 curve.  This function
         iterates a nonce until it finds one that when combined with the seeds

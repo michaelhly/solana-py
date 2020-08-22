@@ -22,9 +22,11 @@ SIG_LENGTH = 64
 class AccountMeta:
     """Account metadata dataclass.
 
-    :param pubkey: PublicKey\n
-    :param is_signer: bool\n
-    :param is_writable: bool\n
+    :param pubkey: PublicKey
+
+    :param is_signer: bool
+
+    :param is_writable: bool
     """
 
     pubkey: PublicKey
@@ -35,9 +37,11 @@ class AccountMeta:
 class TransactionInstruction(NamedTuple):
     """List of TransactionInstruction object fields that may be initialized at construction.
 
-    :param keys: List[AccountMeta]\n
-    :param program_id: PublicKey\n
-    :param data: bytes = bytes(0)\n
+    :param keys: List[AccountMeta]
+
+    :param program_id: PublicKey
+
+    :param data: bytes = bytes(0)
     """
 
     keys: List[AccountMeta]
@@ -48,8 +52,9 @@ class TransactionInstruction(NamedTuple):
 class NonceInformation(NamedTuple):
     """NonceInformation to be used to build a Transaction.
 
-    :param nonce: Blockhash\n
-    :param nonce_instruction: "TransactionIntruction"\n
+    :param nonce: Blockhash
+
+    :param nonce_instruction: "TransactionIntruction"
     """
 
     nonce: Blockhash
@@ -57,12 +62,6 @@ class NonceInformation(NamedTuple):
 
 
 class _SigPubkeyPair(NamedTuple):
-    """Mapping of signature to public key
-
-    :param pubkey: PublicKey\n
-    :param signature: Optional[bytes] = None\n
-    """
-
     pubkey: PublicKey
     signature: Optional[bytes] = None
 
@@ -79,12 +78,13 @@ class Transaction:
         nonce_info: Optional[NonceInformation] = None,
         signatures: Optional[List[_SigPubkeyPair]] = None,
     ) -> None:
+        """Init transaction object."""
         self.instructions: List[TransactionInstruction] = []
         self.signatures: List[_SigPubkeyPair] = signatures if signatures else []
         self.recent_blockhash, self.nonce_info = recent_blockhash, nonce_info
 
     def signature(self) -> Optional[bytes]:
-        """The first (payer) Transaction signature"""
+        """First (payer) Transaction signature."""
         return None if not self.signatures else self.signatures[0].signature
 
     def add(self, *args: Union[Transaction, TransactionInstruction]) -> None:
@@ -186,12 +186,13 @@ class Transaction:
         )
 
     def serialize_message(self) -> bytes:
-        """Get raw transaction data that need to be covered by signatures"""
+        """Get raw transaction data that need to be covered by signatures."""
         return self.compile_message().serialize()
 
     def sign_partial(self, *partial_signers: Union[PublicKey, Account]) -> None:
-        """Partially sign a Transaction with the specified accounts.  The `Account`
-        inputs will be used to sign the Transaction immediately, while any
+        """Partially sign a Transaction with the specified accounts.
+
+        The `Account` inputs will be used to sign the Transaction immediately, while any
         `PublicKey` inputs will be referenced in the signed Transaction but need to
         be filled in later by calling `addSigner()` with the matching `Account`.
 
@@ -200,9 +201,10 @@ class Transaction:
         raise NotImplementedError("sign_partial not implemented")
 
     def sign(self, *signers: Account) -> None:
-        """Sign the Transaction with the specified accounts.  Multiple signatures may
-        be applied to a Transaction. The first signature is considered "primary"
-        and is used when testing for Transaction confirmation.
+        """Sign the Transaction with the specified accounts.
+
+        Multiple signatures may be applied to a Transaction. The first signature
+        is considered "primary" and is used when testing for Transaction confirmation.
 
         Transaction fields should not be modified after the first call to `sign`,
         as doing so may invalidate the signature and cause the Transaction to be
@@ -213,15 +215,16 @@ class Transaction:
         self.sign_partial(*signers)
 
     def add_signature(self, pubkey: PublicKey, signature: bytes) -> None:
-        """Add an externally created signature to a transaction"""
+        """Add an externally created signature to a transaction."""
         if len(signature) != SIG_LENGTH:
             raise ValueError("invalid signature: signature should have 8 bytes")
         raise NotImplementedError("add_signature not implemented")
 
     def add_signer(self, signer: Account) -> None:
-        """Fill in a signature for a partially signed Transaction.  The `signer` must
-        be the corresponding `Account` for a `PublicKey` that was previously provided to
-        `signPartial`
+        """Fill in a signature for a partially signed Transaction.
+
+        The `signer` must be the corresponding `Account` for a `PublicKey` that was
+        previously provided to `signPartial`
         """
         msg = self.serialize_message()
         signed_msg = signer.sign(msg)
@@ -233,7 +236,7 @@ class Transaction:
     def serialize(self) -> bytes:
         """Serialize the Transaction in the wire format.
 
-         The Transaction must have a valid `signature` before invoking this method.
+        The Transaction must have a valid `signature` before invoking this method.
         """
         raise NotImplementedError("serialize not implemented")
 

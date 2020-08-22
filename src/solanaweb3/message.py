@@ -12,9 +12,11 @@ from solanaweb3.utils import helpers, shortvec_encoding as shortvec
 class CompiledInstruction(NamedTuple):
     """An instruction to execute by a program.
 
-    :param accounts: Union[bytes, List[int]]\n
-    :param program_id_index: int\n
-    :param data: bytes\n
+    :param accounts: Union[bytes, List[int]]
+
+    :param program_id_index: int
+
+    :param data: bytes
     """
 
     accounts: Union[bytes, List[int]]
@@ -25,9 +27,11 @@ class CompiledInstruction(NamedTuple):
 class MessageHeader(NamedTuple):
     """The message header, identifying signed and read-only account.
 
-    :param num_required_signatures: int\n
-    :param num_readonly_signed_accounts: int\n
-    :param num_readonly_unsigned_accounts: int\n
+    :param num_required_signatures: int
+
+    :param num_readonly_signed_accounts: int
+
+    :param num_readonly_unsigned_accounts: int
     """
 
     num_required_signatures: int
@@ -38,10 +42,10 @@ class MessageHeader(NamedTuple):
 class MessageArgs(NamedTuple):
     """Message constructor arguments.
 
-    :param header: MessageHeader\n
-    :param account_keys: List[str]\n
-    :param recent_blockhash: Blockhash\n
-    :param instructions: List[CompiledInstruction]\n
+    :param header: MessageHeader
+    :param account_keys: List[str]
+    :param recent_blockhash: Blockhash
+    :param instructions: List[CompiledInstruction]
     """
 
     header: MessageHeader
@@ -51,14 +55,14 @@ class MessageArgs(NamedTuple):
 
 
 class Message:
-    """
-    Message object to be used to to build a transaction.
+    """Message object to be used to to build a transaction.
 
     A message contains a header, followed by a compact-array of account addresses, followed by a recent blockhash,
     followed by a compact-array of instructions.
     """
 
     def __init__(self, args: MessageArgs) -> None:
+        """Init message object."""
         self.header = args.header
         self.account_keys = [PublicKey(key) for key in args.account_keys]
         self.recent_blockhash = args.recent_blockhash

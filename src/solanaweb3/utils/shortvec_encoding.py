@@ -4,7 +4,6 @@ from typing import Tuple
 
 def decode_length(raw_bytes: bytes) -> Tuple[int, int]:
     """Return the decoded length and how many bytes it consumed."""
-
     length = size = 0
     for _, elem in enumerate(raw_bytes):
         length |= (elem & 0x7F) << (size * 7)
@@ -15,8 +14,7 @@ def decode_length(raw_bytes: bytes) -> Tuple[int, int]:
 
 
 def encode_length(value: int) -> bytes:
-    """Return the serialized length in compact-u16 format"""
-
+    """Return the serialized length in compact-u16 format."""
     elems, rem_len = [], value
     while True:
         elem = rem_len & 0x7F
