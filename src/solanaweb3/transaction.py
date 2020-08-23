@@ -88,7 +88,7 @@ class Transaction:
         self.recent_blockhash, self.nonce_info = recent_blockhash, nonce_info
 
     def __eq__(self, other: Any) -> bool:
-        """Equality defintion of Transactions."""
+        """Equality defintion for Transactions."""
         if not isinstance(other, Transaction):
             return False
         return (
@@ -105,8 +105,8 @@ class Transaction:
     def add(self, *args: Union[Transaction, TransactionInstruction]) -> Transaction:
         """Add one or more instructions to this Transaction."""
         for arg in args:
-            if hasattr(arg, "instructions"):
-                self.instructions.extend(arg.instructions)  # type: ignore
+            if isinstance(arg, Transaction):
+                self.instructions.extend(arg.instructions)
             elif isinstance(arg, TransactionInstruction):
                 self.instructions.append(arg)
             else:
