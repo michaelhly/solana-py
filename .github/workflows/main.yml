@@ -30,13 +30,13 @@ jobs:
     - name: Install pipenv
       uses: dschep/install-pipenv-action@v1
 
-    - name: Install dependencies
+    - name: Install CI dependencies
       run: |
-        pipenv install --dev
+        pipenv run install-ci-deps
 
     - name: Run linters
       run: |
-        pipenv run pydocstyle --ignore=D401,D203,D213 src tests
+        pipenv run pydocstyle src tests
         pipenv run flake8 src tests
         pipenv run mypy src tests
 

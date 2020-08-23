@@ -6,9 +6,11 @@ verify_ssl = true
 [pipenv]
 allow_prereleases = true
 
+[scripts]
+install-ci-deps = "pipenv install --dev --skip-lock pydocstyle flake8 pylint mypy pytest"
+
 [dev-packages]
 jupyterlab = "*"
-autopep8 = "*"
 black = "*"
 pytest = "*"
 pylint = "*"

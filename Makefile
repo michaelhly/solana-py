@@ -4,7 +4,7 @@ format:
 
 .PHONY: lint 
 lint:
-	pydocstyle --ignore=D401,D203,D213 src tests
+	pydocstyle src tests
 	flake8 src tests
 	mypy src tests
 	pylint --rcfile=.pylintrc src tests
