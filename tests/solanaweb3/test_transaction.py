@@ -23,6 +23,11 @@ def test_sign_partial(stubbed_blockhash):
     assert len(partial_txn.signatures) == 2
     assert not partial_txn.signatures[1].signature
 
+    partial_txn.add_signer(acc2)
+    expected_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
+    expected_txn.sign(acc1, acc2)
+    assert partial_txn == expected_txn
+
 
 def test_transfer_signatures(stubbed_blockhash):
     """Test signing transfer transactions."""

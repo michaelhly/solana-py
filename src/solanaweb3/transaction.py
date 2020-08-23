@@ -248,7 +248,12 @@ class Transaction:
 
     def add_signature(self, pubkey: PublicKey, signature: bytes) -> None:
         """Add an externally created signature to a transaction."""
-        raise NotImplementedError("add_signature not implemented")
+        if len(signature) != SIG_LENGTH:
+            raise ValueError("signature has invalid length", signature)
+        idx = next((i for i, sig_pair in enumerate(self.signatures) if sig_pair.pubkey == pubkey), None)
+        if not idx:
+            raise ValueError("unknown signer: ", str(pubkey))
+        self.signatures[idx].signature = signature
 
     def add_signer(self, signer: Account) -> None:
         """Fill in a signature for a partially signed Transaction.
@@ -256,9 +261,8 @@ class Transaction:
         The `signer` must be the corresponding `Account` for a `PublicKey` that was
         previously provided to `signPartial`
         """
-        msg = self.serialize_message()
-        signed_msg = signer.sign(msg)
-        self.add_signature(signer.public_key(), signed_msg)
+        signed_msg = signer.sign(self.serialize_message())
+        self.add_signature(signer.public_key(), signed_msg.signature)
 
     def __verify_signatures(self, signed_data: bytes) -> bool:
         for sig_pair in self.signatures:
