@@ -1,5 +1,6 @@
 """Library to interface with system programs."""
 from __future__ import annotations
+
 from typing import Any, List, NamedTuple, Union
 
 from solanaweb3.instruction import InstructionLayout, decode_data, encode_data

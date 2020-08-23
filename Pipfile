@@ -16,6 +16,7 @@ pytest-tornasync = "*"
 mypy = "*"
 pydocstyle = "*"
 flake8 = "*"
+isort = "*"
 
 [packages]
 pynacl = "*"

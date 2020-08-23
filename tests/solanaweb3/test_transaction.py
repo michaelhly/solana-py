@@ -1,8 +1,8 @@
 """Unit tests for solanaweb3.transaction."""
 from base64 import b64decode, b64encode
 
-from base58 import b58encode
 import pytest
+from base58 import b58encode
 
 import solanaweb3.transaction as txlib
 from solanaweb3.account import Account

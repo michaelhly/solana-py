@@ -1,6 +1,6 @@
 """Unit tests for solanaweb3.system_program."""
-from solanaweb3.account import Account
 import solanaweb3.system_program as splib
+from solanaweb3.account import Account
 
 
 def test_transfer():

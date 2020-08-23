@@ -1,5 +1,5 @@
 """Library to encode/decode instruction data."""
-from struct import unpack, Struct
+from struct import Struct, unpack
 from typing import Any, NamedTuple, Tuple
 
 

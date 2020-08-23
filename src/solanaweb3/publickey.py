@@ -1,6 +1,7 @@
 """Library to interface with Solana public keys."""
 from __future__ import annotations
-from typing import Any, List, Union, Optional, Tuple
+
+from typing import Any, List, Optional, Tuple, Union
 
 import base58
 

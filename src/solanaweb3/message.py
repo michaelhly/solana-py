@@ -1,12 +1,14 @@
 """Library for generating a message from a sequence of instructions."""
 from __future__ import annotations
+
 from typing import List, NamedTuple, Union
 
-from base58 import b58encode, b58decode
+from base58 import b58decode, b58encode
 
 from solanaweb3.blockhash import Blockhash
 from solanaweb3.publickey import PublicKey
-from solanaweb3.utils import helpers, shortvec_encoding as shortvec
+from solanaweb3.utils import helpers
+from solanaweb3.utils import shortvec_encoding as shortvec
 
 
 class CompiledInstruction(NamedTuple):

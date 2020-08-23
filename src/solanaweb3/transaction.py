@@ -1,5 +1,6 @@
 """Library to package an atomic sequence of instructions to a transaction."""
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
@@ -7,11 +8,11 @@ from base58 import b58decode, b58encode
 from nacl.exceptions import BadSignatureError  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
+import solanaweb3.utils.shortvec_encoding as shortvec
 from solanaweb3.account import Account
 from solanaweb3.blockhash import Blockhash
 from solanaweb3.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solanaweb3.publickey import PublicKey
-import solanaweb3.utils.shortvec_encoding as shortvec
 
 TransactionSignature = NewType("TransactionSignature", str)
 
