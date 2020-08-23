@@ -54,6 +54,7 @@ def test_generate_account_from_secret_key():
 
 
 def test_sign_message(stubbed_sender):
+    """Test message signing."""
     msg = b"hello"
     signed_msg = stubbed_sender.sign(msg)
     assert VerifyKey(bytes(stubbed_sender.public_key())).verify(signed_msg.message, signed_msg.signature) == msg

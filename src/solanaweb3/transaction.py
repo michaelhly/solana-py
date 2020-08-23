@@ -4,11 +4,14 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
 from base58 import b58decode, b58encode
+from nacl.exceptions import BadSignatureError  # type: ignore
+from nacl.signing import VerifyKey  # type: ignore
 
 from solanaweb3.account import Account
 from solanaweb3.blockhash import Blockhash
 from solanaweb3.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solanaweb3.publickey import PublicKey
+import solanaweb3.utils.shortvec_encoding as shortvec
 
 TransactionSignature = NewType("TransactionSignature", str)
 
@@ -226,7 +229,7 @@ class Transaction:
             if isinstance(partial_signer, Account):
                 sig = partial_signer.sign(sign_data).signature
                 if len(sig) != SIG_LENGTH:
-                    raise RuntimeError("signature has invalid length - expected 64, got", sig)
+                    raise RuntimeError("signature has invalid length", sig)
                 self.signatures[idx].signature = sig
 
     def sign(self, *signers: Account) -> None:
@@ -258,33 +261,69 @@ class Transaction:
         self.add_signature(signer.public_key(), signed_msg)
 
     def __verify_signatures(self, signed_data: bytes) -> bool:
-        raise NotImplementedError("__verify_signatures not implemented")
+        for sig_pair in self.signatures:
+            if not sig_pair.signature:
+                return False
+            try:
+                VerifyKey(bytes(sig_pair.pubkey)).verify(signed_data, sig_pair.signature)
+            except BadSignatureError:
+                return False
+        return True
 
     def serialize(self) -> bytes:
         """Serialize the Transaction in the wire format.
 
         The Transaction must have a valid `signature` before invoking this method.
         """
-        raise NotImplementedError("serialize not implemented")
+        if not self.signatures:
+            raise AttributeError("transaction has not been signed")
+
+        sign_data = self.serialize_message()
+        if not self.__verify_signatures(sign_data):
+            raise AttributeError("transaction has not been signed correctly")
+
+        return self.__serialize(sign_data)
 
     def __serialize(self, signed_data: bytes) -> bytes:
-        raise NotImplementedError("__serialize not implemented")
+        if len(self.signatures) >= SIG_LENGTH * 4:
+            raise AttributeError("too many singatures to encode")
+        wire_transaction = bytearray()
+        # Encode signature count
+        signature_count = shortvec.encode_length(len(self.signatures))
+        wire_transaction.extend(signature_count)
+        # Encode signatures
+        for sig_pair in self.signatures:
+            if not sig_pair.signature:
+                continue
+            if len(sig_pair.signature) != SIG_LENGTH:
+                raise RuntimeError("signature has invalid length", sig_pair.signature)
+            wire_transaction.extend(sig_pair.signature)
+        # Encode signed data
+        wire_transaction.extend(signed_data)
+
+        if len(wire_transaction) > PACKET_DATA_SIZE:
+            raise RuntimeError(f"transaction too large: {len(wire_transaction)} > {PACKET_DATA_SIZE}")
+
+        return bytes(wire_transaction)
 
     @staticmethod
     def deserialize(raw_transaction: bytes) -> Transaction:
         """Parse a wire transaction into a Transaction object."""
-        raise NotImplementedError("deserialize not implemented")
+        signatures = []
+        signature_count, offset = shortvec.decode_length(raw_transaction)
+        for _ in range(signature_count):
+            signatures.append(b58encode(raw_transaction[offset : offset + SIG_LENGTH]))  # noqa: E203
+            offset += SIG_LENGTH
+        return Transaction.populate(Message.deserialize(raw_transaction[offset:]), signatures)
 
     @staticmethod
-    def populate(message: Message, signatures: List[Union[str, bytes]]) -> Transaction:
+    def populate(message: Message, signatures: List[bytes]) -> Transaction:
         """Populate Transaction object from message and signatures."""
         transaction = Transaction()
         transaction.recent_blockhash = message.recent_blockhash
 
         for idx, sig in enumerate(signatures):
-            signature = b58encode(Transaction.__DEFAULT_SIG)
-            if sig:
-                signature = b58decode(sig) if isinstance(sig, str) else b58encode(sig)
+            signature = None if sig == b58encode(Transaction.__DEFAULT_SIG) else b58decode(sig)
             transaction.signatures.append(_SigPubkeyPair(pubkey=message.account_keys[idx], signature=signature))
 
         for instr in message.instructions:

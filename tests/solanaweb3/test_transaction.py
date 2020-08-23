@@ -1,11 +1,27 @@
 """Unit tests for solanaweb3.transaction."""
+from base64 import b64decode, b64encode
+
 from base58 import b58encode
+import pytest
 
 import solanaweb3.transaction as txlib
 from solanaweb3.account import Account
 from solanaweb3.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solanaweb3.publickey import PublicKey
 from solanaweb3.system_program import SystemProgram, TransferParams
+
+
+def test_sign_partial(stubbed_blockhash):
+    """Test paritally sigining a transaction."""
+    acc1, acc2 = Account(), Account()
+    transfer = SystemProgram.transfer(
+        TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123)
+    )
+    partial_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
+    partial_txn.sign_partial(acc1, acc2.public_key())
+    assert len(partial_txn.signature()) == txlib.SIG_LENGTH
+    assert len(partial_txn.signatures) == 2
+    assert not partial_txn.signatures[1].signature
 
 
 def test_transfer_signatures(stubbed_blockhash):
@@ -39,6 +55,23 @@ def test_dedup_signatures(stubbed_blockhash):
     txn.sign(acc1)
 
 
+def test_wire_format_and_desrialize(stubbed_blockhash, stubbed_reciever, stubbed_sender):
+    """Test serialize/derialize transaction to/from wire format."""
+    transfer = SystemProgram.transfer(
+        TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=49)
+    )
+    expected_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
+    expected_txn.sign(stubbed_sender)
+    wire_txn = b64decode(
+        b"AVuErQHaXv0SG0/PchunfxHKt8wMRfMZzqV0tkC5qO6owYxWU2v871AoWywGoFQr4z+q/7mE8lIufNl/kxj+nQ0BAAEDE5j2"
+        b"LG0aRXxRumpLXz29L2n8qTIWIY3ImX5Ba9F9k8r9Q5/Mtmcn8onFxt47xKj+XdXXd3C8j/FcPu7csUrz/AAAAAAAAAAAAAAA"
+        b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAxJrndgN4IFTxep3s6kO0ROug7bEsbx0xxuDkqEvwUusBAgIAAQwCAAAAMQAAAAAAAAA="
+    )
+    txn = txlib.Transaction.deserialize(wire_txn)
+    assert txn == expected_txn
+    assert wire_txn == expected_txn.serialize()
+
+
 def test_populate(stubbed_blockhash):
     """Test populating transaction with a message and two signatures."""
     account_keys = [str(PublicKey(i + 1)) for i in range(5)]
@@ -57,3 +90,36 @@ def test_populate(stubbed_blockhash):
     assert len(transaction.instructions) == len(msg.instructions)
     assert len(transaction.signatures) == len(signatures)
     assert transaction.recent_blockhash == msg.recent_blockhash
+
+
+def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_reciever, stubbed_sender):
+    """Test to serialize an unsigned transaction."""
+    transfer = SystemProgram.transfer(
+        TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=49)
+    )
+    txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
+    assert len(txn.signatures) == 0
+    # Empty signature array fails
+    with pytest.raises(AttributeError):
+        txn.serialize()
+    assert len(txn.signatures) == 0
+    # Serialize message
+    assert b64encode(txn.serialize_message()) == (
+        b"AQABAxOY9ixtGkV8UbpqS189vS9p/KkyFiGNyJl+QWvRfZPK/UOfzLZnJ/KJxcbeO8So/l3V13dwvI/xXD7u3LFK8/wAAAAAAAAA"
+        b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMSa53YDeCBU8Xqd7OpDtETroO2xLG8dMcbg5KhL8FLrAQICAAEMAgAAADEAAAAAAAAA"
+    )
+    assert len(txn.instructions) == 1
+    # Signature array populated with null signatures fails
+    with pytest.raises(AttributeError):
+        txn.serialize()
+    assert len(txn.signatures) == 1
+    # Properly signed transaction succeeds
+    txn.sign(stubbed_sender)
+    assert len(txn.instructions) == 1
+    expected_serialization = b64decode(
+        b"AVuErQHaXv0SG0/PchunfxHKt8wMRfMZzqV0tkC5qO6owYxWU2v871AoWywGoFQr4z+q/7mE8lIufNl/kxj+nQ0BAAEDE5j2"
+        b"LG0aRXxRumpLXz29L2n8qTIWIY3ImX5Ba9F9k8r9Q5/Mtmcn8onFxt47xKj+XdXXd3C8j/FcPu7csUrz/AAAAAAAAAAAAAAA"
+        b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAxJrndgN4IFTxep3s6kO0ROug7bEsbx0xxuDkqEvwUusBAgIAAQwCAAAAMQAAAAAAAAA="
+    )
+    assert txn.serialize() == expected_serialization
+    assert len(txn.signatures) == 1

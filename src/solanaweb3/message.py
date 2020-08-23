@@ -117,7 +117,7 @@ class Message:
 
     def is_account_writable(self, index: int) -> bool:
         """Check if account is write eligble."""
-        writable = index < (self.header.num_readonly_signed_accounts - self.header.num_readonly_signed_accounts)
+        writable = index < (self.header.num_required_signatures - self.header.num_readonly_signed_accounts)
         return writable or self.header.num_required_signatures <= index < (
             len(self.account_keys) - self.header.num_readonly_unsigned_accounts
         )
@@ -137,8 +137,8 @@ class Message:
     @staticmethod
     def deserialize(raw_message: bytes) -> Message:
         """Deserialize raw message bytes."""
-        header_offset = 3
-        if len(raw_message) < header_offset:
+        HEADER_OFFSET = 3  # pylint: disable=invalid-name
+        if len(raw_message) < HEADER_OFFSET:
             raise ValueError("byte representation of message is missing message header")
         num_required_signatures = raw_message[0]
         num_readonly_signed_accounts = raw_message[1]
@@ -148,7 +148,7 @@ class Message:
             num_readonly_signed_accounts=num_readonly_signed_accounts,
             num_readonly_unsigned_accounts=num_readonly_unsigned_accounts,
         )
-        raw_message = raw_message[header_offset:]
+        raw_message = raw_message[HEADER_OFFSET:]
 
         account_keys = []
         accounts_length, accounts_offset = shortvec.decode_length(raw_message)
