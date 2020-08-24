@@ -10,8 +10,8 @@ from solanaweb3.blockhash import Blockhash
 from solanaweb3.publickey import PublicKey
 from solanaweb3.transaction import Transaction
 
-from .rpc_types import RPCMethod, RPCResponse
 from .providers import http
+from .rpc_types import RPCMethod, RPCResponse
 
 # Endpoint types
 HTTP = "http"
