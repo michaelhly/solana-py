@@ -6,7 +6,7 @@ format:
 lint:
 	pydocstyle src tests
 	flake8 src tests
-	mypy src tests
+	mypy src
 	pylint --rcfile=.pylintrc src tests
 
 .PHONY: notebook
