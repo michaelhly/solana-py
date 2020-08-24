@@ -10,9 +10,11 @@ from typing import (
 )
 
 
+# Original source:
+# https://github.com/ethereum/web3.py/blob/8bb0b56f65f1ab96b46db79f9956517ac628bd7b/web3/_utils/encoding.py#L181
 class FriendlyJsonSerde:
-    """
-    Friendly JSON serializer & deserializer
+    """Friendly JSON serializer & deserializer.
+
     When encoding or decoding fails, this class collects
     information on which fields failed, to show more
     helpful information in the raised error messages.
@@ -44,14 +46,13 @@ class FriendlyJsonSerde:
             if hasattr(obj, "items"):
                 item_errors = "; ".join(self._json_mapping_errors(obj))
                 raise TypeError("dict had unencodable value at keys: {{{}}}".format(item_errors)) from full_exception
-            elif FriendlyJsonSerde._is_list_like(obj):
+            if FriendlyJsonSerde._is_list_like(obj):
                 element_errors = "; ".join(self._json_list_errors(obj))
                 raise TypeError("list had unencodable value at index: [{}]".format(element_errors)) from full_exception
-            else:
-                raise full_exception
+            raise full_exception
 
-    @staticmethod
-    def json_decode(json_str: str) -> Dict[Any, Any]:
+    def json_decode(self, json_str: str) -> Dict[Any, Any]:  # pylint: disable=no-self-use
+        """Deserialize JSON document to a Python object with friendly error messages."""
         try:
             decoded = json.loads(json_str)
             return decoded
@@ -62,6 +63,7 @@ class FriendlyJsonSerde:
             raise json.decoder.JSONDecodeError(err_msg, exc.doc, exc.pos)
 
     def json_encode(self, obj: Dict[Any, Any], cls: Optional[Type[json.JSONEncoder]] = None) -> str:
+        """Serialize obj to a JSON formatted `str` with friendly error messages."""
         try:
             return self._friendly_json_encode(obj, cls=cls)
         except TypeError as exc:
