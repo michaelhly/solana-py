@@ -90,10 +90,11 @@ class HTTPClient(FriendlyJsonSerde):
         wire_format = b58encode(txn.serialize()).decode("utf-8")
         return self.make_request(RPCMethod("sendTransaction"), wire_format)
 
-    def send_transaction(self, txn: Transaction, *account: Account) -> RPCResponse:
-        """Send a transaction that has already been signed and serialized into the wire format.
+    def send_transaction(self, txn: Transaction, *signers: Account) -> RPCResponse:
+        """Send a transaction.
 
         :param txn: Fully-signed Transaction.
+        :param signers: Signers to sign the transaction.
         """
         try:
             # TODO: Cache recent blockhash
@@ -104,6 +105,6 @@ class HTTPClient(FriendlyJsonSerde):
         except Exception as err:
             raise RuntimeError("failed to get recent blockhash") from err
 
-        txn.sign(*account)
+        txn.sign(*signers)
         wire_format = b58encode(txn.serialize()).decode("utf-8")
         return self.make_request(RPCMethod("sendTransaction"), wire_format)
