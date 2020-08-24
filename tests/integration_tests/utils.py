@@ -12,7 +12,7 @@ def confirm_transaction(client: Client, tx_sig: str) -> RPCResponse:
     while elapsed_time < TIMEOUT:
         sleep_time = 3
         if not elapsed_time:
-            sleep_time = 10
+            sleep_time = 7
             time.sleep(sleep_time)
         else:
             time.sleep(sleep_time)
