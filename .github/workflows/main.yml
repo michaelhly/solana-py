@@ -41,7 +41,11 @@ jobs:
         pipenv run mypy src tests
 
 
-    - name: Run tests
+    - name: Run unit tests
       run: |
-        pipenv run pytest
+        pipenv run pytest -m "not integration_test"
 
+    - name: Run integration tests
+      run: |
+        pipenv run pytest -m integration_test
+    

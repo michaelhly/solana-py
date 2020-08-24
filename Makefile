@@ -13,6 +13,11 @@ lint:
 notebook:
 	cd notebooks && PYTHONPATH=../src jupyter notebook
 
-.PHONY: test
-test:
-	PYTHONPATH=./src pytest
+all-tests:
+	PYTHONPATH=./src -v pytest
+
+unit-tests:
+	PYTHONPATH=./src pytest -v -m "not integration_test"
+
+int-tests:
+	PYTHONPATH=./src pytest -v -m integration_test
