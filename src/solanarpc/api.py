@@ -21,15 +21,15 @@ WEBSOCKET = "ws"
 class Client:
     """RPC Client interact with the Solana RPC API."""
 
-    def __init__(self, endpoint: Optional[str] = None, endpoint_type: Optional[str] = None):
+    def __init__(self, endpoint: Optional[str] = None, client_type: Optional[str] = None):
         """Init API client.
 
         :param endpoint: RPC endpoint to connect to.
-        :param endpoint_type: Type of RPC endpoint.
+        :param client_type: Type of RPC client.
             - "http" for HTTP endpoint.
             - "ws" for webscoket endpoint.
         """
-        if endpoint_type == WEBSOCKET:
+        if client_type == WEBSOCKET:
             raise NotImplementedError("websocket RPC is currently not supported")
         else:
             # Default to http provider, if no endpoint type is provided.

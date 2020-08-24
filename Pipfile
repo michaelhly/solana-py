@@ -12,7 +12,6 @@ update-localnet = "sh bin/localnet.sh update"
 start-localnet = "sh bin/localnet.sh up"
 stop-localnet = "sh bin/localnet.sh down"
 
-
 [dev-packages]
 jupyterlab = "*"
 black = "*"
@@ -23,6 +22,7 @@ mypy = "*"
 pydocstyle = "*"
 flake8 = "*"
 isort = "*"
+pytest-docker = "*"
 
 [packages]
 pynacl = "*"
