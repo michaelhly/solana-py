@@ -5,10 +5,15 @@ import logging
 import os
 from typing import Any, Optional, cast
 
+from base58 import b58encode
 import requests
 
 from solanarpc._utils.encoding import FriendlyJsonSerde
 from solanarpc.rpc_types import URI, RPCMethod, RPCResponse
+from solanaweb3.account import Account
+from solanaweb3.blockhash import Blockhash
+from solanaweb3.publickey import PublicKey
+from solanaweb3.transaction import Transaction
 
 
 def get_default_endpoint() -> URI:
@@ -45,12 +50,12 @@ class HTTPClient(FriendlyJsonSerde):
         )
         return cast(RPCResponse, self.json_decode(raw_response.text))
 
-    def get_balance(self, pubkey: str) -> RPCResponse:
+    def get_balance(self, pubkey: PublicKey) -> RPCResponse:
         """Returns the balance of the account of provided Pubkey.
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string.
         """
-        return self.make_request(RPCMethod("getBalance"), pubkey)
+        return self.make_request(RPCMethod("getBalance"), str(pubkey))
 
     def get_confirmed_transaction(self, tx_sig: str, encoding: str = "json") -> RPCResponse:
         """Returns transaction details for a confirmed transaction.
@@ -69,17 +74,36 @@ class HTTPClient(FriendlyJsonSerde):
         """
         return self.make_request(RPCMethod("getRecentBlockhash"))
 
-    def request_airdrop(self, pubkey: str, lamports: int) -> RPCResponse:
+    def request_airdrop(self, pubkey: PublicKey, lamports: int) -> RPCResponse:
         """Requests an airdrop of lamports to a Pubkey.
 
         :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string.
         :param lamports: Amout of lamports.
         """
-        return self.make_request(RPCMethod("requestAirdrop"), pubkey, lamports)
+        return self.make_request(RPCMethod("requestAirdrop"), str(pubkey), lamports)
 
-    def send_transaction(self, signed_tx: str) -> RPCResponse:
-        """Submits a signed transaction to the cluster for processing.
+    def send_raw_transaction(self, txn: Transaction) -> RPCResponse:
+        """Send a transaction that has already been signed and serialized into the wire format.
 
-        :param signed_tx: Fully-signed Transaction, as base-58 encoded bytes string.
+        :param txn: Fully-signed Transaction.
         """
-        return self.make_request(RPCMethod("sendTransaction"), signed_tx)
+        wire_format = b58encode(txn.serialize()).decode("utf-8")
+        return self.make_request(RPCMethod("sendTransaction"), wire_format)
+
+    def send_transaction(self, txn: Transaction, *account: Account) -> RPCResponse:
+        """Send a transaction that has already been signed and serialized into the wire format.
+
+        :param txn: Fully-signed Transaction.
+        """
+        try:
+            # TODO: Cache recent blockhash
+            blockhash_resp = self.get_recent_blockhash()
+            if not blockhash_resp["result"]:
+                raise RuntimeError("failed to get recent blockhash")
+            txn.recent_blockhash = Blockhash(blockhash_resp["result"]["value"]["blockhash"])
+        except Exception as err:
+            raise RuntimeError("failed to get recent blockhash") from err
+
+        txn.sign(*account)
+        wire_format = b58encode(txn.serialize()).decode("utf-8")
+        return self.make_request(RPCMethod("sendTransaction"), wire_format)
