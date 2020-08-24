@@ -32,7 +32,7 @@ class Client:
         if endpoint_type == WEBSOCKET:
             raise NotImplementedError("websocket RPC is currently not supported")
         else:
-            # Default to http provider, if not endpoint type is provided.
+            # Default to http provider, if no endpoint type is provided.
             self._provider = http.HTTPProvider(endpoint)
 
     def is_connected(self) -> bool:
