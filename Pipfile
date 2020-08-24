@@ -8,6 +8,10 @@ allow_prereleases = true
 
 [scripts]
 install-ci-deps = "pipenv install --dev --skip-lock pydocstyle flake8 pylint mypy pytest"
+update-localnet = "sh bin/localnet.sh update"
+start-localnet = "sh bin/localnet.sh up"
+stop-localnet = "sh bin/localnet.sh down"
+
 
 [dev-packages]
 jupyterlab = "*"
