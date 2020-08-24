@@ -8,7 +8,7 @@ from typing import Any, Optional, cast
 import requests
 
 from solanarpc._utils.encoding import FriendlyJsonSerde
-from solanarpc.rpc_types import RPCMethod, RPCResponse, URI
+from solanarpc.rpc_types import URI, RPCMethod, RPCResponse
 
 
 def get_default_endpoint() -> URI:

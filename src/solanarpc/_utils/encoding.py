@@ -1,13 +1,7 @@
 """Friendly JSON serializer & deserializer for Requests."""
 import collections.abc
 import json
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Optional,
-    Type,
-)
+from typing import Any, Dict, Iterable, Optional, Type
 
 
 # Original source:
