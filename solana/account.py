@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 
 from nacl import public, signing  # type: ignore
 
-from solanaweb3.publickey import PublicKey
+from solana.publickey import PublicKey
 
 
 class Account:

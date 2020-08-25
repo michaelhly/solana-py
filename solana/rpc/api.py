@@ -5,10 +5,10 @@ from typing import Any, Dict, List, Optional, Union
 
 from base58 import b58decode, b58encode
 
-from solanaweb3.account import Account
-from solanaweb3.blockhash import Blockhash
-from solanaweb3.publickey import PublicKey
-from solanaweb3.transaction import Transaction
+from solana.account import Account
+from solana.blockhash import Blockhash
+from solana.publickey import PublicKey
+from solana.transaction import Transaction
 
 from .providers import http
 from .rpc_types import RPCMethod, RPCResponse
