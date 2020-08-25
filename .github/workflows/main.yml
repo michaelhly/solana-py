@@ -38,10 +38,14 @@ jobs:
       run: |
         pipenv run pydocstyle src tests
         pipenv run flake8 src tests
-        pipenv run mypy src tests
+        pipenv run mypy src
 
 
-    - name: Run tests
+    - name: Run unit tests
       run: |
-        pipenv run pytest
+        pipenv run pytest -m "not integration"
 
+    - name: Run integration tests
+      run: |
+        pipenv run pytest -m integration
+    

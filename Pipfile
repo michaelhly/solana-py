@@ -7,11 +7,10 @@ verify_ssl = true
 allow_prereleases = true
 
 [scripts]
-install-ci-deps = "pipenv install --dev --skip-lock pydocstyle flake8 pylint mypy pytest"
+install-ci-deps = "pipenv install --dev --skip-lock pydocstyle flake8 pylint mypy pytest pytest-docker"
 update-localnet = "sh bin/localnet.sh update"
 start-localnet = "sh bin/localnet.sh up"
 stop-localnet = "sh bin/localnet.sh down"
-
 
 [dev-packages]
 jupyterlab = "*"
@@ -23,10 +22,12 @@ mypy = "*"
 pydocstyle = "*"
 flake8 = "*"
 isort = "*"
+pytest-docker = "*"
 
 [packages]
 pynacl = "*"
 base58 = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"
