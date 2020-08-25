@@ -262,156 +262,148 @@ SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
 ]
 
 
-class SystemInstruction:
-    """System Instruction class to decode transaction instruction data."""
+def __check_key_length(keys: List[Any], expected_length: int) -> None:
+    if len(keys) < expected_length:
+        raise ValueError(f"invalid instruction: found {len(keys)} keys, expected at least {expected_length}")
 
-    @staticmethod
-    def __check_key_length(keys: List[Any], expected_length: int) -> None:
-        if len(keys) < expected_length:
-            raise ValueError(f"invalid instruction: found {len(keys)} keys, expected at least {expected_length}")
 
-    @staticmethod
-    def __check_program_id(program_id: PublicKey) -> None:
-        if program_id != SystemProgram.program_id():
-            raise ValueError("invalid instruction: programId is not SystemProgram")
+def __check_program_id(program_id: PublicKey) -> None:
+    if program_id != sys_program_id():
+        raise ValueError("invalid instruction: programId is not SystemProgram")
 
-    @staticmethod
-    def decode_instruction_layout(instructoin: TransactionInstruction) -> InstructionLayout:
-        """Decode a system instruction and retrieve the instruction layout."""
-        raise NotImplementedError("decode_instruction_layout not implemented")
 
-    @staticmethod
-    def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
-        """Decode a create account system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_create_account not implemented")
+def decode_instruction_layout(instructoin: TransactionInstruction) -> InstructionLayout:
+    """Decode a system instruction and retrieve the instruction layout."""
+    raise NotImplementedError("decode_instruction_layout not implemented")
 
-    @staticmethod
-    def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
-        """Decode a transfer system instruction and retrieve the instruction params."""
-        SystemInstruction.__check_program_id(instruction.program_id)
-        SystemInstruction.__check_key_length(instruction.keys, 2)
 
-        layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER]
-        data = decode_data(layout, instruction.data)
+def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
+    """Decode a create account system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_create_account not implemented")
 
-        return TransferParams(
-            from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=data[1]
+
+def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
+    """Decode a transfer system instruction and retrieve the instruction params."""
+    __check_program_id(instruction.program_id)
+    __check_key_length(instruction.keys, 2)
+
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER]
+    data = decode_data(layout, instruction.data)
+
+    return TransferParams(
+        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=data[1]
+    )
+
+
+def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
+    """Decode an allocate system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_allocate not implemented")
+
+
+def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWithSeedParams:
+    """Decode an allocate with seed system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_allocate_with_seed not implemented")
+
+
+def decode_assign(instruction: TransactionInstruction) -> AssignParams:
+    """Decode an assign system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_assign not implemented")
+
+
+def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
+    """Decode an assign system with seed instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_assign_with_seed not implemented")
+
+
+def decode_create_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
+    """Decode a create account with seed system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_create_with_seed not implemented")
+
+
+def decode_nonce_initialize(instruction: TransactionInstruction) -> InitializeNonceParams:
+    """Decode a nonce initialize system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_nonce_initialize not implemented")
+
+
+def decode_nonce_advance(instruction: TransactionInstruction) -> AdvanceNonceParams:
+    """Decode a nonce advance system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_nonce_advance not implemented")
+
+
+def decode_nonce_withdraw(instruction: TransactionInstruction) -> WithdrawNonceParams:
+    """Decode a nonce withdraw system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_nonce_withdraw not implemented")
+
+
+def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonceParams:
+    """Decode a nonce authorize system instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_nonce_authorize not implemented")
+
+
+def sys_program_id() -> PublicKey:
+    """Public key that identifies the System program."""
+    return PublicKey("11111111111111111111111111111111")
+
+
+def create_account(param: CreateAccountParams) -> Transaction:
+    """Generate a Transaction that creates a new account."""
+    raise NotImplementedError("create_account not implemented")
+
+
+def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
+    """Generate a Transaction that assigns an account to a program."""
+    raise NotImplementedError("assign not implemented")
+
+
+def transfer(params: TransferParams) -> Transaction:
+    """Generate a Transaction that transfers lamports from one account to another."""
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER]
+    data = encode_data(layout, params.lamports)
+
+    txn = Transaction()
+    txn.add(
+        TransactionInstruction(
+            keys=[
+                AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
+                AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
+            ],
+            program_id=sys_program_id(),
+            data=data,
         )
-
-    @staticmethod
-    def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
-        """Decode an allocate system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_allocate not implemented")
-
-    @staticmethod
-    def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWithSeedParams:
-        """Decode an allocate with seed system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_allocate_with_seed not implemented")
-
-    @staticmethod
-    def decode_assign(instruction: TransactionInstruction) -> AssignParams:
-        """Decode an assign system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_assign not implemented")
-
-    @staticmethod
-    def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
-        """Decode an assign system with seed instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_assign_with_seed not implemented")
-
-    @staticmethod
-    def decode_create_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
-        """Decode a create account with seed system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_create_with_seed not implemented")
-
-    @staticmethod
-    def decode_nonce_initialize(instruction: TransactionInstruction) -> InitializeNonceParams:
-        """Decode a nonce initialize system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_nonce_initialize not implemented")
-
-    @staticmethod
-    def decode_nonce_advance(instruction: TransactionInstruction) -> AdvanceNonceParams:
-        """Decode a nonce advance system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_nonce_advance not implemented")
-
-    @staticmethod
-    def decode_nonce_withdraw(instruction: TransactionInstruction) -> WithdrawNonceParams:
-        """Decode a nonce withdraw system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_nonce_withdraw not implemented")
-
-    @staticmethod
-    def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonceParams:
-        """Decode a nonce authorize system instruction and retrieve the instruction params."""
-        raise NotImplementedError("decode_nonce_authorize not implemented")
+    )
+    return txn
 
 
-class SystemProgram:
-    """Factory class for transactions to interact with the System program."""
+def create_account_with_seed(params: CreateAccountWithSeedParams) -> Transaction:
+    """Generate a Transaction that creates a new account at an address."""
+    raise NotImplementedError("create_account_with_seed not implemented")
 
-    @staticmethod
-    def program_id() -> PublicKey:
-        """Public key that identifies the System program."""
-        return PublicKey("11111111111111111111111111111111")
 
-    @staticmethod
-    def create_account(param: CreateAccountParams) -> Transaction:
-        """Generate a Transaction that creates a new account."""
-        raise NotImplementedError("create_account not implemented")
+def create_nonce_account(param: Union[CreateNonceAccountParams, CreateAccountWithSeedParams]) -> Transaction:
+    """Generate a Transaction that creates a new Nonce account."""
+    raise NotImplementedError("create_nonce_account_params not implemented")
 
-    @staticmethod
-    def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
-        """Generate a Transaction that assigns an account to a program."""
-        raise NotImplementedError("assign not implemented")
 
-    @staticmethod
-    def transfer(params: TransferParams) -> Transaction:
-        """Generate a Transaction that transfers lamports from one account to another."""
-        layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER]
-        data = encode_data(layout, params.lamports)
+def nonce_initialization(param: InitializeNonceParams) -> TransactionInstruction:
+    """Generate an instruction to initialize a Nonce account."""
+    raise NotImplementedError("nonce_initialization not implemented")
 
-        txn = Transaction()
-        txn.add(
-            TransactionInstruction(
-                keys=[
-                    AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-                    AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
-                ],
-                program_id=SystemProgram.program_id(),
-                data=data,
-            )
-        )
-        return txn
 
-    @staticmethod
-    def create_account_with_seed(params: CreateAccountWithSeedParams) -> Transaction:
-        """Generate a Transaction that creates a new account at an address."""
-        raise NotImplementedError("create_account_with_seed not implemented")
+def nonce_advance(param: AdvanceNonceParams) -> TransactionInstruction:
+    """Generate an instruction to advance the nonce in a Nonce account."""
+    raise NotImplementedError("nonce advance not implemented")
 
-    @staticmethod
-    def create_nonce_account(param: Union[CreateNonceAccountParams, CreateAccountWithSeedParams]) -> Transaction:
-        """Generate a Transaction that creates a new Nonce account."""
-        raise NotImplementedError("create_nonce_account_params not implemented")
 
-    @staticmethod
-    def nonce_initialization(param: InitializeNonceParams) -> TransactionInstruction:
-        """Generate an instruction to initialize a Nonce account."""
-        raise NotImplementedError("nonce_initialization not implemented")
+def nonce_withdraw(param: WithdrawNonceParams) -> Transaction:
+    """Generate a Transaction that withdraws lamports from a Nonce account."""
+    raise NotImplementedError("nonce_withdraw not implemented")
 
-    @staticmethod
-    def nonce_advance(param: AdvanceNonceParams) -> TransactionInstruction:
-        """Generate an instruction to advance the nonce in a Nonce account."""
-        raise NotImplementedError("nonce advance not implemented")
 
-    @staticmethod
-    def nonce_withdraw(param: WithdrawNonceParams) -> Transaction:
-        """Generate a Transaction that withdraws lamports from a Nonce account."""
-        raise NotImplementedError("nonce_withdraw not implemented")
+def nonce_authorize(param: AuthorizeNonceParams) -> Transaction:
+    """Generate a Transaction that authorizes a new PublicKey as the authority on a Nonce account."""
+    raise NotImplementedError("nonce_authorize not implemented")
 
-    @staticmethod
-    def nonce_authorize(param: AuthorizeNonceParams) -> Transaction:
-        """Generate a Transaction that authorizes a new PublicKey as the authority on a Nonce account."""
-        raise NotImplementedError("nonce_authorize not implemented")
 
-    @staticmethod
-    def allocate(param: Union[AllocateParams, AllocateWithSeedParams]) -> Transaction:
-        """Generate a Transaction that allocates space in an account without funding."""
-        raise NotImplementedError("allocate not implemented")
+def allocate(param: Union[AllocateParams, AllocateWithSeedParams]) -> Transaction:
+    """Generate a Transaction that allocates space in an account without funding."""
+    raise NotImplementedError("allocate not implemented")

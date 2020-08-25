@@ -1,8 +1,8 @@
 """Tests for the HTTP API Client."""
 import pytest
 
+import solana.system_program as sp
 from solana.rpc.api import HTTP, Client
-from solana.system_program import SystemProgram, TransferParams
 from solana.transaction import Transaction
 
 from .utils import confirm_transaction
@@ -40,8 +40,8 @@ def test_send_transaction_and_get_balance(
 ):  # pylint: disable=redefined-outer-name
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_reciever
-    transfer_tx = SystemProgram.transfer(
-        TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
+    transfer_tx = sp.transfer(
+        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
     )
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert resp["jsonrpc"] == "2.0"
@@ -78,8 +78,8 @@ def test_send_raw_transaction_and_get_balance(
     recent_blockhash = resp["result"]["value"]["blockhash"]
     # Create transfer tx transfer lamports from stubbed sender to stubbed_reciever
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
-        SystemProgram.transfer(
-            TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
         )
     )
     # Sign transaction

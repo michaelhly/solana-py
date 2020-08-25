@@ -6,6 +6,6 @@ from solana.account import Account
 def test_transfer():
     """Test creating a transaction for transfer."""
     params = sp.TransferParams(from_pubkey=Account().public_key(), to_pubkey=Account().public_key(), lamports=123)
-    txn = sp.SystemProgram.transfer(params)
+    txn = sp.transfer(params)
     assert len(txn.instructions) == 1
-    assert sp.SystemInstruction.decode_transfer(txn.instructions[0]) == params
+    assert sp.decode_transfer(txn.instructions[0]) == params
