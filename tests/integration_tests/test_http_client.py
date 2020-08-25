@@ -1,9 +1,7 @@
 """Tests for the HTTP API Client."""
 import pytest
 
-from base58 import b58encode
-
-import solanarpc.api as sol_api
+from solanarpc.api import Client, HTTP
 from solanaweb3.system_program import SystemProgram, TransferParams
 from solanaweb3.transaction import Transaction
 
@@ -12,9 +10,9 @@ from .utils import confirm_transaction
 
 @pytest.mark.integration
 @pytest.fixture(scope="session")
-def test_http_client(docker_services) -> sol_api.Client:
+def test_http_client(docker_services) -> Client:
     """Test http_client.is_connected."""
-    http_client = sol_api.Client(client_type=sol_api.HTTP)
+    http_client = Client(client_type=HTTP)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
@@ -41,7 +39,6 @@ def test_send_transaction_and_get_balance(
     stubbed_sender, stubbed_reciever, test_http_client
 ):  # pylint: disable=redefined-outer-name
     """Test sending a transaction to localnet."""
-    test_http_client = sol_api.Client(client_type=sol_api.HTTP)
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_reciever
     transfer_tx = SystemProgram.transfer(
         TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
@@ -74,7 +71,6 @@ def test_send_raw_transaction_and_get_balance(
     stubbed_sender, stubbed_reciever, test_http_client
 ):  # pylint: disable=redefined-outer-name
     """Test sending a raw transaction to localnet."""
-    test_http_client = sol_api.Client(client_type=sol_api.HTTP)
     # Get a recent blockhash
     resp = test_http_client.get_recent_blockhash()
     assert resp["jsonrpc"] == "2.0"
