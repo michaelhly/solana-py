@@ -11,48 +11,38 @@ from solana.utils import helpers, shortvec_encoding as shortvec
 
 
 class CompiledInstruction(NamedTuple):
-    """An instruction to execute by a program.
-
-    :param accounts: Union[bytes, List[int]]
-
-    :param program_id_index: int
-
-    :param data: bytes
-    """
+    """An instruction to execute by a program."""
 
     accounts: Union[bytes, List[int]]
+    """Ordered indices into the transaction keys array indicating which accounts to pass to the program."""
     program_id_index: int
+    """Index into the transaction keys array indicating the program account that executes this instruction."""
     data: bytes
+    """The program input data encoded as base 58."""
 
 
 class MessageHeader(NamedTuple):
-    """The message header, identifying signed and read-only account.
-
-    :param num_required_signatures: int
-
-    :param num_readonly_signed_accounts: int
-
-    :param num_readonly_unsigned_accounts: int
-    """
+    """The message header, identifying signed and read-only account."""
 
     num_required_signatures: int
+    """The number of signatures required for this message to be considered valid."""
     num_readonly_signed_accounts: int
+    """The last `numReadonlySignedAccounts` of the signed keys are read-only accounts."""
     num_readonly_unsigned_accounts: int
+    """The last `numReadonlySignedAccounts` of the unsigned keys are read-only accounts."""
 
 
 class MessageArgs(NamedTuple):
-    """Message constructor arguments.
-
-    :param header: MessageHeader
-    :param account_keys: List[str]
-    :param recent_blockhash: Blockhash
-    :param instructions: List[CompiledInstruction]
-    """
+    """Message constructor arguments."""
 
     header: MessageHeader
+    """The message header, identifying signed and read-only `accountKeys`."""
     account_keys: List[str]
+    """All the account keys used by this transaction."""
     recent_blockhash: Blockhash
+    """The hash of a recent ledger block."""
     instructions: List[CompiledInstruction]
+    """Instructions that will be executed in sequence and committed in one atomic transaction if all succeed."""
 
 
 class Message:
@@ -124,7 +114,24 @@ class Message:
         )
 
     def serialize(self) -> bytes:
-        """Serialize message to bytes."""
+        """Serialize message to bytes.
+
+        >>> from solana.blockhash import Blockhash
+        >>> account_keys = [str(PublicKey(i + 1)) for i in range(5)]
+        >>> msg = Message(
+        ...     MessageArgs(
+        ...         account_keys=account_keys,
+        ...         header=MessageHeader(
+        ...             num_readonly_signed_accounts=0, num_readonly_unsigned_accounts=3, num_required_signatures=2
+        ...         ),
+        ...         instructions=[
+        ...             CompiledInstruction(accounts=[1, 2, 3], data=b58encode(bytes([9] * 5)), program_id_index=4)],
+        ...         recent_blockhash=Blockhash("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k"),
+        ...     )
+        ... )
+        >>> msg.serialize().hex()
+        '0200030500000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000005c49ae77603782054f17a9decea43b444eba0edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
+        """  # pylint: disable=line-too-long
         message_buffer = bytearray()
         # Message body
         message_buffer.extend(self.__encode_message())
@@ -137,7 +144,21 @@ class Message:
 
     @staticmethod
     def deserialize(raw_message: bytes) -> Message:
-        """Deserialize raw message bytes."""
+        """Deserialize raw message bytes.
+
+        >>> raw_message = bytes.fromhex(
+        ...     '0200030500000000000000000000000000000000000000000000'
+        ...     '0000000000000000000100000000000000000000000000000000'
+        ...     '0000000000000000000000000000000200000000000000000000'
+        ...     '0000000000000000000000000000000000000000000300000000'
+        ...     '0000000000000000000000000000000000000000000000000000'
+        ...     '0004000000000000000000000000000000000000000000000000'
+        ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
+        ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
+        ... )
+        >>> type(Message.deserialize(raw_message))
+        <class 'solana.message.Message'>
+        """
         HEADER_OFFSET = 3  # pylint: disable=invalid-name
         if len(raw_message) < HEADER_OFFSET:
             raise ValueError("byte representation of message is missing message header")

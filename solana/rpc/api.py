@@ -19,15 +19,15 @@ WEBSOCKET = "ws"
 
 
 class Client:  # pylint: disable=too-many-public-methods
-    """RPC Client interact with the Solana RPC API."""
+    """Client interact with the Solana RPC API."""
 
     def __init__(self, endpoint: Optional[str] = None, client_type: Optional[str] = None):
         """Init API client.
 
-        :param endpoint: RPC endpoint to connect to.
-        :param client_type: Type of RPC client.
-            - "http" for HTTP endpoint.
-            - "ws" for webscoket endpoint.
+        :param endpoint: URL to the fullnode JSON RPC endpoint
+        :param client_type: Type of RPC client
+            - "http" for HTTP endpoint
+            - "ws" for webscoket endpoint
         """
         if client_type == WEBSOCKET:
             self._type = WEBSOCKET
@@ -41,17 +41,17 @@ class Client:  # pylint: disable=too-many-public-methods
         """Health check."""
         return self._provider.is_connected()
 
-    def get_balance(self, pubkey: PublicKey) -> RPCResponse:
+    def get_balance(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
         """Returns the balance of the account of provided Pubkey.
 
-        :param pubkey: Pubkey of account to query, as base-58 encoded string.
+        :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
         """
         return self._provider.make_request(RPCMethod("getBalance"), str(pubkey))
 
     def get_block_time(self, slot: int) -> RPCResponse:
         """Fetch the estimated production time of a block.
 
-        :param slot: Block, identified by Slot .
+        :param slot: Block, identified by Slot
         """
         return self._provider.make_request(RPCMethod("getBlockTime"), slot)
 
@@ -62,18 +62,18 @@ class Client:  # pylint: disable=too-many-public-methods
     def get_confirmed_block(self, slot: int, encoding: str = "json",) -> RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
-        :param slot: start_slot, as u64 integer.
+        :param slot: start_slot, as u64 integer
         :param encoding: (optional) encoding for the returned Transaction, either "json", "jsonParsed",
-        "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON
         """
         return self._provider.make_request(RPCMethod("getConfirmedBlock"), slot, encoding)
 
     def get_confirmed_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
-        :param start_slot: start_slot, as u64 integer.
+        :param start_slot: start_slot, as u64 integer
         :param end_slot: (optional) encoding for the returned Transaction, either "json", "jsonParsed",
-        "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON
         """
         if end_slot:
             return self._provider.make_request(RPCMethod("getConfirmedBlock"), start_slot, end_slot)
@@ -87,10 +87,10 @@ class Client:  # pylint: disable=too-many-public-methods
         Signatures are returned backwards in time from the provided signature or
         most recent confirmed block.
 
-        :param account: Account to be queried.
-        :param before: (optional) start searching backwards from this transaction signature.
-        If not provided the search starts from the top of the highest max confirmed block.
-        :param limit: (optoinal) maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
+        :param account: Account to be queried
+        :param before: (optional) start searching backwards from this transaction signature
+            If not provided the search starts from the top of the highest max confirmed block
+        :param limit: (optoinal) maximum transaction signatures to return (between 1 and 1,000, default: 1,000)
         """
         opts: Dict[str, Union[int, str]] = {}
         if before:
@@ -109,10 +109,10 @@ class Client:  # pylint: disable=too-many-public-methods
         """Returns transaction details for a confirmed transaction.
 
         :param tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
-        instruction parsers to return more human-readable and explicit data in the `transaction.message.instructions`
-        list.
+            instruction parsers to return more human-readable and explicit data in the
+            `transaction.message.instructions` list
         :param encoding: (optional) encoding for the returned Transaction, either "json", "jsonParsed",
-        "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON
         """
         return self._provider.make_request(RPCMethod("getConfirmedTransaction"), tx_sig, encoding)
 
@@ -168,7 +168,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """Returns the leader schedule for an epoch.
 
         :param epoch: Fetch the leader schedule for the epoch that corresponds to the provided slot.
-        If unspecified, the leader schedule for the current epoch is fetched.
+            If unspecified, the leader schedule for the current epoch is fetched.
         """
         if epoch:
             return self._provider.make_request(RPCMethod("getLeaderSchedule"), epoch)
@@ -190,14 +190,14 @@ class Client:  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
 
-        :param pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
+        :param pubkey: Pubkey of program, as base-58 encoded string or PublicKey object
         :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
-        "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON
         :param data_slice: limit the returned account data using the provided `offset`: <usize> and
-        `length`: <usize> fields; only available for "base58" or "base64" encoding.
+            `length`: <usize> fields; only available for "base58" or "base64" encoding
         :param filter_opts: filter results using various
-        [filter objects](https://docs.solana.com/apps/jsonrpc-api#filters);
-        account must meet all filter criteria to be included in results.
+            [filter objects](https://docs.solana.com/apps/jsonrpc-api#filters);
+            account must meet all filter criteria to be included in results
         """
         opts: Dict[str, List[Any]] = {"filters": []}
         if data_slice:
@@ -231,7 +231,7 @@ class Client:  # pylint: disable=too-many-public-methods
 
         :param signatures: An array of transaction signatures to confirm, as base-58 encoded strings.
         :param search_transaction_history: If true, a Solana node will search its ledger cache for
-        any signatures not found in the recent status cache.
+            any signatures not found in the recent status cache
         """
         base58_sigs: List[str] = []
         for sig in signatures:
@@ -255,9 +255,9 @@ class Client:  # pylint: disable=too-many-public-methods
     def get_stake_activation(self, pubkey: Union[PublicKey, str], epoch: Optional[int] = None):
         """Returns epoch activation information for a stake account.
 
-        :param pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object.
+        :param pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object
         :param epoch: (optional) epoch for which to calculate activation details. If parameter not provided,
-        defaults to current epoch.
+            defaults to current epoch
         """
         opts = {}
         if epoch:
@@ -272,7 +272,7 @@ class Client:  # pylint: disable=too-many-public-methods
     def get_token_account_balance(self, pubkey: Union[str, PublicKey]):
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
-        :param pubkey: Pubkey of Token account to query, as base-58 encoded string or PublicKey object.
+        :param pubkey: Pubkey of Token account to query, as base-58 encoded string or PublicKey object
         """
         return self._provider.make_request(RPCMethod("getTokenAccountBalance"), str(pubkey))
 
@@ -310,15 +310,15 @@ class Client:  # pylint: disable=too-many-public-methods
     def request_airdrop(self, pubkey: Union[PublicKey, str], lamports: int) -> RPCResponse:
         """Requests an airdrop of lamports to a Pubkey.
 
-        :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
-        :param lamports: Amout of lamports.
+        :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object
+        :param lamports: Amout of lamports
         """
         return self._provider.make_request(RPCMethod("requestAirdrop"), str(pubkey), lamports)
 
     def send_raw_transaction(self, txn: Transaction) -> RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
-        :param txn: Fully-signed Transaction.
+        :param txn: Fully-signed Transaction
         """
         wire_format = b58encode(txn.serialize()).decode("utf-8")
         return self._provider.make_request(RPCMethod("sendTransaction"), wire_format)
@@ -326,8 +326,8 @@ class Client:  # pylint: disable=too-many-public-methods
     def send_transaction(self, txn: Transaction, *signers: Account) -> RPCResponse:
         """Send a transaction.
 
-        :param txn: Fully-signed Transaction.
-        :param signers: Signers to sign the transaction.
+        :param txn: Fully-signed Transaction
+        :param signers: Signers to sign the transaction
         """
         try:
             # TODO: Cache recent blockhash
@@ -345,9 +345,9 @@ class Client:  # pylint: disable=too-many-public-methods
     def simulate_transaction(self, txn: Transaction, signer_verify: bool = False) -> RPCResponse:
         """Simulate sending a transaction.
 
-        :param txn: Transaction, as base-58 encoded string.
-        The transaction must have a valid blockhash, but is not required to be signed.
-        :param signer_verify: if true the transaction signatures will be verified (default: false).
+        :param txn: Transaction, as base-58 encoded string
+            The transaction must have a valid blockhash, but is not required to be signed
+        :param signer_verify: if true the transaction signatures will be verified (default: false)
         """
         try:
             b58decode(str(txn.recent_blockhash))

@@ -7,9 +7,18 @@ import base58
 
 
 class PublicKey:
-    """The public key of a keypair."""
+    """The public key of a keypair.
+
+    >>> # An arbitary public key:
+    >>> pubkey = PublicKey(1)
+    >>> str(pubkey) # String representation in base58 form.
+    '11111111111111111111111111111112'
+    >>> bytes(pubkey).hex()
+    '0000000000000000000000000000000000000000000000000000000000000001'
+    """
 
     LENGTH = 32
+    """Constant for standard length of a public key."""
 
     def __init__(self, value: Union[bytearray, bytes, int, str]) -> None:
         """Init PublicKey object."""
