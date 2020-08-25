@@ -1,6 +1,6 @@
 # Solana.py
 
-Solana Python API built on the JSON RPC API[Solana](https://docs.solana.com/apps/jsonrpc-api).
+Solana Python API built on the [JSON RPC API](https://docs.solana.com/apps/jsonrpc-api).
 
 ## Development
 
