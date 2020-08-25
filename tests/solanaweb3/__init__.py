@@ -1,1 +1,1 @@
-"""Tests for solanaweb3."""
+"""Tests for solana Web3."""

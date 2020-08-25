@@ -13,8 +13,9 @@ lint:
 notebook:
 	cd notebooks && PYTHONPATH=../src jupyter notebook
 
-all-tests:
-	PYTHONPATH=./src -v pytest
+.PHONY: tests
+tests:
+	PYTHONPATH=./src pytest -v
 
 unit-tests:
 	PYTHONPATH=./src pytest -v -m "not integration"

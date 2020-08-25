@@ -1,7 +1,7 @@
 """Tests for the HTTP API Client."""
 import pytest
 
-from solanarpc.api import HTTP, Client
+from rpc.api import HTTP, Client
 from solanaweb3.system_program import SystemProgram, TransferParams
 from solanaweb3.transaction import Transaction
 

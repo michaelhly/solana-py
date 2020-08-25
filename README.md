@@ -1,6 +1,6 @@
-# PySerum
+# Solana.py
 
-Python client library for interacting with the Project Serum DEX.
+Python client library for interacting [Solana](https://solana.com/) blockchain.
 
 ## Development
 
@@ -34,11 +34,20 @@ make lint
 
 ```sh
 # All tests
-make all-tests
+make tests
 # Unit tests only
 make unit-tests
 # Integration tests only
 make int-tests
+```
+
+### Start a Solana localnet
+
+```sh
+# Update/pull latest docker image
+pipenv run update-localnet
+# Start localnet instance
+pipenv run start-localnet
 ```
 
 ### Using Jupyter Notebook

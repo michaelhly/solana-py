@@ -1,1 +1,1 @@
-"""Tests for PySerum."""
+"""Tests for Solana.py."""
