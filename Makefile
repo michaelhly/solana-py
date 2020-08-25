@@ -17,7 +17,7 @@ all-tests:
 	PYTHONPATH=./src -v pytest
 
 unit-tests:
-	PYTHONPATH=./src pytest -v -m "not integration_test"
+	PYTHONPATH=./src pytest -v -m "not integration"
 
 int-tests:
-	PYTHONPATH=./src pytest -v -m integration_test
+	PYTHONPATH=./src pytest -v -m integration

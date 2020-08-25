@@ -43,9 +43,9 @@ jobs:
 
     - name: Run unit tests
       run: |
-        pipenv run pytest -m "not integration_test"
+        pipenv run pytest -m "not integration"
 
     - name: Run integration tests
       run: |
-        pipenv run pytest -m integration_test
+        pipenv run pytest -m integration
     
