@@ -18,7 +18,7 @@ HTTP = "http"
 WEBSOCKET = "ws"
 
 
-class Client:
+class Client:  # pylint: disable=too-many-public-methods
     """RPC Client interact with the Solana RPC API."""
 
     def __init__(self, endpoint: Optional[str] = None, client_type: Optional[str] = None):
