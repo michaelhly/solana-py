@@ -1,6 +1,6 @@
 # Solana.py
 
-Python client library for interacting [Solana](https://solana.com/) blockchain.
+Solana Python API built on the JSON RPC API[Solana](https://docs.solana.com/apps/jsonrpc-api).
 
 ## Development
 
