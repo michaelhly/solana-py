@@ -2,7 +2,7 @@
 from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
-from solanaweb3.account import Account
+from solana.account import Account
 
 
 def test_generate_account():

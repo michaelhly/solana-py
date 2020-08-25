@@ -5,10 +5,9 @@ from typing import List, NamedTuple, Union
 
 from base58 import b58decode, b58encode
 
-from solanaweb3.blockhash import Blockhash
-from solanaweb3.publickey import PublicKey
-from solanaweb3.utils import helpers
-from solanaweb3.utils import shortvec_encoding as shortvec
+from solana.blockhash import Blockhash
+from solana.publickey import PublicKey
+from solana.utils import helpers, shortvec_encoding as shortvec
 
 
 class CompiledInstruction(NamedTuple):

@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from typing import Any, List, NamedTuple, Union
 
-from solanaweb3.instruction import InstructionLayout, decode_data, encode_data
-from solanaweb3.publickey import PublicKey
-from solanaweb3.transaction import AccountMeta, Transaction, TransactionInstruction
+from solana.instruction import InstructionLayout, decode_data, encode_data
+from solana.publickey import PublicKey
+from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 
 # Instruction Indices
 _CREATE = 0

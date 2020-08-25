@@ -4,11 +4,11 @@ from base64 import b64decode, b64encode
 import pytest
 from base58 import b58encode
 
-import solanaweb3.transaction as txlib
-from solanaweb3.account import Account
-from solanaweb3.message import CompiledInstruction, Message, MessageArgs, MessageHeader
-from solanaweb3.publickey import PublicKey
-from solanaweb3.system_program import SystemProgram, TransferParams
+import solana.transaction as txlib
+from solana.account import Account
+from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
+from solana.publickey import PublicKey
+from solana.system_program import SystemProgram, TransferParams
 
 
 def test_sign_partial(stubbed_blockhash):

@@ -1,9 +1,9 @@
 """Fixtures for pytest."""
 import pytest
 
-from solanaweb3.account import Account
-from solanaweb3.blockhash import Blockhash
-from solanaweb3.publickey import PublicKey
+from solana.account import Account
+from solana.blockhash import Blockhash
+from solana.publickey import PublicKey
 
 
 @pytest.fixture(scope="session")

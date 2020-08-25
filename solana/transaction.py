@@ -8,11 +8,11 @@ from base58 import b58decode, b58encode
 from nacl.exceptions import BadSignatureError  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
-import solanaweb3.utils.shortvec_encoding as shortvec
-from solanaweb3.account import Account
-from solanaweb3.blockhash import Blockhash
-from solanaweb3.message import CompiledInstruction, Message, MessageArgs, MessageHeader
-from solanaweb3.publickey import PublicKey
+from solana.account import Account
+from solana.blockhash import Blockhash
+from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
+from solana.publickey import PublicKey
+from solana.utils import shortvec_encoding as shortvec
 
 TransactionSignature = NewType("TransactionSignature", str)
 

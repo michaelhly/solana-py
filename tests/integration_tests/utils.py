@@ -1,8 +1,8 @@
 """Integration test utils."""
 import time
 
-from solanarpc.api import Client
-from solanarpc.rpc_types import RPCResponse
+from solana.rpc.api import Client
+from solana.rpc.rpc_types import RPCResponse
 
 
 def confirm_transaction(client: Client, tx_sig: str) -> RPCResponse:
