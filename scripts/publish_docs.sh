@@ -4,8 +4,9 @@ git fetch origin master
 git pull origin master
 make docs
 shopt -s extglob
-git rm -- !(docs)
+git rm -rf !(docs)
+shopt -u dotglob
 touch docs/.nojekyll
 git push origin gh-pages
-echo current branch:
+echo branches:
 git branch
