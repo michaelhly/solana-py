@@ -7,7 +7,8 @@ from base58 import b58decode, b58encode
 
 from solana.blockhash import Blockhash
 from solana.publickey import PublicKey
-from solana.utils import helpers, shortvec_encoding as shortvec
+from solana.utils import helpers
+from solana.utils import shortvec_encoding as shortvec
 
 
 class CompiledInstruction(NamedTuple):
@@ -204,6 +205,9 @@ class Message:
 
         return Message(
             MessageArgs(
-                header=header, account_keys=account_keys, recent_blockhash=recent_blockhash, instructions=instructions,
+                header=header,
+                account_keys=account_keys,
+                recent_blockhash=recent_blockhash,
+                instructions=instructions,
             )
         )

@@ -1,5 +1,6 @@
 """RPC types."""
 from typing import Any, NewType, Union
+
 from typing_extensions import Literal, TypedDict  # noqa: F401
 
 URI = NewType("URI", str)

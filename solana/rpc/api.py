@@ -131,7 +131,11 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getClusterNodes"))
 
-    def get_confirmed_block(self, slot: int, encoding: str = "json",) -> RPCResponse:
+    def get_confirmed_block(
+        self,
+        slot: int,
+        encoding: str = "json",
+    ) -> RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
         :param slot: start_slot, as u64 integer.
