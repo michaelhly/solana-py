@@ -1,12 +1,12 @@
-rm -rf docs _build
 git checkout gh-pages
+rm -rf docs _build
 git fetch origin master
 git pull origin master
 make docs
-shopt -s extglob
-git rm -rf !(docs)
-shopt -u dotglob
 touch docs/.nojekyll
+git add docs
+git commit -m "Publish docs"
 git push origin gh-pages
+rm -rf docs
 echo branches:
 git branch
