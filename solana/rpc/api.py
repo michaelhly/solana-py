@@ -11,6 +11,7 @@ from solana.publickey import PublicKey
 from solana.transaction import Transaction
 
 from .providers import http
+from .providers import websocket
 from .types import RPCMethod, RPCResponse
 
 # Client types
@@ -33,7 +34,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         if client_type == WEBSOCKET:
             self._type = WEBSOCKET
-            raise NotImplementedError("websocket RPC is currently not supported")
+            self._provider = websocket.Provider(endpoint_uri=endpoint)
         else:
             # Default to http provider, if no endpoint type is provided.
             self._type = HTTP
@@ -131,11 +132,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getClusterNodes"))
 
-    def get_confirmed_block(
-        self,
-        slot: int,
-        encoding: str = "json",
-    ) -> RPCResponse:
+    def get_confirmed_block(self, slot: int, encoding: str = "json",) -> RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
         :param slot: start_slot, as u64 integer.
