@@ -17,3 +17,7 @@ log/*
 # other temps files
 .DS_Store
 .tmp/*
+
+# sphinx stuff
+_build
+make.bat

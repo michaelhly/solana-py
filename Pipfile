@@ -23,6 +23,7 @@ pydocstyle = "*"
 flake8 = "*"
 isort = "*"
 pytest-docker = "*"
+sphinx = "*"
 
 [packages]
 pynacl = "*"
