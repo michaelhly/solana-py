@@ -26,7 +26,7 @@ with open("README.md", "r") as file_handle:
 setup(
     name="solana",
     # *IMPORTANT*: Don't manually change the version here. Use the 'bump2version' utility.
-    version="0.0.2",
+    version="0.0.3",
     author="Michael Huang",
     author_mail="michaelhly@gmail.com",
     description="""Solana.py""",
@@ -39,8 +39,7 @@ setup(
     keywords="solana blockchain web3",
     license="MIT",
     package_data={"solana": ["py.typed"]},
-    package_dir={"": "solana"},
-    packages=find_packages("solana"),
+    packages=find_packages(exclude=["tests", "tests.*"]),
     url="https://github.com/michaelhly/solanapy",
     zip_safe=False,  # required per mypy
 )

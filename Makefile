@@ -1,8 +1,9 @@
-.PHONY: format
+clean:
+	rm -rf dist build _build __pycache__
+
 format:
 	black --check --diff --line-length=120 solana tests
 
-.PHONY: lint 
 lint:
 	pydocstyle setup.py solana test
 	flake8 setup.py solana tests
