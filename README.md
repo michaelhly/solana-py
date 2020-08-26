@@ -70,6 +70,8 @@ make int-tests
 
 ### Start a Solana Localnet
 
+Install [docker](https://docs.docker.com/get-started/).
+
 ```sh
 # Update/pull latest docker image
 pipenv run update-localnet
