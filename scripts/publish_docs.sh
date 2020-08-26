@@ -1,6 +1,8 @@
 rm -rf docs _build
-make docs
 git checkout gh-pages
+git fetch origin master
+git pull origin master
+make docs
 shopt -s extglob
 git rm -- !(docs)
 touch docs/.nojekyll
