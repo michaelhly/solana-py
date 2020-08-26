@@ -1,7 +1,7 @@
 """Base RPC Provider."""
 from typing import Any
 
-from ..rpc_types import RPCMethod, RPCResponse
+from ..types import RPCMethod, RPCResponse
 
 
 class BaseProvider:

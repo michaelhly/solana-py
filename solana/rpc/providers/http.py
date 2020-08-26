@@ -7,7 +7,7 @@ from typing import Any, Optional, cast
 import requests
 
 from .._utils.encoding import FriendlyJsonSerde
-from ..rpc_types import URI, RPCMethod, RPCResponse
+from ..types import URI, RPCMethod, RPCResponse
 from .base import BaseProvider
 
 

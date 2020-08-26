@@ -11,7 +11,7 @@ from solana.publickey import PublicKey
 from solana.transaction import Transaction
 
 from .providers import http
-from .rpc_types import RPCMethod, RPCResponse
+from .types import RPCMethod, RPCResponse
 
 # Client types
 HTTP = "http"
