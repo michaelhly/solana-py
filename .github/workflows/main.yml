@@ -36,8 +36,8 @@ jobs:
 
       - name: Run linters
         run: |
-          pipenv run pydocstyle solana tests
-          pipenv run flake8 solana tests
+          pipenv run pydocstyle setup.py solana tests
+          pipenv run flake8 setup.py solana tests
           pipenv run mypy solana
 
       - name: Run unit tests

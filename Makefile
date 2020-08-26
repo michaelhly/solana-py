@@ -4,10 +4,10 @@ format:
 
 .PHONY: lint 
 lint:
-	pydocstyle solana tests
-	flake8 solana tests
+	pydocstyle setup.py solana test
+	flake8 setup.py solana tests
 	mypy solana
-	pylint --rcfile=.pylintrc solana tests
+	pylint --rcfile=.pylintrc setup.py solana tests
 
 .PHONY: notebook
 notebook:

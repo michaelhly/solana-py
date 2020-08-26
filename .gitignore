@@ -21,3 +21,9 @@ log/*
 # sphinx stuff
 _build
 make.bat
+
+# dist stuff
+build
+dist
+*.egg
+*.egg-info
