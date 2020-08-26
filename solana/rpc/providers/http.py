@@ -32,7 +32,7 @@ class HTTPProvider(BaseProvider, FriendlyJsonSerde):
 
     def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
         """Make an HTTP request to an http rpc endpoint."""
-        request_id = next(self._request_counter)
+        request_id = next(self._request_counter) + 1
         self.logger.debug(
             "Making HTTP request. URI: %s, RequestID: %d, Method: %s, Params: %s",
             self.endpoint_uri,
