@@ -1,10 +1,16 @@
+[![Actions
+Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://github.com/michaelhly/solanapy/actions?query=workflow%3ACI)
+[![PyPI version](https://badge.fury.io/py/solana.svg)](https://badge.fury.io/py/solana)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/michaelhly/solana-py/blob/master/LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # Solana.py
 
 Solana Python API built on the [JSON RPC API](https://docs.solana.com/apps/jsonrpc-api).
 
 Python version of [solana-web3.js](https://github.com/solana-labs/solana-web3.js/) for interacting with Solana.
 
-Read the [Documentation](https://michaelhly.github.io/solanapy/).
+Read the [Documentation](https://michaelhly.github.io/solana-py/).
 
 ## Quickstart
 
