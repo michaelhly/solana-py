@@ -1,7 +1,7 @@
 API Client
 ==========
 
-.. automodule:: solana.rpc.rpc_types
+.. automodule:: solana.rpc.types
    :members:
 
 .. automodule:: solana.rpc.api
