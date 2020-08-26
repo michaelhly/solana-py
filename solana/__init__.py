@@ -6,13 +6,26 @@ Installation
 .. highlight:: sh
 .. code-block:: sh
 
-    pip3 install ...
+    pip install solana
 
 Usage
 -----
+
+General usage:
 
 .. highlight:: py
 .. code-block:: py
 
     import solana
+
+API Client:
+
+.. highlight:: py
+.. code-block:: py
+
+    from solana.rpc.api import HTTP, WEBSOCKET, Client
+
+    http_client = Client(endpoint="https://devnet.solana.com", client_type=HTTP)
+    websocket_client = Client(endpoint="ws://localhost:8900", client_type=WEBSOCKET)
+
 """

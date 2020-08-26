@@ -24,6 +24,9 @@ flake8 = "*"
 isort = "*"
 pytest-docker = "*"
 sphinx = "*"
+twine = "*"
+setuptools = "*"
+bump2version = "*"
 
 [packages]
 pynacl = "*"
