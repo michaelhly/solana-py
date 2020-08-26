@@ -1,4 +1,4 @@
-"""Client to interact with the Solana JSON RPC Endpoint."""
+"""API client to interact with the Solana JSON RPC Endpoint."""
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Union
@@ -19,15 +19,17 @@ WEBSOCKET = "ws"
 
 
 class Client:  # pylint: disable=too-many-public-methods
-    """Client interact with the Solana RPC API."""
+    """Client class."""
 
-    def __init__(self, endpoint: Optional[str] = None, client_type: Optional[str] = None):
+    def __init__(self, endpoint: Optional[str] = None, client_type: str = HTTP):
         """Init API client.
 
         :param endpoint: URL to the fullnode JSON RPC endpoint
-        :param client_type: Type of RPC client
-            - "http" for HTTP endpoint
-            - "ws" for webscoket endpoint
+        :param client_type: Type of RPC client:
+
+            - `solana.rpc.api.HTTP` or "http" to specify for HTTP client.
+
+            - `solana.rpc.api.WEBSOCKET` or "ws" to specify for webscoket client.
         """
         if client_type == WEBSOCKET:
             self._type = WEBSOCKET

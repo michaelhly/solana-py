@@ -6,62 +6,15 @@
 Welcome to solana.py's documentation!
 =====================================
 
+.. automodule:: solana
+   :members:
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: solana
-   :members:
-
-solana.account
---------------
-
-.. automodule:: solana.account
-   :members:
-
-solana.blockhash
-----------------
-
-.. automodule:: solana.blockhash
-   :members:
-
-solana.instruction
-------------------
-
-.. automodule:: solana.instruction
-   :members:
-
-solana.message
---------------
-
-.. automodule:: solana.message
-   :members:
-
-solana.publickey
-----------------
-
-.. automodule:: solana.publickey
-   :members:
-
-
-solana.transaction
-------------------
-
-.. automodule:: solana.transaction
-   :members:
-
-
-|
-
-API Client
-----------
-.. automodule:: solana.rpc.rpc_types
-   :members:
-
-.. autoclass:: solana.rpc.api.Client
-   :members:
-
-   .. automethod:: __init__
+   solana
+   api
 
 
 Indices and tables

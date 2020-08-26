@@ -13,7 +13,7 @@ from .base import BaseProvider
 
 def get_default_endpoint() -> URI:
     """Get the default http rpc endpoint."""
-    return URI(os.environ.get("SOLANAWEB3_HTTP_URI", "http://localhost:8899"))
+    return URI(os.environ.get("SOLANARPC_HTTP_URI", "http://localhost:8899"))
 
 
 class HTTPProvider(BaseProvider, FriendlyJsonSerde):
