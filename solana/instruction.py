@@ -6,25 +6,36 @@ from typing import Any, NamedTuple, Tuple
 class InstructionLayout(NamedTuple):
     """Data layout for the instruction to be encoded.
 
-    :param idx: The Instruction index (from solana upstream program)
-
-    :param fmt: Format to build the instruction data
-
-    Instruction formats follow the format conventions
-    [here](https://docs.python.org/3/library/struct.html#format-strings).
+    Instruction formats follow the format conventions `here
+    <https://docs.python.org/3/library/struct.html#struct-format-strings/>`_.
     """
 
     idx: int
+    """The Instruction index (from solana upstream program)."""
     fmt: str
+    """Format to build the instruction data."""
 
 
 def encode_data(layout: InstructionLayout, *params: Any) -> bytes:
-    """Encode instruction data to raw bytes."""
+    """Encode instruction data to raw bytes.
+
+    >>> # Encoding a transfer instruction:
+    >>> transfer_layout = InstructionLayout(idx=2, fmt="<Iq")
+    >>> encode_data(transfer_layout, 123).hex()
+    '020000007b00000000000000'
+    """
     return Struct(layout.fmt).pack(layout.idx, *params)
 
 
 def decode_data(layout: InstructionLayout, raw_data: bytes) -> Tuple:
-    """Decode instruction from raw bytes."""
+    """Decode instruction from raw bytes.
+
+    >>> # Decoding a transfer instruction:
+    >>> transfer_layout = InstructionLayout(idx=2, fmt="<Iq")
+    >>> raw_data = bytes.fromhex('020000007b00000000000000')
+    >>> decode_data(transfer_layout, raw_data)
+    (2, 123)
+    """
     data = None
     try:
         data = unpack(layout.fmt, raw_data)

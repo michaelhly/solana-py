@@ -15,54 +15,45 @@ from solana.publickey import PublicKey
 from solana.utils import shortvec_encoding as shortvec
 
 TransactionSignature = NewType("TransactionSignature", str)
-
-# Maximum over-the-wire size of a Transaction
+"""Type for TransactionSignature."""
 PACKET_DATA_SIZE = 1280 - 40 - 8
-# Signatures are 64 bytes in length
+"""Constant for maximum over-the-wire size of a Transaction."""
 SIG_LENGTH = 64
+"""Constant for standard length of a signature."""
 
 
 @dataclass
 class AccountMeta:
-    """Account metadata dataclass.
-
-    :param pubkey: PublicKey
-
-    :param is_signer: bool
-
-    :param is_writable: bool
-    """
+    """Account metadata dataclass."""
 
     pubkey: PublicKey
+    """An account's public key."""
     is_signer: bool
+    """True if an instruction requires a transaction signature matching `pubkey`"""
     is_writable: bool
+    """True if the `pubkey` can be loaded as a read-write account."""
 
 
 class TransactionInstruction(NamedTuple):
-    """List of TransactionInstruction object fields that may be initialized at construction.
-
-    :param keys: List[AccountMeta]
-
-    :param program_id: PublicKey
-
-    :param data: bytes = bytes(0)
-    """
+    """Transaction Instruction class."""
 
     keys: List[AccountMeta]
+    """Program input."""
     program_id: PublicKey
+    """Public keys to include in this transaction Boolean represents whether this
+    pubkey needs to sign the transaction.
+    """
     data: bytes = bytes(0)
+    """Program Id to execute."""
 
 
 class NonceInformation(NamedTuple):
-    """NonceInformation to be used to build a Transaction.
-
-    :param nonce: Blockhash
-
-    :param nonce_instruction: "TransactionIntruction"
-    """
+    """NonceInformation to be used to build a Transaction."""
 
     nonce: Blockhash
+    """The current Nonce blockhash."""
     nonce_instruction: TransactionInstruction
+    """AdvanceNonceAccount Instruction."""
 
 
 @dataclass
@@ -100,7 +91,7 @@ class Transaction:
         )
 
     def signature(self) -> Optional[bytes]:
-        """First (payer) Transaction signature."""
+        """The first (payer) Transaction signature."""
         return None if not self.signatures else self.signatures[0].signature
 
     def add(self, *args: Union[Transaction, TransactionInstruction]) -> Transaction:
@@ -243,7 +234,7 @@ class Transaction:
         as doing so may invalidate the signature and cause the Transaction to be
         rejected.
 
-        The Transaction must be assigned a valid `recentBlockhash` before invoking this method
+        The Transaction must be assigned a valid `recentBlockhash` before invoking this method.
         """
         self.sign_partial(*signers)
 
@@ -279,7 +270,18 @@ class Transaction:
         """Serialize the Transaction in the wire format.
 
         The Transaction must have a valid `signature` before invoking this method.
-        """
+
+        >>> from solana.account import Account
+        >>> from solana.blockhash import Blockhash
+        >>> from solana.publickey import PublicKey
+        >>> from solana.system_program import transfer, TransferParams
+        >>> sender, reciever = Account(1), PublicKey(2)
+        >>> transfer_tx = transfer(TransferParams(from_pubkey=sender.public_key(), to_pubkey=reciever, lamports=1000))
+        >>> transfer_tx.recent_blockhash = Blockhash(str(PublicKey(3)))
+        >>> transfer_tx.sign(sender)
+        >>> transfer_tx.serialize().hex()
+        '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000'
+        """  # pylint: disable=line-too-long
         if not self.signatures:
             raise AttributeError("transaction has not been signed")
 
@@ -313,7 +315,23 @@ class Transaction:
 
     @staticmethod
     def deserialize(raw_transaction: bytes) -> Transaction:
-        """Parse a wire transaction into a Transaction object."""
+        """Parse a wire transaction into a Transaction object.
+
+        >>> raw_transaction = bytes.fromhex(
+        ...     '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2'
+        ...     '75a23ba504674c8fbbb724827b23b42dc8e08019e23'
+        ...     '120f1b6f40f9799355ce54185b4415be37ca2cee6e0'
+        ...     'e010001034cb5abf6ad79fbf5abbccafcc269d85cd2'
+        ...     '651ed4b885b5869f241aedf0a5ba290000000000000'
+        ...     '0000000000000000000000000000000000000000000'
+        ...     '0000000200000000000000000000000000000000000'
+        ...     '0000000000000000000000000000000000000000000'
+        ...     '0000000000000000000000000000000000000000000'
+        ...     '000000301020200010c02000000e803000000000000'
+        ... )
+        >>> type(Transaction.deserialize(raw_transaction))
+        <class 'solana.transaction.Transaction'>
+        """
         signatures = []
         signature_count, offset = shortvec.decode_length(raw_transaction)
         for _ in range(signature_count):
@@ -323,9 +341,26 @@ class Transaction:
 
     @staticmethod
     def populate(message: Message, signatures: List[bytes]) -> Transaction:
-        """Populate Transaction object from message and signatures."""
-        transaction = Transaction()
-        transaction.recent_blockhash = message.recent_blockhash
+        """Populate Transaction object from message and signatures.
+
+        >>> raw_message = bytes.fromhex(
+        ...     '0200030500000000000000000000000000000000000000000000'
+        ...     '0000000000000000000100000000000000000000000000000000'
+        ...     '0000000000000000000000000000000200000000000000000000'
+        ...     '0000000000000000000000000000000000000000000300000000'
+        ...     '0000000000000000000000000000000000000000000000000000'
+        ...     '0004000000000000000000000000000000000000000000000000'
+        ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
+        ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
+        ... )
+        >>> from base58 import b58encode
+        >>> from solana.message import Message
+        >>> msg = Message.deserialize(raw_message)
+        >>> signatures = [b58encode(bytes([1] * SIG_LENGTH)), b58encode(bytes([2] * SIG_LENGTH))]
+        >>> type(Transaction.populate(msg, signatures))
+        <class 'solana.transaction.Transaction'>
+        """
+        transaction = Transaction(recent_blockhash=message.recent_blockhash)
 
         for idx, sig in enumerate(signatures):
             signature = None if sig == b58encode(Transaction.__DEFAULT_SIG) else b58decode(sig)
