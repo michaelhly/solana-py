@@ -5,6 +5,13 @@ from solana.rpc.api import Client
 from solana.rpc.types import RPCResponse
 
 
+def assert_valid_response(resp: RPCResponse):
+    """Assert valid RPCResponse."""
+    assert resp["jsonrpc"] == "2.0"
+    assert resp["id"]
+    assert resp["result"]
+
+
 def confirm_transaction(client: Client, tx_sig: str) -> RPCResponse:
     """Confirm a transaction."""
     TIMEOUT = 30  # 30 seconds  pylint: disable=invalid-name
