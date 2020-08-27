@@ -278,16 +278,14 @@ def test_get_version(test_http_client):  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.integration
-def test_get_account_info(stubbed_sender, _stubbed_reciever, test_http_client):  # pylint: disable=redefined-outer-name
+def test_get_account_info(stubbed_sender, test_http_client):  # pylint: disable=redefined-outer-name
     """Test get_account_info."""
     resp = test_http_client.get_account_info(stubbed_sender.public_key())
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-def test_get_parsed_account_info(
-    stubbed_sender, _stubbed_reciever, test_http_client
-):  # pylint: disable=redefined-outer-name
+def test_get_parsed_account_info(stubbed_sender, test_http_client):  # pylint: disable=redefined-outer-name
     """Test get_parsed_account_info."""
     resp = test_http_client.get_parsed_account_info(stubbed_sender.public_key())
     assert_valid_response(resp)
