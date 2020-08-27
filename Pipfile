@@ -27,11 +27,13 @@ sphinx = "*"
 twine = "*"
 setuptools = "*"
 bump2version = "*"
+websockets = "*"
 
 [packages]
 pynacl = "*"
 base58 = "*"
 requests = "*"
+websockets = "*"
 
 [requires]
 python_version = "3.7"
