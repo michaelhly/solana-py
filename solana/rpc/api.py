@@ -13,31 +13,13 @@ from solana.transaction import Transaction
 from .providers import http
 from .types import RPCMethod, RPCResponse
 
-# Client types
-HTTP = "http"
-WEBSOCKET = "ws"
-
 
 class Client:  # pylint: disable=too-many-public-methods
     """Client class."""
 
-    def __init__(self, endpoint: Optional[str] = None, client_type: str = HTTP):
-        """Init API client.
-
-        :param endpoint: URL to the fullnode JSON RPC endpoint
-        :param client_type: Type of RPC client:
-
-            - `solana.rpc.api.HTTP` or "http" to specify for HTTP client.
-
-            - `solana.rpc.api.WEBSOCKET` or "ws" to specify for webscoket client.
-        """
-        if client_type == WEBSOCKET:
-            self._type = WEBSOCKET
-            raise NotImplementedError("websocket RPC is currently not supported")
-        else:
-            # Default to http provider, if no endpoint type is provided.
-            self._type = HTTP
-            self._provider = http.HTTPProvider(endpoint)
+    def __init__(self, endpoint: Optional[str] = None):
+        """Init API client."""
+        self._provider = http.HTTPProvider(endpoint)
 
     def is_connected(self) -> bool:
         """Health check.

@@ -2,7 +2,7 @@
 import pytest
 
 import solana.system_program as sp
-from solana.rpc.api import HTTP, Client
+from solana.rpc.api import Client
 from solana.transaction import Transaction
 
 from .utils import assert_valid_response, confirm_transaction
@@ -12,7 +12,7 @@ from .utils import assert_valid_response, confirm_transaction
 @pytest.fixture(scope="session")
 def test_http_client(docker_services) -> Client:
     """Test http_client.is_connected."""
-    http_client = Client(client_type=HTTP)
+    http_client = Client()
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
