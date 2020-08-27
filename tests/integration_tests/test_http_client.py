@@ -275,3 +275,10 @@ def test_get_version(test_http_client):  # pylint: disable=redefined-outer-name
     """Test get version."""
     resp = test_http_client.get_version()
     assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_vote_accounts(test_http_client):  # pylint: disable=redefined-outer-name
+    """Test get vote accounts."""
+    resp = test_http_client.get_vote_accounts()
+    assert_valid_response(resp)
