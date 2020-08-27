@@ -1,26 +1,19 @@
-import os
-import logging
 import asyncio
-import websockets
-import json
-import requests
 import itertools
-
+import json
+import logging
+import os
 from threading import Thread
 from types import TracebackType
-from typing import (
-    Any,
-    Optional,
-    Type,
-    Union,
-)
+from typing import Any, Optional, Type, Union
 
+import requests
+import websockets
 
 from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI, RPCMethod, RPCResponse
 from .base import BaseProvider
 from .http import HTTPProvider
-
 
 RESTRICTED_WEBSOCKET_KWARGS = {"uri", "loop"}
 DEFAULT_WEBSOCKET_TIMEOUT = 10

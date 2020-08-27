@@ -10,8 +10,7 @@ from solana.blockhash import Blockhash
 from solana.publickey import PublicKey
 from solana.transaction import Transaction
 
-from .providers import http
-from .providers import websocket
+from .providers import http, websocket
 from .types import RPCMethod, RPCResponse
 
 # Client types
