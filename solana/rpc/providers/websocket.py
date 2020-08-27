@@ -4,6 +4,7 @@ import asyncio
 import websockets
 import json
 import requests
+import itertools
 
 from threading import Thread
 from types import TracebackType
@@ -16,7 +17,7 @@ from typing import (
 
 
 from .._utils.encoding import FriendlyJsonSerde
-from ..rpc_types import URI, RPCMethod, RPCResponse
+from ..types import URI, RPCMethod, RPCResponse
 from .base import BaseProvider
 from .http import HTTPProvider
 
@@ -66,7 +67,7 @@ class PersistentWebSocket:
             self.ws = None
 
 
-class Provider(BaseProvider):
+class Provider(BaseProvider, FriendlyJsonSerde):
     logger = logging.getLogger("solana.providers.WebsocketProvider")
     _loop = None
 
@@ -76,6 +77,7 @@ class Provider(BaseProvider):
         websocket_kwargs: Optional[Any] = None,
         websocket_timeout: int = DEFAULT_WEBSOCKET_TIMEOUT,
     ) -> None:
+        self._request_counter = itertools.count()
         self.endpoint_uri = URI(endpoint_uri)
         self.websocket_timeout = websocket_timeout
         if self.endpoint_uri is None:
@@ -92,6 +94,7 @@ class Provider(BaseProvider):
                     "found: {1}".format(RESTRICTED_WEBSOCKET_KWARGS, found_restricted_keys)
                 )
         self.conn = PersistentWebSocket(self.endpoint_uri, Provider._loop, websocket_kwargs)
+        print(self.conn)
         super().__init__()
 
     def __str__(self) -> str:
@@ -104,8 +107,15 @@ class Provider(BaseProvider):
 
     def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
         """Make a request ot the rpc endpoint."""
-        self.logger.debug("Making request WebSocket. URI: %s, " "Method: %s", self.endpoint_uri, method)
-        request_data = self.encode_rpc_request(method, params)
+        request_id = next(self._request_counter) + 1
+        self.logger.debug(
+            "Making HTTP request. URI: %s, RequestID: %d, Method: %s, Params: %s",
+            self.endpoint_uri,
+            request_id,
+            method,
+            params,
+        )
+        request_data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
         future = asyncio.run_coroutine_threadsafe(self.coro_make_request(request_data), Provider._loop)
         return future.result()
 
