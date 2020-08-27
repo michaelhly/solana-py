@@ -46,6 +46,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """Returns all the account info for the specified public key using base64 encoding.
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+        :param encoding: The Encoding of the data can be either `base64` or `jsonParsed`, default to `base64`.
 
         >>> from solana.publickey import PublicKey
         >>> solana_client = Client("http://localhost:8899")
@@ -56,7 +57,7 @@ class Client:  # pylint: disable=too-many-public-methods
                 'data': ['...', '...'],
                 'executable': False,
                 'lamports': 3535680,
-                'owner': '3v9kjrBLN7Awr9BGC2qmFnWLM1EgMAdNm2rXLQFUcQ2d',
+                'owner': '...',
                 'rentEpoch': 72}},
             'id': 1}
         """
