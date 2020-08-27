@@ -256,6 +256,10 @@ class Transaction:
         signed_msg = signer.sign(self.serialize_message())
         self.add_signature(signer.public_key(), signed_msg.signature)
 
+    def verify_signatures(self) -> bool:
+        """Verify signatures of a complete, signed Transaction."""
+        return self.__verify_signatures(self.serialize_message())
+
     def __verify_signatures(self, signed_data: bytes) -> bool:
         for sig_pair in self.signatures:
             if not sig_pair.signature:
