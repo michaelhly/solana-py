@@ -51,13 +51,13 @@ class Client:  # pylint: disable=too-many-public-methods
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_account_info(PublicKey(1)) # doctest: +SKIP
         {
-            'jsonrpc': '2.0', 'result': {'context': {'slot': 30980109}, 
+            'jsonrpc': '2.0', 'result': {'context': {'slot': 30980109},
             'value': {
-                'data': ['...', '...'], 
-                'executable': False, 
-                'lamports': 3535680, 
-                'owner': '3v9kjrBLN7Awr9BGC2qmFnWLM1EgMAdNm2rXLQFUcQ2d', 
-                'rentEpoch': 72}}, 
+                'data': ['...', '...'],
+                'executable': False,
+                'lamports': 3535680,
+                'owner': '3v9kjrBLN7Awr9BGC2qmFnWLM1EgMAdNm2rXLQFUcQ2d',
+                'rentEpoch': 72}},
             'id': 1}
         """
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), {"encoding": "base64"})
@@ -71,13 +71,13 @@ class Client:  # pylint: disable=too-many-public-methods
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_parsed_account_info(PublicKey(1)) # doctest: +SKIP
         {
-            'jsonrpc': '2.0', 'result': {'context': {'slot': 30980109}, 
+            'jsonrpc': '2.0', 'result': {'context': {'slot': 30980109},
             'value': {
-                'data': ['...', '...'], 
-                'executable': False, 
-                'lamports': 3535680, 
-                'owner': '3v9kjrBLN7Awr9BGC2qmFnWLM1EgMAdNm2rXLQFUcQ2d', 
-                'rentEpoch': 72}}, 
+                'data': ['...', '...'],
+                'executable': False,
+                'lamports': 3535680,
+                'owner': '3v9kjrBLN7Awr9BGC2qmFnWLM1EgMAdNm2rXLQFUcQ2d',
+                'rentEpoch': 72}},
             'id': 1}
         """
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), {"encoding": "jsonParsed"})
