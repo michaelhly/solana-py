@@ -43,7 +43,7 @@ class Client:  # pylint: disable=too-many-public-methods
         return self._provider.make_request(RPCMethod("getBalance"), str(pubkey))
 
     def get_account_info(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
-        """Returns all the account info for the specified public key.
+        """Returns all the account info for the specified public key using base64 encoding.
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
 
@@ -63,7 +63,7 @@ class Client:  # pylint: disable=too-many-public-methods
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), {"encoding": "base64"})
 
     def get_parsed_account_info(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
-        """Returns all the account info for the specified public key.
+        """Returns all the account info for the specified public key using parsedJson encoding.
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
 
