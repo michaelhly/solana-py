@@ -282,10 +282,5 @@ def test_get_account_info(stubbed_sender, test_http_client):  # pylint: disable=
     """Test get_account_info."""
     resp = test_http_client.get_account_info(stubbed_sender.public_key())
     assert_valid_response(resp)
-
-
-@pytest.mark.integration
-def test_get_parsed_account_info(stubbed_sender, test_http_client):  # pylint: disable=redefined-outer-name
-    """Test get_parsed_account_info."""
-    resp = test_http_client.get_parsed_account_info(stubbed_sender.public_key())
+    resp = test_http_client.get_account_info(stubbed_sender.public_key(), encoding="jsonParsed")
     assert_valid_response(resp)

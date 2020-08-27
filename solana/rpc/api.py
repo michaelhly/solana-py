@@ -42,7 +42,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getBalance"), str(pubkey))
 
-    def get_account_info(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
+    def get_account_info(self, pubkey: Union[PublicKey, str], encoding: str = "base64") -> RPCResponse:
         """Returns all the account info for the specified public key using base64 encoding.
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
@@ -60,27 +60,8 @@ class Client:  # pylint: disable=too-many-public-methods
                 'rentEpoch': 72}},
             'id': 1}
         """
-        return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), {"encoding": "base64"})
-
-    def get_parsed_account_info(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
-        """Returns all the account info for the specified public key using parsedJson encoding.
-
-        :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
-
-        >>> from solana.publickey import PublicKey
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_parsed_account_info(PublicKey(1)) # doctest: +SKIP
-        {
-            'jsonrpc': '2.0', 'result': {'context': {'slot': 30980109},
-            'value': {
-                'data': ['...', '...'],
-                'executable': False,
-                'lamports': 3535680,
-                'owner': '3v9kjrBLN7Awr9BGC2qmFnWLM1EgMAdNm2rXLQFUcQ2d',
-                'rentEpoch': 72}},
-            'id': 1}
-        """
-        return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), {"encoding": "jsonParsed"})
+        opts: Dict[str, str] = {"encoding": encoding}
+        return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), opts)
 
     def get_block_commitment(self, slot: int) -> RPCResponse:
         """Fetch the commitment for particular block.
