@@ -95,7 +95,7 @@ class Client:  # pylint: disable=too-many-public-methods
            'rentEpoch': 90}},
          'id': 1}
         """
-        opts: Dict[str, str] = {self._encoding_key: encoding, self._comm_key: commitment}
+        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment}
         if data_slice:
             opts[self._data_slice_key] = asdict(data_slice)
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), opts)
