@@ -1,7 +1,7 @@
 API Client
 ==========
 
-.. automodule:: solana.rpc.types
+.. automodule:: solana.rpc.commitment
    :members:
 
 .. automodule:: solana.rpc.api
@@ -9,7 +9,11 @@ API Client
    .. autoclass:: solana.rpc.api.Client
         :members:
 
-        .. automethod:: __init__
+RPC Types
+=========
+
+.. automodule:: solana.rpc.types
+   :members:
 
 RPC Providers
 =============

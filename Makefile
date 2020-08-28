@@ -15,6 +15,16 @@ lint:
 notebook:
 	cd notebooks && PYTHONPATH=../ jupyter notebook
 
+publish:
+	make clean
+	python setup.py sdist bdist_wheel
+	twine upload dist/*
+
+test-publish:
+	make clean
+	python setup.py sdist bdist_wheel
+	twine upload -r testpypi dist/*
+
 .PHONY: tests
 tests:
 	PYTHONPATH=./solana pytest -v

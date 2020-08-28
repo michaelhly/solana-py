@@ -39,6 +39,7 @@ jobs:
           pipenv run pydocstyle setup.py solana tests
           pipenv run flake8 setup.py solana tests
           pipenv run mypy solana
+          pipenv run black --check --diff --line-length=120 setup.py solana tests solana/**/*.py
 
       - name: Run unit tests
         run: |
