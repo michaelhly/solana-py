@@ -54,7 +54,7 @@ class Client:  # pylint: disable=too-many-public-methods
         pubkey: Union[PublicKey, str],
         commitment: Commitment = Max,
         encoding: str = "base64",
-        dataSlice: Optional[DataSlice] = None,
+        data_slice: Optional[DataSlice] = None,
     ) -> RPCResponse:
         """Returns all the account info for the specified public key.
 
@@ -84,8 +84,8 @@ class Client:  # pylint: disable=too-many-public-methods
          'id': 1}
         """
         opts: Dict[str, str] = {self._encoding_key: encoding, self._comm_key: commitment}
-        if dataSlice:
-            opts[self._data_slice_key] = dataSlice.__repr__()
+        if data_slice:
+            opts[self._data_slice_key] = data_slice.__repr__()
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), opts)
 
     def get_block_commitment(self, slot: int) -> RPCResponse:
