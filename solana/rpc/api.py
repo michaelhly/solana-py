@@ -85,7 +85,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         opts: Dict[str, str] = {self._encoding_key: encoding, self._comm_key: commitment}
         if dataSlice:
-            opts[self._data_slice_key] = dataSlice
+            opts[self._data_slice_key] = dataSlice.__repr__()
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), opts)
 
     def get_block_commitment(self, slot: int) -> RPCResponse:
