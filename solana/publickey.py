@@ -20,11 +20,14 @@ class PublicKey:
     LENGTH = 32
     """Constant for standard length of a public key."""
 
-    def __init__(self, value: Union[bytearray, bytes, int, str]) -> None:
+    def __init__(self, value: Union[bytearray, bytes, int, str, List[int]]) -> None:
         """Init PublicKey object."""
         self._key: Optional[bytes] = None
         if isinstance(value, str):
-            self._key = base58.b58decode(value)
+            try:
+                self._key = base58.b58decode(value)
+            except ValueError as err:
+                raise ValueError("invalid public key input:", value) from err
             if len(self._key) != self.LENGTH:
                 raise ValueError("invalid public key input:", value)
         elif isinstance(value, int):

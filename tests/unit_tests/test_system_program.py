@@ -1,4 +1,4 @@
-"""Unit tests for solanaweb3.system_program."""
+"""Unit tests for solana.system_program."""
 import solana.system_program as sp
 from solana.account import Account
 

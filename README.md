@@ -29,10 +29,9 @@ import solana
 ### API Client
 
 ```py
-from solana.rpc.api import HTTP, WEBSOCKET, Client
+from solana.rpc.api import Client
 
-http_client = Client(endpoint="https://devnet.solana.com", client_type=HTTP)
-websocket_client = Client(endpoint="ws://localhost:8900", client_type=WEBSOCKET)
+http_client = Client("https://devnet.solana.com")
 ```
 
 ## Development

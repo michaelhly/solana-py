@@ -5,7 +5,8 @@ from typing import Tuple
 def decode_length(raw_bytes: bytes) -> Tuple[int, int]:
     """Return the decoded length and how many bytes it consumed."""
     length = size = 0
-    for _, elem in enumerate(raw_bytes):
+    while size < len(raw_bytes):
+        elem = raw_bytes[size]
         length |= (elem & 0x7F) << (size * 7)
         size += 1
         if (elem & 0x80) == 0:

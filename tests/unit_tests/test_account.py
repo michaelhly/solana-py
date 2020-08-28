@@ -1,4 +1,4 @@
-"""Unit tests for solanaweb3.account."""
+"""Unit tests for solana.account."""
 from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 

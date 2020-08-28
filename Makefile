@@ -1,5 +1,5 @@
 clean:
-	rm -rf dist build _build __pycache__
+	rm -rf dist build _build __pycache__ *.egg-info
 
 format:
 	isort setup.py solana tests solana/**/*.py
