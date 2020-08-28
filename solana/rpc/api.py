@@ -1,6 +1,7 @@
 """API client to interact with the Solana JSON RPC Endpoint."""
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional, Union
 
 from base58 import b58decode, b58encode
@@ -11,9 +12,20 @@ from solana.publickey import PublicKey
 from solana.transaction import Transaction
 
 from .commitment import Commitment, Max
-from .data_slice import DataSlice
 from .providers import http
 from .types import RPCMethod, RPCResponse
+
+
+@dataclass
+class DataSlice:
+    """
+    Data class for "data_slice" parameter.
+    Param to limit the returned account data using the provided offset: <usize> and
+    length: <usize> fields; only available for "base58" or "base64" encoding.
+    """
+
+    offset: int
+    length: int
 
 
 class Client:  # pylint: disable=too-many-public-methods
@@ -85,7 +97,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         opts: Dict[str, str] = {self._encoding_key: encoding, self._comm_key: commitment}
         if data_slice:
-            opts[self._data_slice_key] = data_slice.__repr__()
+            opts[self._data_slice_key] = asdict(data_slice)
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), opts)
 
     def get_block_commitment(self, slot: int) -> RPCResponse:
@@ -541,6 +553,7 @@ class Client:  # pylint: disable=too-many-public-methods
         encoding: Optional[str] = None,
         filter_opts: Optional[Dict] = None,
         commitment: Commitment = Max,
+        data_slice: Optional[DataSlice] = None,
     ) -> RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
 
@@ -574,7 +587,9 @@ class Client:  # pylint: disable=too-many-public-methods
         if filter_opts:
             opts["filters"].append(filter_opts)
         if encoding:
-            opts["encoding"] = encoding
+            opts[self._encoding_key] = encoding
+        if data_slice:
+            opts[self._data_slice_key] = asdict(data_slice)
         opts[self._comm_key] = commitment
 
         return self._provider.make_request(RPCMethod("getProgramAccounts"), str(pubkey), opts)
