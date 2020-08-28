@@ -18,8 +18,8 @@ from .types import RPCMethod, RPCResponse
 
 @dataclass
 class DataSlice:
-    """
-    Data class for "data_slice" parameter.
+    """Data class for "data_slice" parameter.
+
     Param to limit the returned account data using the provided offset: <usize> and
     length: <usize> fields; only available for "base58" or "base64" encoding.
     """
