@@ -8,5 +8,7 @@ from dataclasses import dataclass
 
 @dataclass
 class DataSlice:
+    """Data class for "data_slice" parameter.
+    """
     offset: int
     length: int
