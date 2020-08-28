@@ -1,8 +1,7 @@
 """API client to interact with the Solana JSON RPC Endpoint."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 from base58 import b58decode, b58encode
 
@@ -16,16 +15,16 @@ from .providers import http
 from .types import RPCMethod, RPCResponse
 
 
-@dataclass
-class DataSlice:
+class DataSlice(NamedTuple):
     """Data class for "data_slice" parameter.
 
-    Param to limit the returned account data using the provided offset: <usize> and
-    length: <usize> fields; only available for "base58" or "base64" encoding.
+    Params to limit the returned account data, only available for "base58" or "base64" encoding.
     """
 
     offset: int
+    """Limit the returned account data using the provided offset: <usize>."""
     length: int
+    """Limit the returned account data using the provided length: <usize>."""
 
 
 class Client:  # pylint: disable=too-many-public-methods
@@ -97,7 +96,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment}
         if data_slice:
-            opts[self._data_slice_key] = asdict(data_slice)
+            opts[self._data_slice_key] = dict(data_slice._asdict())
         return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), opts)
 
     def get_block_commitment(self, slot: int) -> RPCResponse:
@@ -589,7 +588,7 @@ class Client:  # pylint: disable=too-many-public-methods
         if encoding:
             opts[self._encoding_key] = encoding
         if data_slice:
-            opts[self._data_slice_key] = asdict(data_slice)
+            opts[self._data_slice_key] = dict(data_slice._asdict())
         opts[self._comm_key] = commitment
 
         return self._provider.make_request(RPCMethod("getProgramAccounts"), str(pubkey), opts)
