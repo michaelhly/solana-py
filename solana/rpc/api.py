@@ -66,9 +66,9 @@ class Client:  # pylint: disable=too-many-public-methods
             "base64" will return base64 encoded data for Account data of any size.
             "Parsed-JSON" encoding attempts to use program-specific state parsers to return more human-readable and
             explicit account state data.
-            If parsed-JSON is requested but a parser cannot be found, the field falls back to base64 encoding, 
+            If parsed-JSON is requested but a parser cannot be found, the field falls back to base64 encoding,
             detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
-        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and 
+        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         >>> from solana.publickey import PublicKey
