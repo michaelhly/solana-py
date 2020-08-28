@@ -813,7 +813,7 @@ class Client:  # pylint: disable=too-many-public-methods
 class WebSocketClient:
     """Websocket client class."""
 
-    def __init__(self, endpoint: Optional[str] = None):
+    def __init__(self, endpoint: str):
         """Init API client for websocket."""
         self._provider = websocket.Provider(endpoint)
 
@@ -868,13 +868,11 @@ class WebSocketClient:
     def signature_subscribe(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
         """Subscribe to a transaction signature to receive notification.
 
-        When the transaction is confirmed On signatureNotification, the subscription is automatically cancelled.
-
         param pubkey: Transaction Signature, as base-58 encoded string
 
         >>> solana_client = WebSocketClient("ws://localhost:8900")
-        >>> solana_client.signature_subscribe('
-        2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b') #doctest: +SKIP
+        >>> solana_client.signature_subscribe(
+        ... '2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b') #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 5, 'id': 7}
         """
         return self._provider.make_request(RPCMethod("signatureSubscribe"), pubkey)
@@ -885,8 +883,8 @@ class WebSocketClient:
         param account_id: id of Subscription to cancel
 
         >>> solana_client = WebSocketClient("ws://localhost:8900")
-        >>> out = solana_client.signature_subscribe('
-        2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b')
+        >>> out = solana_client.signature_subscribe(
+        ... '2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b')
         >>> id = out['result']
         >>> solana_client.signature_unsubscribe(id) #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': True, 'id': 9}
@@ -922,7 +920,7 @@ class WebSocketClient:
 
         >>> solana_client = WebSocketClient("ws://localhost:8900")
         >>> solana_client.root_subscribe() #doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 34, 'id': 13}
+            {'jsonrpc': '2.0', 'result': 8, 'id': 13}
         """
         return self._provider.make_request(RPCMethod("rootSubscribe"))
 
@@ -955,7 +953,7 @@ class WebSocketClient:
 
         >>> solana_client = WebSocketClient("ws://localhost:8900")
         >>> solana_client.vote_unsubscribe(solana_client.vote_subscribe()['result']) #doctest: +SKIP
-        {'jsonrpc': '2.0', 'result': True, 'id': 19}
+        {'jsonrpc': '2.0', 'result': 11, 'id': 17}
         """
         return self._provider.make_request(RPCMethod("voteUnsubscribe"), subscription_id)
 

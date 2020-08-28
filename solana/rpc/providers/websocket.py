@@ -6,7 +6,7 @@ import logging
 import os
 from threading import Thread
 from types import TracebackType
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional, Type, Union, cast
 
 import websockets
 
@@ -43,7 +43,7 @@ class PersistentWebSocket:
 
     def __init__(self, endpoint_uri: URI, loop: asyncio.AbstractEventLoop, websocket_kwargs: Any) -> None:
         """Initialize persistent websocket."""
-        self.ws: websockets.WebSocketClientProtocol = None
+        self.ws: Optional[websockets.WebSocketClientProtocol] = None
         self.endpoint_uri = endpoint_uri
         self.loop = loop
         self.websocket_kwargs = websocket_kwargs
@@ -56,7 +56,7 @@ class PersistentWebSocket:
 
     async def __aexit__(self, exc_type: Type[BaseException], exc_val: BaseException, exc_tb: TracebackType) -> None:
         """Close the websocket."""
-        if exc_val is not None:
+        if self.ws is not None and exc_val is not None:
             try:
                 await self.ws.close()
             except Exception:
@@ -72,13 +72,16 @@ class Provider(BaseProvider, FriendlyJsonSerde):
 
     def __init__(
         self,
-        endpoint_uri: Optional[Union[URI, str]] = None,
+        endpoint_uri: Union[URI, str],
         websocket_kwargs: Optional[Any] = None,
         websocket_timeout: int = DEFAULT_WEBSOCKET_TIMEOUT,
     ) -> None:
         """Initialize the websocket provider."""
         self._request_counter = itertools.count()
-        self.endpoint_uri = URI(endpoint_uri)
+        if isinstance(endpoint_uri, str):
+            self.endpoint_uri = URI(endpoint_uri)
+        else:
+            self.endpoint_uri = endpoint_uri
         self.websocket_timeout = websocket_timeout
         if self.endpoint_uri is None:
             self.endpoint_uri = get_default_endpoint()
@@ -111,15 +114,17 @@ class Provider(BaseProvider, FriendlyJsonSerde):
         self.logger.debug("Making request WebSocket. URI: %s, " "Method: %s", self.endpoint_uri, method)
         request_id = next(self._request_counter) + 1
         request_data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
-        future = asyncio.run_coroutine_threadsafe(self.coro_make_request(request_data), Provider._loop)
+        if Provider._loop:
+            future = asyncio.run_coroutine_threadsafe(self.coro_make_request(cast(bytes, request_data)), Provider._loop)
         return future.result()
 
     def is_connected(self) -> bool:
         """Health check."""
         try:
-            future = asyncio.run_coroutine_threadsafe(self.coro_make_request("test"), Provider._loop)
-            future.result(timeout=self.websocket_timeout)
-            return True
+            if Provider._loop is not None:
+                future = asyncio.run_coroutine_threadsafe(self.coro_make_request(bytes()), Provider._loop)
+                future.result(timeout=self.websocket_timeout)
+                return True
         except asyncio.TimeoutError:
             self.logger.debug("Websocket connection timed out.")
         return False
