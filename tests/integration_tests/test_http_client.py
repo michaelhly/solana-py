@@ -2,7 +2,7 @@
 import pytest
 
 import solana.system_program as sp
-from solana.rpc.api import Client
+from solana.rpc.api import Client, DataSlice
 from solana.transaction import Transaction
 
 from .utils import assert_valid_response, confirm_transaction
@@ -274,6 +274,17 @@ def test_get_transaction_count(test_http_client):  # pylint: disable=redefined-o
 def test_get_version(test_http_client):  # pylint: disable=redefined-outer-name
     """Test get version."""
     resp = test_http_client.get_version()
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_account_info(stubbed_sender, test_http_client):  # pylint: disable=redefined-outer-name
+    """Test get_account_info."""
+    resp = test_http_client.get_account_info(stubbed_sender.public_key())
+    assert_valid_response(resp)
+    resp = test_http_client.get_account_info(stubbed_sender.public_key(), encoding="jsonParsed")
+    assert_valid_response(resp)
+    resp = test_http_client.get_account_info(stubbed_sender.public_key(), data_slice=DataSlice(1, 1))
     assert_valid_response(resp)
 
 
