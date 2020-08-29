@@ -381,7 +381,7 @@ def create_account(params: CreateAccountParams) -> Transaction:
     <class 'solana.transaction.Transaction'>
     """
     layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
-    data = encode_data(layout, params.lamports, params.space, params.program_id.__bytes__())
+    data = encode_data(layout, params.lamports, params.space, bytes(params.program_id))
 
     txn = Transaction()
     txn.add(
@@ -408,12 +408,10 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
     >>> type(assign_tx)
     <class 'solana.transaction.Transaction'>
     """
-    if hasattr(params, "base_pubkey"):
+    if isinstance(params, AssignWithSeedParams):
         raise NotImplementedError("assign with key is not implemented")
     else:
-        params = cast(AssignParams, params)
-        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX], params.program_id.__bytes__())
-
+        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX], bytes(params.program_id))
     txn = Transaction()
     txn.add(
         TransactionInstruction(
