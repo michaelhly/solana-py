@@ -325,15 +325,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
 
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
     """Decode an assign system with seed instruction and retrieve the instruction params."""
-    __check_program_id(instruction.program_id)
-    __check_num_keys(instruction.keys, 1)
-
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_WITH_SEED_IDX]
-    _, base, seed, program_id = decode_data(layout, instruction.data)
-
-    return AssignWithSeedParams(
-        account_pubkey=instruction.keys[0].pubkey, base_pubkey=base, seed=seed, program_id=PublicKey(program_id)
-    )
+    raise NotImplementedError("decode_assign_with_seed not implemented")
 
 
 def decode_create_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
