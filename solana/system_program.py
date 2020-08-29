@@ -289,9 +289,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     layout = SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX]
     _, program_id = decode_data(layout, instruction.data)
 
-    return AssignParams(
-        account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(program_id)
-    )
+    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(program_id))
 
 
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
@@ -358,13 +356,15 @@ def create_account(params: CreateAccountParams) -> Transaction:
 
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
     """Generate a Transaction that assigns an account to a program."""
-    if hasattr(params, 'base_pubkey'):
+    if hasattr(params, "base_pubkey"):
         data = encode_data(
             SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_WITH_SEED_IDX],
-            params.base_pubkey.__bytes__(), params.seed, params.program_id.__bytes__())
+            params.base_pubkey.__bytes__(),
+            params.seed,
+            params.program_id.__bytes__(),
+        )
     else:
-        data = encode_data(
-            SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX], params.program_id.__bytes__())
+        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX], params.program_id.__bytes__())
 
     txn = Transaction()
     txn.add(

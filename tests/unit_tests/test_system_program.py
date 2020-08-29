@@ -43,9 +43,13 @@ def test_transfer():
     assert len(txn.instructions) == 1
     assert sp.decode_transfer(txn.instructions[0]) == params
 
+
 def test_assign():
     """Test creating a transaction for transfer."""
-    params = sp.AssignParams(account_pubkey=Account().public_key(), program_id=PublicKey(1),)
+    params = sp.AssignParams(
+        account_pubkey=Account().public_key(),
+        program_id=PublicKey(1),
+    )
     txn = sp.assign(params)
     assert len(txn.instructions) == 1
     assert sp.decode_assign(txn.instructions[0]) == params
