@@ -1,7 +1,7 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import Any, List, NamedTuple, Union
+from typing import Any, List, NamedTuple, Union, cast
 
 from solana.instruction import InstructionLayout, decode_data, encode_data
 from solana.publickey import PublicKey
@@ -357,6 +357,7 @@ def create_account(params: CreateAccountParams) -> Transaction:
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
     """Generate a Transaction that assigns an account to a program."""
     if hasattr(params, "base_pubkey"):
+        params = cast(AssignWithSeedParams, params)
         data = encode_data(
             SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_WITH_SEED_IDX],
             params.base_pubkey.__bytes__(),
@@ -364,6 +365,7 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
             params.program_id.__bytes__(),
         )
     else:
+        params = cast(AssignParams, params)
         data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX], params.program_id.__bytes__())
 
     txn = Transaction()
