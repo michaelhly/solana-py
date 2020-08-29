@@ -8,17 +8,17 @@ from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 
 # Instruction Indices
-CREATE_IDX = 0
-ASSIGN_IDX = 1
-TRANSFER_IDX = 2
-CREATE_WITH_SEED_IDX = 3
-ADVANCE_NONCE_ACCOUNT_IDX = 4
-WITHDRAW_NONCE_ACCOUNT_IDX = 5
-INITIALZE_NONCE_ACCOUNT_IDX = 6
-AUTHORIZE_NONCE_ACCOUNT_IDX = 7
-ALLOCATE_IDX = 8
-ALLOCATE_WITH_SEED_IDX = 9
-ASSIGN_WITH_SEED_IDX = 10
+_CREATE_IDX = 0
+_ASSIGN_IDX = 1
+_TRANSFER_IDX = 2
+_CREATE_WITH_SEED_IDX = 3
+_ADVANCE_NONCE_ACCOUNT_IDX = 4
+_WITHDRAW_NONCE_ACCOUNT_IDX = 5
+_INITIALZE_NONCE_ACCOUNT_IDX = 6
+_AUTHORIZE_NONCE_ACCOUNT_IDX = 7
+_ALLOCATE_IDX = 8
+_ALLOCATE_WITH_SEED_IDX = 9
+_ASSIGN_WITH_SEED_IDX = 10
 
 
 # Instruction Params
@@ -198,21 +198,21 @@ class AssignWithSeedParams(NamedTuple):
 
 
 SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
-    InstructionLayout(idx=CREATE_IDX, fmt="<Iqq32s"),
-    InstructionLayout(idx=ASSIGN_IDX, fmt="<I32s"),
-    InstructionLayout(idx=TRANSFER_IDX, fmt="<Iq"),
-    InstructionLayout(idx=CREATE_WITH_SEED_IDX, fmt=""),
-    InstructionLayout(idx=ADVANCE_NONCE_ACCOUNT_IDX, fmt="<I"),
-    InstructionLayout(idx=WITHDRAW_NONCE_ACCOUNT_IDX, fmt="<Iq"),
-    InstructionLayout(idx=INITIALZE_NONCE_ACCOUNT_IDX, fmt="<I32s"),
-    InstructionLayout(idx=AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="<I32s"),
-    InstructionLayout(idx=ALLOCATE_IDX, fmt="<I32s"),
-    InstructionLayout(idx=ALLOCATE_WITH_SEED_IDX, fmt=""),
-    InstructionLayout(idx=ASSIGN_WITH_SEED_IDX, fmt=""),
+    InstructionLayout(idx=_CREATE_IDX, fmt="<Iqq32s"),
+    InstructionLayout(idx=_ASSIGN_IDX, fmt="<I32s"),
+    InstructionLayout(idx=_TRANSFER_IDX, fmt="<Iq"),
+    InstructionLayout(idx=_CREATE_WITH_SEED_IDX, fmt=""),
+    InstructionLayout(idx=_ADVANCE_NONCE_ACCOUNT_IDX, fmt="<I"),
+    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="<Iq"),
+    InstructionLayout(idx=_INITIALZE_NONCE_ACCOUNT_IDX, fmt="<I32s"),
+    InstructionLayout(idx=_AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="<I32s"),
+    InstructionLayout(idx=_ALLOCATE_IDX, fmt="<I32s"),
+    InstructionLayout(idx=_ALLOCATE_WITH_SEED_IDX, fmt=""),
+    InstructionLayout(idx=_ASSIGN_WITH_SEED_IDX, fmt=""),
 ]
 
 
-def __check_key_length(keys: List[Any], expected_length: int) -> None:
+def __check_num_keys(keys: List[Any], expected_length: int) -> None:
     if len(keys) < expected_length:
         raise ValueError(f"invalid instruction: found {len(keys)} keys, expected at least {expected_length}")
 
@@ -223,7 +223,17 @@ def __check_program_id(program_id: PublicKey) -> None:
 
 
 def decode_instruction_layout(instruction: TransactionInstruction) -> InstructionLayout:
-    """Decode a system instruction and retrieve the instruction layout."""
+    """Decode a system instruction and retrieve the instruction layout.
+    >>> from solana.publickey import PublicKey
+    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> create_tx = create_account(
+    ...     CreateAccountParams(
+    ...         from_pubkey=from_account, new_account_pubkey=new_account,
+    ...         lamports=1, space=1, program_id=program_id)
+    ... )
+    >>> decode_instruction_layout(create_tx.instructions[0])
+    InstructionLayout(idx=0, fmt='<Iqq32s')
+    """
     # Slice the first 4 bytes to get the type
     type_data = instruction.data[:4]
     type_idx = int.from_bytes(type_data, "little")
@@ -233,11 +243,21 @@ def decode_instruction_layout(instruction: TransactionInstruction) -> Instructio
 
 
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
-    """Decode a create account system instruction and retrieve the instruction params."""
+    """Decode a create account system instruction and retrieve the instruction params.
+    >>> from solana.publickey import PublicKey
+    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> create_tx = create_account(
+    ...     CreateAccountParams(
+    ...         from_pubkey=from_account, new_account_pubkey=new_account,
+    ...         lamports=1, space=1, program_id=program_id)
+    ... )
+    >>> decode_create_account(create_tx.instructions[0])
+    CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
+    """
     __check_program_id(instruction.program_id)
-    __check_key_length(instruction.keys, 2)
+    __check_num_keys(instruction.keys, 2)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[CREATE_IDX]
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
     _, lamports, space, program_id = decode_data(layout, instruction.data)
 
     return CreateAccountParams(
@@ -261,9 +281,9 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
     __check_program_id(instruction.program_id)
-    __check_key_length(instruction.keys, 2)
+    __check_num_keys(instruction.keys, 2)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[TRANSFER_IDX]
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
     data = decode_data(layout, instruction.data)
 
     return TransferParams(
@@ -282,11 +302,19 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
 
 
 def decode_assign(instruction: TransactionInstruction) -> AssignParams:
-    """Decode an assign system instruction and retrieve the instruction params."""
+    """Decode an assign system instruction and retrieve the instruction params.
+    >>> from solana.publickey import PublicKey
+    >>> account, program_id = PublicKey(1), PublicKey(2)
+    >>> create_tx = assign(
+    ...     AssignParams(account_pubkey=account, program_id=program_id)
+    ... )
+    >>> decode_assign(create_tx.instructions[0])
+    AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
+    """
     __check_program_id(instruction.program_id)
-    __check_key_length(instruction.keys, 1)
+    __check_num_keys(instruction.keys, 1)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX]
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX]
     _, program_id = decode_data(layout, instruction.data)
 
     return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(program_id))
@@ -295,9 +323,9 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
     """Decode an assign system with seed instruction and retrieve the instruction params."""
     __check_program_id(instruction.program_id)
-    __check_key_length(instruction.keys, 1)
+    __check_num_keys(instruction.keys, 1)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_WITH_SEED_IDX]
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_WITH_SEED_IDX]
     _, base, seed, program_id = decode_data(layout, instruction.data)
 
     return AssignWithSeedParams(
@@ -336,8 +364,19 @@ def sys_program_id() -> PublicKey:
 
 
 def create_account(params: CreateAccountParams) -> Transaction:
-    """Generate a Transaction that creates a new account."""
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[CREATE_IDX]
+    """Generate a Transaction that creates a new account.
+
+    >>> from solana.publickey import PublicKey
+    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> create_tx = create_account(
+    ...     CreateAccountParams(
+    ...         from_pubkey=from_account, new_account_pubkey=new_account,
+    ...         lamports=1, space=1, program_id=program_id)
+    ... )
+    >>> type(create_tx)
+    <class 'solana.transaction.Transaction'>
+    """
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
     data = encode_data(layout, params.lamports, params.space, params.program_id.__bytes__())
 
     txn = Transaction()
@@ -355,18 +394,20 @@ def create_account(params: CreateAccountParams) -> Transaction:
 
 
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
-    """Generate a Transaction that assigns an account to a program."""
+    """Generate a Transaction that assigns an account to a program.
+    >>> from solana.publickey import PublicKey
+    >>> account, program_id = PublicKey(1), PublicKey(2)
+    >>> assign_tx = assign(
+    ...     AssignParams(account_pubkey=account, program_id=program_id)
+    ... )
+    >>> type(assign_tx)
+    <class 'solana.transaction.Transaction'>
+    """
     if hasattr(params, "base_pubkey"):
-        params = cast(AssignWithSeedParams, params)
-        data = encode_data(
-            SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_WITH_SEED_IDX],
-            params.base_pubkey.__bytes__(),
-            params.seed,
-            params.program_id.__bytes__(),
-        )
+        raise NotImplementedError("assign with key is not implemented")
     else:
         params = cast(AssignParams, params)
-        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX], params.program_id.__bytes__())
+        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX], params.program_id.__bytes__())
 
     txn = Transaction()
     txn.add(
@@ -392,7 +433,7 @@ def transfer(params: TransferParams) -> Transaction:
     >>> type(transfer_tx)
     <class 'solana.transaction.Transaction'>
     """
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[TRANSFER_IDX]
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
     data = encode_data(layout, params.lamports)
 
     txn = Transaction()

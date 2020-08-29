@@ -14,12 +14,14 @@ def test_decode_instruction_layout():
         program_id=PublicKey(1),
     )
     txn = sp.create_account(create_account_params)
-    assert sp.SYSTEM_INSTRUCTION_LAYOUTS[sp.CREATE_IDX] == sp.decode_instruction_layout(txn.instructions[0])
+    # pylint: disable=protected-access
+    assert sp.SYSTEM_INSTRUCTION_LAYOUTS[sp._CREATE_IDX] == sp.decode_instruction_layout(txn.instructions[0])
     transfer_params = sp.TransferParams(
         from_pubkey=Account().public_key(), to_pubkey=Account().public_key(), lamports=123
     )
     txn = sp.transfer(transfer_params)
-    assert sp.SYSTEM_INSTRUCTION_LAYOUTS[sp.TRANSFER_IDX] == sp.decode_instruction_layout(txn.instructions[0])
+    # pylint: disable=protected-access
+    assert sp.SYSTEM_INSTRUCTION_LAYOUTS[sp._TRANSFER_IDX] == sp.decode_instruction_layout(txn.instructions[0])
 
 
 def test_create_account():
