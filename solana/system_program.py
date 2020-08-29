@@ -283,12 +283,28 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
 
 def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     """Decode an assign system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_assign not implemented")
+    __check_program_id(instruction.program_id)
+    __check_key_length(instruction.keys, 1)
+
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX]
+    _, program_id = decode_data(layout, instruction.data)
+
+    return AssignParams(
+        account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(program_id)
+    )
 
 
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
     """Decode an assign system with seed instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_assign_with_seed not implemented")
+    __check_program_id(instruction.program_id)
+    __check_key_length(instruction.keys, 1)
+
+    layout = SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_WITH_SEED_IDX]
+    _, base, seed, program_id = decode_data(layout, instruction.data)
+
+    return AssignWithSeedParams(
+        account_pubkey=instruction.keys[0].pubkey, base_pubkey=base, seed=seed, program_id=PublicKey(program_id)
+    )
 
 
 def decode_create_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
@@ -342,7 +358,25 @@ def create_account(params: CreateAccountParams) -> Transaction:
 
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
     """Generate a Transaction that assigns an account to a program."""
-    raise NotImplementedError("assign not implemented")
+    if hasattr(params, 'base_pubkey'):
+        data = encode_data(
+            SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_WITH_SEED_IDX],
+            params.base_pubkey.__bytes__(), params.seed, params.program_id.__bytes__())
+    else:
+        data = encode_data(
+            SYSTEM_INSTRUCTION_LAYOUTS[ASSIGN_IDX], params.program_id.__bytes__())
+
+    txn = Transaction()
+    txn.add(
+        TransactionInstruction(
+            keys=[
+                AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
+            ],
+            program_id=sys_program_id(),
+            data=data,
+        )
+    )
+    return txn
 
 
 def transfer(params: TransferParams) -> Transaction:
