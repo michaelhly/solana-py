@@ -1,7 +1,7 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import Any, List, NamedTuple, Union, cast
+from typing import Any, List, NamedTuple, Union
 
 from solana.instruction import InstructionLayout, decode_data, encode_data
 from solana.publickey import PublicKey
