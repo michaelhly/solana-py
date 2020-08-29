@@ -224,6 +224,7 @@ def __check_program_id(program_id: PublicKey) -> None:
 
 def decode_instruction_layout(instruction: TransactionInstruction) -> InstructionLayout:
     """Decode a system instruction and retrieve the instruction layout.
+
     >>> from solana.publickey import PublicKey
     >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
     >>> create_tx = create_account(
@@ -244,6 +245,7 @@ def decode_instruction_layout(instruction: TransactionInstruction) -> Instructio
 
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
     """Decode a create account system instruction and retrieve the instruction params.
+
     >>> from solana.publickey import PublicKey
     >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
     >>> create_tx = create_account(
@@ -303,6 +305,7 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
 
 def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     """Decode an assign system instruction and retrieve the instruction params.
+
     >>> from solana.publickey import PublicKey
     >>> account, program_id = PublicKey(1), PublicKey(2)
     >>> create_tx = assign(
@@ -395,6 +398,7 @@ def create_account(params: CreateAccountParams) -> Transaction:
 
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
     """Generate a Transaction that assigns an account to a program.
+
     >>> from solana.publickey import PublicKey
     >>> account, program_id = PublicKey(1), PublicKey(2)
     >>> assign_tx = assign(
