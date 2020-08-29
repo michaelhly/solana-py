@@ -254,9 +254,8 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     ...         lamports=1, space=1, program_id=program_id)
     ... )
     >>> decode_create_account(create_tx.instructions[0])
-    CreateAccountParams(from_pubkey=11111111111111111111111111111112, \
-new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
-    """
+    CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114) 
+    """   # noqa: E501 # pylint: disable=line-too-long
     __check_program_id(instruction.program_id)
     __check_num_keys(instruction.keys, 2)
 
