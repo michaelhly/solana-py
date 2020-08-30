@@ -12,8 +12,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -30,7 +29,7 @@ jobs:
       - name: Install pipenv
         uses: dschep/install-pipenv-action@v1
 
-      - name: Install CI dependencies
+      - name: Install test dependencies
         run: |
           pipenv run install-ci-deps
 
@@ -48,3 +47,38 @@ jobs:
       - name: Run integration tests
         run: |
           pipenv run pytest -m integration
+
+  coverage:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install pipenv
+        uses: dschep/install-pipenv-action@v1
+
+      - name: Generate coverage report
+        run: |
+          pipenv install --dev --skip-lock pytest pytest-cov pytest-docker
+          pipenv run pytest --cov=./ --cov-report=xml
+
+      - name: Upload coverage to Codecovv
+        # You may pin to the exact commit or the version.
+        # uses: codecov/codecov-action@6004246f47ab62d32be025ce173b241cd84ac58e
+        uses: codecov/codecov-action@v1.0.13
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # Path to coverage file to upload
+          file: ./coverage.xml
+          files: # optional
+          # Directory to search for coverage reports.
+          directory: # optional
+          # Flag upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
+          env_vars: OS,PYTHON
+          # Specify whether or not CI build should fail if Codecov runs into an error during upload
