@@ -71,13 +71,14 @@ class Client:  # pylint: disable=too-many-public-methods
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
         :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
-        :param encoding: (optional) encoding for Account data, either "base58" (slow), "base64", or "jsonParsed".
-            Default to "base64".
-            "base58" is limited to Account data of less than 128 bytes.
-            "base64" will return base64 encoded data for Account data of any size.
-            "Parsed-JSON" encoding attempts to use program-specific state parsers to return more human-readable and
-            explicit account state data.
-            If parsed-JSON is requested but a parser cannot be found, the field falls back to base64 encoding,
+        :param encoding: (optional) encoding for Account data, either "base58" (slow), "base64", or
+            "jsonParsed". Default is "base64".
+
+            - "base58" is limited to Account data of less than 128 bytes.
+            - "base64" will return base64 encoded data for Account data of any size.
+            - "jsonPrased" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+
+            If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
             detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
         :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
@@ -93,7 +94,7 @@ class Client:  # pylint: disable=too-many-public-methods
            'owner': '11111111111111111111111111111111',
            'rentEpoch': 90}},
          'id': 1}
-        """
+        """  # noqa: E501 # pylint: disable=line-too-long
         opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment}
         if data_slice:
             opts[self._data_slice_key] = dict(data_slice._asdict())

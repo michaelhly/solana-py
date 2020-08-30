@@ -77,21 +77,16 @@ class CreateAccountWithSeedParams(NamedTuple):
 
 
 class CreateNonceAccountParams(NamedTuple):
-    """Create nonce account system transaction params.
-
-    :param from_pubkey: PublicKey
-
-    :param nonce_pubkey: PublicKey
-
-    :param authorized_pubkey: PublicKey
-
-    :param lamports: int
-    """
+    """Create nonce account system transaction params."""
 
     from_pubkey: PublicKey
+    """"""
     nonce_pubkey: PublicKey
+    """"""
     authorized_pubkey: PublicKey
+    """"""
     lamports: int
+    """"""
 
 
 class CreateNonceAccountWithSeedParams(NamedTuple):
@@ -143,14 +138,7 @@ class WithdrawNonceParams(NamedTuple):
 
 
 class AuthorizeNonceParams(NamedTuple):
-    """Authorize nonce account system transaction params.
-
-    :param nonce_pubkey: PublicKey
-
-    :param authorized_pubkey: PublicKey
-
-    :param new_authorized_pubkey: PublicKey
-    """
+    """Authorize nonce account system transaction params."""
 
     nonce_pubkey: PublicKey
     """"""
