@@ -31,6 +31,11 @@ solana.publickey
 .. automodule:: solana.publickey
    :members:
 
+solana.sysvar
+-------------
+.. automodule:: solana.sysvar
+   :members:
+
 
 solana.transaction
 ------------------
