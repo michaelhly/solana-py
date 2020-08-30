@@ -198,15 +198,15 @@ class AssignWithSeedParams(NamedTuple):
 
 
 SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
-    InstructionLayout(idx=_CREATE_IDX, fmt="<Iqq32s"),
-    InstructionLayout(idx=_ASSIGN_IDX, fmt="<I32s"),
-    InstructionLayout(idx=_TRANSFER_IDX, fmt="<Iq"),
+    InstructionLayout(idx=_CREATE_IDX, fmt="qq32s"),
+    InstructionLayout(idx=_ASSIGN_IDX, fmt="32s"),
+    InstructionLayout(idx=_TRANSFER_IDX, fmt="q"),
     InstructionLayout(idx=_CREATE_WITH_SEED_IDX, fmt=""),
-    InstructionLayout(idx=_ADVANCE_NONCE_ACCOUNT_IDX, fmt="<I"),
-    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="<Iq"),
-    InstructionLayout(idx=_INITIALZE_NONCE_ACCOUNT_IDX, fmt="<I32s"),
-    InstructionLayout(idx=_AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="<I32s"),
-    InstructionLayout(idx=_ALLOCATE_IDX, fmt="<I32s"),
+    InstructionLayout(idx=_ADVANCE_NONCE_ACCOUNT_IDX, fmt=""),
+    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="q"),
+    InstructionLayout(idx=_INITIALZE_NONCE_ACCOUNT_IDX, fmt="32s"),
+    InstructionLayout(idx=_AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="32s"),
+    InstructionLayout(idx=_ALLOCATE_IDX, fmt="32s"),
     InstructionLayout(idx=_ALLOCATE_WITH_SEED_IDX, fmt=""),
     InstructionLayout(idx=_ASSIGN_WITH_SEED_IDX, fmt=""),
 ]
@@ -233,12 +233,12 @@ def decode_instruction_layout(instruction: TransactionInstruction) -> Instructio
     ...         lamports=1, space=1, program_id=program_id)
     ... )
     >>> decode_instruction_layout(create_tx.instructions[0])
-    InstructionLayout(idx=0, fmt='<Iqq32s')
+    InstructionLayout(idx=0, fmt='qq32s')
     """
     # Slice the first 4 bytes to get the type
     type_data = instruction.data[:4]
     type_idx = int.from_bytes(type_data, "little")
-    if 0 <= type_idx and type_idx < len(SYSTEM_INSTRUCTION_LAYOUTS):
+    if 0 <= type_idx < len(SYSTEM_INSTRUCTION_LAYOUTS):
         return SYSTEM_INSTRUCTION_LAYOUTS[type_idx]
     raise ValueError("Unknow Transaction Instruction")
 
@@ -403,6 +403,7 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
         raise NotImplementedError("assign with key is not implemented")
     else:
         data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX], bytes(params.program_id))
+
     txn = Transaction()
     txn.add(
         TransactionInstruction(

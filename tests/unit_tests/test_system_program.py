@@ -1,7 +1,11 @@
 """Unit tests for solana.system_program."""
+import pytest
+
 import solana.system_program as sp
 from solana.account import Account
+from solana.instruction import InstructionLayout, encode_data
 from solana.publickey import PublicKey
+from solana.transaction import TransactionInstruction
 
 
 def test_decode_instruction_layout():
@@ -22,6 +26,15 @@ def test_decode_instruction_layout():
     txn = sp.transfer(transfer_params)
     # pylint: disable=protected-access
     assert sp.SYSTEM_INSTRUCTION_LAYOUTS[sp._TRANSFER_IDX] == sp.decode_instruction_layout(txn.instructions[0])
+
+    # Invalid instruction
+    with pytest.raises(ValueError):
+        # pylint: disable=protected-access
+        invalid_data = encode_data(InstructionLayout(idx=sp._ASSIGN_WITH_SEED_IDX + 1, fmt=""))
+        txn.instructions[0] = TransactionInstruction(
+            data=invalid_data, keys=txn.instructions[0].keys, program_id=txn.instructions[0].program_id
+        )
+        sp.decode_instruction_layout(txn.instructions[0])
 
 
 def test_create_account():
