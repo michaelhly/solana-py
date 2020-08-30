@@ -6,6 +6,7 @@ from typing import Any, List, NamedTuple, Union
 from solana.instruction import InstructionLayout, decode_data, encode_data
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
+from solana.utils.helpers import from_uint8_bytes
 
 # Instruction Indices
 _CREATE_IDX = 0
@@ -225,7 +226,7 @@ def decode_instruction_layout(instruction: TransactionInstruction) -> Instructio
     """
     # Slice the first 4 bytes to get the type
     type_data = instruction.data[:4]
-    type_idx = int.from_bytes(type_data, "little")
+    type_idx = from_uint8_bytes(type_data)
     if 0 <= type_idx < len(SYSTEM_INSTRUCTION_LAYOUTS):
         return SYSTEM_INSTRUCTION_LAYOUTS[type_idx]
     raise ValueError("Unknow Transaction Instruction")

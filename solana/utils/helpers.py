@@ -1,6 +1,11 @@
 """Helper functions."""
 
 
-def to_uint8(val: int) -> bytes:
+def to_uint8_bytes(val: int) -> bytes:
     """Convert an integer to uint8."""
-    return val.to_bytes(1, byteorder="big")
+    return val.to_bytes(1, byteorder="little")
+
+
+def from_uint8_bytes(uint8: bytes) -> int:
+    """Convert from uint8 to python int."""
+    return int.from_bytes(uint8, byteorder="little")

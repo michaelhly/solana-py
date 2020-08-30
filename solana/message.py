@@ -74,9 +74,9 @@ class Message:
         )
         return b"".join(
             MessageFormat(
-                num_required_signatures=helpers.to_uint8(self.header.num_required_signatures),
-                num_readonly_signed_accounts=helpers.to_uint8(self.header.num_readonly_signed_accounts),
-                num_readonly_unsigned_accounts=helpers.to_uint8(self.header.num_readonly_unsigned_accounts),
+                num_required_signatures=helpers.to_uint8_bytes(self.header.num_required_signatures),
+                num_readonly_signed_accounts=helpers.to_uint8_bytes(self.header.num_readonly_signed_accounts),
+                num_readonly_unsigned_accounts=helpers.to_uint8_bytes(self.header.num_readonly_unsigned_accounts),
                 pubkeys_length=shortvec.encode_length(len(self.account_keys)),
                 pubkeys=b"".join([bytes(pubkey) for pubkey in self.account_keys]),
                 recent_blockhash=b58decode(self.recent_blockhash),
@@ -99,7 +99,7 @@ class Message:
         data_length = shortvec.encode_length(len(data))
         return b"".join(
             InstructionFormat(
-                program_idx=helpers.to_uint8(instruction.program_id_index),
+                program_idx=helpers.to_uint8_bytes(instruction.program_id_index),
                 accounts_length=shortvec.encode_length(len(instruction.accounts)),
                 accounts=bytes(instruction.accounts),
                 data_length=data_length,
