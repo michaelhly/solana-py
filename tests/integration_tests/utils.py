@@ -50,7 +50,7 @@ def get_subscription_id(
         subscription_response = client.subscription_method()
     else:
         subscription_response = client.subscription_method(PublicKey(1))
-    while "result" not in subscription_response or i < RETEST_LIMIT:
+    while "result" not in subscription_response and i < RETEST_LIMIT:
         i += 1
         time.sleep(i)
         subscription_response = client.subscription_method(PublicKey(1))
