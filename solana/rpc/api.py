@@ -1,7 +1,7 @@
 """API client to interact with the Solana JSON RPC Endpoint."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 from base58 import b58decode, b58encode
 
@@ -10,12 +10,29 @@ from solana.blockhash import Blockhash
 from solana.publickey import PublicKey
 from solana.transaction import Transaction
 
+from .commitment import Commitment, Max
 from .providers import http
 from .types import RPCMethod, RPCResponse
 
 
+class DataSlice(NamedTuple):
+    """Data class for "data_slice" parameter.
+
+    Params to limit the returned account data, only available for "base58" or "base64" encoding.
+    """
+
+    offset: int
+    """Limit the returned account data using the provided offset: <usize>."""
+    length: int
+    """Limit the returned account data using the provided length: <usize>."""
+
+
 class Client:  # pylint: disable=too-many-public-methods
     """Client class."""
+
+    _comm_key = "commitment"
+    _encoding_key = "encoding"
+    _data_slice_key = "dataSlice"
 
     def __init__(self, endpoint: Optional[str] = None):
         """Init API client."""
@@ -30,17 +47,58 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.is_connected()
 
-    def get_balance(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
+    def get_balance(self, pubkey: Union[PublicKey, str], commitment: Commitment = Max) -> RPCResponse:
         """Returns the balance of the account of provided Pubkey.
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> from solana.publickey import PublicKey
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_balance(PublicKey(1)) # doctest: +SKIP
         {'jsonrpc': '2.0', 'result': {'context': {'slot': 228}, 'value': 0}, 'id': 1}
         """
-        return self._provider.make_request(RPCMethod("getBalance"), str(pubkey))
+        return self._provider.make_request(RPCMethod("getBalance"), str(pubkey), {self._comm_key: commitment})
+
+    def get_account_info(
+        self,
+        pubkey: Union[PublicKey, str],
+        commitment: Commitment = Max,
+        encoding: str = "base64",
+        data_slice: Optional[DataSlice] = None,
+    ) -> RPCResponse:
+        """Returns all the account info for the specified public key.
+
+        :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
+        :param encoding: (optional) encoding for Account data, either "base58" (slow), "base64", or
+            "jsonParsed". Default is "base64".
+
+            - "base58" is limited to Account data of less than 128 bytes.
+            - "base64" will return base64 encoded data for Account data of any size.
+            - "jsonPrased" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+
+            If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
+            detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
+        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+
+        >>> from solana.publickey import PublicKey
+        >>> solana_client = Client("http://localhost:8899")
+        >>> solana_client.get_account_info(PublicKey(1)) # doctest: +SKIP
+        {'jsonrpc': '2.0',
+         'result': {'context': {'slot': 33265073},
+          'value': {'data': '',
+           'executable': False,
+           'lamports': 4459816188034584,
+           'owner': '11111111111111111111111111111111',
+           'rentEpoch': 90}},
+         'id': 1}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment}
+        if data_slice:
+            opts[self._data_slice_key] = dict(data_slice._asdict())
+        return self._provider.make_request(RPCMethod("getAccountInfo"), str(pubkey), opts)
 
     def get_block_commitment(self, slot: int) -> RPCResponse:
         """Fetch the commitment for particular block.
@@ -252,8 +310,10 @@ class Client:  # pylint: disable=too-many-public-methods
         """  # noqa: E501 # pylint: disable=line-too-long
         return self._provider.make_request(RPCMethod("getConfirmedTransaction"), tx_sig, encoding)
 
-    def get_epoch_info(self) -> RPCResponse:
+    def get_epoch_info(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns information about the current epoch.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_epoch_info() # doctest: +SKIP
@@ -265,7 +325,7 @@ class Client:  # pylint: disable=too-many-public-methods
           'slotsInEpoch': 8192},
          'id': 5}
         """
-        return self._provider.make_request(RPCMethod("getEpochInfo"))
+        return self._provider.make_request(RPCMethod("getEpochInfo"), {self._comm_key: commitment})
 
     def get_epoch_schedule(self) -> RPCResponse:
         """Returns epoch schedule information from this cluster's genesis config.
@@ -282,10 +342,13 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getEpochSchedule"))
 
-    def get_fee_calculator_for_blockhash(self, blockhash: Union[str, Blockhash]) -> RPCResponse:
+    def get_fee_calculator_for_blockhash(
+        self, blockhash: Union[str, Blockhash], commitment: Commitment = Max
+    ) -> RPCResponse:
         """Returns the fee calculator associated with the query blockhash, or null if the blockhash has expired.
 
-        :param blockhash: Blockhash to query as a Base58 encoded string
+        :param blockhash: Blockhash to query as a Base58 encoded string.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_fee_calculator_for_blockhash("BaQSR194dC4dZaRxATtxYyEwDkk7VgqUY8NVNkub8HFZ") # doctest: +SKIP
@@ -294,7 +357,9 @@ class Client:  # pylint: disable=too-many-public-methods
           'value': {'feeCalculator': {'lamportsPerSignature': 5000}}},
          'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
-        return self._provider.make_request(RPCMethod("getFeeCalculatorForBlockhash"), blockhash)
+        return self._provider.make_request(
+            RPCMethod("getFeeCalculatorForBlockhash"), blockhash, {self._comm_key: commitment}
+        )
 
     def get_fee_rate_governor(self) -> RPCResponse:
         """Returns the fee rate governor information from the root bank.
@@ -312,8 +377,10 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getFeeRateGovernor"))
 
-    def get_fees(self) -> RPCResponse:
+    def get_fees(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns a recent block hash from the ledger, a fee schedule and the last slot the blockhash will be valid.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_fees() # doctest: +SKIP
@@ -324,7 +391,7 @@ class Client:  # pylint: disable=too-many-public-methods
            'lastValidSlot': 8027}},
          'id': 1}
         """
-        return self._provider.make_request(RPCMethod("getFees"))
+        return self._provider.make_request(RPCMethod("getFees"), {self._comm_key: commitment})
 
     def get_first_available_block(self) -> RPCResponse:
         """Returns the slot of the lowest confirmed block that has not been purged from the ledger.
@@ -357,8 +424,10 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getIdentity"))
 
-    def get_inflation_governor(self) -> RPCResponse:
+    def get_inflation_governor(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns the current inflation governor.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_inflation_governor() # doctest: +SKIP
@@ -370,7 +439,7 @@ class Client:  # pylint: disable=too-many-public-methods
           'terminal': 0.015},
          'id': 5}
         """
-        return self._provider.make_request(RPCMethod("getInflationGovernor"))
+        return self._provider.make_request(RPCMethod("getInflationGovernor"), {self._comm_key: commitment})
 
     def get_inflation_rate(self) -> RPCResponse:
         """Returns the specific inflation values for the current epoch.
@@ -386,10 +455,11 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getInflationRate"))
 
-    def get_largest_accounts(self, filter_opt: Optional[str] = None) -> RPCResponse:
+    def get_largest_accounts(self, filter_opt: Optional[str] = None, commitment: Commitment = Max) -> RPCResponse:
         """Returns the 20 largest accounts, by lamport balance.
 
-        :param filter_opt: Filter results by account type; currently supported: circulating|nonCirculating.
+        :param opt: Filter results by account type; currently supported: circulating|nonCirculating.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_largest_accounts() # doctest: +SKIP
@@ -438,13 +508,15 @@ class Client:  # pylint: disable=too-many-public-methods
          'id': 2}
         """
         opt: Dict[Optional[str], Optional[str]] = {"filter": filter_opt} if filter_opt else {}
+        opt[self._comm_key] = str(commitment)
         return self._provider.make_request(RPCMethod("getLargestAccounts"), opt)
 
-    def get_leader_schedule(self, epoch: Optional[int] = None) -> RPCResponse:
+    def get_leader_schedule(self, epoch: Optional[int] = None, commitment: Commitment = Max) -> RPCResponse:
         """Returns the leader schedule for an epoch.
 
         :param epoch: Fetch the leader schedule for the epoch that corresponds to the provided slot.
             If unspecified, the leader schedule for the current epoch is fetched.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_leader_schedule() # doctest: +SKIP
@@ -458,38 +530,42 @@ class Client:  # pylint: disable=too-many-public-methods
            ...]},
          'id': 6}
         """
-        if epoch:
-            return self._provider.make_request(RPCMethod("getLeaderSchedule"), epoch)
-        return self._provider.make_request(RPCMethod("getLeaderSchedule"))
+        return self._provider.make_request(RPCMethod("getLeaderSchedule"), epoch, {self._comm_key: commitment})
 
-    def get_minimum_balance_for_rent_exemption(self, usize: int) -> RPCResponse:
+    def get_minimum_balance_for_rent_exemption(self, usize: int, commitment: Commitment = Max) -> RPCResponse:
         """Returns minimum balance required to make account rent exempt.
 
         :param usize: Account data length.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_minimum_balance_for_rent_exemption(50) # doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 1238880, 'id': 7}
         """
-        return self._provider.make_request(RPCMethod("getMinimumBalanceForRentExemption"), usize)
+        return self._provider.make_request(
+            RPCMethod("getMinimumBalanceForRentExemption"), usize, {self._comm_key: commitment}
+        )
 
-    def get_program_accounts(
+    def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
         pubkey: Union[str, PublicKey],
         data_size: Optional[int] = None,
         encoding: Optional[str] = None,
         filter_opts: Optional[Dict] = None,
+        commitment: Commitment = Max,
+        data_slice: Optional[DataSlice] = None,
     ) -> RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
 
         :param pubkey: Pubkey of program, as base-58 encoded string or PublicKey object
         :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
-        :param data_slice: limit the returned account data using the provided `offset`: <usize> and
+        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
-        :param filter_opts: filter results using various
+        :param filter_opts: (optional) filter results using various
             `filter objects <https://docs.solana.com/apps/jsonrpc-api#filters/>`_;
             account must meet all filter criteria to be included in results.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> filter_opts = {"memcmp": {"offset": 4, "bytes": "3Mc6vR"}}
@@ -505,21 +581,26 @@ class Client:  # pylint: disable=too-many-public-methods
             'pubkey' :'CxELquR1gPP8wHe33gZ4QxqGB3sZ9RSwsJ2KshVewkFY'}],
          'id' :1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        opts: Dict[str, List[Any]] = {"filters": []}
+        opts: Dict[str, Any] = {"filters": []}
         if data_size:
             opts["filters"].append({"dataSize": data_size})
         if filter_opts:
             opts["filters"].append(filter_opts)
         if encoding:
-            opts["encoding"].append(encoding)
+            opts[self._encoding_key] = encoding
+        if data_slice:
+            opts[self._data_slice_key] = dict(data_slice._asdict())
+        opts[self._comm_key] = commitment
 
         return self._provider.make_request(RPCMethod("getProgramAccounts"), str(pubkey), opts)
 
-    def get_recent_blockhash(self) -> RPCResponse:
+    def get_recent_blockhash(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns a recent block hash from the ledger.
 
         Response also includes a fee schedule that can be used to compute the cost
         of submitting a transaction using it.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_recent_blockhash() # doctest: +SKIP
@@ -529,7 +610,7 @@ class Client:  # pylint: disable=too-many-public-methods
            'feeCalculator': {'lamportsPerSignature': 5000}}},
          'id': 2}
         """
-        return self._provider.make_request(RPCMethod("getRecentBlockhash"))
+        return self._provider.make_request(RPCMethod("getRecentBlockhash"), {self._comm_key: commitment})
 
     def get_signature_statuses(
         self, signatures: List[Union[str, bytes]], search_transaction_history: bool = False
@@ -565,22 +646,26 @@ class Client:  # pylint: disable=too-many-public-methods
                 base58_sigs.append(b58encode(b58decode(sig)).decode("utf-8"))
             else:
                 base58_sigs.append(b58encode(sig).decode("utf-8"))
-        print(base58_sigs)
+
         return self._provider.make_request(
             RPCMethod("getSignatureStatuses"), base58_sigs, {"searchTransactionHistory": search_transaction_history}
         )
 
-    def get_slot(self) -> RPCResponse:
+    def get_slot(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns the current slot the node is processing.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_slot() # doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 7515, 'id': 1}
         """
-        return self._provider.make_request(RPCMethod("getSlot"))
+        return self._provider.make_request(RPCMethod("getSlot"), {self._comm_key: commitment})
 
-    def get_slot_leader(self) -> RPCResponse:
+    def get_slot_leader(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns the current slot leader.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_slot_leader() # doctest: +SKIP
@@ -588,27 +673,32 @@ class Client:  # pylint: disable=too-many-public-methods
          'result': 'EWj2cuEuVhi7RX81cnAY3TzpyFwnHzzVwvuTyfmxmhs3',
          'id': 1}
         """
-        return self._provider.make_request(RPCMethod("getSlotLeader"))
+        return self._provider.make_request(RPCMethod("getSlotLeader"), {self._comm_key: commitment})
 
-    def get_stake_activation(self, pubkey: Union[PublicKey, str], epoch: Optional[int] = None):
+    def get_stake_activation(
+        self, pubkey: Union[PublicKey, str], epoch: Optional[int] = None, commitment: Commitment = Max
+    ):
         """Returns epoch activation information for a stake account.
 
         :param pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object
         :param epoch: (optional) epoch for which to calculate activation details. If parameter not provided,
             defaults to current epoch
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_stake_activation() # doctest: +SKIP
         {'jsonrpc': '2.0','result': {'active': 124429280, 'inactive': 73287840, 'state': 'activating'}, 'id': 1}}
         """
-        opts = {}
+        opts: Dict[str, Union[int, Commitment]] = {self._comm_key: commitment}
         if epoch:
             opts["epoch"] = epoch
 
         return self._provider.make_request(RPCMethod("getStakeActivation"), str(pubkey), opts)
 
-    def get_supply(self) -> RPCResponse:
+    def get_supply(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns information about the current supply.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_supply() # doctest: +SKIP
@@ -624,12 +714,13 @@ class Client:  # pylint: disable=too-many-public-methods
            'total': 1000000000491284780}},
          'id': 1}
         """
-        return self._provider.make_request(RPCMethod("getSupply"))
+        return self._provider.make_request(RPCMethod("getSupply"), {self._comm_key: commitment})
 
-    def get_token_account_balance(self, pubkey: Union[str, PublicKey]):
+    def get_token_account_balance(self, pubkey: Union[str, PublicKey], commitment: Commitment = Max):
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
         :param pubkey: Pubkey of Token account to query, as base-58 encoded string or PublicKey object.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_token_account_balance("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7") # doctest: +SKIP
@@ -641,7 +732,9 @@ class Client:  # pylint: disable=too-many-public-methods
                 'decimals': 2},
          'id' :1}
         """
-        return self._provider.make_request(RPCMethod("getTokenAccountBalance"), str(pubkey))
+        return self._provider.make_request(
+            RPCMethod("getTokenAccountBalance"), str(pubkey), {self._comm_key: commitment}
+        )
 
     def get_token_accounts_by_delegate(self) -> RPCResponse:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE)."""
@@ -659,14 +752,16 @@ class Client:  # pylint: disable=too-many-public-methods
         """Returns the total supply of an SPL Token type(UNSTABLE)."""
         raise NotImplementedError("get_token_supply not implemented")
 
-    def get_transaction_count(self) -> RPCResponse:
+    def get_transaction_count(self, commitment: Commitment = Max) -> RPCResponse:
         """Returns the current Transaction count from the ledger.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_transaction_count() # doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 4554, 'id': 1}
         """
-        return self._provider.make_request(RPCMethod("getTransactionCount"))
+        return self._provider.make_request(RPCMethod("getTransactionCount"), {self._comm_key: commitment})
 
     def get_minimum_ledger_slot(self) -> RPCResponse:
         """Returns the lowest slot that the node has information about in its ledger.
@@ -688,11 +783,59 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("getVersion"))
 
-    def request_airdrop(self, pubkey: Union[PublicKey, str], lamports: int) -> RPCResponse:
+    def get_vote_accounts(self, commitment: Commitment = Max):
+        """Returns the account info and associated stake for all the voting accounts in the current bank.
+
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
+
+        >>> solana_client = Client("http://localhost:8899")
+        >>> solana_client.get_vote_accounts() # doctest: +SKIP
+        {'jsonrpc': '2.0',
+         'result': {'current': [{'activatedStake': 0,
+            'commission': 100,
+            'epochCredits': [[165, 714644, 707372],
+             [166, 722092, 714644],
+             [167, 730285, 722092],
+             [168, 738476, 730285],
+             ...]
+            'epochVoteAccount': True,
+            'lastVote': 1872294,
+            'nodePubkey': 'J7v9ndmcoBuo9to2MnHegLnBkC9x3SAVbQBJo5MMJrN1',
+            'rootSlot': 1872263,
+            'votePubkey': 'HiFjzpR7e5Kv2tdU9jtE4FbH1X8Z9Syia3Uadadx18b5'},
+           {'activatedStake': 500029968930560,
+            'commission': 100,
+            'epochCredits': [[165, 1359689, 1351498],
+             [166, 1367881, 1359689],
+             [167, 1376073, 1367881],
+             [168, 1384265, 1376073],
+             ...],
+            'epochVoteAccount': True,
+            'lastVote': 1872295,
+            'nodePubkey': 'dv1LfzJvDF7S1fBKpFgKoKXK5yoSosmkAdfbxBo1GqJ',
+            'rootSlot': 1872264,
+            'votePubkey': '5MMCR4NbTZqjthjLGywmeT66iwE9J9f7kjtxzJjwfUx2'},
+           {'activatedStake': 0,
+            'commission': 100,
+            'epochCredits': [[227, 2751, 0], [228, 7188, 2751]],
+            'epochVoteAccount': True,
+            'lastVote': 1872295,
+            'nodePubkey': 'H1wDvJ5HJc1SzhHoWtaycpzQpFbsL7g8peaRV3obKShs',
+            'rootSlot': 1872264,
+            'votePubkey': 'DPqpgoLQVU3aq72HEqSMsB9qh4KoXc9fGEpvgEuiwnp6'}],
+          'delinquent': []},
+         'id': 1}
+        """
+        return self._provider.make_request(RPCMethod("getVoteAccounts"), {self._comm_key: commitment})
+
+    def request_airdrop(
+        self, pubkey: Union[PublicKey, str], lamports: int, commitment: Commitment = Max
+    ) -> RPCResponse:
         """Requests an airdrop of lamports to a Pubkey.
 
         :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
         :param lamports: Amout of lamports.
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> from solana.publickey import PublicKey
         >>> solana_client = Client("http://localhost:8899")
@@ -701,13 +844,22 @@ class Client:  # pylint: disable=too-many-public-methods
          'result': 'uK6gbLbhnTEgjgmwn36D5BRTRkG4AT8r7Q162TLnJzQnHUZVL9r6BYZVfRttrhmkmno6Fp4VQELzL4AiriCo61U',
          'id': 1}
         """
-        return self._provider.make_request(RPCMethod("requestAirdrop"), str(pubkey), lamports)
+        return self._provider.make_request(
+            RPCMethod("requestAirdrop"), str(pubkey), lamports, {self._comm_key: commitment}
+        )
 
     def send_raw_transaction(self, txn: Union[bytes, str, Transaction]) -> RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         :param txn: Fully-signed Transaction object, a fully sign transaction in wire format,
             or a fully transaction as base-58 encoded string.
+
+        Before submitting, the following preflight checks are performed:
+
+            - The transaction signatures are verified
+
+            - The transaction is simulated against the latest max confirmed bank and on failure an error
+                will be returned. Preflight checks may be disabled if desired.
 
         >>> solana_client = Client("http://localhost:8899")
         >>> full_signed_tx_str = (
@@ -756,12 +908,15 @@ class Client:  # pylint: disable=too-many-public-methods
         wire_format = b58encode(txn.serialize()).decode("utf-8")
         return self._provider.make_request(RPCMethod("sendTransaction"), wire_format)
 
-    def simulate_transaction(self, txn: Union[bytes, str, Transaction], signer_verify: bool = False) -> RPCResponse:
+    def simulate_transaction(
+        self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Commitment = Max
+    ) -> RPCResponse:
         """Simulate sending a transaction.
 
         :param txn: a Transaction object, a transaction in wire format, or a transaction as base-58 encoded string
-            The transaction must have a valid blockhash, but is not required to be signed
-        :param signer_verify: if true the transaction signatures will be verified (default: false)
+            The transaction must have a valid blockhash, but is not required to be signed.
+        :param signer_verify: if true the transaction signatures will be verified (default: false).
+        :param commitment: which bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> tx_str = (
@@ -785,7 +940,9 @@ class Client:  # pylint: disable=too-many-public-methods
             wire_format = b58encode(txn).decode("utf-8")
         else:
             wire_format = txn
-        return self._provider.make_request(RPCMethod("simulateTransaction"), wire_format, {"sigVerify": signer_verify})
+
+        opts = {self._comm_key: commitment, "sigVerify": sig_verify}
+        return self._provider.make_request(RPCMethod("simulateTransaction"), wire_format, opts)
 
     def set_log_filter(self, log_filter: str) -> RPCResponse:
         """Sets the log filter on the validator.
