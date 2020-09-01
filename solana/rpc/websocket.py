@@ -21,7 +21,7 @@ class WebSocketClient:
 
         param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
 
-        >>> from solana.publickey import PublicKey
+        >>> from solana.publickey import PublicKey #doctest: +SKIP
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.account_subscribe(PublicKey(1)) # doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 1, 'id': 1}
@@ -34,8 +34,8 @@ class WebSocketClient:
         param account_id: id of account Subscription to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
-        >>> out = ws_client.account_subscribe(PublicKey(1))
-        >>> account_id = out['result']
+        >>> resp = ws_client.account_subscribe(PublicKey(1)) #doctest: +SKIP
+        >>> account_id = resp['result'] #doctest: +SKIP
         >>> ws_client.account_unsubscribe(account_id) #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': True, 'id': 3}
         """
@@ -57,8 +57,8 @@ class WebSocketClient:
         param account_id: id of account Subscription to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
-        >>> out = ws_client.program_subscribe(PublicKey(1))
-        >>> account_id = out['result']
+        >>> resp = ws_client.program_subscribe(PublicKey(1)) #doctest: +SKIP
+        >>> account_id = resp['result'] #doctest: +SKIP
         >>> ws_client.program_unsubscribe(account_id) #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': True, 'id': 6}
         """
@@ -70,7 +70,7 @@ class WebSocketClient:
         param pubkey: Transaction Signature, as base-58 encoded string
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
-        >>> ws_client.signature_subscribe(
+        >>> ws_client.signature_subscribe(  #doctest: +SKIP
         ... '2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b') #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 5, 'id': 7}
         """
@@ -82,9 +82,9 @@ class WebSocketClient:
         param account_id: id of Subscription to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
-        >>> out = ws_client.signature_subscribe(
-        ... '2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b')
-        >>> id = out['result']
+        >>> resp = ws_client.signature_subscribe(
+        ... '2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b') #doctest: +SKIP
+        >>> id = resp['result'] #doctest: +SKIP
         >>> ws_client.signature_unsubscribe(id) #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': True, 'id': 9}
         """
