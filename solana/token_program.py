@@ -5,7 +5,7 @@ from typing import List, NamedTuple, Optional
 
 from solana.instruction import InstructionLayout
 from solana.publickey import PublicKey
-from solana.transaction import TransactionInstruction
+from solana.transaction import Transaction, TransactionInstruction
 from solana.utils.helpers import from_uint8_bytes
 
 # Instruction Indices
@@ -342,9 +342,9 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
     raise NotImplementedError("decode_initialize_multisig not implemented")
 
 
-def decode_token_transfer(instruction: TransactionInstruction) -> TransferParams:
+def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     """Decode a transfer token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_token_transfer not implemented")
+    raise NotImplementedError("decode_transfer not implemented")
 
 
 def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
@@ -382,7 +382,7 @@ def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParam
     raise NotImplementedError("decode_thaw_account not implemented")
 
 
-def decode_token_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
+def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
     """Decode a transfer2 token transaction and retrieve the instruction params."""
     raise NotImplementedError("decode_transfer2 not implemented")
 
@@ -400,3 +400,100 @@ def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
 def decode_burn2(instruction: TransactionInstruction) -> MintTo2Params:
     """Decode a burn2 token transaction and retrieve the instruction params."""
     raise NotImplementedError("decode_burn2 not implemented")
+
+
+def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
+    """Generate a transaction instruction to initialize a new mint newly.
+
+    This instruction requires no signers and MUST be included within the same Transaction as
+    the system program's `CreateInstruction` that creates the account being initialized.
+    Otherwise another party can acquire ownership of the uninitialized account.
+    """
+    raise NotImplementedError("initialize_mint not implemented")
+
+
+def initialize_account(params: InitializeAccountParams) -> TransactionInstruction:
+    """Generate a transaction instruction to initialize a new account to hold tokens.
+
+    This instruction requires no signers and MUST be included within the same Transaction as
+    the system program's `CreateInstruction` that creates the account being initialized.
+    Otherwise another party can acquire ownership of the uninitialized account.
+    """
+    raise NotImplementedError("initialize_account not implemented")
+
+
+def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruction:
+    """Generate a transaction instruction to initialize a multisignature account with N provided signers.
+
+    This instruction requires no signers and MUST be included within the same Transaction as
+    the system program's `CreateInstruction` that creates the account being initialized.
+    Otherwise another party can acquire ownership of the uninitialized account.
+    """
+    raise NotImplementedError("initialize_multisig not implemented")
+
+
+def transfer(params: TransferParams) -> Transaction:
+    """Transfers tokens from one account to another either directly or via a delegate."""
+    raise NotImplementedError("transfer not implemented")
+
+
+def approve(params: ApproveParams) -> Transaction:
+    """Approves a delegate."""
+    raise NotImplementedError("approve not implemented")
+
+
+def revoke(params: RevokeParams) -> Transaction:
+    """Revokes the delegate's authority."""
+    raise NotImplementedError("revoke not implemented")
+
+
+def set_authority(params: SetAuthorityParams) -> Transaction:
+    """Sets a new authority of a mint or account."""
+    raise NotImplementedError("set_authority not implemented")
+
+
+def mint_to(params: MintToParams) -> Transaction:
+    """Mints new tokens to an account. The native mint does not support minting."""
+    raise NotImplementedError("mint_to not implemented")
+
+
+def burn(params: BurnParams) -> Transaction:
+    """Burns tokens by removing them from an account."""
+    raise NotImplementedError("burn not implemented")
+
+
+def close_account(params: CloseAccountParams) -> Transaction:
+    """Close an account by transferring all its SOL to the destination account.
+
+    Non-native accounts may only be closed if its token amount is zero.
+    """
+    raise NotImplementedError("close_account not implemented")
+
+
+def freeze_account(params: FreezeAccountParams) -> Transaction:
+    """Freeze an Initialized account using the Mint's freeze_authority (if set)."""
+    raise NotImplementedError("freeze_account not implemented")
+
+
+def thaw_account(params: ThawAccountParams) -> Transaction:
+    """Thaw a Frozen account using the Mint's freeze_authority (if set)."""
+    raise NotImplementedError("thaw_account not implemented")
+
+
+def transfer2(params: Transfer2Params) -> Transaction:
+    """This transaction differs from `transfer` in that the token mint and decimals value is asserted by the caller."""
+    raise NotImplementedError("transfer2 not implemented")
+
+
+def approve2(params: Approve2Params) -> Transaction:
+    """This transaction differs from `approve` in that the token mint and decimals value is asserted by the caller."""
+    raise NotImplementedError("approve2 not implemented")
+
+
+def mint_to2(params: MintTo2Params) -> Transaction:
+    """This transaction differs from `mint_to` in that the decimals value is asserted by the caller."""
+    raise NotImplementedError("mint_to2 not implemented")
+
+
+def burn2(params: Burn2Params) -> Transaction:
+    """This transaction differs from `burn` in that the decimals value is asserted by the caller."""
