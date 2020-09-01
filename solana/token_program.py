@@ -497,3 +497,4 @@ def mint_to2(params: MintTo2Params) -> Transaction:
 
 def burn2(params: Burn2Params) -> Transaction:
     """This transaction differs from `burn` in that the decimals value is asserted by the caller."""
+    raise NotImplementedError("burn2 not implemented")
