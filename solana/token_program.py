@@ -5,6 +5,8 @@ from typing import List, NamedTuple, Optional
 
 from solana.instruction import InstructionLayout
 from solana.publickey import PublicKey
+from solana.transaction import TransactionInstruction
+from solana.utils.helpers import from_uint8_bytes
 
 # Instruction Indices
 _INITIALIZE_MINT = 0
@@ -54,7 +56,7 @@ class InitializeMintParams(NamedTuple):
     """Number of base 10 digits to the right of the decimal place."""
 
 
-class InitalizeAccountParams(NamedTuple):
+class InitializeAccountParams(NamedTuple):
     """Initialize token account transaction params."""
 
     token_program_id: PublicKey
@@ -313,3 +315,88 @@ TOKEN_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
     InstructionLayout(idx=_MINT_TO2, fmt="QB"),
     InstructionLayout(idx=_BURN2, fmt="QB"),
 ]
+
+
+def decode_instruction_layout(instruction: TransactionInstruction) -> InstructionLayout:
+    """Decode a token instruction and retrieve the instruction layout."""
+    # Slice the first 4 bytes to get the type
+    type_data = instruction.data[:4]
+    type_idx = from_uint8_bytes(type_data)
+    if 0 <= type_idx < len(TOKEN_INSTRUCTION_LAYOUTS):
+        return TOKEN_INSTRUCTION_LAYOUTS[type_idx]
+    raise ValueError("unknown transaction instruction")
+
+
+def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMintParams:
+    """Decode an initialize mint token instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_initialize_mint not implemented")
+
+
+def decode_initialize_account(instruction: TransactionInstruction) -> InitializeAccountParams:
+    """Decode an initialize account token instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_initialize_account not implemented")
+
+
+def decode_initialize_multisig(instruction: TransactionInstruction) -> InitializeMultisigParams:
+    """Decode an initialize multisig account token instruction and retrieve the instruction params."""
+    raise NotImplementedError("decode_initialize_multisig not implemented")
+
+
+def decode_token_transfer(instruction: TransactionInstruction) -> TransferParams:
+    """Decode a transfer token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_token_transfer not implemented")
+
+
+def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
+    """Decode a approve token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_token_approve not implemented")
+
+
+def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
+    """Decode a revoke token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_token_revoke not implemented")
+
+
+def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityParams:
+    """Decode a set authority token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_set_authority not implemented")
+
+
+def decode_mint_to(instruction: TransactionInstruction) -> MintToParams:
+    """Decode a mint to token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_mint_to not implemented")
+
+
+def decode_burn(instruction: TransactionInstruction) -> BurnParams:
+    """Decode a burn token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_burn not implemented")
+
+
+def decode_close_account(instruction: TransactionInstruction) -> CloseAccountParams:
+    """Decode a close account token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_close_account not implemented")
+
+
+def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParams:
+    """Decode a thaw account token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_thaw_account not implemented")
+
+
+def decode_token_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
+    """Decode a transfer2 token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_transfer2 not implemented")
+
+
+def decode_approve2(instruction: TransactionInstruction) -> Transfer2Params:
+    """Decode a approve2 token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_approve2 not implemented")
+
+
+def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
+    """Decode a mintTo2 token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_mint_to2 not implemented")
+
+
+def decode_burn2(instruction: TransactionInstruction) -> MintTo2Params:
+    """Decode a burn2 token transaction and retrieve the instruction params."""
+    raise NotImplementedError("decode_burn2 not implemented")
