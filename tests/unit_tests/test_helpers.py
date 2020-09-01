@@ -18,3 +18,11 @@ def test_from_uint8():
     """Test uint8 bytes to int."""
     num = randint(0, 255)
     assert helpers.from_uint8_bytes(helpers.to_uint8_bytes(num)) == num
+
+
+def test_verify_instruction_keys():
+    """Test verify instruction keys."""
+    expected = randint(1, 1000)
+    helpers.verify_instruction_keys(expected + 1, expected)
+    with pytest.raises(ValueError):
+        helpers.verify_instruction_keys(randint(0, expected), expected)

@@ -1,12 +1,12 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import Any, List, NamedTuple, Union
+from typing import List, NamedTuple, Union
 
 from solana.instruction import InstructionLayout, decode_data, encode_data
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
-from solana.utils.helpers import from_uint8_bytes
+from solana.utils.helpers import from_uint8_bytes, verify_instruction_keys
 
 # Instruction Indices
 _CREATE_IDX = 0
@@ -201,11 +201,6 @@ SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
 ]
 
 
-def __check_num_keys(keys: List[Any], expected_length: int) -> None:
-    if len(keys) < expected_length:
-        raise ValueError(f"invalid instruction: found {len(keys)} keys, expected at least {expected_length}")
-
-
 def __check_program_id(program_id: PublicKey) -> None:
     if program_id != sys_program_id():
         raise ValueError("invalid instruction: programId is not SystemProgram")
@@ -229,7 +224,7 @@ def decode_instruction_layout(instruction: TransactionInstruction) -> Instructio
     type_idx = from_uint8_bytes(type_data)
     if 0 <= type_idx < len(SYSTEM_INSTRUCTION_LAYOUTS):
         return SYSTEM_INSTRUCTION_LAYOUTS[type_idx]
-    raise ValueError("Unknow Transaction Instruction")
+    raise ValueError("unknown transaction instruction")
 
 
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
@@ -246,7 +241,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
     """  # noqa: E501 # pylint: disable=line-too-long
     __check_program_id(instruction.program_id)
-    __check_num_keys(instruction.keys, 2)
+    verify_instruction_keys(len(instruction.keys), 2)
 
     layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
     _, lamports, space, program_id = decode_data(layout, instruction.data)
@@ -272,7 +267,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
     __check_program_id(instruction.program_id)
-    __check_num_keys(instruction.keys, 2)
+    verify_instruction_keys(len(instruction.keys), 2)
 
     layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
     data = decode_data(layout, instruction.data)
@@ -304,7 +299,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
     """
     __check_program_id(instruction.program_id)
-    __check_num_keys(instruction.keys, 1)
+    verify_instruction_keys(len(instruction.keys), 1)
 
     layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX]
     _, program_id = decode_data(layout, instruction.data)
