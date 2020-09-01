@@ -76,9 +76,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           # Path to coverage file to upload
           file: ./coverage.xml
-          files: # optional
-          # Directory to search for coverage reports.
-          directory: # optional
-          # Flag upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
           env_vars: OS,PYTHON
           # Specify whether or not CI build should fail if Codecov runs into an error during upload
+          fail_ci_if_error: true
