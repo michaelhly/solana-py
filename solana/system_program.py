@@ -187,17 +187,17 @@ class AssignWithSeedParams(NamedTuple):
 
 
 SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
-    InstructionLayout(idx=_CREATE_IDX, fmt="qq32s"),
+    InstructionLayout(idx=_CREATE_IDX, fmt="QQ32s"),
     InstructionLayout(idx=_ASSIGN_IDX, fmt="32s"),
-    InstructionLayout(idx=_TRANSFER_IDX, fmt="q"),
-    InstructionLayout(idx=_CREATE_WITH_SEED_IDX, fmt=""),
+    InstructionLayout(idx=_TRANSFER_IDX, fmt="Q"),
+    InstructionLayout(idx=_CREATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
     InstructionLayout(idx=_ADVANCE_NONCE_ACCOUNT_IDX, fmt=""),
-    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="q"),
+    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="Q"),
     InstructionLayout(idx=_INITIALZE_NONCE_ACCOUNT_IDX, fmt="32s"),
     InstructionLayout(idx=_AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="32s"),
     InstructionLayout(idx=_ALLOCATE_IDX, fmt="32s"),
-    InstructionLayout(idx=_ALLOCATE_WITH_SEED_IDX, fmt=""),
-    InstructionLayout(idx=_ASSIGN_WITH_SEED_IDX, fmt=""),
+    InstructionLayout(idx=_ALLOCATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
+    InstructionLayout(idx=_ASSIGN_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
 ]
 
 
@@ -222,7 +222,7 @@ def decode_instruction_layout(instruction: TransactionInstruction) -> Instructio
     ...         lamports=1, space=1, program_id=program_id)
     ... )
     >>> decode_instruction_layout(create_tx.instructions[0])
-    InstructionLayout(idx=0, fmt='qq32s')
+    InstructionLayout(idx=0, fmt='QQ32s')
     """
     # Slice the first 4 bytes to get the type
     type_data = instruction.data[:4]
