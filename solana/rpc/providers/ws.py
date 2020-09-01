@@ -116,10 +116,7 @@ class Provider(BaseProvider, FriendlyJsonSerde):
         self.logger.debug("Making request WebSocket URI: %s, Method: %s, id: %s", self.endpoint_uri, method, request_id)
         request_data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
         if Provider._loop:
-            print(Provider._loop)
             future = asyncio.run_coroutine_threadsafe(self.coro_make_request(cast(bytes, request_data)), Provider._loop)
-        print(future)
-        print(future.result())
         return future.result()
 
     def is_connected(self) -> bool:
