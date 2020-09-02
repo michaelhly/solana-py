@@ -384,3 +384,13 @@ class Transaction:
             )
 
         return transaction
+
+
+def verify_instruction_keys(instruction: TransactionInstruction, expected: int) -> None:
+    """Verify length of AccountMeta list of a transaction instruction is at least the expected length.
+
+    :param instruction: A TransactionInstruction object.
+    :param expected: Expected length.
+    """
+    if len(instruction.keys) < expected:
+        raise ValueError(f"invalid instruction: found {len(instruction.keys)} keys, expected at least {expected}")

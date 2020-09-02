@@ -5,8 +5,8 @@ from typing import List, NamedTuple, Union
 
 from solana.instruction import InstructionLayout, decode_data, encode_data
 from solana.publickey import PublicKey
-from solana.transaction import AccountMeta, Transaction, TransactionInstruction
-from solana.utils.helpers import from_uint8_bytes, verify_instruction_keys
+from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
+from solana.utils.helpers import from_uint8_bytes
 
 # Instruction Indices
 _CREATE_IDX = 0
@@ -241,7 +241,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
     """  # noqa: E501 # pylint: disable=line-too-long
     __check_program_id(instruction.program_id)
-    verify_instruction_keys(len(instruction.keys), 2)
+    verify_instruction_keys(instruction, 2)
 
     layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
     _, lamports, space, program_id = decode_data(layout, instruction.data)
@@ -267,7 +267,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
     __check_program_id(instruction.program_id)
-    verify_instruction_keys(len(instruction.keys), 2)
+    verify_instruction_keys(instruction, 2)
 
     layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
     data = decode_data(layout, instruction.data)
@@ -299,7 +299,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
     """
     __check_program_id(instruction.program_id)
-    verify_instruction_keys(len(instruction.keys), 1)
+    verify_instruction_keys(instruction, 1)
 
     layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX]
     _, program_id = decode_data(layout, instruction.data)
