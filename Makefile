@@ -27,13 +27,13 @@ test-publish:
 
 .PHONY: tests
 tests:
-	PYTHONPATH=./solana pytest -v
+	pytest -v
 
 unit-tests:
-	PYTHONPATH=./solana pytest -v -m "not integration"
+	pytest -v -m "not integration"
 
 int-tests:
-	PYTHONPATH=./solana pytest -v -m integration
+	pytest -v -m integration
 
 # Minimal makefile for Sphinx documentation
 #
