@@ -5,7 +5,7 @@ from typing import List, NamedTuple, Optional
 
 from solana.instruction import InstructionLayout
 from solana.publickey import PublicKey
-from solana.transaction import Transaction, TransactionInstruction
+from solana.transaction import TransactionInstruction
 from solana.utils.helpers import from_uint8_bytes
 
 # Instruction Indices
