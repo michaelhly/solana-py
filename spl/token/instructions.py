@@ -432,37 +432,37 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
     raise NotImplementedError("initialize_multisig not implemented")
 
 
-def transfer(params: TransferParams) -> Transaction:
+def transfer(params: TransferParams) -> TransactionInstruction:
     """Transfers tokens from one account to another either directly or via a delegate."""
     raise NotImplementedError("transfer not implemented")
 
 
-def approve(params: ApproveParams) -> Transaction:
+def approve(params: ApproveParams) -> TransactionInstruction:
     """Approves a delegate."""
     raise NotImplementedError("approve not implemented")
 
 
-def revoke(params: RevokeParams) -> Transaction:
+def revoke(params: RevokeParams) -> TransactionInstruction:
     """Revokes the delegate's authority."""
     raise NotImplementedError("revoke not implemented")
 
 
-def set_authority(params: SetAuthorityParams) -> Transaction:
+def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
     """Sets a new authority of a mint or account."""
     raise NotImplementedError("set_authority not implemented")
 
 
-def mint_to(params: MintToParams) -> Transaction:
+def mint_to(params: MintToParams) -> TransactionInstruction:
     """Mints new tokens to an account. The native mint does not support minting."""
     raise NotImplementedError("mint_to not implemented")
 
 
-def burn(params: BurnParams) -> Transaction:
+def burn(params: BurnParams) -> TransactionInstruction:
     """Burns tokens by removing them from an account."""
     raise NotImplementedError("burn not implemented")
 
 
-def close_account(params: CloseAccountParams) -> Transaction:
+def close_account(params: CloseAccountParams) -> TransactionInstruction:
     """Close an account by transferring all its SOL to the destination account.
 
     Non-native accounts may only be closed if its token amount is zero.
@@ -470,31 +470,31 @@ def close_account(params: CloseAccountParams) -> Transaction:
     raise NotImplementedError("close_account not implemented")
 
 
-def freeze_account(params: FreezeAccountParams) -> Transaction:
+def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
     """Freeze an Initialized account using the Mint's freeze_authority (if set)."""
     raise NotImplementedError("freeze_account not implemented")
 
 
-def thaw_account(params: ThawAccountParams) -> Transaction:
+def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
     """Thaw a Frozen account using the Mint's freeze_authority (if set)."""
     raise NotImplementedError("thaw_account not implemented")
 
 
-def transfer2(params: Transfer2Params) -> Transaction:
-    """This transaction differs from `transfer` in that the token mint and decimals value is asserted by the caller."""
+def transfer2(params: Transfer2Params) -> TransactionInstruction:
+    """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller."""
     raise NotImplementedError("transfer2 not implemented")
 
 
-def approve2(params: Approve2Params) -> Transaction:
-    """This transaction differs from `approve` in that the token mint and decimals value is asserted by the caller."""
+def approve2(params: Approve2Params) -> TransactionInstruction:
+    """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller."""
     raise NotImplementedError("approve2 not implemented")
 
 
-def mint_to2(params: MintTo2Params) -> Transaction:
-    """This transaction differs from `mint_to` in that the decimals value is asserted by the caller."""
+def mint_to2(params: MintTo2Params) -> TransactionInstruction:
+    """This instruction differs from `mint_to` in that the decimals value is asserted by the caller."""
     raise NotImplementedError("mint_to2 not implemented")
 
 
-def burn2(params: Burn2Params) -> Transaction:
-    """This transaction differs from `burn` in that the decimals value is asserted by the caller."""
+def burn2(params: Burn2Params) -> TransactionInstruction:
+    """This instruction differs from `burn` in that the decimals value is asserted by the caller."""
     raise NotImplementedError("burn2 not implemented")
