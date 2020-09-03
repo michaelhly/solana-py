@@ -35,7 +35,7 @@ jobs:
 
       - name: Run linters
         run: |
-          pipenv run pydocstyle setup.py solana spl tests
+          pipenv run pydocstyle setup.py solana spl/**/*.py tests
           pipenv run flake8 setup.py solana spl tests
           pipenv run mypy spl solana
           pipenv run black --check --diff --line-length=120 setup.py solana spl tests

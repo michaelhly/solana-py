@@ -6,7 +6,7 @@ format:
 	black --line-length=120 setup.py solana tests spl
 
 lint:
-	pydocstyle setup.py solana spl test
+	pydocstyle setup.py solana spl/**/*.py test
 	flake8 setup.py solana spl tests
 	mypy solana spl/**/*.py
 	pylint --rcfile=.pylintrc setup.py solana spl tests
