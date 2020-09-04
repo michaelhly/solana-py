@@ -1,11 +1,10 @@
 """API WebSocket Client to interact with the Solana JSON RPC Endpoint."""
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from websockets import WebSocketClientProtocol
 
 from solana.publickey import PublicKey
-from .api import DataSlice
 
 from .commitment import Commitment, Max
 from .providers.ws import WSProvider
@@ -18,6 +17,7 @@ class WebSocketClient:
     _comm_key = "commitment"
     _encoding_key = "encoding"
     _data_slice_key = "dataSlice"
+    _filters_key = "filters"
 
     def __init__(self, endpoint: str):
         """Init API client for websocket."""
@@ -26,22 +26,19 @@ class WebSocketClient:
 
     def connection(self) -> Optional[WebSocketClientProtocol]:
         """Get the ws connection."""
-        return self._conn
+        return self._provider.conn.ws
 
     def account_subscribe(
         self,
         pubkey: Union[PublicKey, str],
         commitment: Commitment = Max,
         encoding: str = "base64",
-        data_slice: Optional[DataSlice] = None,
     ) -> RPCResponse:
         """Subscribe to an account to receive when lamports change.
 
         :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
         :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is base64. JSON is unstable.
-        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
-            `length`: <usize> fields; only available for "base58" or "base64" encoding.
         :param commitment: Commitment hyperlink: `Commitment
         <https://docs.solana.com/apps/jsonrpc-api#configuring-state-commitment>`_.
 
@@ -51,8 +48,6 @@ class WebSocketClient:
         {'jsonrpc': '2.0', 'result': 1, 'id': 1}
         """
         opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment}
-        if data_slice:
-            opts[self._data_slice_key] = dict(data_slice._asdict())
         return self._provider.make_request(RPCMethod("accountSubscribe"), str(pubkey), opts)
 
     def account_unsubscribe(self, account_id: int) -> RPCResponse:
@@ -73,15 +68,15 @@ class WebSocketClient:
         pubkey: Union[PublicKey, str],
         commitment: Commitment = Max,
         encoding: str = "base64",
-        data_slice: Optional[DataSlice] = None,
+        filters: List[str] = None,
     ) -> RPCResponse:
         """Subscribe to a program to receive notifications when lamports or data changes.
 
         :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
         :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is base64.
-        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
-            `length`: <usize> fields; only available for "base58" or "base64" encoding. JSON is unstable.
+        :param filters: (optional) filter results using various filter objects.
+        Account must meet all filter criteria to be included in results
         :param commitment: Commitment hyperlink: `Commitment
         <https://docs.solana.com/apps/jsonrpc-api#configuring-state-commitment>`_.
 
@@ -89,9 +84,9 @@ class WebSocketClient:
         >>> ws_client.program_subscribe(PublicKey(1)) # doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 3, 'id': 4}
         """
-        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment}
-        if data_slice:
-            opts[self._data_slice_key] = dict(data_slice._asdict())
+        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment, self._filters_key: []}
+        if filters:
+            opts[self._filters_key].append(filters)
         return self._provider.make_request(RPCMethod("programSubscribe"), str(pubkey), opts)
 
     def program_unsubscribe(self, account_id: int) -> RPCResponse:
@@ -111,16 +106,10 @@ class WebSocketClient:
         self,
         pubkey: Union[PublicKey, str],
         commitment: Commitment = Max,
-        encoding: str = "base64",
-        data_slice: Optional[DataSlice] = None,
     ) -> RPCResponse:
         """Subscribe to a transaction signature to receive notification.
 
         :param pubkey: Transaction Signature, as base-58 encoded string
-        :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
-            "base58" (slow), or "base64". If parameter not provided, the default encoding is base64. JSON is unstable.
-        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
-            `length`: <usize> fields; only available for "base58" or "base64" encoding.
         :param commitment: Commitment hyperlink: `Commitment
         <https://docs.solana.com/apps/jsonrpc-api#configuring-state-commitment>`_.
 
@@ -129,9 +118,7 @@ class WebSocketClient:
         ... '2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b') #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 5, 'id': 7}
         """
-        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment}
-        if data_slice:
-            opts[self._data_slice_key] = dict(data_slice._asdict())
+        opts: Dict[str, Any] = {self._comm_key: commitment}
         return self._provider.make_request(RPCMethod("signatureSubscribe"), pubkey, opts)
 
     def signature_unsubscribe(self, subscription_id: int) -> RPCResponse:
