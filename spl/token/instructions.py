@@ -3,28 +3,8 @@
 from enum import Enum
 from typing import List, NamedTuple, Optional
 
-from solana.instruction import InstructionLayout
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction
-from solana.utils.helpers import from_uint8_bytes
-
-# Instruction Indices
-_INITIALIZE_MINT = 0
-_INITIALIZE_ACCOUNT = 1
-_INITIALIZE_MULTISIG = 2
-_TRANSFER = 3
-_APPROVE = 4
-_REVOKE = 5
-_SET_AUTHORITY = 6
-_MINT_TO = 7
-_BURN = 8
-_CLOSE_ACCOUNT = 9
-_FREEZE_ACCOUNT = 10
-_THAW_ACCOUNT = 11
-_TRANSFER2 = 12
-_APPROVE2 = 13
-_MINT_TO2 = 14
-_BURN2 = 15
 
 
 class AuthorityType(Enum):
@@ -295,36 +275,6 @@ class Burn2Params(NamedTuple):
     """"""
     decimal: int
     """"""
-
-
-TOKEN_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
-    InstructionLayout(idx=_INITIALIZE_MINT, fmt="B32s32s"),
-    InstructionLayout(idx=_INITIALIZE_ACCOUNT, fmt=""),
-    InstructionLayout(idx=_INITIALIZE_MULTISIG, fmt="B"),
-    InstructionLayout(idx=_TRANSFER, fmt="Q"),
-    InstructionLayout(idx=_APPROVE, fmt="Q"),
-    InstructionLayout(idx=_REVOKE, fmt=""),
-    InstructionLayout(idx=_SET_AUTHORITY, fmt="I32s"),
-    InstructionLayout(idx=_MINT_TO, fmt="Q"),
-    InstructionLayout(idx=_BURN, fmt="Q"),
-    InstructionLayout(idx=_CLOSE_ACCOUNT, fmt=""),
-    InstructionLayout(idx=_FREEZE_ACCOUNT, fmt=""),
-    InstructionLayout(idx=_THAW_ACCOUNT, fmt=""),
-    InstructionLayout(idx=_TRANSFER2, fmt="QB"),
-    InstructionLayout(idx=_APPROVE2, fmt="QB"),
-    InstructionLayout(idx=_MINT_TO2, fmt="QB"),
-    InstructionLayout(idx=_BURN2, fmt="QB"),
-]
-
-
-def decode_instruction_layout(instruction: TransactionInstruction) -> InstructionLayout:
-    """Decode a token instruction and retrieve the instruction layout."""
-    # Slice the first 4 bytes to get the type
-    type_data = instruction.data[:4]
-    type_idx = from_uint8_bytes(type_data)
-    if 0 <= type_idx < len(TOKEN_INSTRUCTION_LAYOUTS):
-        return TOKEN_INSTRUCTION_LAYOUTS[type_idx]
-    raise ValueError("unknown transaction instruction")
 
 
 def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMintParams:
