@@ -5,11 +5,12 @@ import itertools
 import json
 import logging
 import os
+import websockets  # type: ignore
+
 from threading import Thread
 from types import TracebackType
 from typing import Any, Optional, Type, Union, cast
 
-import websockets
 
 from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI, RPCMethod, RPCResponse
