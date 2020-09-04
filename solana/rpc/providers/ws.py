@@ -133,7 +133,7 @@ class WSProvider(BaseProvider, FriendlyJsonSerde):
 
     def connection(self) -> Optional[websockets.WebSocketClientProtocol]:
         """Exposes the websocket connection."""
-        return self.conn.ws
+        return self.conn.__aenter__()
 
     def is_connected(self) -> bool:
         """Health check."""
