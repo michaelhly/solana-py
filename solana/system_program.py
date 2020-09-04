@@ -277,11 +277,11 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     __check_program_id(instruction.program_id)
     verify_instruction_keys(instruction, 2)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
-    data = decode_data(layout, instruction.data)
+    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    __check_instruction_type(parsed_data, InstructionType.Transfer)
 
     return TransferParams(
-        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=data[1]
+        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=parsed_data.args.lamports
     )
 
 
@@ -426,8 +426,9 @@ def transfer(params: TransferParams) -> Transaction:
     >>> type(transfer_tx)
     <class 'solana.transaction.Transaction'>
     """
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
-    data = encode_data(layout, params.lamports)
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.Transfer, args=dict(lamports=params.lamports))
+    )
 
     txn = Transaction()
     txn.add(
