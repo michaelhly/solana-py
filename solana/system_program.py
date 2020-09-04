@@ -1,26 +1,11 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import Any, List, NamedTuple, Union
+from typing import Any, NamedTuple, Union
 
 from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
-from solana.instruction import InstructionLayout, decode_data, encode_data
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
-from solana.utils.helpers import from_uint8_bytes
-
-# Instruction Indices
-_CREATE_IDX = 0
-_ASSIGN_IDX = 1
-_TRANSFER_IDX = 2
-_CREATE_WITH_SEED_IDX = 3
-_ADVANCE_NONCE_ACCOUNT_IDX = 4
-_WITHDRAW_NONCE_ACCOUNT_IDX = 5
-_INITIALZE_NONCE_ACCOUNT_IDX = 6
-_AUTHORIZE_NONCE_ACCOUNT_IDX = 7
-_ALLOCATE_IDX = 8
-_ALLOCATE_WITH_SEED_IDX = 9
-_ASSIGN_WITH_SEED_IDX = 10
 
 
 # Instruction Params
@@ -187,21 +172,6 @@ class AssignWithSeedParams(NamedTuple):
     """"""
 
 
-SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
-    InstructionLayout(idx=_CREATE_IDX, fmt="QQ32s"),
-    InstructionLayout(idx=_ASSIGN_IDX, fmt="32s"),
-    InstructionLayout(idx=_TRANSFER_IDX, fmt="Q"),
-    InstructionLayout(idx=_CREATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-    InstructionLayout(idx=_ADVANCE_NONCE_ACCOUNT_IDX, fmt=""),
-    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="Q"),
-    InstructionLayout(idx=_INITIALZE_NONCE_ACCOUNT_IDX, fmt="32s"),
-    InstructionLayout(idx=_AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="32s"),
-    InstructionLayout(idx=_ALLOCATE_IDX, fmt="32s"),
-    InstructionLayout(idx=_ALLOCATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-    InstructionLayout(idx=_ASSIGN_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-]
-
-
 def __check_instruction_type(parsed_data: Any, expected_type: InstructionType) -> None:
     if parsed_data.instruction_type != expected_type:
         raise ValueError(
@@ -212,27 +182,6 @@ def __check_instruction_type(parsed_data: Any, expected_type: InstructionType) -
 def __check_program_id(program_id: PublicKey) -> None:
     if program_id != sys_program_id():
         raise ValueError("invalid instruction: programId is not SystemProgram")
-
-
-def decode_instruction_layout(instruction: TransactionInstruction) -> InstructionLayout:
-    """Decode a system instruction and retrieve the instruction layout.
-
-    >>> from solana.publickey import PublicKey
-    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> create_tx = create_account(
-    ...     CreateAccountParams(
-    ...         from_pubkey=from_account, new_account_pubkey=new_account,
-    ...         lamports=1, space=1, program_id=program_id)
-    ... )
-    >>> decode_instruction_layout(create_tx.instructions[0])
-    InstructionLayout(idx=0, fmt='QQ32s')
-    """
-    # Slice the first 4 bytes to get the type
-    type_data = instruction.data[:4]
-    type_idx = from_uint8_bytes(type_data)
-    if 0 <= type_idx < len(SYSTEM_INSTRUCTION_LAYOUTS):
-        return SYSTEM_INSTRUCTION_LAYOUTS[type_idx]
-    raise ValueError("unknown transaction instruction")
 
 
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
