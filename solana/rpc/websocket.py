@@ -26,7 +26,7 @@ class WebSocketClient:
 
     def connection(self) -> Optional[WebSocketClientProtocol]:
         """Get the ws connection."""
-        return self._provider.conn.ws
+        return self._provider.connection()
 
     def account_subscribe(
         self,
