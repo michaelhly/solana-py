@@ -1,8 +1,9 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import List, NamedTuple, Union
+from typing import Any, List, NamedTuple, Union
 
+from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.instruction import InstructionLayout, decode_data, encode_data
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
@@ -201,6 +202,13 @@ SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
 ]
 
 
+def __check_instruction_type(parsed_data: Any, expected_type: InstructionType) -> None:
+    if parsed_data.instruction_type != expected_type:
+        raise ValueError(
+            f"invalid instruction; instruction index mismatch {parsed_data.instruction_type} != {expected_type}"
+        )
+
+
 def __check_program_id(program_id: PublicKey) -> None:
     if program_id != sys_program_id():
         raise ValueError("invalid instruction: programId is not SystemProgram")
@@ -243,15 +251,15 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     __check_program_id(instruction.program_id)
     verify_instruction_keys(instruction, 2)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
-    _, lamports, space, program_id = decode_data(layout, instruction.data)
+    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    __check_instruction_type(parsed_data, InstructionType.CreateAccount)
 
     return CreateAccountParams(
         from_pubkey=instruction.keys[0].pubkey,
         new_account_pubkey=instruction.keys[1].pubkey,
-        lamports=lamports,
-        space=space,
-        program_id=PublicKey(program_id),
+        lamports=parsed_data.args.lamports,
+        space=parsed_data.args.space,
+        program_id=PublicKey(parsed_data.args.program_id),
     )
 
 
@@ -355,8 +363,12 @@ def create_account(params: CreateAccountParams) -> Transaction:
     >>> type(create_tx)
     <class 'solana.transaction.Transaction'>
     """
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
-    data = encode_data(layout, params.lamports, params.space, bytes(params.program_id))
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.CreateAccount,
+            args=dict(lamports=params.lamports, space=params.space, program_id=bytes(params.program_id)),
+        )
+    )
 
     txn = Transaction()
     txn.add(
