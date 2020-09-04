@@ -20,7 +20,7 @@ def encode_data(layout: InstructionLayout, *params: Any) -> bytes:
     """Encode instruction data to raw bytes.
 
     >>> # Encoding a transfer instruction:
-    >>> transfer_layout = InstructionLayout(idx=2, fmt="q")
+    >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
     >>> encode_data(transfer_layout, 123).hex()
     '020000007b00000000000000'
     """
@@ -31,7 +31,7 @@ def decode_data(layout: InstructionLayout, raw_data: bytes) -> Tuple:
     """Decode instruction from raw bytes.
 
     >>> # Decoding a transfer instruction:
-    >>> transfer_layout = InstructionLayout(idx=2, fmt="q")
+    >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
     >>> raw_data = bytes.fromhex('020000007b00000000000000')
     >>> decode_data(transfer_layout, raw_data)
     (2, 123)
