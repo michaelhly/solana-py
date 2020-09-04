@@ -65,7 +65,7 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          pipenv install --dev --skip-lock pytest pytest-cov pytest-docker
+          pipenv install --dev --skip-lock pytest pytest-cov pytest-docker websockets
           pipenv run pytest --cov=./ --cov-report=xml
 
       - name: Upload coverage to Codecovv
