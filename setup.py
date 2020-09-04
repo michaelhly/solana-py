@@ -35,6 +35,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "base58>=2.0.1, <3.0.0",
+        "construct>=2.10.56, <3.0.0",
         "PyNaCl>=1.4.0, <2.0.0",
         "requests>=2.24.0, <3.0.0",
         "typing_extensions",
