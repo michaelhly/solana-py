@@ -7,6 +7,9 @@ from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, Inst
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
 
+TOKEN_PROGRAM_ID: PublicKey = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+"""Public key that identifies the SPL token program."""
+
 
 # Instruction Params
 class CreateAccountParams(NamedTuple):
