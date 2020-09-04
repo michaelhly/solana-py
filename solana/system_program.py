@@ -309,10 +309,10 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     __check_program_id(instruction.program_id)
     verify_instruction_keys(instruction, 1)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX]
-    _, program_id = decode_data(layout, instruction.data)
+    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    __check_instruction_type(parsed_data, InstructionType.Assign)
 
-    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(program_id))
+    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
 
 
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
@@ -398,7 +398,9 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
     if isinstance(params, AssignWithSeedParams):
         raise NotImplementedError("assign with key is not implemented")
     else:
-        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX], bytes(params.program_id))
+        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+            dict(instruction_type=InstructionType.Assign, args=dict(program_id=bytes(params.program_id)))
+        )
 
     txn = Transaction()
     txn.add(

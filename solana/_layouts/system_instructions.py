@@ -31,7 +31,7 @@ _CREATE_ACCOUNT_LAYOUT = cStruct(
     "program_id" / PUBLIC_KEY_LAYOUT,
 )
 
-_ASSIGN_LAYOUT = cStruct("owner" / PUBLIC_KEY_LAYOUT)
+_ASSIGN_LAYOUT = cStruct("program_id" / PUBLIC_KEY_LAYOUT)
 
 _TRANFER_LAYOUT = cStruct("lamports" / Int64ul)
 
