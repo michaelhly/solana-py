@@ -18,7 +18,7 @@ class InstructionType(IntEnum):
     WithdrawNonceAccount = 5
     InitializeNonceAccount = 6
     AuthorizeNonceAccount = 7
-    Allocate: 8
+    Allocate = 8
     AllocateWithSeed = 9
     AssignWithSeed = 10
     TransferWithSeed = 11
@@ -81,7 +81,7 @@ INSTRUCTION_LAYOUTS = cStruct(
             InstructionType.Allocate: _ALLOCATE_LAYOUT,
             InstructionType.AllocateWithSeed: _ALLOCATE_WITH_SEED_LAYOUT,
             InstructionType.AssignWithSeed: _ASSIGN_WITH_SEED_LAYOUT,
-            InstructionType.Transfer: _TRANSFER_WITH_SEED_LAYOUT,
+            InstructionType.TransferWithSeed: _TRANSFER_WITH_SEED_LAYOUT,
         },
     ),
 )
