@@ -131,9 +131,9 @@ class WSProvider(BaseProvider, FriendlyJsonSerde):
             )
         return future.result()
 
-    def connection(self) -> Optional[websockets.WebSocketClientProtocol]:
+    def connection(self) -> websockets.WebSocketClientProtocol:
         """Exposes the websocket connection."""
-        return self.conn.__aenter__()
+        return cast(websockets.WebSocketClientProtocol, self.conn.__aenter__())
 
     def is_connected(self) -> bool:
         """Health check."""
