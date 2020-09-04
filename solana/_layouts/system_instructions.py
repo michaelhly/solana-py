@@ -1,10 +1,11 @@
 """Byte layouts for system program instructions."""
 from enum import IntEnum
 
-from construct import Int32ul, Int64ul, Pass  # types: ignore
+from construct import Int32ul, Int64ul, Pass  # type: ignore
 from construct import Struct as cStruct
 from construct import Switch
-from shared import PUBLIC_KEY_LAYOUT, RUST_STRING_LAYOUT
+
+from .shared import PUBLIC_KEY_LAYOUT, RUST_STRING_LAYOUT
 
 
 class InstructionType(IntEnum):
@@ -64,7 +65,7 @@ _TRANSFER_WITH_SEED_LAYOUT = cStruct(
     "from_ower" / PUBLIC_KEY_LAYOUT,
 )
 
-INSTRUCTION_LAYOUTS = cStruct(
+SYSTEM_INSTRUCTIONS_LAYOUT = cStruct(
     "instruction_type" / Int32ul,
     "args"
     / Switch(
