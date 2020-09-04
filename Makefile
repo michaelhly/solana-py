@@ -9,7 +9,7 @@ lint:
 	pydocstyle setup.py solana test
 	flake8 setup.py solana tests
 	mypy solana
-	pylint --rcfile=.pylintrc setup.py solana tests
+	pylint --rcfile=.pylintrc setup.py solana solana/_layouts/*.py tests
 
 .PHONY: notebook
 notebook:
