@@ -42,6 +42,8 @@ def _get_threaded_loop() -> asyncio.AbstractEventLoop:
 class PersistentWebSocket:
     """Sets up a persistent websocket."""
 
+    logger = logging.getLogger("solana.providers.PersistentWebSocket")
+
     def __init__(self, endpoint_uri: URI, loop: asyncio.AbstractEventLoop, websocket_kwargs: Any) -> None:
         """Initialize persistent websocket."""
         self.ws: Optional[websockets.WebSocketClientProtocol] = None
@@ -60,13 +62,13 @@ class PersistentWebSocket:
         if self.ws is not None and exc_val is not None:
             try:
                 await self.ws.close()
-            except Exception:
-                pass
+            except Exception as err:
+                self.logger.debug("Exception caught on exit: %s", str(err))
             self.ws = None
 
 
-class Provider(BaseProvider, FriendlyJsonSerde):
-    """Provider class for websockets."""
+class WSProvider(BaseProvider, FriendlyJsonSerde):
+    """WSProvider class for websockets."""
 
     logger = logging.getLogger("solana.providers.WebsocketProvider")
     _loop = None
@@ -86,8 +88,8 @@ class Provider(BaseProvider, FriendlyJsonSerde):
         self.websocket_timeout = websocket_timeout
         if self.endpoint_uri is None:
             self.endpoint_uri = get_default_endpoint()
-        if Provider._loop is None:
-            Provider._loop = _get_threaded_loop()
+        if WSProvider._loop is None:
+            WSProvider._loop = _get_threaded_loop()
         if websocket_kwargs is None:
             websocket_kwargs = {}
         else:
@@ -97,8 +99,7 @@ class Provider(BaseProvider, FriendlyJsonSerde):
                     "{0} are not allowed in websocket_kwargs, "
                     "found: {1}".format(RESTRICTED_WEBSOCKET_KWARGS, found_restricted_keys)
                 )
-        self.conn = PersistentWebSocket(self.endpoint_uri, Provider._loop, websocket_kwargs)
-        super().__init__()
+        self.conn = PersistentWebSocket(self.endpoint_uri, WSProvider._loop, websocket_kwargs)
 
     def __str__(self) -> str:
         """Return a string representation of the websocket connection."""
@@ -106,24 +107,37 @@ class Provider(BaseProvider, FriendlyJsonSerde):
 
     async def coro_make_request(self, request_data: bytes) -> RPCResponse:
         """Makes coroutine requests."""
-        async with self.conn as conn:
-            await asyncio.wait_for(conn.send(request_data), timeout=self.websocket_timeout)
-            return json.loads(await asyncio.wait_for(conn.recv(), timeout=self.websocket_timeout))
+        try:
+            async with self.conn as conn:
+                await asyncio.wait_for(conn.send(request_data), timeout=self.websocket_timeout)
+                return json.loads(await asyncio.wait_for(conn.recv(), timeout=self.websocket_timeout))
+        except TimeoutError:
+            self.logger.debug("Websocket connection timed out.")
+            raise
+        except Exception as err:
+            self.logger.debug("Unexpected Exception: %s", err)
+            raise
 
     def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
         """Make a request to the rpc endpoint."""
         request_id = next(self._request_counter) + 1
         self.logger.debug("Making request WebSocket URI: %s, Method: %s, id: %s", self.endpoint_uri, method, request_id)
         request_data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
-        if Provider._loop:
-            future = asyncio.run_coroutine_threadsafe(self.coro_make_request(cast(bytes, request_data)), Provider._loop)
+        if WSProvider._loop:
+            future = asyncio.run_coroutine_threadsafe(
+                self.coro_make_request(cast(bytes, request_data)), WSProvider._loop
+            )
         return future.result()
+
+    def connection(self) -> Optional[websockets.WebSocketClientProtocol]:
+        """Exposes the websocket connection."""
+        return self.conn.ws
 
     def is_connected(self) -> bool:
         """Health check."""
         try:
-            if Provider._loop is not None:
-                future = asyncio.run_coroutine_threadsafe(self.coro_make_request(bytes()), Provider._loop)
+            if WSProvider._loop is not None:
+                future = asyncio.run_coroutine_threadsafe(self.coro_make_request(bytes()), WSProvider._loop)
                 future.result(timeout=self.websocket_timeout)
                 return True
         except asyncio.TimeoutError:

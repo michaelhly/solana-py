@@ -38,6 +38,7 @@ setup(
         "PyNaCl>=1.4.0, <2.0.0",
         "requests>=2.24.0, <3.0.0",
         "typing_extensions",
+        "websockets",
     ],
     extras_require=extras_require,
     python_requires=">=3.7, <4",
