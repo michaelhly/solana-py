@@ -7,6 +7,9 @@ from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, Inst
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
 
+SYS_PROGRAM_ID: PublicKey = PublicKey("11111111111111111111111111111111")
+"""Public key that identifies the System program."""
+
 
 # Instruction Params
 class CreateAccountParams(NamedTuple):
@@ -180,7 +183,7 @@ def __check_instruction_type(parsed_data: Any, expected_type: InstructionType) -
 
 
 def __check_program_id(program_id: PublicKey) -> None:
-    if program_id != sys_program_id():
+    if program_id != SYS_PROGRAM_ID:
         raise ValueError("invalid instruction: programId is not SystemProgram")
 
 
@@ -294,11 +297,6 @@ def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonc
     raise NotImplementedError("decode_nonce_authorize not implemented")
 
 
-def sys_program_id() -> PublicKey:
-    """Public key that identifies the System program."""
-    return PublicKey("11111111111111111111111111111111")
-
-
 def create_account(params: CreateAccountParams) -> Transaction:
     """Generate a Transaction that creates a new account.
 
@@ -326,7 +324,7 @@ def create_account(params: CreateAccountParams) -> Transaction:
                 AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
                 AccountMeta(pubkey=params.new_account_pubkey, is_signer=False, is_writable=True),
             ],
-            program_id=sys_program_id(),
+            program_id=SYS_PROGRAM_ID,
             data=data,
         )
     )
@@ -357,7 +355,7 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
             keys=[
                 AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
             ],
-            program_id=sys_program_id(),
+            program_id=SYS_PROGRAM_ID,
             data=data,
         )
     )
@@ -386,7 +384,7 @@ def transfer(params: TransferParams) -> Transaction:
                 AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
                 AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
             ],
-            program_id=sys_program_id(),
+            program_id=SYS_PROGRAM_ID,
             data=data,
         )
     )
