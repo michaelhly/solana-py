@@ -1,25 +1,11 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import List, NamedTuple, Union
+from typing import Any, NamedTuple, Union
 
-from solana.instruction import InstructionLayout, decode_data, encode_data
+from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
-from solana.utils.helpers import from_uint8_bytes
-
-# Instruction Indices
-_CREATE_IDX = 0
-_ASSIGN_IDX = 1
-_TRANSFER_IDX = 2
-_CREATE_WITH_SEED_IDX = 3
-_ADVANCE_NONCE_ACCOUNT_IDX = 4
-_WITHDRAW_NONCE_ACCOUNT_IDX = 5
-_INITIALZE_NONCE_ACCOUNT_IDX = 6
-_AUTHORIZE_NONCE_ACCOUNT_IDX = 7
-_ALLOCATE_IDX = 8
-_ALLOCATE_WITH_SEED_IDX = 9
-_ASSIGN_WITH_SEED_IDX = 10
 
 
 # Instruction Params
@@ -186,45 +172,16 @@ class AssignWithSeedParams(NamedTuple):
     """"""
 
 
-SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
-    InstructionLayout(idx=_CREATE_IDX, fmt="QQ32s"),
-    InstructionLayout(idx=_ASSIGN_IDX, fmt="32s"),
-    InstructionLayout(idx=_TRANSFER_IDX, fmt="Q"),
-    InstructionLayout(idx=_CREATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-    InstructionLayout(idx=_ADVANCE_NONCE_ACCOUNT_IDX, fmt=""),
-    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="Q"),
-    InstructionLayout(idx=_INITIALZE_NONCE_ACCOUNT_IDX, fmt="32s"),
-    InstructionLayout(idx=_AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="32s"),
-    InstructionLayout(idx=_ALLOCATE_IDX, fmt="32s"),
-    InstructionLayout(idx=_ALLOCATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-    InstructionLayout(idx=_ASSIGN_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-]
+def __check_instruction_type(parsed_data: Any, expected_type: InstructionType) -> None:
+    if parsed_data.instruction_type != expected_type:
+        raise ValueError(
+            f"invalid instruction; instruction index mismatch {parsed_data.instruction_type} != {expected_type}"
+        )
 
 
 def __check_program_id(program_id: PublicKey) -> None:
     if program_id != sys_program_id():
         raise ValueError("invalid instruction: programId is not SystemProgram")
-
-
-def decode_instruction_layout(instruction: TransactionInstruction) -> InstructionLayout:
-    """Decode a system instruction and retrieve the instruction layout.
-
-    >>> from solana.publickey import PublicKey
-    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> create_tx = create_account(
-    ...     CreateAccountParams(
-    ...         from_pubkey=from_account, new_account_pubkey=new_account,
-    ...         lamports=1, space=1, program_id=program_id)
-    ... )
-    >>> decode_instruction_layout(create_tx.instructions[0])
-    InstructionLayout(idx=0, fmt='QQ32s')
-    """
-    # Slice the first 4 bytes to get the type
-    type_data = instruction.data[:4]
-    type_idx = from_uint8_bytes(type_data)
-    if 0 <= type_idx < len(SYSTEM_INSTRUCTION_LAYOUTS):
-        return SYSTEM_INSTRUCTION_LAYOUTS[type_idx]
-    raise ValueError("unknown transaction instruction")
 
 
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
@@ -243,15 +200,15 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     __check_program_id(instruction.program_id)
     verify_instruction_keys(instruction, 2)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
-    _, lamports, space, program_id = decode_data(layout, instruction.data)
+    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    __check_instruction_type(parsed_data, InstructionType.CreateAccount)
 
     return CreateAccountParams(
         from_pubkey=instruction.keys[0].pubkey,
         new_account_pubkey=instruction.keys[1].pubkey,
-        lamports=lamports,
-        space=space,
-        program_id=PublicKey(program_id),
+        lamports=parsed_data.args.lamports,
+        space=parsed_data.args.space,
+        program_id=PublicKey(parsed_data.args.program_id),
     )
 
 
@@ -269,11 +226,11 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     __check_program_id(instruction.program_id)
     verify_instruction_keys(instruction, 2)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
-    data = decode_data(layout, instruction.data)
+    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    __check_instruction_type(parsed_data, InstructionType.Transfer)
 
     return TransferParams(
-        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=data[1]
+        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=parsed_data.args.lamports
     )
 
 
@@ -301,10 +258,10 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     __check_program_id(instruction.program_id)
     verify_instruction_keys(instruction, 1)
 
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX]
-    _, program_id = decode_data(layout, instruction.data)
+    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    __check_instruction_type(parsed_data, InstructionType.Assign)
 
-    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(program_id))
+    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
 
 
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
@@ -355,8 +312,12 @@ def create_account(params: CreateAccountParams) -> Transaction:
     >>> type(create_tx)
     <class 'solana.transaction.Transaction'>
     """
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
-    data = encode_data(layout, params.lamports, params.space, bytes(params.program_id))
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.CreateAccount,
+            args=dict(lamports=params.lamports, space=params.space, program_id=bytes(params.program_id)),
+        )
+    )
 
     txn = Transaction()
     txn.add(
@@ -386,7 +347,9 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
     if isinstance(params, AssignWithSeedParams):
         raise NotImplementedError("assign with key is not implemented")
     else:
-        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX], bytes(params.program_id))
+        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+            dict(instruction_type=InstructionType.Assign, args=dict(program_id=bytes(params.program_id)))
+        )
 
     txn = Transaction()
     txn.add(
@@ -412,8 +375,9 @@ def transfer(params: TransferParams) -> Transaction:
     >>> type(transfer_tx)
     <class 'solana.transaction.Transaction'>
     """
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
-    data = encode_data(layout, params.lamports)
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.Transfer, args=dict(lamports=params.lamports))
+    )
 
     txn = Transaction()
     txn.add(

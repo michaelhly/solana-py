@@ -2,8 +2,8 @@ clean:
 	rm -rf dist build _build __pycache__ *.egg-info
 
 format:
-	isort setup.py solana tests solana/**/*.py
-	black --line-length=120 setup.py solana tests solana/**/*.py
+	isort setup.py solana tests
+	black --line-length=120 setup.py solana tests
 
 lint:
 	pydocstyle setup.py solana test
