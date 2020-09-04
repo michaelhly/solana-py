@@ -25,7 +25,7 @@ class WebSocketClient:
         self._conn = self._provider.conn.ws
 
     def connection(self) -> Optional[WebSocketClientProtocol]:
-        """Get the ws connection"""
+        """Get the ws connection."""
         return self._conn
 
     def account_subscribe(
@@ -37,7 +37,13 @@ class WebSocketClient:
     ) -> RPCResponse:
         """Subscribe to an account to receive when lamports change.
 
-        param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
+        :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
+        :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is base64. JSON is unstable.
+        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+        :param commitment: Commitment hyperlink: `Commitment
+        <https://docs.solana.com/apps/jsonrpc-api#configuring-state-commitment>`_.
 
         >>> from solana.publickey import PublicKey #doctest: +SKIP
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
@@ -52,7 +58,7 @@ class WebSocketClient:
     def account_unsubscribe(self, account_id: int) -> RPCResponse:
         """Unsubscribe from account change notifications.
 
-        param account_id: id of account Subscription to cancel
+        :param account_id: id of account Subscription to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> resp = ws_client.account_subscribe(PublicKey(1)) #doctest: +SKIP
@@ -71,7 +77,14 @@ class WebSocketClient:
     ) -> RPCResponse:
         """Subscribe to a program to receive notifications when lamports or data changes.
 
-        param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
+        :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
+        :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is base64.
+        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding. JSON is unstable.
+        :param commitment: Commitment hyperlink: `Commitment
+        <https://docs.solana.com/apps/jsonrpc-api#configuring-state-commitment>`_.
+
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.program_subscribe(PublicKey(1)) # doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 3, 'id': 4}
@@ -84,7 +97,7 @@ class WebSocketClient:
     def program_unsubscribe(self, account_id: int) -> RPCResponse:
         """Unsubscribe from account change notifications.
 
-        param account_id: id of account Subscription to cancel
+        :param account_id: id of account Subscription to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> resp = ws_client.program_subscribe(PublicKey(1)) #doctest: +SKIP
@@ -103,7 +116,13 @@ class WebSocketClient:
     ) -> RPCResponse:
         """Subscribe to a transaction signature to receive notification.
 
-        param pubkey: Transaction Signature, as base-58 encoded string
+        :param pubkey: Transaction Signature, as base-58 encoded string
+        :param encoding: (optional) encoding for the returned Transaction, either jsonParsed",
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is base64. JSON is unstable.
+        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+        :param commitment: Commitment hyperlink: `Commitment
+        <https://docs.solana.com/apps/jsonrpc-api#configuring-state-commitment>`_.
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.signature_subscribe(  #doctest: +SKIP
@@ -118,7 +137,7 @@ class WebSocketClient:
     def signature_unsubscribe(self, subscription_id: int) -> RPCResponse:
         """Unsubscribe from signature confirmation notification.
 
-        param account_id: id of Subscription to cancel
+        :param account_id: id of Subscription to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> resp = ws_client.signature_subscribe(
@@ -141,7 +160,7 @@ class WebSocketClient:
     def slot_unsubscribe(self, subscription_id: int) -> RPCResponse:
         """Unsubscribe from slot.
 
-        param subscription_id: id of sub to cancel
+        :param subscription_id: id of sub to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.slot_unsubscribe(ws_client.slot_subscribe()['result']) #doctest: +SKIP
@@ -161,7 +180,7 @@ class WebSocketClient:
     def root_unsubscribe(self, subscription_id: int) -> RPCResponse:
         """Unsubscribe from root notifications.
 
-        param subscription_id: id of sub to cancel
+        :param subscription_id: id of sub to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.root_unsubscribe(ws_client.root(subscribe)['result']) #doctest: +SKIP
@@ -183,7 +202,7 @@ class WebSocketClient:
     def vote_unsubscribe(self, subscription_id: int) -> RPCResponse:
         """Unsubscribe from vote notifications.
 
-        param subscription_id: id of sub to cancel
+        :param subscription_id: id of sub to cancel
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.vote_unsubscribe(ws_client.vote_subscribe()['result']) #doctest: +SKIP
