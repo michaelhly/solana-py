@@ -4,7 +4,10 @@ from enum import Enum
 from typing import List, NamedTuple, Optional
 
 from solana.publickey import PublicKey
-from solana.transaction import TransactionInstruction
+from solana.sysvar import SYSVAR_RENT_PUBKEY
+from solana.transaction import AccountMeta, TransactionInstruction, verify_instruction_keys
+from solana.utils.validate import validate_instruction_type
+from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType  # type: ignore
 
 
 class AuthorityType(Enum):
@@ -24,16 +27,16 @@ class AuthorityType(Enum):
 class InitializeMintParams(NamedTuple):
     """Initialize token mint transaction params."""
 
-    token_program_id: PublicKey
-    """"""
+    decimals: int
+    """Number of base 10 digits to the right of the decimal place."""
+    program_id: PublicKey
+    """SPL Token program account."""
     mint: PublicKey
     """Public key of the minter."""
     mint_authority: PublicKey
     """The authority/multisignature to mint tokens."""
-    freeze_authority: Optional[PublicKey]
+    freeze_authority: Optional[PublicKey] = None
     """The freeze authority/multisignature of the mint."""
-    decimals: int
-    """Number of base 10 digits to the right of the decimal place."""
 
 
 class InitializeAccountParams(NamedTuple):
@@ -279,7 +282,20 @@ class Burn2Params(NamedTuple):
 
 def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMintParams:
     """Decode an initialize mint token instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_initialize_mint not implemented")
+    verify_instruction_keys(instruction, 2)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.InitializeMint)
+
+    return InitializeMintParams(
+        decimals=parsed_data.args.decimals,
+        program_id=instruction.program_id,
+        mint=instruction.keys[0].pubkey,
+        mint_authority=PublicKey(parsed_data.args.mint_authority),
+        freeze_authority=PublicKey(parsed_data.args.freeze_authority)
+        if parsed_data.args.freeze_authority_option
+        else None,
+    )
 
 
 def decode_initialize_account(instruction: TransactionInstruction) -> InitializeAccountParams:
@@ -359,7 +375,26 @@ def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
     the system program's `CreateInstruction` that creates the account being initialized.
     Otherwise another party can acquire ownership of the uninitialized account.
     """
-    raise NotImplementedError("initialize_mint not implemented")
+    freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (PublicKey(0), 0)
+    data = INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.InitializeMint,
+            args=dict(
+                decimals=params.decimals,
+                mint_authority=bytes(params.mint_authority),
+                freeze_authority_option=opt,
+                freeze_authority=bytes(freeze_authority),
+            ),
+        )
+    )
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        ],
+        program_id=params.program_id,
+        data=data,
+    )
 
 
 def initialize_account(params: InitializeAccountParams) -> TransactionInstruction:
