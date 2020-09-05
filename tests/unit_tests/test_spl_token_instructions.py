@@ -53,3 +53,27 @@ def test_initialize_multisig():
     )
     instruction = spl_token.initialize_multisig(params)
     assert spl_token.decode_initialize_multisig(instruction) == params
+
+
+def test_close_account(stubbed_sender):
+    """Test close account."""
+    token_account = PublicKey(0)
+    params = spl_token.CloseAccountParams(
+        program_id=TOKEN_PROGRAM_ID,
+        account=token_account,
+        destination=stubbed_sender.public_key(),
+        owner=stubbed_sender.public_key(),
+        signers=[],
+    )
+    instruction = spl_token.close_account(params)
+    assert spl_token.decode_close_account(instruction) == params
+
+    multisig_params = spl_token.CloseAccountParams(
+        program_id=TOKEN_PROGRAM_ID,
+        account=token_account,
+        destination=stubbed_sender.public_key(),
+        owner=stubbed_sender.public_key(),
+        signers=[PublicKey(i + 1) for i in range(3)],
+    )
+    instruction = spl_token.close_account(multisig_params)
+    assert spl_token.decode_close_account(instruction) == multisig_params

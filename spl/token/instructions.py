@@ -159,15 +159,15 @@ class CloseAccountParams(NamedTuple):
     """Close token account transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     account: PublicKey
-    """"""
+    """Address of account to close."""
     destination: PublicKey
-    """"""
+    """Address of account to receive the remaining balance of the closed account."""
     owner: PublicKey
-    """"""
+    """Address of account owner."""
     signers: List[PublicKey]
-    """"""
+    """Addresses of signing accounts if `owner` is a multiSig."""
 
 
 class FreezeAccountParams(NamedTuple):
@@ -360,7 +360,18 @@ def decode_burn(instruction: TransactionInstruction) -> BurnParams:
 
 def decode_close_account(instruction: TransactionInstruction) -> CloseAccountParams:
     """Decode a close account token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_close_account not implemented")
+    verify_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.CloseAccount)
+
+    return CloseAccountParams(
+        program_id=instruction.program_id,
+        account=instruction.keys[0].pubkey,
+        destination=instruction.keys[1].pubkey,
+        owner=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+    )
 
 
 def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParams:
@@ -490,7 +501,19 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 
     Non-native accounts may only be closed if its token amount is zero.
     """
-    raise NotImplementedError("close_account not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CloseAccount, args=None))
+    keys = [
+        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.destination, is_signer=False, is_writable=True),
+    ]
+    if params.signers:
+        keys.append(AccountMeta(pubkey=params.owner, is_signer=False, is_writable=False))
+        for signer in params.signers:
+            keys.append(AccountMeta(pubkey=signer, is_signer=False, is_writable=False))
+    else:
+        keys.append(AccountMeta(pubkey=params.owner, is_signer=True, is_writable=False))
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
