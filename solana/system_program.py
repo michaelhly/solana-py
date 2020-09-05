@@ -1,14 +1,12 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import Any, NamedTuple, Union
+from typing import NamedTuple, Union
 
 from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
-
-TOKEN_PROGRAM_ID: PublicKey = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-"""Public key that identifies the SPL token program."""
+from solana.utils.validate import validate_instruction_type
 
 
 # Instruction Params
@@ -175,13 +173,6 @@ class AssignWithSeedParams(NamedTuple):
     """"""
 
 
-def __check_instruction_type(parsed_data: Any, expected_type: InstructionType) -> None:
-    if parsed_data.instruction_type != expected_type:
-        raise ValueError(
-            f"invalid instruction; instruction index mismatch {parsed_data.instruction_type} != {expected_type}"
-        )
-
-
 def __check_program_id(program_id: PublicKey) -> None:
     if program_id != sys_program_id():
         raise ValueError("invalid instruction: programId is not SystemProgram")
@@ -204,7 +195,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     verify_instruction_keys(instruction, 2)
 
     parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    __check_instruction_type(parsed_data, InstructionType.CreateAccount)
+    validate_instruction_type(parsed_data, InstructionType.CreateAccount)
 
     return CreateAccountParams(
         from_pubkey=instruction.keys[0].pubkey,
@@ -230,7 +221,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     verify_instruction_keys(instruction, 2)
 
     parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    __check_instruction_type(parsed_data, InstructionType.Transfer)
+    validate_instruction_type(parsed_data, InstructionType.Transfer)
 
     return TransferParams(
         from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=parsed_data.args.lamports
@@ -262,7 +253,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     verify_instruction_keys(instruction, 1)
 
     parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    __check_instruction_type(parsed_data, InstructionType.Assign)
+    validate_instruction_type(parsed_data, InstructionType.Assign)
 
     return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
 
