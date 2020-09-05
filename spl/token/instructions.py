@@ -86,17 +86,17 @@ class ApproveParams(NamedTuple):
     """Approve token transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     source: PublicKey
-    """"""
+    """Source account."""
     delegate: PublicKey
-    """"""
+    """Delegate account authorized to perform a transfer of tokens from the source account."""
     owner: PublicKey
-    """"""
+    """Owner of the source account."""
     signers: List[PublicKey]
-    """"""
+    """Signing accounts if `owner` is a multiSig."""
     amount: int
-    """"""
+    """Maximum number of tokens the delegate may transfer."""
 
 
 class RevokeParams(NamedTuple):
@@ -347,7 +347,19 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
 
 def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
     """Decode a approve token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_token_approve not implemented")
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.Approve)
+
+    return ApproveParams(
+        program_id=instruction.program_id,
+        source=instruction.keys[0].pubkey,
+        delegate=instruction.keys[1].pubkey,
+        owner=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+        amount=parsed_data.args.amount,
+    )
 
 
 def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
@@ -501,7 +513,14 @@ def transfer(params: TransferParams) -> TransactionInstruction:
 
 def approve(params: ApproveParams) -> TransactionInstruction:
     """Approves a delegate."""
-    raise NotImplementedError("approve not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Approve, args=dict(amount=params.amount)))
+    keys = [
+        AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def revoke(params: RevokeParams) -> TransactionInstruction:
