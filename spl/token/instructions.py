@@ -68,7 +68,7 @@ class InitializeMultisigParams(NamedTuple):
 class TransferParams(NamedTuple):
     """Transfer token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     source: PublicKey
     """"""
@@ -85,7 +85,7 @@ class TransferParams(NamedTuple):
 class ApproveParams(NamedTuple):
     """Approve token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     source: PublicKey
     """"""
@@ -102,7 +102,7 @@ class ApproveParams(NamedTuple):
 class RevokeParams(NamedTuple):
     """Revoke token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     source: PublicKey
     """"""
@@ -124,7 +124,7 @@ class SetAuthorityParams(NamedTuple):
 class MintToParams(NamedTuple):
     """Mint token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     mint: PublicKey
     """"""
@@ -141,7 +141,7 @@ class MintToParams(NamedTuple):
 class BurnParams(NamedTuple):
     """Burn token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     account: PublicKey
     """"""
@@ -158,7 +158,7 @@ class BurnParams(NamedTuple):
 class CloseAccountParams(NamedTuple):
     """Close token account transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     account: PublicKey
     """"""
@@ -173,7 +173,7 @@ class CloseAccountParams(NamedTuple):
 class FreezeAccountParams(NamedTuple):
     """Freeze token account transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     account: PublicKey
     """"""
@@ -188,7 +188,7 @@ class FreezeAccountParams(NamedTuple):
 class ThawAccountParams(NamedTuple):
     """Thaw token account transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     account: PublicKey
     """"""
@@ -203,7 +203,7 @@ class ThawAccountParams(NamedTuple):
 class Transfer2Params(NamedTuple):
     """Transfer2 token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     mint: PublicKey
     """"""
@@ -224,7 +224,7 @@ class Transfer2Params(NamedTuple):
 class Approve2Params(NamedTuple):
     """Approve2 token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     mint: PublicKey
     """"""
@@ -245,7 +245,7 @@ class Approve2Params(NamedTuple):
 class MintTo2Params(NamedTuple):
     """MintTo2 token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     mint: PublicKey
     """"""
@@ -264,7 +264,7 @@ class MintTo2Params(NamedTuple):
 class Burn2Params(NamedTuple):
     """Burn2 token transaction params."""
 
-    token_program_id: PublicKey
+    program_id: PublicKey
     """"""
     mint: PublicKey
     """"""
