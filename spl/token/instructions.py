@@ -42,14 +42,14 @@ class InitializeMintParams(NamedTuple):
 class InitializeAccountParams(NamedTuple):
     """Initialize token account transaction params."""
 
-    token_program_id: PublicKey
-    """"""
+    program_id: PublicKey
+    """SPL Token program account."""
     account: PublicKey
-    """"""
+    """New account."""
     mint: PublicKey
-    """"""
+    """Token mint account."""
     owner: PublicKey
-    """"""
+    """Owner of the new account."""
 
 
 class InitializeMultisigParams(NamedTuple):
@@ -300,7 +300,17 @@ def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMin
 
 def decode_initialize_account(instruction: TransactionInstruction) -> InitializeAccountParams:
     """Decode an initialize account token instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_initialize_account not implemented")
+    verify_instruction_keys(instruction, 4)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.InitializeAccount)
+
+    return InitializeAccountParams(
+        program_id=instruction.program_id,
+        account=instruction.keys[0].pubkey,
+        mint=instruction.keys[1].pubkey,
+        owner=instruction.keys[2].pubkey,
+    )
 
 
 def decode_initialize_multisig(instruction: TransactionInstruction) -> InitializeMultisigParams:
@@ -404,7 +414,17 @@ def initialize_account(params: InitializeAccountParams) -> TransactionInstructio
     the system program's `CreateInstruction` that creates the account being initialized.
     Otherwise another party can acquire ownership of the uninitialized account.
     """
-    raise NotImplementedError("initialize_account not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.InitializeAccount, args=None))
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=params.owner, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        ],
+        program_id=params.program_id,
+        data=data,
+    )
 
 
 def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruction:

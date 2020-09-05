@@ -26,3 +26,16 @@ def test_initialize_mint(stubbed_sender):
     )
     instruction = spl_token.initialize_mint(params_no_freeze)
     assert spl_token.decode_initialize_mint(instruction) == params_no_freeze
+
+
+def test_initialize_account(stubbed_sender):
+    """Test initialize account."""
+    new_account, token_mint = PublicKey(0), PublicKey(1)
+    params = spl_token.InitializeAccountParams(
+        program_id=TOKEN_PROGRAM_ID,
+        account=new_account,
+        mint=token_mint,
+        owner=stubbed_sender.public_key(),
+    )
+    instruction = spl_token.initialize_account(params)
+    assert spl_token.decode_initialize_account(instruction) == params
