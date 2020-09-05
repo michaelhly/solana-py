@@ -74,10 +74,10 @@ class TransferParams(NamedTuple):
     """Source account."""
     destination: PublicKey
     """Destination account."""
-    authority: PublicKey
+    owner: PublicKey
     """Owner of the source account."""
     signers: List[PublicKey]
-    """Signing accounts if `authority` is a multiSig."""
+    """Signing accounts if `owner` is a multiSig."""
     amount: int
     """Number of tokens to transfer."""
 
@@ -339,7 +339,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
         program_id=instruction.program_id,
         source=instruction.keys[0].pubkey,
         destination=instruction.keys[1].pubkey,
-        authority=instruction.keys[2].pubkey,
+        owner=instruction.keys[2].pubkey,
         signers=[signer.pubkey for signer in instruction.keys[3:]],
         amount=parsed_data.args.amount,
     )
@@ -506,7 +506,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.destination, is_signer=False, is_writable=False),
     ]
-    __add_signers(keys, params.authority, params.signers)
+    __add_signers(keys, params.owner, params.signers)
 
     return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 

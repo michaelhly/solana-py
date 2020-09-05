@@ -61,7 +61,7 @@ def test_transfer(stubbed_reciever, stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
         destination=stubbed_reciever,
-        authority=stubbed_sender.public_key(),
+        owner=stubbed_sender.public_key(),
         signers=[],
         amount=123,
     )
@@ -72,7 +72,7 @@ def test_transfer(stubbed_reciever, stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
         destination=stubbed_reciever,
-        authority=stubbed_sender.public_key(),
+        owner=stubbed_sender.public_key(),
         signers=[PublicKey(i + 1) for i in range(3)],
         amount=123,
     )
