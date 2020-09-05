@@ -5,8 +5,8 @@ from typing import List, NamedTuple, Optional
 
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.transaction import AccountMeta, TransactionInstruction, verify_instruction_keys
-from solana.utils.validate import validate_instruction_type
+from solana.transaction import AccountMeta, TransactionInstruction
+from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType  # type: ignore
 
 
@@ -282,7 +282,7 @@ class Burn2Params(NamedTuple):
 
 def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMintParams:
     """Decode an initialize mint token instruction and retrieve the instruction params."""
-    verify_instruction_keys(instruction, 2)
+    validate_instruction_keys(instruction, 2)
 
     parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
     validate_instruction_type(parsed_data, InstructionType.InitializeMint)
@@ -300,7 +300,7 @@ def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMin
 
 def decode_initialize_account(instruction: TransactionInstruction) -> InitializeAccountParams:
     """Decode an initialize account token instruction and retrieve the instruction params."""
-    verify_instruction_keys(instruction, 4)
+    validate_instruction_keys(instruction, 4)
 
     parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
     validate_instruction_type(parsed_data, InstructionType.InitializeAccount)
@@ -318,7 +318,7 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
     parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
     validate_instruction_type(parsed_data, InstructionType.InitializeMultisig)
     num_signers = parsed_data.args.m
-    verify_instruction_keys(instruction, 2 + num_signers)
+    validate_instruction_keys(instruction, 2 + num_signers)
 
     return InitializeMultisigParams(
         program_id=instruction.program_id,
@@ -360,7 +360,7 @@ def decode_burn(instruction: TransactionInstruction) -> BurnParams:
 
 def decode_close_account(instruction: TransactionInstruction) -> CloseAccountParams:
     """Decode a close account token transaction and retrieve the instruction params."""
-    verify_instruction_keys(instruction, 3)
+    validate_instruction_keys(instruction, 3)
 
     parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
     validate_instruction_type(parsed_data, InstructionType.CloseAccount)

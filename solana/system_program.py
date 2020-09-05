@@ -5,8 +5,8 @@ from typing import NamedTuple, Union
 
 from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
-from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
-from solana.utils.validate import validate_instruction_type
+from solana.transaction import AccountMeta, Transaction, TransactionInstruction
+from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 
 
 # Instruction Params
@@ -192,7 +192,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
     """  # noqa: E501 # pylint: disable=line-too-long
     __check_program_id(instruction.program_id)
-    verify_instruction_keys(instruction, 2)
+    validate_instruction_keys(instruction, 2)
 
     parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
     validate_instruction_type(parsed_data, InstructionType.CreateAccount)
@@ -218,7 +218,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
     __check_program_id(instruction.program_id)
-    verify_instruction_keys(instruction, 2)
+    validate_instruction_keys(instruction, 2)
 
     parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
     validate_instruction_type(parsed_data, InstructionType.Transfer)
@@ -250,7 +250,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
     """
     __check_program_id(instruction.program_id)
-    verify_instruction_keys(instruction, 1)
+    validate_instruction_keys(instruction, 1)
 
     parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
     validate_instruction_type(parsed_data, InstructionType.Assign)
