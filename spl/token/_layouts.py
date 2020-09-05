@@ -14,7 +14,7 @@ class InstructionType(IntEnum):
     InitializeMint = 0
     InitializeAccount = 1
     InitializeMultisig = 2
-    Tranfer = 3
+    Transfer = 3
     Approve = 4
     Revoke = 5
     SetAuthority = 6
@@ -55,7 +55,7 @@ INSTRUCTIONS_LAYOUT = cStruct(
             InstructionType.InitializeMint: _INITIALIZE_MINT_LAYOUT,
             InstructionType.InitializeAccount: Pass,
             InstructionType.InitializeMultisig: _INITIALIZE_MULTISIG_LAYOUT,
-            InstructionType.Tranfer: _AMOUNT_LAYOUT,
+            InstructionType.Transfer: _AMOUNT_LAYOUT,
             InstructionType.Approve: _AMOUNT_LAYOUT,
             InstructionType.Revoke: Pass,
             InstructionType.SetAuthority: _SET_AUTHORITY_LAYOUT,

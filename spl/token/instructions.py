@@ -32,7 +32,7 @@ class InitializeMintParams(NamedTuple):
     program_id: PublicKey
     """SPL Token program account."""
     mint: PublicKey
-    """Public key of the minter."""
+    """Public key of the minter account."""
     mint_authority: PublicKey
     """The authority/multisignature to mint tokens."""
     freeze_authority: Optional[PublicKey] = None
@@ -45,9 +45,9 @@ class InitializeAccountParams(NamedTuple):
     program_id: PublicKey
     """SPL Token program account."""
     account: PublicKey
-    """New account address."""
+    """Public key of the new account."""
     mint: PublicKey
-    """Token mint account address."""
+    """Public key of the minter account."""
     owner: PublicKey
     """Owner of the new account."""
 
@@ -69,17 +69,17 @@ class TransferParams(NamedTuple):
     """Transfer token transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     source: PublicKey
-    """"""
+    """Source account."""
     destination: PublicKey
-    """"""
+    """Destination account."""
     authority: PublicKey
-    """"""
+    """Owner of the source account."""
     signers: List[PublicKey]
-    """"""
+    """Signing accounts if `authority` is a multiSig."""
     amount: int
-    """"""
+    """Number of tokens to transfer."""
 
 
 class ApproveParams(NamedTuple):
@@ -330,7 +330,19 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
 
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     """Decode a transfer token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_transfer not implemented")
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.Transfer)
+
+    return TransferParams(
+        program_id=instruction.program_id,
+        source=instruction.keys[0].pubkey,
+        destination=instruction.keys[1].pubkey,
+        authority=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+        amount=parsed_data.args.amount,
+    )
 
 
 def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
@@ -397,6 +409,15 @@ def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
 def decode_burn2(instruction: TransactionInstruction) -> MintTo2Params:
     """Decode a burn2 token transaction and retrieve the instruction params."""
     raise NotImplementedError("decode_burn2 not implemented")
+
+
+def __add_signers(keys: List[AccountMeta], owner: PublicKey, signers: List[PublicKey]) -> None:
+    if signers:
+        keys.append(AccountMeta(pubkey=owner, is_signer=False, is_writable=False))
+        for signer in signers:
+            keys.append(AccountMeta(pubkey=signer, is_signer=True, is_writable=False))
+    else:
+        keys.append(AccountMeta(pubkey=owner, is_signer=True, is_writable=False))
 
 
 def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
@@ -468,7 +489,14 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
 
 def transfer(params: TransferParams) -> TransactionInstruction:
     """Transfers tokens from one account to another either directly or via a delegate."""
-    raise NotImplementedError("transfer not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Transfer, args=dict(amount=params.amount)))
+    keys = [
+        AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.destination, is_signer=False, is_writable=False),
+    ]
+    __add_signers(keys, params.authority, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def approve(params: ApproveParams) -> TransactionInstruction:
@@ -506,12 +534,7 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.destination, is_signer=False, is_writable=True),
     ]
-    if params.signers:
-        keys.append(AccountMeta(pubkey=params.owner, is_signer=False, is_writable=False))
-        for signer in params.signers:
-            keys.append(AccountMeta(pubkey=signer, is_signer=False, is_writable=False))
-    else:
-        keys.append(AccountMeta(pubkey=params.owner, is_signer=True, is_writable=False))
+    __add_signers(keys, params.owner, params.signers)
 
     return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
