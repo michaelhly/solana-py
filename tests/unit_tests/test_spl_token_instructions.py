@@ -106,6 +106,28 @@ def test_approve(stubbed_sender):
     assert spl_token.decode_approve(instruction) == multisig_params
 
 
+def test_revoke(stubbed_sender):
+    """Test revoke."""
+    delegate_account = PublicKey(0)
+    params = spl_token.RevokeParams(
+        program_id=TOKEN_PROGRAM_ID,
+        delegate=delegate_account,
+        owner=stubbed_sender.public_key(),
+        signers=[],
+    )
+    instruction = spl_token.revoke(params)
+    assert spl_token.decode_revoke(instruction) == params
+
+    multisig_params = spl_token.RevokeParams(
+        program_id=TOKEN_PROGRAM_ID,
+        delegate=delegate_account,
+        owner=stubbed_sender.public_key(),
+        signers=[PublicKey(i + 1) for i in range(3)],
+    )
+    instruction = spl_token.revoke(multisig_params)
+    assert spl_token.decode_revoke(instruction) == multisig_params
+
+
 def test_close_account(stubbed_sender):
     """Test close account."""
     token_account = PublicKey(0)

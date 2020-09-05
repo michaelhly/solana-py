@@ -103,13 +103,13 @@ class RevokeParams(NamedTuple):
     """Revoke token transaction params."""
 
     program_id: PublicKey
-    """"""
-    source: PublicKey
-    """"""
+    """SPL Token program account."""
+    delegate: PublicKey
+    """Delegate account authorized to perform a transfer of tokens from the source account."""
     owner: PublicKey
-    """"""
+    """Owner of the source account."""
     signers: List[PublicKey]
-    """"""
+    """Signing accounts if `owner` is a multiSig."""
 
 
 class SetAuthorityParams(NamedTuple):
@@ -364,7 +364,17 @@ def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
 
 def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
     """Decode a revoke token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_token_revoke not implemented")
+    validate_instruction_keys(instruction, 2)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.Revoke)
+
+    return RevokeParams(
+        program_id=instruction.program_id,
+        delegate=instruction.keys[0].pubkey,
+        owner=instruction.keys[1].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[2:]],
+    )
 
 
 def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityParams:
@@ -525,7 +535,11 @@ def approve(params: ApproveParams) -> TransactionInstruction:
 
 def revoke(params: RevokeParams) -> TransactionInstruction:
     """Revokes the delegate's authority."""
-    raise NotImplementedError("revoke not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Revoke, args=None))
+    keys = [AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False)]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
