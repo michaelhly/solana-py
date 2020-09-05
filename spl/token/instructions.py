@@ -45,9 +45,9 @@ class InitializeAccountParams(NamedTuple):
     program_id: PublicKey
     """SPL Token program account."""
     account: PublicKey
-    """New account."""
+    """New account address."""
     mint: PublicKey
-    """Token mint account."""
+    """Token mint account address."""
     owner: PublicKey
     """Owner of the new account."""
 
@@ -55,12 +55,12 @@ class InitializeAccountParams(NamedTuple):
 class InitializeMultisigParams(NamedTuple):
     """Initialize multisig token account transaction params."""
 
-    token_program_id: PublicKey
-    """"""
+    program_id: PublicKey
+    """SPL Token program account."""
     multisig: PublicKey
-    """"""
+    """New multisig account address."""
     signers: List[PublicKey]
-    """"""
+    """Addresses of multisig signers."""
     m: int
     """The number of signers (M) required to validate this multisignature account."""
 
@@ -315,7 +315,17 @@ def decode_initialize_account(instruction: TransactionInstruction) -> Initialize
 
 def decode_initialize_multisig(instruction: TransactionInstruction) -> InitializeMultisigParams:
     """Decode an initialize multisig account token instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_initialize_multisig not implemented")
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.InitializeMultisig)
+    num_signers = parsed_data.args.m
+    verify_instruction_keys(instruction, 2 + num_signers)
+
+    return InitializeMultisigParams(
+        program_id=instruction.program_id,
+        multisig=instruction.keys[0].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[-num_signers:]],
+        m=num_signers,
+    )
 
 
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
@@ -434,7 +444,15 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
     the system program's `CreateInstruction` that creates the account being initialized.
     Otherwise another party can acquire ownership of the uninitialized account.
     """
-    raise NotImplementedError("initialize_multisig not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.InitializeMultisig, args=dict(m=params.m)))
+    keys = [
+        AccountMeta(pubkey=params.multisig, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+    ]
+    for signer in params.signers:
+        keys.append(AccountMeta(pubkey=signer, is_signer=False, is_writable=False))
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def transfer(params: TransferParams) -> TransactionInstruction:

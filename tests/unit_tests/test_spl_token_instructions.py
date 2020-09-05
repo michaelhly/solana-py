@@ -39,3 +39,17 @@ def test_initialize_account(stubbed_sender):
     )
     instruction = spl_token.initialize_account(params)
     assert spl_token.decode_initialize_account(instruction) == params
+
+
+def test_initialize_multisig():
+    """Test initialize multisig."""
+    new_multisig = PublicKey(0)
+    signers = [PublicKey(i + 1) for i in range(3)]
+    params = spl_token.InitializeMultisigParams(
+        program_id=TOKEN_PROGRAM_ID,
+        multisig=new_multisig,
+        signers=signers,
+        m=len(signers),
+    )
+    instruction = spl_token.initialize_multisig(params)
+    assert spl_token.decode_initialize_multisig(instruction) == params
