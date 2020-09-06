@@ -2,7 +2,7 @@
 
 import spl.token.instructions as spl_token
 from solana.publickey import PublicKey
-from spl.token.program import TOKEN_PROGRAM_ID
+from spl.token.constants import TOKEN_PROGRAM_ID
 
 
 def test_initialize_mint(stubbed_sender):
