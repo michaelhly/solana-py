@@ -581,7 +581,10 @@ def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
 
 
 def mint_to(params: MintToParams) -> TransactionInstruction:
-    """Generate a transaction instruction to mints new tokens to an account. The native mint does not support minting."""
+    """Generate a transaction instruction to mint new tokens to an account.
+
+    The native mint does not support minting.
+    """
     raise NotImplementedError("mint_to not implemented")
 
 
