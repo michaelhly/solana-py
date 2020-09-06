@@ -179,7 +179,7 @@ def test_mint_to(stubbed_reciever):
 
 
 def test_burn(stubbed_reciever):
-    """Test mint to."""
+    """Test burn."""
     mint, owner = PublicKey(0), PublicKey(1)
     params = spl_token.BurnParams(
         program_id=TOKEN_PROGRAM_ID,
@@ -355,3 +355,30 @@ def test_mint_to2(stubbed_reciever):
     )
     instruction = spl_token.mint_to2(multisig_params)
     assert spl_token.decode_mint_to2(instruction) == multisig_params
+
+
+def test_burn2(stubbed_reciever):
+    """Test burn2."""
+    mint, owner = PublicKey(0), PublicKey(1)
+    params = spl_token.Burn2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        account=stubbed_reciever,
+        owner=owner,
+        amount=123,
+        decimals=6,
+    )
+    instruction = spl_token.burn2(params)
+    assert spl_token.decode_burn2(instruction) == params
+
+    multisig_params = spl_token.Burn2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        account=stubbed_reciever,
+        owner=owner,
+        signers=[PublicKey(i) for i in range(3, 10)],
+        amount=123,
+        decimals=6,
+    )
+    instruction = spl_token.burn2(multisig_params)
+    assert spl_token.decode_burn2(instruction) == multisig_params

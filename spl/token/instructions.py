@@ -540,9 +540,22 @@ def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
     )
 
 
-def decode_burn2(instruction: TransactionInstruction) -> MintTo2Params:
+def decode_burn2(instruction: TransactionInstruction) -> Burn2Params:
     """Decode a burn2 token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_burn2 not implemented")
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.Burn2)
+
+    return Burn2Params(
+        program_id=instruction.program_id,
+        amount=parsed_data.args.amount,
+        decimals=parsed_data.args.decimals,
+        account=instruction.keys[0].pubkey,
+        mint=instruction.keys[1].pubkey,
+        owner=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+    )
 
 
 def __add_signers(keys: List[AccountMeta], owner: PublicKey, signers: List[PublicKey]) -> None:
@@ -552,6 +565,16 @@ def __add_signers(keys: List[AccountMeta], owner: PublicKey, signers: List[Publi
             keys.append(AccountMeta(pubkey=signer, is_signer=True, is_writable=False))
     else:
         keys.append(AccountMeta(pubkey=owner, is_signer=True, is_writable=False))
+
+
+def __burn_instruction(params: Union[BurnParams, Burn2Params], data: Any) -> TransactionInstruction:
+    keys = [
+        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def __freeze_or_thaw_instruction(
@@ -567,7 +590,7 @@ def __freeze_or_thaw_instruction(
     return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
-def __mint_to_instruction(params: Union[MintToParams, MintTo2Params], data: Any):
+def __mint_to_instruction(params: Union[MintToParams, MintTo2Params], data: Any) -> TransactionInstruction:
     keys = [
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
@@ -707,13 +730,7 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
 def burn(params: BurnParams) -> TransactionInstruction:
     """Creates a transaction instruction to burns tokens by removing them from an account."""
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Burn, args=dict(amount=params.amount)))
-    keys = [
-        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
-    ]
-    __add_signers(keys, params.owner, params.signers)
-
-    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
+    return __burn_instruction(params, data)
 
 
 def close_account(params: CloseAccountParams) -> TransactionInstruction:
@@ -781,4 +798,7 @@ def mint_to2(params: MintTo2Params) -> TransactionInstruction:
 
 def burn2(params: Burn2Params) -> TransactionInstruction:
     """This instruction differs from `burn` in that the decimals value is asserted by the caller."""
-    raise NotImplementedError("burn2 not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.Burn2, args=dict(amount=params.amount, decimals=params.decimals))
+    )
+    return __burn_instruction(params, data)
