@@ -1,7 +1,7 @@
 """Library to interface with SPL tokens on Solana."""
 
 from enum import IntEnum
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple, Optional, Union
 
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
@@ -675,19 +675,18 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 
 def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set)."""
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.FreezeAccount, args=None))
-    keys = [
-        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
-    ]
-    __add_signers(keys, params.owner, params.signers)
-
-    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
+    return __freeze_or_thaw(params, InstructionType.FreezeAccount)
 
 
 def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set)."""
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.ThawAccount, args=None))
+    return __freeze_or_thaw(params, InstructionType.ThawAccount)
+
+
+def __freeze_or_thaw(
+    params: Union[FreezeAccountParams, ThawAccountParams], instruction_type: InstructionType
+) -> TransactionInstruction:
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=instruction_type, args=None))
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
