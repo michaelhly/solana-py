@@ -1,7 +1,7 @@
 """Library to interface with SPL tokens on Solana."""
 
 from enum import IntEnum
-from typing import List, NamedTuple, Optional, Union
+from typing import Any, List, NamedTuple, Optional, Union
 
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
@@ -554,6 +554,29 @@ def __add_signers(keys: List[AccountMeta], owner: PublicKey, signers: List[Publi
         keys.append(AccountMeta(pubkey=owner, is_signer=True, is_writable=False))
 
 
+def __freeze_or_thaw_instruction(
+    params: Union[FreezeAccountParams, ThawAccountParams], instruction_type: InstructionType
+) -> TransactionInstruction:
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=instruction_type, args=None))
+    keys = [
+        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
+
+
+def __mint_to_instruction(params: Union[MintToParams, MintTo2Params], data: Any):
+    keys = [
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.mint_authority, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
+
+
 def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
     """Creates a transaction instruction to initialize a new mint newly.
 
@@ -678,13 +701,7 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
     The native mint does not support minting.
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.MintTo, args=dict(amount=params.amount)))
-    keys = [
-        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
-    ]
-    __add_signers(keys, params.mint_authority, params.signers)
-
-    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
+    return __mint_to_instruction(params, data)
 
 
 def burn(params: BurnParams) -> TransactionInstruction:
@@ -716,25 +733,12 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 
 def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set)."""
-    return __freeze_or_thaw(params, InstructionType.FreezeAccount)
+    return __freeze_or_thaw_instruction(params, InstructionType.FreezeAccount)
 
 
 def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set)."""
-    return __freeze_or_thaw(params, InstructionType.ThawAccount)
-
-
-def __freeze_or_thaw(
-    params: Union[FreezeAccountParams, ThawAccountParams], instruction_type: InstructionType
-) -> TransactionInstruction:
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=instruction_type, args=None))
-    keys = [
-        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
-    ]
-    __add_signers(keys, params.owner, params.signers)
-
-    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
+    return __freeze_or_thaw_instruction(params, InstructionType.ThawAccount)
 
 
 def transfer2(params: Transfer2Params) -> TransactionInstruction:
@@ -772,13 +776,7 @@ def mint_to2(params: MintTo2Params) -> TransactionInstruction:
     data = INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.MintTo2, args=dict(amount=params.amount, decimals=params.decimals))
     )
-    keys = [
-        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
-    ]
-    __add_signers(keys, params.mint_authority, params.signers)
-
-    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
+    return __mint_to_instruction(params, data)
 
 
 def burn2(params: Burn2Params) -> TransactionInstruction:
