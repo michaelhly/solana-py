@@ -7,9 +7,18 @@ These programs are tested against Solana's implementation of Sealevel, solana-ru
 
 SPL-Token
 ---------
+A Fungible Token program on the Solana blockchain.
 
-.. automodule:: spl.token.program
+This program provides an interface and implementation that third parties can utilize to create and use their tokens.
+
+spl.token.constants
+*******************
+
+.. automodule:: spl.token.constants
     :members:
+
+spl.token.instructions
+**********************
 
 .. automodule:: spl.token.instructions
     :members:

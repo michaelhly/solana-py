@@ -1,4 +1,4 @@
-"""SPL tokens instructions."""
+"""SPL token instructions."""
 
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
