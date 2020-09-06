@@ -1,6 +1,6 @@
 """Library to interface with SPL tokens on Solana."""
 
-from enum import Enum
+from enum import IntEnum
 from typing import List, NamedTuple, Optional
 
 from solana.publickey import PublicKey
@@ -10,7 +10,7 @@ from solana.utils.validate import validate_instruction_keys, validate_instructio
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType  # type: ignore
 
 
-class AuthorityType(Enum):
+class AuthorityType(IntEnum):
     """Specifies the authority type for SetAuthority instructions."""
 
     MintTokens = 0
@@ -115,10 +115,18 @@ class RevokeParams(NamedTuple):
 class SetAuthorityParams(NamedTuple):
     """Set token authority transaction params."""
 
+    program_id: PublicKey
+    """SPL Token program account."""
+    account: PublicKey
+    """Public key of the token account."""
     authority: AuthorityType
     """The type of authority to update."""
+    current_authority: PublicKey
+    """Current authority of the specified type."""
+    signers: List[PublicKey]
+    """Signing accounts if `current_authority` is a multiSig."""
     new_authority: Optional[PublicKey] = None
-    """The new authority."""
+    """New authority of the account."""
 
 
 class MintToParams(NamedTuple):
@@ -379,7 +387,19 @@ def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
 
 def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityParams:
     """Decode a set authority token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_set_authority not implemented")
+    validate_instruction_keys(instruction, 2)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.SetAuthority)
+
+    return SetAuthorityParams(
+        program_id=instruction.program_id,
+        account=instruction.keys[0].pubkey,
+        authority=AuthorityType(parsed_data.args.authority_type),
+        new_authority=PublicKey(parsed_data.args.new_authority) if parsed_data.args.new_authority_option else None,
+        current_authority=instruction.keys[1].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[2:]],
+    )
 
 
 def decode_mint_to(instruction: TransactionInstruction) -> MintToParams:
@@ -544,7 +564,17 @@ def revoke(params: RevokeParams) -> TransactionInstruction:
 
 def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
     """Sets a new authority of a mint or account."""
-    raise NotImplementedError("set_authority not implemented")
+    new_authority, opt = (params.new_authority, 1) if params.new_authority else (PublicKey(0), 0)
+    data = INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.SetAuthority,
+            args=dict(authority_type=params.authority, new_authority_option=opt, new_authority=bytes(new_authority)),
+        )
+    )
+    keys = [AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)]
+    __add_signers(keys, params.current_authority, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def mint_to(params: MintToParams) -> TransactionInstruction:
