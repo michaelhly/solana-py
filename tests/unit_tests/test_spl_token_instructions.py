@@ -178,6 +178,31 @@ def test_mint_to(stubbed_reciever):
     assert spl_token.decode_mint_to(instruction) == multisig_params
 
 
+def test_burn(stubbed_reciever):
+    """Test mint to."""
+    mint, owner = PublicKey(0), PublicKey(1)
+    params = spl_token.BurnParams(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        account=stubbed_reciever,
+        owner=owner,
+        amount=123,
+    )
+    instruction = spl_token.burn(params)
+    assert spl_token.decode_burn(instruction) == params
+
+    multisig_params = spl_token.BurnParams(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        account=stubbed_reciever,
+        owner=owner,
+        signers=[PublicKey(i) for i in range(3, 10)],
+        amount=123,
+    )
+    instruction = spl_token.burn(multisig_params)
+    assert spl_token.decode_burn(instruction) == multisig_params
+
+
 def test_close_account(stubbed_sender):
     """Test close account."""
     token_account = PublicKey(0)

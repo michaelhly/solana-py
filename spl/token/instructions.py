@@ -150,17 +150,17 @@ class BurnParams(NamedTuple):
     """Burn token transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     account: PublicKey
-    """"""
+    """Account to burn tokens from."""
     mint: PublicKey
-    """"""
-    authority: PublicKey
-    """"""
+    """Public key of the minter account."""
+    owner: PublicKey
+    """Owner of the account."""
     amount: int
-    """"""
+    """Amount to burn."""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `owner` is a multiSig"""
 
 
 class CloseAccountParams(NamedTuple):
@@ -421,7 +421,19 @@ def decode_mint_to(instruction: TransactionInstruction) -> MintToParams:
 
 def decode_burn(instruction: TransactionInstruction) -> BurnParams:
     """Decode a burn token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_burn not implemented")
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.Burn)
+
+    return BurnParams(
+        program_id=instruction.program_id,
+        amount=parsed_data.args.amount,
+        account=instruction.keys[0].pubkey,
+        mint=instruction.keys[1].pubkey,
+        owner=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+    )
 
 
 def decode_close_account(instruction: TransactionInstruction) -> CloseAccountParams:
@@ -609,7 +621,14 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
 
 def burn(params: BurnParams) -> TransactionInstruction:
     """Generate a transaction instruction to burns tokens by removing them from an account."""
-    raise NotImplementedError("burn not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Burn, args=dict(amount=params.amount)))
+    keys = [
+        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def close_account(params: CloseAccountParams) -> TransactionInstruction:
