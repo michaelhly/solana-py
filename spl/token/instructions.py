@@ -503,9 +503,23 @@ def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
     )
 
 
-def decode_approve2(instruction: TransactionInstruction) -> Transfer2Params:
+def decode_approve2(instruction: TransactionInstruction) -> Approve2Params:
     """Decode a approve2 token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_approve2 not implemented")
+    validate_instruction_keys(instruction, 4)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.Approve2)
+
+    return Approve2Params(
+        program_id=instruction.program_id,
+        amount=parsed_data.args.amount,
+        decimals=parsed_data.args.decimals,
+        source=instruction.keys[0].pubkey,
+        mint=instruction.keys[1].pubkey,
+        delegate=instruction.keys[2].pubkey,
+        owner=instruction.keys[3].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[4:]],
+    )
 
 
 def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
@@ -727,7 +741,17 @@ def transfer2(params: Transfer2Params) -> TransactionInstruction:
 
 def approve2(params: Approve2Params) -> TransactionInstruction:
     """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller."""
-    raise NotImplementedError("approve2 not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.Approve2, args=dict(amount=params.amount, decimals=params.decimals))
+    )
+    keys = [
+        AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def mint_to2(params: MintTo2Params) -> TransactionInstruction:
