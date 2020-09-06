@@ -173,39 +173,39 @@ class CloseAccountParams(NamedTuple):
     dest: PublicKey
     """Address of account to receive the remaining balance of the closed account."""
     owner: PublicKey
-    """Address of account owner."""
+    """Owner of the account."""
     signers: List[PublicKey] = []
-    """Addresses of signing accounts if `owner` is a multiSig."""
+    """Signing accounts if `owner` is a multiSig"""
 
 
 class FreezeAccountParams(NamedTuple):
     """Freeze token account transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     account: PublicKey
-    """"""
+    """Account to freeze."""
     mint: PublicKey
-    """"""
+    """Public key of the minter account."""
     owner: PublicKey
-    """"""
+    """Owner of the account."""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `owner` is a multiSig"""
 
 
 class ThawAccountParams(NamedTuple):
     """Thaw token account transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     account: PublicKey
-    """"""
+    """Account to thaw."""
     mint: PublicKey
-    """"""
+    """Public key of the minter account."""
     owner: PublicKey
-    """"""
+    """Owner of the account."""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `owner` is a multiSig"""
 
 
 class Transfer2Params(NamedTuple):
@@ -452,9 +452,36 @@ def decode_close_account(instruction: TransactionInstruction) -> CloseAccountPar
     )
 
 
+def decode_freeze_account(instruction: TransactionInstruction) -> FreezeAccountParams:
+    """Decode a freeze account token transaction and retrieve the instruction params."""
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.FreezeAccount)
+
+    return FreezeAccountParams(
+        program_id=instruction.program_id,
+        account=instruction.keys[0].pubkey,
+        mint=instruction.keys[1].pubkey,
+        owner=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+    )
+
+
 def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParams:
     """Decode a thaw account token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_thaw_account not implemented")
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.ThawAccount)
+
+    return ThawAccountParams(
+        program_id=instruction.program_id,
+        account=instruction.keys[0].pubkey,
+        mint=instruction.keys[1].pubkey,
+        owner=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+    )
 
 
 def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
@@ -648,12 +675,26 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 
 def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set)."""
-    raise NotImplementedError("freeze_account not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.FreezeAccount, args=None))
+    keys = [
+        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
-    """Creates a transaction instruction to thaw a Frozen account using the Mint's freeze_authority (if set)."""
-    raise NotImplementedError("thaw_account not implemented")
+    """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set)."""
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.ThawAccount, args=None))
+    keys = [
+        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def transfer2(params: Transfer2Params) -> TransactionInstruction:

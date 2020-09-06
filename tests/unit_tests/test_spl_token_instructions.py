@@ -145,7 +145,7 @@ def test_set_authority():
         account=account,
         authority=spl_token.AuthorityType.FreezeAccount,
         current_authority=current_authority,
-        signers=[PublicKey(i + 1) for i in range(3, 10)],
+        signers=[PublicKey(i) for i in range(3, 10)],
     )
     instruction = spl_token.set_authority(multisig_params)
     decoded_params = spl_token.decode_set_authority(instruction)
@@ -224,3 +224,49 @@ def test_close_account(stubbed_sender):
     )
     instruction = spl_token.close_account(multisig_params)
     assert spl_token.decode_close_account(instruction) == multisig_params
+
+
+def test_freeze_account(stubbed_sender):
+    """Test freeze account."""
+    token_account, mint = PublicKey(0), PublicKey(1)
+    params = spl_token.FreezeAccountParams(
+        program_id=TOKEN_PROGRAM_ID,
+        account=token_account,
+        mint=mint,
+        owner=stubbed_sender.public_key(),
+    )
+    instruction = spl_token.freeze_account(params)
+    assert spl_token.decode_freeze_account(instruction) == params
+
+    multisig_params = spl_token.FreezeAccountParams(
+        program_id=TOKEN_PROGRAM_ID,
+        account=token_account,
+        mint=mint,
+        owner=stubbed_sender.public_key(),
+        signers=[PublicKey(i) for i in range(2, 10)],
+    )
+    instruction = spl_token.freeze_account(multisig_params)
+    assert spl_token.decode_freeze_account(instruction) == multisig_params
+
+
+def test_thaw_account(stubbed_sender):
+    """Test thaw account."""
+    token_account, mint = PublicKey(0), PublicKey(1)
+    params = spl_token.ThawAccountParams(
+        program_id=TOKEN_PROGRAM_ID,
+        account=token_account,
+        mint=mint,
+        owner=stubbed_sender.public_key(),
+    )
+    instruction = spl_token.thaw_account(params)
+    assert spl_token.decode_thaw_account(instruction) == params
+
+    multisig_params = spl_token.ThawAccountParams(
+        program_id=TOKEN_PROGRAM_ID,
+        account=token_account,
+        mint=mint,
+        owner=stubbed_sender.public_key(),
+        signers=[PublicKey(i) for i in range(2, 10)],
+    )
+    instruction = spl_token.thaw_account(multisig_params)
+    assert spl_token.decode_thaw_account(instruction) == multisig_params
