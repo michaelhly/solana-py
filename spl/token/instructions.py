@@ -1,4 +1,4 @@
-"""Library to interface with SPL tokens on Solana."""
+"""SPL tokens instructions."""
 
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union

@@ -1,4 +1,4 @@
-"""SPL token program."""
+"""A Fungible Token program on the Solana blockchain."""
 
 from solana.publickey import PublicKey
 
