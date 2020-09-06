@@ -62,7 +62,7 @@ def test_transfer(stubbed_reciever, stubbed_sender):
     params = spl_token.TransferParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
-        destination=stubbed_reciever,
+        dest=stubbed_reciever,
         owner=stubbed_sender.public_key(),
         amount=123,
     )
@@ -72,7 +72,7 @@ def test_transfer(stubbed_reciever, stubbed_sender):
     multisig_params = spl_token.TransferParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
-        destination=stubbed_reciever,
+        dest=stubbed_reciever,
         owner=stubbed_sender.public_key(),
         signers=[PublicKey(i + 1) for i in range(3)],
         amount=123,
@@ -159,7 +159,7 @@ def test_close_account(stubbed_sender):
     params = spl_token.CloseAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
-        destination=stubbed_sender.public_key(),
+        dest=stubbed_sender.public_key(),
         owner=stubbed_sender.public_key(),
     )
     instruction = spl_token.close_account(params)
@@ -168,7 +168,7 @@ def test_close_account(stubbed_sender):
     multisig_params = spl_token.CloseAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
-        destination=stubbed_sender.public_key(),
+        dest=stubbed_sender.public_key(),
         owner=stubbed_sender.public_key(),
         signers=[PublicKey(i + 1) for i in range(3)],
     )

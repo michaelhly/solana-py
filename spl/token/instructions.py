@@ -72,7 +72,7 @@ class TransferParams(NamedTuple):
     """SPL Token program account."""
     source: PublicKey
     """Source account."""
-    destination: PublicKey
+    dest: PublicKey
     """Destination account."""
     owner: PublicKey
     """Owner of the source account."""
@@ -136,8 +136,8 @@ class MintToParams(NamedTuple):
     """"""
     mint: PublicKey
     """"""
-    account: PublicKey
-    """"""
+    dest: PublicKey
+    """Public key of the account to mint to."""
     owner: PublicKey
     """"""
     amount: int
@@ -170,7 +170,7 @@ class CloseAccountParams(NamedTuple):
     """SPL Token program account."""
     account: PublicKey
     """Address of account to close."""
-    destination: PublicKey
+    dest: PublicKey
     """Address of account to receive the remaining balance of the closed account."""
     owner: PublicKey
     """Address of account owner."""
@@ -217,7 +217,7 @@ class Transfer2Params(NamedTuple):
     """"""
     source: PublicKey
     """"""
-    destination: PublicKey
+    dest: PublicKey
     """"""
     authority: PublicKey
     """"""
@@ -346,7 +346,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     return TransferParams(
         program_id=instruction.program_id,
         source=instruction.keys[0].pubkey,
-        destination=instruction.keys[1].pubkey,
+        dest=instruction.keys[1].pubkey,
         owner=instruction.keys[2].pubkey,
         signers=[signer.pubkey for signer in instruction.keys[3:]],
         amount=parsed_data.args.amount,
@@ -422,7 +422,7 @@ def decode_close_account(instruction: TransactionInstruction) -> CloseAccountPar
     return CloseAccountParams(
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
-        destination=instruction.keys[1].pubkey,
+        dest=instruction.keys[1].pubkey,
         owner=instruction.keys[2].pubkey,
         signers=[signer.pubkey for signer in instruction.keys[3:]],
     )
@@ -537,7 +537,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Transfer, args=dict(amount=params.amount)))
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.destination, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=False),
     ]
     __add_signers(keys, params.owner, params.signers)
 
@@ -585,6 +585,14 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
 
     The native mint does not support minting.
     """
+    # data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.MintTo, args=dict(amount=params.amount)))
+    # keys = [
+    #     AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
+    #     AccountMeta(pubkey=params.dest, is_signer=False, is_writable=False),
+    # ]
+    # __add_signers(keys, params.owner, params.signers)
+
+    # return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
     raise NotImplementedError("mint_to not implemented")
 
 
@@ -601,7 +609,7 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CloseAccount, args=None))
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.destination, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
     ]
     __add_signers(keys, params.owner, params.signers)
 
