@@ -133,17 +133,17 @@ class MintToParams(NamedTuple):
     """Mint token transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     mint: PublicKey
-    """"""
+    """Public key of the minter account."""
     dest: PublicKey
     """Public key of the account to mint to."""
-    owner: PublicKey
-    """"""
+    mint_authority: PublicKey
+    """The mint authority."""
     amount: int
-    """"""
+    """Amount to mint"""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `authority` is a multiSig."""
 
 
 class BurnParams(NamedTuple):
@@ -404,7 +404,19 @@ def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityPar
 
 def decode_mint_to(instruction: TransactionInstruction) -> MintToParams:
     """Decode a mint to token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_mint_to not implemented")
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.MintTo)
+
+    return MintToParams(
+        program_id=instruction.program_id,
+        amount=parsed_data.args.amount,
+        mint=instruction.keys[0].pubkey,
+        dest=instruction.keys[1].pubkey,
+        mint_authority=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+    )
 
 
 def decode_burn(instruction: TransactionInstruction) -> BurnParams:
@@ -585,15 +597,14 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
 
     The native mint does not support minting.
     """
-    # data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.MintTo, args=dict(amount=params.amount)))
-    # keys = [
-    #     AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
-    #     AccountMeta(pubkey=params.dest, is_signer=False, is_writable=False),
-    # ]
-    # __add_signers(keys, params.owner, params.signers)
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.MintTo, args=dict(amount=params.amount)))
+    keys = [
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.mint_authority, params.signers)
 
-    # return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
-    raise NotImplementedError("mint_to not implemented")
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def burn(params: BurnParams) -> TransactionInstruction:

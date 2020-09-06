@@ -153,6 +153,31 @@ def test_set_authority():
     assert decoded_params == multisig_params
 
 
+def test_mint_to(stubbed_reciever):
+    """Test mint to."""
+    mint, mint_authority = PublicKey(0), PublicKey(1)
+    params = spl_token.MintToParams(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        dest=stubbed_reciever,
+        mint_authority=mint_authority,
+        amount=123,
+    )
+    instruction = spl_token.mint_to(params)
+    assert spl_token.decode_mint_to(instruction) == params
+
+    multisig_params = spl_token.MintToParams(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        dest=stubbed_reciever,
+        mint_authority=mint_authority,
+        signers=[PublicKey(i) for i in range(3, 10)],
+        amount=123,
+    )
+    instruction = spl_token.mint_to(multisig_params)
+    assert spl_token.decode_mint_to(instruction) == multisig_params
+
+
 def test_close_account(stubbed_sender):
     """Test close account."""
     token_account = PublicKey(0)
