@@ -487,7 +487,7 @@ def __add_signers(keys: List[AccountMeta], owner: PublicKey, signers: List[Publi
 
 
 def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
-    """Generate a transaction instruction to initialize a new mint newly.
+    """Creates a transaction instruction to initialize a new mint newly.
 
     This instruction requires no signers and MUST be included within the same Transaction as
     the system program's `CreateInstruction` that creates the account being initialized.
@@ -516,7 +516,7 @@ def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
 
 
 def initialize_account(params: InitializeAccountParams) -> TransactionInstruction:
-    """Generate a transaction instruction to initialize a new account to hold tokens.
+    """Creates a transaction instruction to initialize a new account to hold tokens.
 
     This instruction requires no signers and MUST be included within the same Transaction as
     the system program's `CreateInstruction` that creates the account being initialized.
@@ -536,7 +536,7 @@ def initialize_account(params: InitializeAccountParams) -> TransactionInstructio
 
 
 def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruction:
-    """Generate a transaction instruction to initialize a multisignature account with N provided signers.
+    """Creates a transaction instruction to initialize a multisignature account with N provided signers.
 
     This instruction requires no signers and MUST be included within the same Transaction as
     the system program's `CreateInstruction` that creates the account being initialized.
@@ -554,7 +554,7 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
 
 
 def transfer(params: TransferParams) -> TransactionInstruction:
-    """Generate a transaction instruction to transfers tokens from one account to another.
+    """Creates a transaction instruction to transfers tokens from one account to another.
 
     Either directly or via a delegate.
     """
@@ -569,7 +569,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
 
 
 def approve(params: ApproveParams) -> TransactionInstruction:
-    """Generate a transaction instruction to approves a delegate."""
+    """Creates a transaction instruction to approves a delegate."""
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Approve, args=dict(amount=params.amount)))
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
@@ -581,7 +581,7 @@ def approve(params: ApproveParams) -> TransactionInstruction:
 
 
 def revoke(params: RevokeParams) -> TransactionInstruction:
-    """Generate a transaction instruction to revokes the delegate's authority."""
+    """Creates a transaction instruction to revokes the delegate's authority."""
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Revoke, args=None))
     keys = [AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False)]
     __add_signers(keys, params.owner, params.signers)
@@ -590,7 +590,7 @@ def revoke(params: RevokeParams) -> TransactionInstruction:
 
 
 def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
-    """Generate a transaction instruction to sets a new authority of a mint or account."""
+    """Creates a transaction instruction to sets a new authority of a mint or account."""
     new_authority, opt = (params.new_authority, 1) if params.new_authority else (PublicKey(0), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         dict(
@@ -605,7 +605,7 @@ def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
 
 
 def mint_to(params: MintToParams) -> TransactionInstruction:
-    """Generate a transaction instruction to mint new tokens to an account.
+    """Creates a transaction instruction to mint new tokens to an account.
 
     The native mint does not support minting.
     """
@@ -620,7 +620,7 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
 
 
 def burn(params: BurnParams) -> TransactionInstruction:
-    """Generate a transaction instruction to burns tokens by removing them from an account."""
+    """Creates a transaction instruction to burns tokens by removing them from an account."""
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Burn, args=dict(amount=params.amount)))
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
@@ -632,7 +632,7 @@ def burn(params: BurnParams) -> TransactionInstruction:
 
 
 def close_account(params: CloseAccountParams) -> TransactionInstruction:
-    """Generate a transaction instruction to close an account by transferring all its SOL to the destination account.
+    """Creates a transaction instruction to close an account by transferring all its SOL to the destination account.
 
     Non-native accounts may only be closed if its token amount is zero.
     """
@@ -647,12 +647,12 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 
 
 def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
-    """Generate a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set)."""  # noqa: E501 # pylint: disable=line-too-long
+    """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set)."""
     raise NotImplementedError("freeze_account not implemented")
 
 
 def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
-    """Generate a transaction instruction to thaw a Frozen account using the Mint's freeze_authority (if set)."""
+    """Creates a transaction instruction to thaw a Frozen account using the Mint's freeze_authority (if set)."""
     raise NotImplementedError("thaw_account not implemented")
 
 
