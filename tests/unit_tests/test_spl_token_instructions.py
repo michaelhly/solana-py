@@ -270,3 +270,32 @@ def test_thaw_account(stubbed_sender):
     )
     instruction = spl_token.thaw_account(multisig_params)
     assert spl_token.decode_thaw_account(instruction) == multisig_params
+
+
+def test_transfer2(stubbed_reciever, stubbed_sender):
+    """Test transfer2."""
+    mint = PublicKey(0)
+    params = spl_token.Transfer2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        source=stubbed_sender.public_key(),
+        mint=mint,
+        dest=stubbed_reciever,
+        owner=stubbed_sender.public_key(),
+        amount=123,
+        decimals=6,
+    )
+    instruction = spl_token.transfer2(params)
+    assert spl_token.decode_transfer2(instruction) == params
+
+    multisig_params = spl_token.Transfer2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        source=stubbed_sender.public_key(),
+        mint=mint,
+        dest=stubbed_reciever,
+        owner=stubbed_sender.public_key(),
+        signers=[PublicKey(i + 1) for i in range(3)],
+        amount=123,
+        decimals=6,
+    )
+    instruction = spl_token.transfer2(multisig_params)
+    assert spl_token.decode_transfer2(instruction) == multisig_params

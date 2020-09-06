@@ -141,9 +141,9 @@ class MintToParams(NamedTuple):
     mint_authority: PublicKey
     """The mint authority."""
     amount: int
-    """Amount to mint"""
+    """Amount to mint."""
     signers: List[PublicKey] = []
-    """Signing accounts if `authority` is a multiSig."""
+    """Signing accounts if `mint_authority` is a multiSig."""
 
 
 class BurnParams(NamedTuple):
@@ -212,80 +212,80 @@ class Transfer2Params(NamedTuple):
     """Transfer2 token transaction params."""
 
     program_id: PublicKey
-    """"""
-    mint: PublicKey
-    """"""
+    """SPL Token program account."""
     source: PublicKey
-    """"""
+    """Source account."""
+    mint: PublicKey
+    """Public key of the minter account."""
     dest: PublicKey
-    """"""
-    authority: PublicKey
-    """"""
+    """Destination account."""
+    owner: PublicKey
+    """Owner of the source account."""
     amount: int
-    """"""
-    decimal: int
-    """"""
+    """Number of tokens to transfer."""
+    decimals: int
+    """Amount decimals."""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `owner` is a multiSig."""
 
 
 class Approve2Params(NamedTuple):
     """Approve2 token transaction params."""
 
     program_id: PublicKey
-    """"""
-    mint: PublicKey
-    """"""
+    """SPL Token program account."""
     source: PublicKey
-    """"""
+    """Source account."""
+    mint: PublicKey
+    """Public key of the minter account."""
     delegate: PublicKey
-    """"""
+    """Delegate account authorized to perform a transfer of tokens from the source account."""
     owner: PublicKey
-    """"""
+    """Owner of the source account."""
     amount: int
-    """"""
-    decimal: int
-    """"""
+    """Maximum number of tokens the delegate may transfer."""
+    decimals: int
+    """Amount decimals."""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `owner` is a multiSig."""
 
 
 class MintTo2Params(NamedTuple):
     """MintTo2 token transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     mint: PublicKey
-    """"""
-    account: PublicKey
-    """"""
-    owner: PublicKey
-    """"""
+    """Public key of the minter account."""
+    dest: PublicKey
+    """Public key of the account to mint to."""
+    mint_authority: PublicKey
+    """The mint authority."""
     amount: int
-    """"""
-    decimal: int
-    """"""
+    """Amount to mint."""
+    decimals: int
+    """Amount decimals."""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `mint_authority` is a multiSig."""
 
 
 class Burn2Params(NamedTuple):
     """Burn2 token transaction params."""
 
     program_id: PublicKey
-    """"""
+    """SPL Token program account."""
     mint: PublicKey
-    """"""
+    """Public key of the minter account."""
     account: PublicKey
-    """"""
+    """Account to burn tokens from."""
     owner: PublicKey
-    """"""
+    """Owner of the account."""
     amount: int
-    """"""
-    decimal: int
-    """"""
+    """Amount to burn."""
+    decimals: int
+    """Amount decimals."""
     signers: List[PublicKey] = []
-    """"""
+    """Signing accounts if `owner` is a multiSig"""
 
 
 def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMintParams:
@@ -486,7 +486,21 @@ def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParam
 
 def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
     """Decode a transfer2 token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_transfer2 not implemented")
+    validate_instruction_keys(instruction, 4)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.Transfer2)
+
+    return Transfer2Params(
+        program_id=instruction.program_id,
+        amount=parsed_data.args.amount,
+        decimals=parsed_data.args.decimals,
+        source=instruction.keys[0].pubkey,
+        mint=instruction.keys[1].pubkey,
+        dest=instruction.keys[2].pubkey,
+        owner=instruction.keys[3].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[4:]],
+    )
 
 
 def decode_approve2(instruction: TransactionInstruction) -> Transfer2Params:
@@ -698,7 +712,17 @@ def __freeze_or_thaw(
 
 def transfer2(params: Transfer2Params) -> TransactionInstruction:
     """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller."""
-    raise NotImplementedError("transfer2 not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.Transfer2, args=dict(amount=params.amount, decimals=params.decimals))
+    )
+    keys = [
+        AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.owner, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def approve2(params: Approve2Params) -> TransactionInstruction:

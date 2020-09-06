@@ -44,7 +44,7 @@ _SET_AUTHORITY_LAYOUT = cStruct(
     "authority_type" / Int8ul, "new_authority_option" / Int8ul, "new_authority" / PUBLIC_KEY_LAYOUT
 )
 
-_AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimal" / Int8ul)
+_AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimals" / Int8ul)
 
 INSTRUCTIONS_LAYOUT = cStruct(
     "instruction_type" / Int8ul,
