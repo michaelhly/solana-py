@@ -64,7 +64,6 @@ def test_transfer(stubbed_reciever, stubbed_sender):
         source=stubbed_sender.public_key(),
         destination=stubbed_reciever,
         owner=stubbed_sender.public_key(),
-        signers=[],
         amount=123,
     )
     instruction = spl_token.transfer(params)
@@ -90,7 +89,6 @@ def test_approve(stubbed_sender):
         source=stubbed_sender.public_key(),
         delegate=delegate_account,
         owner=stubbed_sender.public_key(),
-        signers=[],
         amount=123,
     )
     instruction = spl_token.approve(params)
@@ -115,7 +113,6 @@ def test_revoke(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         delegate=delegate_account,
         owner=stubbed_sender.public_key(),
-        signers=[],
     )
     instruction = spl_token.revoke(params)
     assert spl_token.decode_revoke(instruction) == params
@@ -139,7 +136,6 @@ def test_set_authority():
         authority=spl_token.AuthorityType.FreezeAccount,
         new_authority=new_authority,
         current_authority=current_authority,
-        signers=[],
     )
     instruction = spl_token.set_authority(params)
     assert spl_token.decode_set_authority(instruction) == params
@@ -165,7 +161,6 @@ def test_close_account(stubbed_sender):
         account=token_account,
         destination=stubbed_sender.public_key(),
         owner=stubbed_sender.public_key(),
-        signers=[],
     )
     instruction = spl_token.close_account(params)
     assert spl_token.decode_close_account(instruction) == params

@@ -59,10 +59,10 @@ class InitializeMultisigParams(NamedTuple):
     """SPL Token program account."""
     multisig: PublicKey
     """New multisig account address."""
-    signers: List[PublicKey]
-    """Addresses of multisig signers."""
     m: int
     """The number of signers (M) required to validate this multisignature account."""
+    signers: List[PublicKey] = []
+    """Addresses of multisig signers."""
 
 
 class TransferParams(NamedTuple):
@@ -76,10 +76,10 @@ class TransferParams(NamedTuple):
     """Destination account."""
     owner: PublicKey
     """Owner of the source account."""
-    signers: List[PublicKey]
-    """Signing accounts if `owner` is a multiSig."""
     amount: int
     """Number of tokens to transfer."""
+    signers: List[PublicKey] = []
+    """Signing accounts if `owner` is a multiSig."""
 
 
 class ApproveParams(NamedTuple):
@@ -93,10 +93,10 @@ class ApproveParams(NamedTuple):
     """Delegate account authorized to perform a transfer of tokens from the source account."""
     owner: PublicKey
     """Owner of the source account."""
-    signers: List[PublicKey]
-    """Signing accounts if `owner` is a multiSig."""
     amount: int
     """Maximum number of tokens the delegate may transfer."""
+    signers: List[PublicKey] = []
+    """Signing accounts if `owner` is a multiSig."""
 
 
 class RevokeParams(NamedTuple):
@@ -108,7 +108,7 @@ class RevokeParams(NamedTuple):
     """Delegate account authorized to perform a transfer of tokens from the source account."""
     owner: PublicKey
     """Owner of the source account."""
-    signers: List[PublicKey]
+    signers: List[PublicKey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -123,7 +123,7 @@ class SetAuthorityParams(NamedTuple):
     """The type of authority to update."""
     current_authority: PublicKey
     """Current authority of the specified type."""
-    signers: List[PublicKey]
+    signers: List[PublicKey] = []
     """Signing accounts if `current_authority` is a multiSig."""
     new_authority: Optional[PublicKey] = None
     """New authority of the account."""
@@ -140,9 +140,9 @@ class MintToParams(NamedTuple):
     """"""
     owner: PublicKey
     """"""
-    signers: List[PublicKey]
-    """"""
     amount: int
+    """"""
+    signers: List[PublicKey] = []
     """"""
 
 
@@ -157,9 +157,9 @@ class BurnParams(NamedTuple):
     """"""
     authority: PublicKey
     """"""
-    signers: List[PublicKey]
-    """"""
     amount: int
+    """"""
+    signers: List[PublicKey] = []
     """"""
 
 
@@ -174,7 +174,7 @@ class CloseAccountParams(NamedTuple):
     """Address of account to receive the remaining balance of the closed account."""
     owner: PublicKey
     """Address of account owner."""
-    signers: List[PublicKey]
+    signers: List[PublicKey] = []
     """Addresses of signing accounts if `owner` is a multiSig."""
 
 
@@ -189,7 +189,7 @@ class FreezeAccountParams(NamedTuple):
     """"""
     owner: PublicKey
     """"""
-    signers: List[PublicKey]
+    signers: List[PublicKey] = []
     """"""
 
 
@@ -204,7 +204,7 @@ class ThawAccountParams(NamedTuple):
     """"""
     owner: PublicKey
     """"""
-    signers: List[PublicKey]
+    signers: List[PublicKey] = []
     """"""
 
 
@@ -221,11 +221,11 @@ class Transfer2Params(NamedTuple):
     """"""
     authority: PublicKey
     """"""
-    signers: List[PublicKey]
-    """"""
     amount: int
     """"""
     decimal: int
+    """"""
+    signers: List[PublicKey] = []
     """"""
 
 
@@ -242,11 +242,11 @@ class Approve2Params(NamedTuple):
     """"""
     owner: PublicKey
     """"""
-    signers: List[PublicKey]
-    """"""
     amount: int
     """"""
     decimal: int
+    """"""
+    signers: List[PublicKey] = []
     """"""
 
 
@@ -261,11 +261,11 @@ class MintTo2Params(NamedTuple):
     """"""
     owner: PublicKey
     """"""
-    signers: List[PublicKey]
-    """"""
     amount: int
     """"""
     decimal: int
+    """"""
+    signers: List[PublicKey] = []
     """"""
 
 
@@ -280,11 +280,11 @@ class Burn2Params(NamedTuple):
     """"""
     owner: PublicKey
     """"""
-    signers: List[PublicKey]
-    """"""
     amount: int
     """"""
     decimal: int
+    """"""
+    signers: List[PublicKey] = []
     """"""
 
 
