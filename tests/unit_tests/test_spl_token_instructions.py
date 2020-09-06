@@ -328,3 +328,30 @@ def test_approve2(stubbed_reciever, stubbed_sender):
     )
     instruction = spl_token.approve2(multisig_params)
     assert spl_token.decode_approve2(instruction) == multisig_params
+
+
+def test_mint_to2(stubbed_reciever):
+    """Test mint_to2."""
+    mint, mint_authority = PublicKey(0), PublicKey(1)
+    params = spl_token.MintTo2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        dest=stubbed_reciever,
+        mint_authority=mint_authority,
+        amount=123,
+        decimals=6,
+    )
+    instruction = spl_token.mint_to2(params)
+    assert spl_token.decode_mint_to2(instruction) == params
+
+    multisig_params = spl_token.MintTo2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        mint=mint,
+        dest=stubbed_reciever,
+        mint_authority=mint_authority,
+        signers=[PublicKey(i) for i in range(3, 10)],
+        amount=123,
+        decimals=6,
+    )
+    instruction = spl_token.mint_to2(multisig_params)
+    assert spl_token.decode_mint_to2(instruction) == multisig_params

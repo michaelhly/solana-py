@@ -524,7 +524,20 @@ def decode_approve2(instruction: TransactionInstruction) -> Approve2Params:
 
 def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
     """Decode a mintTo2 token transaction and retrieve the instruction params."""
-    raise NotImplementedError("decode_mint_to2 not implemented")
+    validate_instruction_keys(instruction, 3)
+
+    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(parsed_data, InstructionType.MintTo2)
+
+    return MintTo2Params(
+        program_id=instruction.program_id,
+        amount=parsed_data.args.amount,
+        decimals=parsed_data.args.decimals,
+        mint=instruction.keys[0].pubkey,
+        dest=instruction.keys[1].pubkey,
+        mint_authority=instruction.keys[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.keys[3:]],
+    )
 
 
 def decode_burn2(instruction: TransactionInstruction) -> MintTo2Params:
@@ -756,7 +769,16 @@ def approve2(params: Approve2Params) -> TransactionInstruction:
 
 def mint_to2(params: MintTo2Params) -> TransactionInstruction:
     """This instruction differs from `mint_to` in that the decimals value is asserted by the caller."""
-    raise NotImplementedError("mint_to2 not implemented")
+    data = INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.MintTo2, args=dict(amount=params.amount, decimals=params.decimals))
+    )
+    keys = [
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.mint_authority, params.signers)
+
+    return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
 def burn2(params: Burn2Params) -> TransactionInstruction:
