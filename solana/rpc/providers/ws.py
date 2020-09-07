@@ -131,9 +131,12 @@ class WSProvider(BaseProvider, FriendlyJsonSerde):
             )
         return future.result()
 
-    def connection(self) -> websockets.WebSocketClientProtocol:
+    def connect(self) -> websockets.WebSocketClientProtocol:
         """Exposes the websocket connection."""
-        return cast(websockets.WebSocketClientProtocol, self.conn.__aenter__())
+        if WSProvider._loop:
+            future = asyncio.run_coroutine_threadsafe(self.conn.__aenter__(), WSProvider._loop)
+            return future.result(timeout=self.websocket_timeout)
+        raise Exception("Websocket has not been initialized.")
 
     def is_connected(self) -> bool:
         """Health check."""

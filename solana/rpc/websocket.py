@@ -1,7 +1,7 @@
 """API WebSocket Client to interact with the Solana JSON RPC Endpoint."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 from websockets import WebSocketClientProtocol  # type: ignore
 
 from solana.publickey import PublicKey
@@ -22,11 +22,10 @@ class WebSocketClient:
     def __init__(self, endpoint: str):
         """Init API client for websocket."""
         self._provider = WSProvider(endpoint)
-        self._conn = self._provider.conn.ws
 
-    def connection(self) -> Optional[WebSocketClientProtocol]:
+    def connect(self) -> WebSocketClientProtocol:
         """Get the ws connection."""
-        return self._provider.connection()
+        return self._provider.connect()
 
     def account_subscribe(
         self,
