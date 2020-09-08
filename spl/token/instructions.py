@@ -288,13 +288,20 @@ class Burn2Params(NamedTuple):
     """Signing accounts if `owner` is a multiSig"""
 
 
+def __parse_and_validate_instruction(
+    instruction: TransactionInstruction,
+    expected_keys: int,
+    expected_type: InstructionType,
+) -> Any:  # Returns a Construct container.
+    validate_instruction_keys(instruction, expected_keys)
+    data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(data, expected_type)
+    return data
+
+
 def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMintParams:
     """Decode an initialize mint token instruction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 2)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.InitializeMint)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.InitializeMint)
     return InitializeMintParams(
         decimals=parsed_data.args.decimals,
         program_id=instruction.program_id,
@@ -308,11 +315,7 @@ def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMin
 
 def decode_initialize_account(instruction: TransactionInstruction) -> InitializeAccountParams:
     """Decode an initialize account token instruction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 4)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.InitializeAccount)
-
+    _ = __parse_and_validate_instruction(instruction, 4, InstructionType.InitializeAccount)
     return InitializeAccountParams(
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
@@ -323,11 +326,9 @@ def decode_initialize_account(instruction: TransactionInstruction) -> Initialize
 
 def decode_initialize_multisig(instruction: TransactionInstruction) -> InitializeMultisigParams:
     """Decode an initialize multisig account token instruction and retrieve the instruction params."""
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.InitializeMultisig)
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.InitializeMultisig)
     num_signers = parsed_data.args.m
     validate_instruction_keys(instruction, 2 + num_signers)
-
     return InitializeMultisigParams(
         program_id=instruction.program_id,
         multisig=instruction.keys[0].pubkey,
@@ -338,11 +339,7 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
 
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     """Decode a transfer token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Transfer)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.Transfer)
     return TransferParams(
         program_id=instruction.program_id,
         source=instruction.keys[0].pubkey,
@@ -355,11 +352,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
 
 def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
     """Decode a approve token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Approve)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.Approve)
     return ApproveParams(
         program_id=instruction.program_id,
         source=instruction.keys[0].pubkey,
@@ -372,11 +365,7 @@ def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
 
 def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
     """Decode a revoke token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 2)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Revoke)
-
+    _ = __parse_and_validate_instruction(instruction, 2, InstructionType.Revoke)
     return RevokeParams(
         program_id=instruction.program_id,
         delegate=instruction.keys[0].pubkey,
@@ -387,11 +376,7 @@ def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
 
 def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityParams:
     """Decode a set authority token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 2)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.SetAuthority)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.SetAuthority)
     return SetAuthorityParams(
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
@@ -404,11 +389,7 @@ def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityPar
 
 def decode_mint_to(instruction: TransactionInstruction) -> MintToParams:
     """Decode a mint to token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.MintTo)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MintTo)
     return MintToParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -421,11 +402,7 @@ def decode_mint_to(instruction: TransactionInstruction) -> MintToParams:
 
 def decode_burn(instruction: TransactionInstruction) -> BurnParams:
     """Decode a burn token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Burn)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.Burn)
     return BurnParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -438,11 +415,7 @@ def decode_burn(instruction: TransactionInstruction) -> BurnParams:
 
 def decode_close_account(instruction: TransactionInstruction) -> CloseAccountParams:
     """Decode a close account token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.CloseAccount)
-
+    _ = __parse_and_validate_instruction(instruction, 3, InstructionType.CloseAccount)
     return CloseAccountParams(
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
@@ -454,11 +427,7 @@ def decode_close_account(instruction: TransactionInstruction) -> CloseAccountPar
 
 def decode_freeze_account(instruction: TransactionInstruction) -> FreezeAccountParams:
     """Decode a freeze account token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.FreezeAccount)
-
+    _ = __parse_and_validate_instruction(instruction, 3, InstructionType.FreezeAccount)
     return FreezeAccountParams(
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
@@ -470,11 +439,7 @@ def decode_freeze_account(instruction: TransactionInstruction) -> FreezeAccountP
 
 def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParams:
     """Decode a thaw account token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.ThawAccount)
-
+    _ = __parse_and_validate_instruction(instruction, 3, InstructionType.ThawAccount)
     return ThawAccountParams(
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
@@ -486,11 +451,7 @@ def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParam
 
 def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
     """Decode a transfer2 token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 4)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Transfer2)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.Transfer2)
     return Transfer2Params(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -505,11 +466,7 @@ def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
 
 def decode_approve2(instruction: TransactionInstruction) -> Approve2Params:
     """Decode a approve2 token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 4)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Approve2)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.Approve2)
     return Approve2Params(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -524,11 +481,7 @@ def decode_approve2(instruction: TransactionInstruction) -> Approve2Params:
 
 def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
     """Decode a mintTo2 token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.MintTo2)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MintTo2)
     return MintTo2Params(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -542,11 +495,7 @@ def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
 
 def decode_burn2(instruction: TransactionInstruction) -> Burn2Params:
     """Decode a burn2 token transaction and retrieve the instruction params."""
-    validate_instruction_keys(instruction, 3)
-
-    parsed_data = INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Burn2)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.Burn2)
     return Burn2Params(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
