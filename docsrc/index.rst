@@ -15,6 +15,7 @@ Welcome to solana.py's documentation!
 
    solana
    api
+   spl
 
 
 Indices and tables

@@ -2,14 +2,14 @@ clean:
 	rm -rf dist build _build __pycache__ *.egg-info
 
 format:
-	isort setup.py solana tests
-	black --line-length=120 setup.py solana tests
+	isort setup.py solana spl tests
+	black --line-length=120 setup.py solana spl tests
 
 lint:
-	pydocstyle setup.py solana test
-	flake8 setup.py solana tests
-	mypy solana
-	pylint --rcfile=.pylintrc setup.py solana tests
+	pydocstyle setup.py solana spl/**/*.py test
+	flake8 setup.py solana spl tests
+	mypy solana spl/**/*.py
+	pylint --rcfile=.pylintrc setup.py solana spl tests
 
 .PHONY: notebook
 notebook:
@@ -27,13 +27,13 @@ test-publish:
 
 .PHONY: tests
 tests:
-	PYTHONPATH=./solana pytest -v
+	pytest -v
 
 unit-tests:
-	PYTHONPATH=./solana pytest -v -m "not integration"
+	pytest -v -m "not integration"
 
 int-tests:
-	PYTHONPATH=./solana pytest -v -m integration
+	pytest -v -m integration
 
 # Minimal makefile for Sphinx documentation
 #

@@ -1,6 +1,6 @@
 """setuptools module for solana.py."""
 
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 extras_require = {
     "dev": [
@@ -45,7 +45,7 @@ setup(
     keywords="solana blockchain web3",
     license="MIT",
     package_data={"solana": ["py.typed"]},
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_namespace_packages(exclude=["tests", "tests.*"]),
     url="https://github.com/michaelhly/solanapy",
     zip_safe=False,  # required per mypy
 )
