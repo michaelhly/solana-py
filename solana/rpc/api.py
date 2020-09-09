@@ -445,7 +445,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """Returns the specific inflation values for the current epoch.
 
         >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_inflation_governor() # doctest: +SKIP
+        >>> solana_client.get_inflation_rate() # doctest: +SKIP
         {'jsonrpc': '2.0',
          'result': {'epoch': 1,
           'foundation': 0.007499746885736559,
