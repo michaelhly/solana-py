@@ -1,7 +1,7 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import NamedTuple, Union
+from typing import Any, NamedTuple, Union
 
 from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
@@ -181,6 +181,17 @@ def __check_program_id(program_id: PublicKey) -> None:
         raise ValueError("invalid instruction: programId is not SystemProgram")
 
 
+def __parse_and_validate_instruction(
+    instruction: TransactionInstruction,
+    expected_keys: int,
+    expected_type: InstructionType,
+) -> Any:  # Returns a Construct container.
+    validate_instruction_keys(instruction, expected_keys)
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(data, expected_type)
+    return data
+
+
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
     """Decode a create account system instruction and retrieve the instruction params.
 
@@ -194,12 +205,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     >>> decode_create_account(create_tx.instructions[0])
     CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
     """  # noqa: E501 # pylint: disable=line-too-long
-    __check_program_id(instruction.program_id)
-    validate_instruction_keys(instruction, 2)
-
-    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.CreateAccount)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.CreateAccount)
     return CreateAccountParams(
         from_pubkey=instruction.keys[0].pubkey,
         new_account_pubkey=instruction.keys[1].pubkey,
@@ -220,12 +226,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     >>> decode_transfer(transfer_tx.instructions[0])
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
-    __check_program_id(instruction.program_id)
-    validate_instruction_keys(instruction, 2)
-
-    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Transfer)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.Transfer)
     return TransferParams(
         from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=parsed_data.args.lamports
     )
@@ -252,12 +253,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     >>> decode_assign(create_tx.instructions[0])
     AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
     """
-    __check_program_id(instruction.program_id)
-    validate_instruction_keys(instruction, 1)
-
-    parsed_data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(parsed_data, InstructionType.Assign)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.Assign)
     return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
 
 
@@ -311,8 +307,7 @@ def create_account(params: CreateAccountParams) -> Transaction:
         )
     )
 
-    txn = Transaction()
-    txn.add(
+    return Transaction().add(
         TransactionInstruction(
             keys=[
                 AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
@@ -322,7 +317,6 @@ def create_account(params: CreateAccountParams) -> Transaction:
             data=data,
         )
     )
-    return txn
 
 
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
@@ -343,8 +337,7 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
             dict(instruction_type=InstructionType.Assign, args=dict(program_id=bytes(params.program_id)))
         )
 
-    txn = Transaction()
-    txn.add(
+    return Transaction().add(
         TransactionInstruction(
             keys=[
                 AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
@@ -353,7 +346,6 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
             data=data,
         )
     )
-    return txn
 
 
 def transfer(params: TransferParams) -> Transaction:
@@ -371,8 +363,7 @@ def transfer(params: TransferParams) -> Transaction:
         dict(instruction_type=InstructionType.Transfer, args=dict(lamports=params.lamports))
     )
 
-    txn = Transaction()
-    txn.add(
+    return Transaction().add(
         TransactionInstruction(
             keys=[
                 AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
@@ -382,7 +373,6 @@ def transfer(params: TransferParams) -> Transaction:
             data=data,
         )
     )
-    return txn
 
 
 def create_account_with_seed(params: CreateAccountWithSeedParams) -> Transaction:

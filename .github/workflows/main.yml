@@ -35,10 +35,11 @@ jobs:
 
       - name: Run linters
         run: |
+          pipenv run black --check --diff --line-length=120 setup.py solana spl tests
           pipenv run pydocstyle setup.py solana spl/**/*.py tests
           pipenv run flake8 setup.py solana spl tests
           pipenv run mypy spl/**/*.py solana
-          pipenv run black --check --diff --line-length=120 setup.py solana spl tests
+          pipenv run pylint --rcfile=.pylintrc setup.py solana spl tests
 
       - name: Run unit tests
         run: |
