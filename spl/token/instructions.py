@@ -555,6 +555,18 @@ def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
     This instruction requires no signers and MUST be included within the same Transaction as
     the system program's `CreateInstruction` that creates the account being initialized.
     Otherwise another party can acquire ownership of the uninitialized account.
+
+    >>> from spl.token.constants import TOKEN_PROGRAM_ID
+    >>> mint_account, mint_authority, freeze_authority, owner = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = InitializeMintParams(
+    ...     decimals=6,
+    ...     freeze_authority=freeze_authority,
+    ...     mint=mint_account,
+    ...     mint_authority=mint_authority,
+    ...     program_id=TOKEN_PROGRAM_ID,
+    ... )
+    >>> type(initialize_mint(params))
+    <class 'solana.transaction.TransactionInstruction'>
     """
     freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (PublicKey(0), 0)
     data = INSTRUCTIONS_LAYOUT.build(
@@ -584,6 +596,16 @@ def initialize_account(params: InitializeAccountParams) -> TransactionInstructio
     This instruction requires no signers and MUST be included within the same Transaction as
     the system program's `CreateInstruction` that creates the account being initialized.
     Otherwise another party can acquire ownership of the uninitialized account.
+
+    >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = InitializeAccountParams(
+    ...     account=account,
+    ...     mint=mint,
+    ...     owner=owner,
+    ...     program_id=token,
+    ... )
+    >>> type(initialize_account(params))
+    <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.InitializeAccount, args=None))
     return TransactionInstruction(
@@ -604,6 +626,18 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
     This instruction requires no signers and MUST be included within the same Transaction as
     the system program's `CreateInstruction` that creates the account being initialized.
     Otherwise another party can acquire ownership of the uninitialized account.
+
+    >>> m = 2   # Two signers
+    >>> signers = [PublicKey(i) for i in range(m)]
+    >>> multisig_account, token = PublicKey(1), PublicKey(2)
+    >>> params = InitializeMultisigParams(
+    ...     m=m,
+    ...     multisig=multisig_account,
+    ...     signers=signers,
+    ...     program_id=token,
+    ... )
+    >>> type(initialize_multisig(params))
+    <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.InitializeMultisig, args=dict(m=params.m)))
     keys = [
@@ -620,6 +654,17 @@ def transfer(params: TransferParams) -> TransactionInstruction:
     """Creates a transaction instruction to transfers tokens from one account to another.
 
     Either directly or via a delegate.
+
+    >>> dest, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = TransferParams(
+    ...     amount=1000,
+    ...     dest=dest,
+    ...     owner=owner,
+    ...     program_id=token,
+    ...     source=source,
+    ... )
+    >>> type(transfer(params))
+    <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Transfer, args=dict(amount=params.amount)))
     keys = [
@@ -632,7 +677,19 @@ def transfer(params: TransferParams) -> TransactionInstruction:
 
 
 def approve(params: ApproveParams) -> TransactionInstruction:
-    """Creates a transaction instruction to approves a delegate."""
+    """Creates a transaction instruction to approves a delegate.
+
+    >>> delegate, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = ApproveParams(
+    ...     amount=123,
+    ...     delegate=delegate,
+    ...     owner=owner,
+    ...     program_id=token,
+    ...     source=source
+    ... )
+    >>> type(approve(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Approve, args=dict(amount=params.amount)))
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
@@ -644,7 +701,15 @@ def approve(params: ApproveParams) -> TransactionInstruction:
 
 
 def revoke(params: RevokeParams) -> TransactionInstruction:
-    """Creates a transaction instruction to revokes the delegate's authority."""
+    """Creates a transaction instruction to revokes the delegate's authority.
+
+    >>> delegate, owner, token = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> params = RevokeParams(
+    ...     delegate=delegate, owner=owner, program_id=token
+    ... )
+    >>> type(revoke(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Revoke, args=None))
     keys = [AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False)]
     __add_signers(keys, params.owner, params.signers)
@@ -653,7 +718,21 @@ def revoke(params: RevokeParams) -> TransactionInstruction:
 
 
 def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
-    """Creates a transaction instruction to sets a new authority of a mint or account."""
+    """Creates a transaction instruction to sets a new authority of a mint or account.
+
+    >>> account, current_authority, new_authority, token = (
+    ...     PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    ... )
+    >>> params = SetAuthorityParams(
+    ...     account=account,
+    ...     authority=AuthorityType.AccountOwner,
+    ...     current_authority=current_authority,
+    ...     new_authority=new_authority,
+    ...     program_id=token,
+    ... )
+    >>> type(set_authority(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     new_authority, opt = (params.new_authority, 1) if params.new_authority else (PublicKey(0), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         dict(
@@ -671,13 +750,32 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
     """Creates a transaction instruction to mint new tokens to an account.
 
     The native mint does not support minting.
+
+    >>> dest, mint, mint_authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = MintToParams(
+    ...     amount=123,
+    ...     dest=dest,
+    ...     mint=mint,
+    ...     mint_authority=mint_authority,
+    ...     program_id=token,
+    ... )
+    >>> type(mint_to(params))
+    <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.MintTo, args=dict(amount=params.amount)))
     return __mint_to_instruction(params, data)
 
 
 def burn(params: BurnParams) -> TransactionInstruction:
-    """Creates a transaction instruction to burns tokens by removing them from an account."""
+    """Creates a transaction instruction to burns tokens by removing them from an account.
+
+    >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = BurnParams(
+    ...     amount=123, account=account, mint=mint, owner=owner, program_id=token,
+    ... )
+    >>> type(burn(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Burn, args=dict(amount=params.amount)))
     return __burn_instruction(params, data)
 
@@ -686,6 +784,12 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to close an account by transferring all its SOL to the destination account.
 
     Non-native accounts may only be closed if its token amount is zero.
+
+    >>> account, dest, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = CloseAccountParams(
+    ...     account=account, dest=dest, owner=owner, program_id=token)
+    >>> type(close_account(params))
+    <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CloseAccount, args=None))
     keys = [
@@ -698,17 +802,45 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 
 
 def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
-    """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set)."""
+    """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set).
+
+    >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = FreezeAccountParams(
+    ...     account=account, mint=mint, owner=owner, program_id=token)
+    >>> type(freeze_account(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     return __freeze_or_thaw_instruction(params, InstructionType.FreezeAccount)
 
 
 def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
-    """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set)."""
+    """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set).
+
+    >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = ThawAccountParams(
+    ...     account=account, mint=mint, owner=owner, program_id=token)
+    >>> type(thaw_account(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     return __freeze_or_thaw_instruction(params, InstructionType.ThawAccount)
 
 
 def transfer2(params: Transfer2Params) -> TransactionInstruction:
-    """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller."""
+    """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller.
+
+    >>> dest, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)
+    >>> params = Transfer2Params(
+    ...     amount=1000,
+    ...     decimals=6,
+    ...     dest=dest,
+    ...     mint=mint,
+    ...     owner=owner,
+    ...     program_id=token,
+    ...     source=source,
+    ... )
+    >>> type(transfer2(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     data = INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.Transfer2, args=dict(amount=params.amount, decimals=params.decimals))
     )
@@ -723,7 +855,21 @@ def transfer2(params: Transfer2Params) -> TransactionInstruction:
 
 
 def approve2(params: Approve2Params) -> TransactionInstruction:
-    """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller."""
+    """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller.
+
+    >>> delegate, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)
+    >>> params = Approve2Params(
+    ...     amount=1000,
+    ...     decimals=6,
+    ...     delegate=delegate,
+    ...     mint=mint,
+    ...     owner=owner,
+    ...     program_id=token,
+    ...     source=source,
+    ... )
+    >>> type(approve2(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     data = INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.Approve2, args=dict(amount=params.amount, decimals=params.decimals))
     )
@@ -738,7 +884,20 @@ def approve2(params: Approve2Params) -> TransactionInstruction:
 
 
 def mint_to2(params: MintTo2Params) -> TransactionInstruction:
-    """This instruction differs from `mint_to` in that the decimals value is asserted by the caller."""
+    """This instruction differs from `mint_to` in that the decimals value is asserted by the caller.
+
+    >>> dest, mint, mint_authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = MintTo2Params(
+    ...     amount=123,
+    ...     decimals=6,
+    ...     dest=dest,
+    ...     mint=mint,
+    ...     mint_authority=mint_authority,
+    ...     program_id=token,
+    ... )
+    >>> type(mint_to2(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     data = INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.MintTo2, args=dict(amount=params.amount, decimals=params.decimals))
     )
@@ -746,7 +905,15 @@ def mint_to2(params: MintTo2Params) -> TransactionInstruction:
 
 
 def burn2(params: Burn2Params) -> TransactionInstruction:
-    """This instruction differs from `burn` in that the decimals value is asserted by the caller."""
+    """This instruction differs from `burn` in that the decimals value is asserted by the caller.
+
+    >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> params = Burn2Params(
+    ...     amount=123, account=account, decimals=6, mint=mint, owner=owner, program_id=token,
+    ... )
+    >>> type(burn2(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
     data = INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.Burn2, args=dict(amount=params.amount, decimals=params.decimals))
     )
