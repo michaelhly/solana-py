@@ -28,3 +28,7 @@ API Client:
     http_client = Client("https://devnet.solana.com")
 
 """
+import sys
+
+if sys.version_info < (3, 7):
+    raise EnvironmentError("Python 3.7 or above is required.")

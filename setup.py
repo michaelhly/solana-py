@@ -48,4 +48,11 @@ setup(
     packages=find_namespace_packages(exclude=["tests", "tests.*"]),
     url="https://github.com/michaelhly/solanapy",
     zip_safe=False,  # required per mypy
+    classifiers=[
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+    ],
 )
