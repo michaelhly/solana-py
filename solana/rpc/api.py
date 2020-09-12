@@ -857,6 +857,7 @@ class Client:  # pylint: disable=too-many-public-methods
 
         :param txn: Fully-signed Transaction object, a fully sign transaction in wire format,
             or a fully transaction as base-58 encoded string.
+        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
 
         Before submitting, the following preflight checks are performed:
 
@@ -892,7 +893,7 @@ class Client:  # pylint: disable=too-many-public-methods
         :param txn: Transaction object.
         :param signers: Signers to sign the transaction
         :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
-        :param preflightCommitment: (optional) Commitment level to use for preflight (default: "max").
+        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
 
         >>> from solana.account import Account
         >>> from solana.system_program import TransferParams, transfer

@@ -22,10 +22,8 @@ Welcome to solana.py's documentation!
    :alt: License
    :target: https://github.com/michaelhly/solana-py/blob/master/LICENSE
 
-
 .. automodule:: solana
    :members:
-   :special-members:
 
 .. toctree::
    :maxdepth: 2
