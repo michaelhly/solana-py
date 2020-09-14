@@ -60,7 +60,7 @@ class Message:
         self.recent_blockhash = args.recent_blockhash
         self.instructions = args.instructions
 
-    def __encode_message(self) -> bytes:
+    def __encode_message(self) -> bytes:  # TODO: Replace this with a construct struct.
         MessageFormat = NamedTuple(
             "HeaderFormat",
             [
@@ -84,7 +84,9 @@ class Message:
         )
 
     @staticmethod
-    def __encode_instruction(instruction: "CompiledInstruction") -> bytes:
+    def __encode_instruction(
+        instruction: "CompiledInstruction",
+    ) -> bytes:  # TODO: Replace this with a construct struct.
         InstructionFormat = NamedTuple(
             "InstructionFormat",
             [
