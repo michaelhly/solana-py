@@ -42,8 +42,10 @@ def test_send_transaction_and_get_balance(
 ):  # pylint: disable=redefined-outer-name  # pylint: disable=redefined-outer-name
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_reciever
-    transfer_tx = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
+        )
     )
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
