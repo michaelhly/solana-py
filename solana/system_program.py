@@ -375,7 +375,7 @@ def create_account_with_seed(params: CreateAccountWithSeedParams) -> Transaction
 
 
 def create_nonce_account(param: Union[CreateNonceAccountParams, CreateAccountWithSeedParams]) -> Transaction:
-    """Generate an instruction that creates a new Nonce account."""
+    """Generate a Transaction that creates a new Nonce account."""
     raise NotImplementedError("create_nonce_account_params not implemented")
 
 
