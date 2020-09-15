@@ -40,14 +40,6 @@ class Token:
         # TODO: Confirm transaction.
         return resp["result"]
 
-    def __send_and_confirm_transaction(self, txn: Transaction, skip_preflight: bool = False) -> str:
-        # TODO: Make this a shared utility in the solana package.
-        resp = self._conn.send_transaction(txn, self.payer, skip_preflight=skip_preflight)
-        if resp.get("error"):
-            raise Exception("Error sending transaction: ", resp["error"])
-        # TODO: Confirm transaction.
-        return resp["result"]
-
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
         """Get the minimum balance for the account to be rent exempt.
