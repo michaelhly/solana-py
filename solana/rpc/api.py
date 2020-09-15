@@ -79,7 +79,7 @@ class Client:  # pylint: disable=too-many-public-methods
 
         :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
         :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
-        :param encoding: (optional) encoding for Account data, either "base58" (slow), "base64", or
+        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
             "jsonParsed". Default is "base64".
 
             - "base58" is limited to Account data of less than 128 bytes.
@@ -88,7 +88,7 @@ class Client:  # pylint: disable=too-many-public-methods
 
             If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
             detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
-        :param data_slice: (optional) limit the returned account data using the provided `offset`: <usize> and
+        :param data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         >>> from solana.publickey import PublicKey
@@ -186,8 +186,8 @@ class Client:  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
-        :param slot: start_slot, as u64 integer.
-        :param encoding: (optional) encoding for the returned Transaction, either "json", "jsonParsed",
+        :param slot: Start_slot, as u64 integer.
+        :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
         >>> solana_client = Client("http://localhost:8899")
@@ -238,8 +238,8 @@ class Client:  # pylint: disable=too-many-public-methods
     def get_confirmed_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> RPCResponse:
         """Returns a list of confirmed blocks.
 
-        :param start_slot: start_slot, as u64 integer.
-        :param end_slot: (optional) encoding for the returned Transaction, either "json", "jsonParsed",
+        :param start_slot: Start_slot, as u64 integer.
+        :param end_slot: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
         >>> solana_client = Client("http://localhost:8899")
@@ -259,9 +259,9 @@ class Client:  # pylint: disable=too-many-public-methods
         most recent confirmed block.
 
         :param account: Account to be queried
-        :param before: (optional) start searching backwards from this transaction signature
+        :param before: (optional) Start searching backwards from this transaction signature
             If not provided the search starts from the top of the highest max confirmed block
-        :param limit: (optoinal) maximum transaction signatures to return (between 1 and 1,000, default: 1,000)
+        :param limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000)
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
@@ -291,7 +291,7 @@ class Client:  # pylint: disable=too-many-public-methods
         :param tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
             instruction parsers to return more human-readable and explicit data in the
             `transaction.message.instructions` list
-        :param encoding: (optional) encoding for the returned Transaction, either "json", "jsonParsed",
+        :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON
 
         >>> solana_client = Client("http://localhost:8899")
