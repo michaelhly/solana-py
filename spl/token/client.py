@@ -1,19 +1,19 @@
 """SPL Token program client."""
 from __future__ import annotations
+
 from typing import Optional
 
 import solana.system_program as sp
+import spl.token.instructions as spl_token  # type: ignore # TODO: Don't ignore
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.transaction import Transaction
-
-import spl.token.instructions as spl
-from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
+from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 
 
 class Token:
-    """An ERC20-like Token"""
+    """An ERC20-like Token."""
 
     public_key: PublicKey
     """The public key identifying this mint."""
@@ -83,8 +83,8 @@ class Token:
             )
         )
         txn.add(
-            spl.initialize_mint(
-                spl.InitializeMintParams(
+            spl_token.initialize_mint(
+                spl_token.InitializeMintParams(
                     program_id=program_id,
                     mint=mint_account.public_key(),
                     decimals=decimals,
