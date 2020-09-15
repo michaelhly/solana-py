@@ -1,3 +1,4 @@
+"""Integration tests for the ws_client."""
 import time  # pylint: disable = wrong-import-position
 import pytest  # pylint: disable = wrong-import-position
 
