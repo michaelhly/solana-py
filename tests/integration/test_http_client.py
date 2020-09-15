@@ -2,7 +2,7 @@
 import pytest
 
 import solana.system_program as sp
-from solana.rpc.api import Client, DataSlice
+from solana.rpc.api import Client, DataSliceOpt
 from solana.transaction import Transaction
 
 from .utils import assert_valid_response, confirm_transaction
@@ -286,7 +286,7 @@ def test_get_account_info(stubbed_sender, test_http_client):  # pylint: disable=
     assert_valid_response(resp)
     resp = test_http_client.get_account_info(stubbed_sender.public_key(), encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = test_http_client.get_account_info(stubbed_sender.public_key(), data_slice=DataSlice(1, 1))
+    resp = test_http_client.get_account_info(stubbed_sender.public_key(), data_slice=DataSliceOpt(1, 1))
     assert_valid_response(resp)
 
 

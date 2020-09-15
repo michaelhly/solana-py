@@ -16,15 +16,21 @@ from .types import RPCMethod, RPCResponse
 
 
 class DataSlice(NamedTuple):
-    """Data class for "data_slice" parameter.
-
-    Params to limit the returned account data, only available for "base58" or "base64" encoding.
-    """
+    """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
     offset: int
     """Limit the returned account data using the provided offset: <usize>."""
     length: int
     """Limit the returned account data using the provided length: <usize>."""
+
+
+class MemcmpOpt(NamedTuple):
+    """Option to compare a provided series of bytes with program account data at a particular offset."""
+
+    offset: int
+    """Offset into program account data to start comparison: <usize>."""
+    data: str
+    """Data to match, as base-58 encoded string: <string>."""
 
 
 class Client:  # pylint: disable=too-many-public-methods
