@@ -43,16 +43,6 @@ def test_account_unsubscribe(test_ws_client):  # pylint: disable=redefined-outer
     assert_valid_response(resp)
 
 
-# @pytest.mark.integration
-# def test_account_notifications():  # pylint: disable=redefined-outer-name
-#     """Test account notifications."""
-#     ws_client_singleton = WebSocketClient(ENDPOINT)
-#     ws_client_singleton.account_subscribe(PublicKey(1))
-#     time.sleep(5)
-#     resp = ws_client_singleton.account_subscribe(PublicKey(1))
-#     assert_valid_notification(resp)
-
-
 @pytest.mark.integration
 def test_program_subscribe(test_ws_client):  # pylint: disable=redefined-outer-name
     """Test program subscription."""
@@ -88,19 +78,14 @@ def test_signature_unsubscribe(test_ws_client):  # pylint: disable=redefined-out
 
 
 @pytest.mark.integration
-def test_slot_subscribe_slot_unsubscribe():  # pylint: disable=redefined-outer-name
-    """Test slot subscribe and slot unsubscribe."""
+def test_slot_subscribe_unsubscribe_notifications():  # pylint: disable=redefined-outer-name
+    """Test slot subscribe, unsubscribe, notifications."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
     resp = ws_client_singleton.slot_subscribe()
     assert_valid_response(resp)
     sub_id = resp["result"]
     resp = ws_client_singleton.slot_unsubscribe(sub_id)
     assert_valid_response(resp)
-
-
-@pytest.mark.integration
-def test_slot_notifications():  # pylint: disable=redefined-outer-name
-    """Test slot notifications."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
     ws_client_singleton.slot_subscribe()
     time.sleep(5)
@@ -109,19 +94,14 @@ def test_slot_notifications():  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.integration
-def test_root_subscribe_root_unsubscribe():  # pylint: disable=redefined-outer-name
-    """Test root subscribe and root unsubscribe."""
+def test_root_subscribe_unsubscribe_notifications():  # pylint: disable=redefined-outer-name
+    """Test root subscribe, root unsubscribe, and root notifications."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
     resp = ws_client_singleton.root_subscribe()
     assert_valid_response(resp)
     sub_id = resp["result"]
     resp = ws_client_singleton.root_unsubscribe(sub_id)
     assert_valid_response(resp)
-
-
-@pytest.mark.integration
-def test_root_notifications():
-    """Test root notifications."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
     ws_client_singleton.root_subscribe()
     time.sleep(5)
@@ -130,19 +110,14 @@ def test_root_notifications():
 
 
 @pytest.mark.integration
-def test_vote_subscribe():  # pylint: disable=redefined-outer-name
-    """Test vote subscribe and vote unsubscribe."""
+def test_vote_subscribe_unsubcribe_notifications():  # pylint: disable=redefined-outer-name
+    """Test vote subscribe, unsubscribe, and notifications."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
     resp = ws_client_singleton.vote_subscribe()
     assert_valid_response(resp)
     sub_id = resp["result"]
     resp = ws_client_singleton.vote_unsubscribe(sub_id)
     assert_valid_response(resp)
-
-
-@pytest.mark.integration
-def test_vote_notification():
-    """Test vote notifications."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
     ws_client_singleton.vote_subscribe()
     time.sleep(5)
