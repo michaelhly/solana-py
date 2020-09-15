@@ -15,7 +15,7 @@ from .providers import http
 from .types import RPCMethod, RPCResponse
 
 
-class DataSlice(NamedTuple):
+class DataSliceOpt(NamedTuple):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
     offset: int
@@ -73,7 +73,7 @@ class Client:  # pylint: disable=too-many-public-methods
         pubkey: Union[PublicKey, str],
         commitment: Commitment = Max,
         encoding: str = "base64",
-        data_slice: Optional[DataSlice] = None,
+        data_slice: Optional[DataSliceOpt] = None,
     ) -> RPCResponse:
         """Returns all the account info for the specified public key.
 
@@ -561,7 +561,7 @@ class Client:  # pylint: disable=too-many-public-methods
         encoding: Optional[str] = None,
         filter_opts: Optional[Dict] = None,
         commitment: Commitment = Max,
-        data_slice: Optional[DataSlice] = None,
+        data_slice: Optional[DataSliceOpt] = None,
     ) -> RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
 
