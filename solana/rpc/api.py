@@ -186,7 +186,7 @@ class Client:  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
-        :param slot: Start_slot, as u64 integer.
+        :param slot: Slot, as u64 integer.
         :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
@@ -238,9 +238,8 @@ class Client:  # pylint: disable=too-many-public-methods
     def get_confirmed_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> RPCResponse:
         """Returns a list of confirmed blocks.
 
-        :param start_slot: Start_slot, as u64 integer.
-        :param end_slot: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
-            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+        :param start_slot: Start slot, as u64 integer.
+        :param end_slot: (optional) End slot, as u64 integer.
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_confirmed_blocks(5, 10) # doctest: +SKIP
