@@ -1,25 +1,15 @@
 """Library to interface with system programs."""
 from __future__ import annotations
 
-from typing import List, NamedTuple, Union
+from typing import Any, NamedTuple, Union
 
-from solana.instruction import InstructionLayout, decode_data, encode_data
+from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
-from solana.transaction import AccountMeta, Transaction, TransactionInstruction, verify_instruction_keys
-from solana.utils.helpers import from_uint8_bytes
+from solana.transaction import AccountMeta, Transaction, TransactionInstruction
+from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 
-# Instruction Indices
-_CREATE_IDX = 0
-_ASSIGN_IDX = 1
-_TRANSFER_IDX = 2
-_CREATE_WITH_SEED_IDX = 3
-_ADVANCE_NONCE_ACCOUNT_IDX = 4
-_WITHDRAW_NONCE_ACCOUNT_IDX = 5
-_INITIALZE_NONCE_ACCOUNT_IDX = 6
-_AUTHORIZE_NONCE_ACCOUNT_IDX = 7
-_ALLOCATE_IDX = 8
-_ALLOCATE_WITH_SEED_IDX = 9
-_ASSIGN_WITH_SEED_IDX = 10
+SYS_PROGRAM_ID: PublicKey = PublicKey("11111111111111111111111111111111")
+"""Public key that identifies the System program."""
 
 
 # Instruction Params
@@ -186,45 +176,20 @@ class AssignWithSeedParams(NamedTuple):
     """"""
 
 
-SYSTEM_INSTRUCTION_LAYOUTS: List[InstructionLayout] = [
-    InstructionLayout(idx=_CREATE_IDX, fmt="QQ32s"),
-    InstructionLayout(idx=_ASSIGN_IDX, fmt="32s"),
-    InstructionLayout(idx=_TRANSFER_IDX, fmt="Q"),
-    InstructionLayout(idx=_CREATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-    InstructionLayout(idx=_ADVANCE_NONCE_ACCOUNT_IDX, fmt=""),
-    InstructionLayout(idx=_WITHDRAW_NONCE_ACCOUNT_IDX, fmt="Q"),
-    InstructionLayout(idx=_INITIALZE_NONCE_ACCOUNT_IDX, fmt="32s"),
-    InstructionLayout(idx=_AUTHORIZE_NONCE_ACCOUNT_IDX, fmt="32s"),
-    InstructionLayout(idx=_ALLOCATE_IDX, fmt="32s"),
-    InstructionLayout(idx=_ALLOCATE_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-    InstructionLayout(idx=_ASSIGN_WITH_SEED_IDX, fmt="UNIMPLEMENTED"),
-]
-
-
 def __check_program_id(program_id: PublicKey) -> None:
-    if program_id != sys_program_id():
+    if program_id != SYS_PROGRAM_ID:
         raise ValueError("invalid instruction: programId is not SystemProgram")
 
 
-def decode_instruction_layout(instruction: TransactionInstruction) -> InstructionLayout:
-    """Decode a system instruction and retrieve the instruction layout.
-
-    >>> from solana.publickey import PublicKey
-    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> create_tx = create_account(
-    ...     CreateAccountParams(
-    ...         from_pubkey=from_account, new_account_pubkey=new_account,
-    ...         lamports=1, space=1, program_id=program_id)
-    ... )
-    >>> decode_instruction_layout(create_tx.instructions[0])
-    InstructionLayout(idx=0, fmt='QQ32s')
-    """
-    # Slice the first 4 bytes to get the type
-    type_data = instruction.data[:4]
-    type_idx = from_uint8_bytes(type_data)
-    if 0 <= type_idx < len(SYSTEM_INSTRUCTION_LAYOUTS):
-        return SYSTEM_INSTRUCTION_LAYOUTS[type_idx]
-    raise ValueError("unknown transaction instruction")
+def __parse_and_validate_instruction(
+    instruction: TransactionInstruction,
+    expected_keys: int,
+    expected_type: InstructionType,
+) -> Any:  # Returns a Construct container.
+    validate_instruction_keys(instruction, expected_keys)
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
+    validate_instruction_type(data, expected_type)
+    return data
 
 
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
@@ -232,26 +197,21 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
 
     >>> from solana.publickey import PublicKey
     >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> create_tx = create_account(
+    >>> instruction = create_account(
     ...     CreateAccountParams(
     ...         from_pubkey=from_account, new_account_pubkey=new_account,
     ...         lamports=1, space=1, program_id=program_id)
     ... )
-    >>> decode_create_account(create_tx.instructions[0])
+    >>> decode_create_account(instruction)
     CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
     """  # noqa: E501 # pylint: disable=line-too-long
-    __check_program_id(instruction.program_id)
-    verify_instruction_keys(instruction, 2)
-
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
-    _, lamports, space, program_id = decode_data(layout, instruction.data)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.CreateAccount)
     return CreateAccountParams(
         from_pubkey=instruction.keys[0].pubkey,
         new_account_pubkey=instruction.keys[1].pubkey,
-        lamports=lamports,
-        space=space,
-        program_id=PublicKey(program_id),
+        lamports=parsed_data.args.lamports,
+        space=parsed_data.args.space,
+        program_id=PublicKey(parsed_data.args.program_id),
     )
 
 
@@ -260,20 +220,15 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
 
     >>> from solana.publickey import PublicKey
     >>> sender, reciever = PublicKey(1), PublicKey(2)
-    >>> transfer_tx = transfer(
+    >>> instruction = transfer(
     ...     TransferParams(from_pubkey=sender, to_pubkey=reciever, lamports=1000)
     ... )
-    >>> decode_transfer(transfer_tx.instructions[0])
+    >>> decode_transfer(instruction)
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
-    __check_program_id(instruction.program_id)
-    verify_instruction_keys(instruction, 2)
-
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
-    data = decode_data(layout, instruction.data)
-
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.Transfer)
     return TransferParams(
-        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=data[1]
+        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=parsed_data.args.lamports
     )
 
 
@@ -292,19 +247,14 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
 
     >>> from solana.publickey import PublicKey
     >>> account, program_id = PublicKey(1), PublicKey(2)
-    >>> create_tx = assign(
+    >>> instruction = assign(
     ...     AssignParams(account_pubkey=account, program_id=program_id)
     ... )
-    >>> decode_assign(create_tx.instructions[0])
+    >>> decode_assign(instruction)
     AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
     """
-    __check_program_id(instruction.program_id)
-    verify_instruction_keys(instruction, 1)
-
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX]
-    _, program_id = decode_data(layout, instruction.data)
-
-    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(program_id))
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.Assign)
+    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
 
 
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
@@ -337,100 +287,90 @@ def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonc
     raise NotImplementedError("decode_nonce_authorize not implemented")
 
 
-def sys_program_id() -> PublicKey:
-    """Public key that identifies the System program."""
-    return PublicKey("11111111111111111111111111111111")
-
-
-def create_account(params: CreateAccountParams) -> Transaction:
-    """Generate a Transaction that creates a new account.
+def create_account(params: CreateAccountParams) -> TransactionInstruction:
+    """Generate an instruction that creates a new account.
 
     >>> from solana.publickey import PublicKey
     >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> create_tx = create_account(
+    >>> instruction = create_account(
     ...     CreateAccountParams(
     ...         from_pubkey=from_account, new_account_pubkey=new_account,
     ...         lamports=1, space=1, program_id=program_id)
     ... )
-    >>> type(create_tx)
-    <class 'solana.transaction.Transaction'>
+    >>> type(instruction)
+    <class 'solana.transaction.TransactionInstruction'>
     """
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_CREATE_IDX]
-    data = encode_data(layout, params.lamports, params.space, bytes(params.program_id))
-
-    txn = Transaction()
-    txn.add(
-        TransactionInstruction(
-            keys=[
-                AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-                AccountMeta(pubkey=params.new_account_pubkey, is_signer=False, is_writable=True),
-            ],
-            program_id=sys_program_id(),
-            data=data,
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.CreateAccount,
+            args=dict(lamports=params.lamports, space=params.space, program_id=bytes(params.program_id)),
         )
     )
-    return txn
+
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
+            AccountMeta(pubkey=params.new_account_pubkey, is_signer=False, is_writable=True),
+        ],
+        program_id=SYS_PROGRAM_ID,
+        data=data,
+    )
 
 
-def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Transaction:
-    """Generate a Transaction that assigns an account to a program.
+def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInstruction:
+    """Generate an instruction that assigns an account to a program.
 
     >>> from solana.publickey import PublicKey
     >>> account, program_id = PublicKey(1), PublicKey(2)
-    >>> assign_tx = assign(
+    >>> instruction = assign(
     ...     AssignParams(account_pubkey=account, program_id=program_id)
     ... )
-    >>> type(assign_tx)
-    <class 'solana.transaction.Transaction'>
+    >>> type(instruction)
+    <class 'solana.transaction.TransactionInstruction'>
     """
     if isinstance(params, AssignWithSeedParams):
         raise NotImplementedError("assign with key is not implemented")
     else:
-        data = encode_data(SYSTEM_INSTRUCTION_LAYOUTS[_ASSIGN_IDX], bytes(params.program_id))
-
-    txn = Transaction()
-    txn.add(
-        TransactionInstruction(
-            keys=[
-                AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
-            ],
-            program_id=sys_program_id(),
-            data=data,
+        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+            dict(instruction_type=InstructionType.Assign, args=dict(program_id=bytes(params.program_id)))
         )
+
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
+        ],
+        program_id=SYS_PROGRAM_ID,
+        data=data,
     )
-    return txn
 
 
-def transfer(params: TransferParams) -> Transaction:
-    """Generate a Transaction that transfers lamports from one account to another.
+def transfer(params: TransferParams) -> TransactionInstruction:
+    """Generate an instruction that transfers lamports from one account to another.
 
     >>> from solana.publickey import PublicKey
     >>> sender, reciever = PublicKey(1), PublicKey(2)
-    >>> transfer_tx = transfer(
+    >>> instruction = transfer(
     ...     TransferParams(from_pubkey=sender, to_pubkey=reciever, lamports=1000)
     ... )
-    >>> type(transfer_tx)
-    <class 'solana.transaction.Transaction'>
+    >>> type(instruction)
+    <class 'solana.transaction.TransactionInstruction'>
     """
-    layout = SYSTEM_INSTRUCTION_LAYOUTS[_TRANSFER_IDX]
-    data = encode_data(layout, params.lamports)
-
-    txn = Transaction()
-    txn.add(
-        TransactionInstruction(
-            keys=[
-                AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-                AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
-            ],
-            program_id=sys_program_id(),
-            data=data,
-        )
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.Transfer, args=dict(lamports=params.lamports))
     )
-    return txn
+
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
+            AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
+        ],
+        program_id=SYS_PROGRAM_ID,
+        data=data,
+    )
 
 
-def create_account_with_seed(params: CreateAccountWithSeedParams) -> Transaction:
-    """Generate a Transaction that creates a new account at an address."""
+def create_account_with_seed(params: CreateAccountWithSeedParams) -> TransactionInstruction:
+    """Generate an instruction that creates a new account at an address."""
     raise NotImplementedError("create_account_with_seed not implemented")
 
 
@@ -449,16 +389,16 @@ def nonce_advance(param: AdvanceNonceParams) -> TransactionInstruction:
     raise NotImplementedError("nonce advance not implemented")
 
 
-def nonce_withdraw(param: WithdrawNonceParams) -> Transaction:
-    """Generate a Transaction that withdraws lamports from a Nonce account."""
+def nonce_withdraw(param: WithdrawNonceParams) -> TransactionInstruction:
+    """Generate an instruction that withdraws lamports from a Nonce account."""
     raise NotImplementedError("nonce_withdraw not implemented")
 
 
-def nonce_authorize(param: AuthorizeNonceParams) -> Transaction:
-    """Generate a Transaction that authorizes a new PublicKey as the authority on a Nonce account."""
+def nonce_authorize(param: AuthorizeNonceParams) -> TransactionInstruction:
+    """Generate an instruction that authorizes a new PublicKey as the authority on a Nonce account."""
     raise NotImplementedError("nonce_authorize not implemented")
 
 
-def allocate(param: Union[AllocateParams, AllocateWithSeedParams]) -> Transaction:
-    """Generate a Transaction that allocates space in an account without funding."""
+def allocate(param: Union[AllocateParams, AllocateWithSeedParams]) -> TransactionInstruction:
+    """Generate an instruction that allocates space in an account without funding."""
     raise NotImplementedError("allocate not implemented")

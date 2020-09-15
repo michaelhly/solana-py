@@ -1,6 +1,6 @@
 """setuptools module for solana.py."""
 
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 extras_require = {
     "dev": [
@@ -26,7 +26,7 @@ with open("README.md", "r") as file_handle:
 setup(
     name="solana",
     # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.
-    version="0.1.1",
+    version="0.2.2",
     author="Michael Huang",
     author_mail="michaelhly@gmail.com",
     description="""Solana.py""",
@@ -35,6 +35,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "base58>=2.0.1, <3.0.0",
+        "construct>=2.10.56, <3.0.0",
         "PyNaCl>=1.4.0, <2.0.0",
         "requests>=2.24.0, <3.0.0",
         "typing_extensions",
@@ -45,7 +46,14 @@ setup(
     keywords="solana blockchain web3",
     license="MIT",
     package_data={"solana": ["py.typed"]},
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_namespace_packages(exclude=["tests", "tests.*"]),
     url="https://github.com/michaelhly/solanapy",
     zip_safe=False,  # required per mypy
+    classifiers=[
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+    ],
 )

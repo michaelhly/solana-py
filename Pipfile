@@ -32,6 +32,7 @@ bump2version = "*"
 pynacl = "*"
 base58 = "*"
 requests = "*"
+construct = "*"
 
 [requires]
 python_version = "3.7"

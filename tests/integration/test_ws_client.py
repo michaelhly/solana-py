@@ -1,17 +1,18 @@
-"""Tests for the WS API Client."""
-import pytest
+import time  # pylint: disable = wrong-import-position
+import pytest  # pylint: disable = wrong-import-position
 
-from solana.publickey import PublicKey
-from solana.rpc.websocket import WebSocketClient
-from solana.rpc.types import RPCResponse
+from solana.publickey import PublicKey  # pylint: disable = wrong-import-position
+from solana.rpc.websocket import WebSocketClient  # pylint: disable = wrong-import-position
+from solana.rpc.types import RPCResponse  # pylint: disable = wrong-import-position
 
-from .utils import assert_valid_response
+from tests.integration.utils import assert_valid_response  # pylint: disable = wrong-import-position
 
 RETEST_LIMIT = 10
 ENDPOINT = "ws://localhost:8900"
 
 
-def assert_valid_notification(resp: RPCResponse):
+def assert_valid_notification(resp: RPCResponse):  # pylint: disable=redefined-outer-name
+    """Asserts a valid notification."""
     assert resp["jsonrpc"] == "2.0"
     assert resp["method"].lower().find("notification")
     assert resp["params"]
@@ -41,11 +42,14 @@ def test_account_unsubscribe(test_ws_client):  # pylint: disable=redefined-outer
     assert_valid_response(resp)
 
 
-def test_account_notifications():
-    ws_client_singleton = WebSocketClient(ENDPOINT)
-    ws_client_singleton.account_subscribe(PublicKey(1))
-    resp = ws_client_singleton.account_subscribe(PublicKey(1))
-    assert_valid_notification(resp)
+# @pytest.mark.integration
+# def test_account_notifications():  # pylint: disable=redefined-outer-name
+#     """Test account notifications."""
+#     ws_client_singleton = WebSocketClient(ENDPOINT)
+#     ws_client_singleton.account_subscribe(PublicKey(1))
+#     time.sleep(5)
+#     resp = ws_client_singleton.account_subscribe(PublicKey(1))
+#     assert_valid_notification(resp)
 
 
 @pytest.mark.integration
@@ -93,9 +97,12 @@ def test_slot_subscribe_slot_unsubscribe():  # pylint: disable=redefined-outer-n
     assert_valid_response(resp)
 
 
-def test_slot_notifications():
+@pytest.mark.integration
+def test_slot_notifications():  # pylint: disable=redefined-outer-name
+    """Test slot notifications."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
     ws_client_singleton.slot_subscribe()
+    time.sleep(5)
     resp = ws_client_singleton.slot_subscribe()
     assert_valid_notification(resp)
 
@@ -112,6 +119,16 @@ def test_root_subscribe_root_unsubscribe():  # pylint: disable=redefined-outer-n
 
 
 @pytest.mark.integration
+def test_root_notifications():
+    """Test root notifications."""
+    ws_client_singleton = WebSocketClient(ENDPOINT)
+    ws_client_singleton.root_subscribe()
+    time.sleep(5)
+    resp = ws_client_singleton.root_subscribe()
+    assert_valid_notification(resp)
+
+
+@pytest.mark.integration
 def test_vote_subscribe():  # pylint: disable=redefined-outer-name
     """Test vote subscribe and vote unsubscribe."""
     ws_client_singleton = WebSocketClient(ENDPOINT)
@@ -120,3 +137,13 @@ def test_vote_subscribe():  # pylint: disable=redefined-outer-name
     sub_id = resp["result"]
     resp = ws_client_singleton.vote_unsubscribe(sub_id)
     assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_vote_notification():
+    """Test vote notifications."""
+    ws_client_singleton = WebSocketClient(ENDPOINT)
+    ws_client_singleton.vote_subscribe()
+    time.sleep(5)
+    resp = ws_client_singleton.vote_subscribe()
+    assert_valid_notification(resp)

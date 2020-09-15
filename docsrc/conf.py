@@ -12,7 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+
+sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
@@ -20,7 +21,7 @@ sys.path.insert(0, os.path.abspath('..'))
 project = "solana.py"
 copyright = "2020, Michael Huang"
 # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.4
-version = "0.1.1"
+version = "0.2.2"
 author = "Michael Huang"
 
 
@@ -29,7 +30,13 @@ author = "Michael Huang"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.intersphinx", "sphinx.ext.viewcode", "sphinx.ext.coverage", "sphinx.ext.doctest"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ["_templates"]

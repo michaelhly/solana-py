@@ -1,6 +1,7 @@
 [![Actions
 Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://github.com/michaelhly/solanapy/actions?query=workflow%3ACI)
 [![PyPI version](https://badge.fury.io/py/solana.svg)](https://badge.fury.io/py/solana)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/solana)](https://pypi.org/project/solana/)
 [![Codecov](https://codecov.io/gh/michaelhly/solana-py/branch/master/graph/badge.svg)](https://codecov.io/gh/michaelhly/solana-py/branch/master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/michaelhly/solana-py/blob/master/LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

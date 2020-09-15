@@ -2,14 +2,14 @@ clean:
 	rm -rf dist build _build __pycache__ *.egg-info
 
 format:
-	isort setup.py solana tests solana/**/*.py
-	black --line-length=120 setup.py solana tests solana/**/*.py
+	pipenv run isort setup.py solana spl tests
+	pipenv run black --line-length=120 setup.py solana spl tests
 
 lint:
-	pydocstyle setup.py solana test
-	flake8 setup.py solana tests
-	mypy solana
-	pylint --rcfile=.pylintrc setup.py solana tests
+	pipenv run pydocstyle setup.py solana spl/**/*.py test
+	pipenv run flake8 setup.py solana spl tests
+	pipenv run mypy solana spl/**/*.py
+	pipenv run pylint --rcfile=.pylintrc setup.py solana spl tests
 
 .PHONY: notebook
 notebook:
@@ -18,22 +18,22 @@ notebook:
 publish:
 	make clean
 	python setup.py sdist bdist_wheel
-	twine upload dist/*
+	pipenv run twine upload dist/*
 
 test-publish:
 	make clean
 	python setup.py sdist bdist_wheel
-	twine upload -r testpypi dist/*
+	pipenv run twine upload -r testpypi dist/*
 
 .PHONY: tests
 tests:
-	PYTHONPATH=./solana pytest -v
+	pipenv run pytest -vv
 
 unit-tests:
-	PYTHONPATH=./solana pytest -v -m "not integration"
+	pipenv run pytest -vv -m "not integration"
 
 int-tests:
-	PYTHONPATH=./solana pytest -v -m integration
+	pipenv run pytest -vv -m integration
 
 # Minimal makefile for Sphinx documentation
 #

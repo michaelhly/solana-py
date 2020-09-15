@@ -137,6 +137,8 @@ class WebSocketClient:
     def slot_subscribe(self) -> RPCResponse:
         """Subscribe to receive notification anytime a slot is processed by the validator.
 
+        Subsequent calls return notifications.
+
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.slot_subscribe() #doctest: +SKIP
         {'jsonrpc': '2.0', 'result': 7, 'id': 10}
@@ -156,6 +158,8 @@ class WebSocketClient:
 
     def root_subscribe(self) -> RPCResponse:
         """Subscribe to receive notification anytime a new root is set by the validator.
+
+        Subsequent calls return notifications.
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.root_subscribe() #doctest: +SKIP
@@ -177,6 +181,8 @@ class WebSocketClient:
 
     def vote_subscribe(self) -> RPCResponse:
         """Subscribe to receive notification anytime a new vote is observed in gossip.
+
+        Subsequent calls return notifications.
 
         >>> ws_client = WebSocketClient("ws://localhost:8900") #doctest: +SKIP
         >>> ws_client.vote_subscribe() #doctest: +SKIP

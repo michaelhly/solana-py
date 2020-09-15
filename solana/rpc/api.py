@@ -33,6 +33,8 @@ class Client:  # pylint: disable=too-many-public-methods
     _comm_key = "commitment"
     _encoding_key = "encoding"
     _data_slice_key = "dataSlice"
+    _skip_preflight_key = "skipPreflight"
+    _preflight_comm_key = "preflightCommitment"
 
     def __init__(self, endpoint: Optional[str] = None):
         """Init API client."""
@@ -445,7 +447,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """Returns the specific inflation values for the current epoch.
 
         >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_inflation_governor() # doctest: +SKIP
+        >>> solana_client.get_inflation_rate() # doctest: +SKIP
         {'jsonrpc': '2.0',
          'result': {'epoch': 1,
           'foundation': 0.007499746885736559,
@@ -848,11 +850,14 @@ class Client:  # pylint: disable=too-many-public-methods
             RPCMethod("requestAirdrop"), str(pubkey), lamports, {self._comm_key: commitment}
         )
 
-    def send_raw_transaction(self, txn: Union[bytes, str, Transaction]) -> RPCResponse:
+    def send_raw_transaction(
+        self, txn: Union[bytes, str, Transaction], preflight_commitment: Commitment = Max
+    ) -> RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         :param txn: Fully-signed Transaction object, a fully sign transaction in wire format,
             or a fully transaction as base-58 encoded string.
+        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
 
         Before submitting, the following preflight checks are performed:
 
@@ -876,13 +881,19 @@ class Client:  # pylint: disable=too-many-public-methods
         else:
             wire_format = txn
 
-        return self._provider.make_request(RPCMethod("sendTransaction"), wire_format)
+        return self._provider.make_request(
+            RPCMethod("sendTransaction"), wire_format, {self._preflight_comm_key: preflight_commitment}
+        )
 
-    def send_transaction(self, txn: Transaction, *signers: Account) -> RPCResponse:
+    def send_transaction(
+        self, txn: Transaction, *signers: Account, skip_preflight: bool = False, preflight_commitment: Commitment = Max
+    ) -> RPCResponse:
         """Send a transaction.
 
         :param txn: Transaction object.
         :param signers: Signers to sign the transaction
+        :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
+        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
 
         >>> from solana.account import Account
         >>> from solana.system_program import TransferParams, transfer
@@ -906,7 +917,11 @@ class Client:  # pylint: disable=too-many-public-methods
 
         txn.sign(*signers)
         wire_format = b58encode(txn.serialize()).decode("utf-8")
-        return self._provider.make_request(RPCMethod("sendTransaction"), wire_format)
+        return self._provider.make_request(
+            RPCMethod("sendTransaction"),
+            wire_format,
+            {self._skip_preflight_key: skip_preflight, self._preflight_comm_key: preflight_commitment},
+        )
 
     def simulate_transaction(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Commitment = Max

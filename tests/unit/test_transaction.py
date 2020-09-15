@@ -1,6 +1,5 @@
 """Unit tests for solana.transaction."""
 from base64 import b64decode, b64encode
-from random import randint
 
 import pytest
 from base58 import b58encode
@@ -119,24 +118,3 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_reciever, stu
     )
     assert txn.serialize() == expected_serialization
     assert len(txn.signatures) == 1
-
-
-def test_verify_instruction_keys():
-    """Test verify instruction keys."""
-
-    stubbed_program_id = PublicKey(0)
-    expected = randint(0, 256)
-    valid_keys = [
-        txlib.AccountMeta(pubkey=PublicKey(i), is_signer=False, is_writable=False) for i in range(expected + 1)
-    ]
-    assert not txlib.verify_instruction_keys(
-        txlib.TransactionInstruction(keys=valid_keys, program_id=stubbed_program_id), expected
-    )
-    with pytest.raises(ValueError):
-        invalid_keys = [
-            txlib.AccountMeta(pubkey=PublicKey(i), is_signer=False, is_writable=False)
-            for i in range(randint(0, expected - 1))
-        ]
-        txlib.verify_instruction_keys(
-            txlib.TransactionInstruction(keys=invalid_keys, program_id=stubbed_program_id), expected
-        )
