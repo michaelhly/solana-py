@@ -1,6 +1,7 @@
 """SPL Token program client."""
 from __future__ import annotations
 
+import time
 from typing import Optional
 
 import solana.system_program as sp
@@ -15,7 +16,7 @@ from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # t
 class Token:
     """An ERC20-like Token."""
 
-    public_key: PublicKey
+    pubkey: PublicKey
     """The public key identifying this mint."""
 
     program_id: PublicKey
@@ -26,8 +27,18 @@ class Token:
 
     def __init__(self, endpoint: str, public_key: PublicKey, program_id: PublicKey, payer: Account) -> None:
         """Initialize a client to a SPL-Token program."""
-        self._conn = Client(endpoint)
-        self.public_key, self.program_id, self.payer = public_key, program_id, payer
+        self._conn = conn
+        self.pubkey, self.program_id, self.payer = public_key, program_id, payer
+
+    def __send_and_confirm_transaction(
+        self, txn: Transaction, *add_signers: Account, skip_preflight: bool = False
+    ) -> str:
+        # TODO: Make this a shared utility in the solana package.
+        resp = self._conn.send_transaction(txn, self.payer, *add_signers, skip_preflight=skip_preflight)
+        if resp.get("error"):
+            raise Exception("Error sending transaction: ", resp["error"])
+        # TODO: Confirm transaction.
+        return resp["result"]
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(endpoint: str) -> int:
@@ -102,5 +113,9 @@ class Token:
             )
         )
         # Send transaction
-        _ = Client(endpoint).send_transaction(txn, payer)  # TODO: Confirm transaction.
-        return Token(endpoint, mint_account.public_key(), program_id, payer)
+        tx_sig = token.__send_and_confirm_transaction(txn, mint_account, skip_preflight=True)
+        print(tx_sig)
+        time.sleep(25)
+        print(conn.get_confirmed_transaction(tx_sig))
+
+        return token
