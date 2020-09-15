@@ -25,7 +25,7 @@ class Token:
     payer: Account
     """Fee payer."""
 
-    def __init__(self, endpoint: str, public_key: PublicKey, program_id: PublicKey, payer: Account) -> None:
+    def __init__(self, conn: Client, public_key: PublicKey, program_id: PublicKey, payer: Account) -> None:
         """Initialize a client to a SPL-Token program."""
         self._conn = conn
         self.pubkey, self.program_id, self.payer = public_key, program_id, payer
@@ -40,45 +40,53 @@ class Token:
         # TODO: Confirm transaction.
         return resp["result"]
 
+    def __send_and_confirm_transaction(self, txn: Transaction, skip_preflight: bool = False) -> str:
+        # TODO: Make this a shared utility in the solana package.
+        resp = self._conn.send_transaction(txn, self.payer, skip_preflight=skip_preflight)
+        if resp.get("error"):
+            raise Exception("Error sending transaction: ", resp["error"])
+        # TODO: Confirm transaction.
+        return resp["result"]
+
     @staticmethod
-    def get_min_balance_rent_for_exempt_for_account(endpoint: str) -> int:
+    def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
         """Get the minimum balance for the account to be rent exempt.
 
-        :param endpoint: Endpoint to a solana cluster.
+        :param conn: RPC connection to a solana cluster.
         """
-        resp = Client(endpoint).get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
+        resp = conn.get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
         return resp["result"]
 
     @staticmethod
-    def get_min_balance_rent_for_exempt_for_mint(endpoint: str) -> int:
+    def get_min_balance_rent_for_exempt_for_mint(conn: Client) -> int:
         """Get the minimum balance for the mint to be rent exempt.
 
-        :param endpoint: Endpoint to a solana cluster.
+        :param conn: RPC connection to a solana cluster.
         """
-        resp = Client(endpoint).get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
+        resp = conn.get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
         return resp["result"]
 
     @staticmethod
-    def get_min_balance_rent_for_exempt_for_multisig(endpoint: str) -> int:
+    def get_min_balance_rent_for_exempt_for_multisig(conn: Client) -> int:
         """Get the minimum balance for the multsig to be rent exempt.
 
-        :param endpoint: Endpoint to a solana cluster.
+        :param conn: RPC connection to a solana cluster.
         """
-        resp = Client(endpoint).get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
+        resp = conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
 
     @staticmethod
     def create_mint(  # pylint: disable=too-many-arguments  # TODO: Test this method
-        endpoint: str,
+        conn: Client,
         payer: Account,
         mint_authority: PublicKey,
         decimals: int,
         program_id: PublicKey,
-        freeze_authority: Optional[PublicKey],
+        freeze_authority: Optional[PublicKey] = None,
     ) -> Token:
         """Create and initialize a token.
 
-        :param endpoint: Endpoint to a solana cluster.
+        :param conn: RPC connection to a solana cluster.
         :param payer: Fee payer for transaction.
         :param mint_authority: Account or multisig that will control minting.
         :param decimals: Location of the decimal place.
@@ -86,8 +94,9 @@ class Token:
         :param freeze_authority: (optional) Account or multisig that can freeze token accounts.
         """
         mint_account = Account()
+        token = Token(conn, mint_account.public_key(), program_id, payer)
         # Allocate memory for the account
-        balance_needed = Token.get_min_balance_rent_for_exempt_for_account(endpoint)
+        balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
         # Construct transaction
         txn = Transaction()
         txn.add(
@@ -112,6 +121,7 @@ class Token:
                 )
             )
         )
+
         # Send transaction
         tx_sig = token.__send_and_confirm_transaction(txn, mint_account, skip_preflight=True)
         print(tx_sig)
