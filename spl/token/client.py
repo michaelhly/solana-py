@@ -33,7 +33,7 @@ class Token:
     def get_min_balance_rent_for_exempt_for_account(endpoint: str) -> int:
         """Get the minimum balance for the account to be rent exempt.
 
-        :param: Endpoint to a solana cluster.
+        :param endpoint: Endpoint to a solana cluster.
         """
         resp = Client(endpoint).get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
         return resp["result"]
@@ -42,7 +42,7 @@ class Token:
     def get_min_balance_rent_for_exempt_for_mint(endpoint: str) -> int:
         """Get the minimum balance for the mint to be rent exempt.
 
-        :param: Endpoint to a solana cluster.
+        :param endpoint: Endpoint to a solana cluster.
         """
         resp = Client(endpoint).get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
         return resp["result"]
@@ -51,13 +51,13 @@ class Token:
     def get_min_balance_rent_for_exempt_for_multisig(endpoint: str) -> int:
         """Get the minimum balance for the multsig to be rent exempt.
 
-        :param: Endpoint to a solana cluster.
+        :param endpoint: Endpoint to a solana cluster.
         """
         resp = Client(endpoint).get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
 
     @staticmethod
-    def create_mint(  # pylint: disable=too-many-arguments
+    def create_mint(  # pylint: disable=too-many-arguments  # TODO: Test this method
         endpoint: str,
         payer: Account,
         mint_authority: PublicKey,
@@ -65,7 +65,15 @@ class Token:
         program_id: PublicKey,
         freeze_authority: Optional[PublicKey],
     ) -> Token:
-        """Create and initialize a token."""
+        """Create and initialize a token.
+
+        :param endpoint: Endpoint to a solana cluster.
+        :param payer: Fee payer for transaction.
+        :param mint_authority: Account or multisig that will control minting.
+        :param decimals: Location of the decimal place.
+        :param program_id: SPL Token program account.
+        :param freeze_authority: (optional) Account or multisig that can freeze token accounts.
+        """
         mint_account = Account()
         # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_account(endpoint)
