@@ -8,7 +8,6 @@ import spl.token.instructions as spl_token  # type: ignore # TODO: Don't ignore
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
-from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 
@@ -29,13 +28,6 @@ class Token:
         """Initialize a client to a SPL-Token program."""
         self._conn = conn
         self.pubkey, self.program_id, self.payer = public_key, program_id, payer
-
-    def __send_and_confirm_transaction(
-        self, txn: Transaction, *add_signers: Account, skip_preflight: bool = False
-    ) -> RPCResponse:
-        # TODO: Make this a shared utility in the solana package.
-        resp = self._conn.send_transaction(txn, self.payer, *add_signers, skip_preflight=skip_preflight)
-        return self._conn.confirm_transaction(resp["result"])
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
@@ -111,5 +103,5 @@ class Token:
             )
         )
         # Send transaction
-        token.__send_and_confirm_transaction(txn, mint_account, skip_preflight=True)  # pylint: disable=protected-access
+        conn.send_and_confirm_transaction(txn, payer, mint_account, skip_preflight=True)
         return token

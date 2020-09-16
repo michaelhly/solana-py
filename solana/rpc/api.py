@@ -993,7 +993,7 @@ class Client:  # pylint: disable=too-many-public-methods
     def confirm_transaction(self, tx_sig: str, commitment: Commitment = Max) -> RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
-        Note: This function is will block for a maximum of 30 seconds. Wrap this function inside a thread
+        Note: This function will block for a maximum of 30 seconds. Wrap this function inside a thread
         to make this call asynchronous.
 
         :param tx_sig: Transaction signature as base-58 encoded string.
@@ -1021,3 +1021,23 @@ class Client:  # pylint: disable=too-many-public-methods
             self._provider.logger.error("Transaction error: %s", resp["error"])
 
         return resp
+
+    def send_and_confirm_transaction(
+        self, txn: Transaction, *signers: Account, preflight_commitment: Commitment = Max, skip_preflight: bool = False
+    ) -> RPCResponse:
+        """Send and confirm a transaction.
+
+        Note: This function will block for a maximum of 30 seconds. Wrap this function inside a thread
+        to make this call asynchronous.
+
+        :param txn: Transaction object.
+        :param signers: Signers to sign the transaction
+        :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
+        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
+        """
+        resp = self.send_transaction(
+            txn, *signers, preflight_commitment=preflight_commitment, skip_preflight=skip_preflight
+        )
+        if not resp.get("result"):
+            raise Exception("Failed to send transaction")
+        return self.confirm_transaction(resp["result"])
