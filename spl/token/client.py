@@ -1,7 +1,6 @@
 """SPL Token program client."""
 from __future__ import annotations
 
-import time
 from typing import Optional
 
 import solana.system_program as sp
@@ -9,6 +8,7 @@ import spl.token.instructions as spl_token  # type: ignore # TODO: Don't ignore
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
+from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 
@@ -32,13 +32,10 @@ class Token:
 
     def __send_and_confirm_transaction(
         self, txn: Transaction, *add_signers: Account, skip_preflight: bool = False
-    ) -> str:
+    ) -> RPCResponse:
         # TODO: Make this a shared utility in the solana package.
         resp = self._conn.send_transaction(txn, self.payer, *add_signers, skip_preflight=skip_preflight)
-        if resp.get("error"):
-            raise Exception("Error sending transaction: ", resp["error"])
-        # TODO: Confirm transaction.
-        return resp["result"]
+        return self._conn.confirm_transaction(resp["result"])
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
@@ -113,11 +110,6 @@ class Token:
                 )
             )
         )
-
         # Send transaction
-        tx_sig = token.__send_and_confirm_transaction(txn, mint_account, skip_preflight=True)
-        print(tx_sig)
-        time.sleep(25)
-        print(conn.get_confirmed_transaction(tx_sig))
-
+        token.__send_and_confirm_transaction(txn, mint_account, skip_preflight=True)  # pylint: disable=protected-access
         return token

@@ -1,6 +1,7 @@
 """API client to interact with the Solana JSON RPC Endpoint."""
 from __future__ import annotations
 
+from time import sleep
 from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 from base58 import b58decode, b58encode
@@ -988,3 +989,35 @@ class Client:  # pylint: disable=too-many-public-methods
         {'jsonrpc': '2.0', 'result': true, 'id': 1}
         """
         return self._provider.make_request(RPCMethod("validatorExit"))
+
+    def confirm_transaction(self, tx_sig: str, commitment: Commitment = Max) -> RPCResponse:
+        """Confirm the transaction identified by the specified signature.
+
+        Note: This function is will block for a maximum of 30 seconds. Wrap this function inside a thread
+        to make this call asynchronous.
+
+        :param tx_sig: Transaction signature as base-58 encoded string.
+        :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
+        """
+        # TODO: Use websockets and check confirmation with onSignature subscription.
+        TIMEOUT = 30  # 30 seconds  pylint: disable=invalid-name
+        elapsed_time = 0
+        while elapsed_time < TIMEOUT:
+            sleep_time = 3
+            if not elapsed_time:
+                sleep_time = 7 if commitment == Max else sleep_time
+                sleep(sleep_time)
+            else:
+                sleep(sleep_time)
+
+            resp = self.get_confirmed_transaction(tx_sig)
+            if resp["result"]:
+                break
+            elapsed_time += sleep_time
+
+        if not resp["result"]:
+            self._provider.logger.warning("Transaction was not confirmed in %d seconds.", TIMEOUT)
+        if resp.get("error"):
+            self._provider.logger.error("Transaction error: %s", resp["error"])
+
+        return resp
