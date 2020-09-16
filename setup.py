@@ -26,7 +26,7 @@ with open("README.md", "r") as file_handle:
 setup(
     name="solana",
     # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.
-    version="0.3.0",
+    version="0.3.1",
     author="Michael Huang",
     author_mail="michaelhly@gmail.com",
     description="""Solana.py""",
