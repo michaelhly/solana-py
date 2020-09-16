@@ -156,7 +156,7 @@ class Client:  # pylint: disable=too-many-public-methods
     def get_block_time(self, slot: int) -> RPCResponse:
         """Fetch the estimated production time of a block.
 
-        :param slot: Block, identified by Slot
+        :param slot: Block, identified by Slot.
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_block_time(5) # doctest: +SKIP
@@ -257,10 +257,10 @@ class Client:  # pylint: disable=too-many-public-methods
         Signatures are returned backwards in time from the provided signature or
         most recent confirmed block.
 
-        :param account: Account to be queried
-        :param before: (optional) Start searching backwards from this transaction signature
-            If not provided the search starts from the top of the highest max confirmed block
-        :param limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000)
+        :param account: Account to be queried.
+        :param before: (optional) Start searching backwards from this transaction signature.
+            If not provided the search starts from the top of the highest max confirmed block.
+        :param limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
@@ -289,9 +289,9 @@ class Client:  # pylint: disable=too-many-public-methods
 
         :param tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
             instruction parsers to return more human-readable and explicit data in the
-            `transaction.message.instructions` list
+            `transaction.message.instructions` list.
         :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
-            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_confirmed_transaction("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy") # doctest: +SKIP
@@ -557,28 +557,27 @@ class Client:  # pylint: disable=too-many-public-methods
         self,
         pubkey: Union[str, PublicKey],
         commitment: Commitment = Max,
-        data_slice: Optional[DataSliceOpt] = None,
         encoding: Optional[str] = None,
-        filter_opts: Optional[List[Union[MemcmpOpt, int]]] = None,
+        data_slice: Optional[DataSliceOpt] = None,
+        data_size: Optional[int] = None,
+        memcmp_opts: Optional[List[MemcmpOpt]] = None,
     ) -> RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
 
-        :param pubkey: Pubkey of program, as base-58 encoded string or PublicKey object
+        :param pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
+        :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
         :param encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
         :param data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
-        :param filter_opts: (optional) Options to filter results using various
-            `filter objects <https://docs.solana.com/apps/jsonrpc-api#filters/>`_;
-            account must meet all filter criteria to be included in results.
-        :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
+        :param data_size: (optional) Option to compare the program account data length with the provided data size.
+        :param memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
 
         >>> solana_client = Client("http://localhost:8899")
-        >>> filter_opts = [
+        >>> memcmp_opts = [
         ...     MemcmpOpt(offset=4, bytes="3Mc6vR"),
-        ...     17,  # DataSize
         ... ]
-        >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", filter_opts=filter_opts) # doctest: +SKIP
+        >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", data_size=17, memcmp_opts=memcmp_opts) # doctest: +SKIP
         {'jsonrpc': "2.0",
          'result' :[{
             'account' :{
@@ -591,15 +590,14 @@ class Client:  # pylint: disable=too-many-public-methods
          'id' :1}
         """  # noqa: E501 # pylint: disable=line-too-long
         opts: Dict[str, Any] = {"filters": []}
-        for opt in [] if not filter_opts else filter_opts:
-            if isinstance(opt, MemcmpOpt):
-                opts["filters"].append({"memcmp": dict(opt._asdict())})
-            else:
-                opts["filters"].append({"dataSize": opt})
-        if encoding:
-            opts[self._encoding_key] = encoding
+        for opt in [] if not memcmp_opts else memcmp_opts:
+            opts["filters"].append({"memcmp": dict(opt._asdict())})
+        if data_size:
+            opts["filters"].append({"dataSize": data_size})
         if data_slice:
             opts[self._data_slice_key] = dict(data_slice._asdict())
+        if encoding:
+            opts[self._encoding_key] = encoding
         opts[self._comm_key] = commitment
 
         return self._provider.make_request(RPCMethod("getProgramAccounts"), str(pubkey), opts)
@@ -633,7 +631,7 @@ class Client:  # pylint: disable=too-many-public-methods
 
         :param signatures: An array of transaction signatures to confirm.
         :param search_transaction_history: If true, a Solana node will search its ledger cache for
-            any signatures not found in the recent status cache
+            any signatures not found in the recent status cache.
 
         >>> solana_client = Client("http://localhost:8899")
         >>> signatures = [
@@ -690,9 +688,9 @@ class Client:  # pylint: disable=too-many-public-methods
     ):
         """Returns epoch activation information for a stake account.
 
-        :param pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object
+        :param pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object.
         :param epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
-            defaults to current epoch
+            defaults to current epoch.
         :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
@@ -869,7 +867,7 @@ class Client:  # pylint: disable=too-many-public-methods
 
         Before submitting, the following preflight checks are performed:
 
-            - The transaction signatures are verified
+            - The transaction signatures are verified.
 
             - The transaction is simulated against the latest max confirmed bank and on failure an error
                 will be returned. Preflight checks may be disabled if desired.
@@ -899,7 +897,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """Send a transaction.
 
         :param txn: Transaction object.
-        :param signers: Signers to sign the transaction
+        :param signers: Signers to sign the transaction.
         :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
         :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
 
