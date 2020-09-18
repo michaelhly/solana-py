@@ -24,10 +24,10 @@ class Token:
     payer: Account
     """Fee payer."""
 
-    def __init__(self, conn: Client, public_key: PublicKey, program_id: PublicKey, payer: Account) -> None:
+    def __init__(self, conn: Client, pubkey: PublicKey, program_id: PublicKey, payer: Account) -> None:
         """Initialize a client to a SPL-Token program."""
         self._conn = conn
-        self.pubkey, self.program_id, self.payer = public_key, program_id, payer
+        self.pubkey, self.program_id, self.payer = pubkey, program_id, payer
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
@@ -77,7 +77,7 @@ class Token:
         mint_account = Account()
         token = Token(conn, mint_account.public_key(), program_id, payer)
         # Allocate memory for the account
-        balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
+        balance_needed = Token.get_min_balance_rent_for_exempt_for_mint(conn)
         # Construct transaction
         txn = Transaction()
         txn.add(
@@ -102,6 +102,39 @@ class Token:
                 )
             )
         )
-        # Send transaction
+        # Send the two instructions
         conn.send_and_confirm_transaction(txn, payer, mint_account, skip_preflight=True)
         return token
+
+    def create_account(self, owner: PublicKey) -> PublicKey:
+        """Create and initialize a new account.
+
+        This account may then be used as a `transfer()` or `approve()` destination.
+        """
+        new_account = Account()
+        # Allocate memory for the account
+        balance_needed = Token.get_min_balance_rent_for_exempt_for_account(self._conn)
+        # Construct transaction
+        txn = Transaction()
+        txn.add(
+            sp.create_account(
+                sp.CreateAccountParams(
+                    from_pubkey=self.payer.public_key(),
+                    new_account_pubkey=new_account.public_key(),
+                    lamports=balance_needed,
+                    space=ACCOUNT_LAYOUT.sizeof(),
+                    program_id=self.program_id,
+                )
+            )
+        )
+        mint_pubkey = self.pubkey
+        txn.add(
+            spl_token.initialize_account(
+                spl_token.InitializeAccountParams(
+                    program_id=self.program_id, mint=mint_pubkey, account=new_account.public_key(), owner=owner
+                )
+            )
+        )
+        # Send the two instructions
+        self._conn.send_and_confirm_transaction(txn, self.payer, new_account, skip_preflight=True)
+        return new_account.public_key()

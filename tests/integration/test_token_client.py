@@ -42,5 +42,13 @@ def test_token(stubbed_sender, test_http_client) -> Token:
     assert mint_data.supply == 0
     assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key()
     assert PublicKey(mint_data.freeze_authority) == expected_freeze_authority.public_key()
-
     return token_client
+
+
+@pytest.mark.integration
+def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: disable=redefined-outer-name
+    """Test creating a new token account."""
+    token_account_pk = test_token.create_account(stubbed_sender.public_key())
+    resp = test_http_client.get_account_info(token_account_pk)
+    assert_valid_response(resp)
+    assert resp == 1

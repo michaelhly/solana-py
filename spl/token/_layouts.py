@@ -89,7 +89,7 @@ ACCOUNT_LAYOUT = cStruct(
     "delegate_option" / Int32ul,
     "delegate" / PUBLIC_KEY_LAYOUT,
     "state" / Int8ul,
-    "is_native_option" / Int8ul,
+    "is_native_option" / Int32ul,
     "is_native" / Int64ul,
     "delegated_amount" / Int64ul,
     "close_authority_option" / Int32ul,
