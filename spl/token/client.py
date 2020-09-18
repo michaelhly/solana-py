@@ -8,6 +8,7 @@ import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
+from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 
@@ -28,6 +29,20 @@ class Token:
         """Initialize a client to a SPL-Token program."""
         self._conn = conn
         self.pubkey, self.program_id, self.payer = pubkey, program_id, payer
+
+    def __send_transaction(
+        self, txn: Transaction, *signers: Account, skip_preflight: bool, skip_conf: bool
+    ) -> RPCResponse:
+        if skip_conf:
+            return self._conn.send_transaction(txn, *signers, skip_preflight=skip_preflight)
+        try:
+            resp = self._conn.send_and_confirm_transaction(txn, *signers, skip_preflight=skip_preflight)
+            err = resp["result"].get("meta").get("err") or resp.get("error")
+            if err:
+                raise Exception("Transaction error: ", err)
+        except Exception as excep:
+            raise Exception("Failed to confirm transaction") from excep
+        return resp
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
@@ -57,13 +72,14 @@ class Token:
         return resp["result"]
 
     @staticmethod
-    def create_mint(  # pylint: disable=too-many-arguments  # TODO: Test this method
+    def create_mint(  # pylint: disable=too-many-arguments
         conn: Client,
         payer: Account,
         mint_authority: PublicKey,
         decimals: int,
         program_id: PublicKey,
         freeze_authority: Optional[PublicKey] = None,
+        skip_confirmation: bool = False,
     ) -> Token:
         """Create and initialize a token.
 
@@ -73,6 +89,7 @@ class Token:
         :param decimals: Location of the decimal place.
         :param program_id: SPL Token program account.
         :param freeze_authority: (optional) Account or multisig that can freeze token accounts.
+        :param skip_confirmation: (optional) Option to skip transaction confirmation.
         """
         mint_account = Account()
         token = Token(conn, mint_account.public_key(), program_id, payer)
@@ -103,15 +120,30 @@ class Token:
             )
         )
         # Send the two instructions
-        conn.send_and_confirm_transaction(txn, payer, mint_account, skip_preflight=True)
+        if skip_confirmation:
+            conn.send_transaction(txn, payer, mint_account, skip_preflight=True)
+        else:
+            try:
+                resp = conn.send_and_confirm_transaction(txn, payer, mint_account, skip_preflight=True)
+                err = resp["result"].get("meta").get("err") or resp.get("error")
+                if err:
+                    raise Exception("Transaction error: ", err)
+            except Exception as excep:
+                raise Exception("Failed to confirm transaction") from excep
+
         return token
 
-    def create_account(self, owner: PublicKey) -> PublicKey:
+    def create_account(
+        self,
+        owner: PublicKey,
+        skip_confirmation: bool = False,
+    ) -> PublicKey:
         """Create and initialize a new account.
 
         This account may then be used as a `transfer()` or `approve()` destination.
 
         :param owner: User account that will own the new account.
+        :param skip_confirmation: (optional) Option to skip transaction confirmation.
         """
         new_account = Account()
         # Allocate memory for the account
@@ -137,5 +169,5 @@ class Token:
             )
         )
         # Send the two instructions
-        self._conn.send_and_confirm_transaction(txn, self.payer, new_account, skip_preflight=True)
+        self.__send_transaction(txn, self.payer, new_account, skip_preflight=True, skip_conf=skip_confirmation)
         return new_account.public_key()
