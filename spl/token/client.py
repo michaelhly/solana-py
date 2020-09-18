@@ -110,6 +110,8 @@ class Token:
         """Create and initialize a new account.
 
         This account may then be used as a `transfer()` or `approve()` destination.
+
+        :param owner: User account that will own the new account.
         """
         new_account = Account()
         # Allocate memory for the account
@@ -127,11 +129,10 @@ class Token:
                 )
             )
         )
-        mint_pubkey = self.pubkey
         txn.add(
             spl_token.initialize_account(
                 spl_token.InitializeAccountParams(
-                    program_id=self.program_id, mint=mint_pubkey, account=new_account.public_key(), owner=owner
+                    account=new_account.public_key(), mint=self.pubkey, owner=owner, program_id=self.program_id
                 )
             )
         )
