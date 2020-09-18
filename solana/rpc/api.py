@@ -1017,8 +1017,9 @@ class Client:  # pylint: disable=too-many-public-methods
 
         if not resp["result"]:
             self._provider.logger.warning("Transaction was not confirmed in %d seconds.", TIMEOUT)
-        if resp.get("error"):
-            self._provider.logger.error("Transaction error: %s", resp["error"])
+        err = resp["result"].get("meta").get("err") or resp.get("error")
+        if err:
+            self._provider.logger.error("Transaction error: %s", err)
 
         return resp
 
@@ -1040,4 +1041,7 @@ class Client:  # pylint: disable=too-many-public-methods
         )
         if not resp.get("result"):
             raise Exception("Failed to send transaction")
+        self._provider.logger.info(
+            "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
+        )
         return self.confirm_transaction(resp["result"])
