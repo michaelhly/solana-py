@@ -51,4 +51,17 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     token_account_pk = test_token.create_account(stubbed_sender.public_key())
     resp = test_http_client.get_account_info(token_account_pk)
     assert_valid_response(resp)
-    assert resp == 1
+    assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
+
+    account_data = layouts.ACCOUNT_LAYOUT.parse(decode_byte_string(resp["result"]["value"]["data"][0]))
+    assert account_data.state
+    assert not account_data.amount
+    assert (
+        not account_data.delegate_option
+        and not account_data.delegated_amount
+        and PublicKey(account_data.delegate) == PublicKey(0)
+    )
+    assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == PublicKey(0)
+    assert not account_data.is_native_option and not account_data.is_native
+    assert PublicKey(account_data.mint) == test_token.pubkey
+    assert PublicKey(account_data.owner) == stubbed_sender.public_key()
