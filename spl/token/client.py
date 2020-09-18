@@ -90,6 +90,9 @@ class Token:
         :param program_id: SPL Token program account.
         :param freeze_authority: (optional) Account or multisig that can freeze token accounts.
         :param skip_confirmation: (optional) Option to skip transaction confirmation.
+
+        If skip confirmation is set to `False`, this method will block for at most 30 seconds
+        or until the transaction is confirmed.
         """
         mint_account = Account()
         token = Token(conn, mint_account.public_key(), program_id, payer)
@@ -144,6 +147,9 @@ class Token:
 
         :param owner: User account that will own the new account.
         :param skip_confirmation: (optional) Option to skip transaction confirmation.
+
+        If skip confirmation is set to `False`, this method will block for at most 30 seconds
+        or until the transaction is confirmed.
         """
         new_account = Account()
         # Allocate memory for the account
