@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Optional
 
 import solana.system_program as sp
-import spl.token.instructions as spl_token  # type: ignore # TODO: Don't ignore
+import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client

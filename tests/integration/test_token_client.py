@@ -11,14 +11,15 @@ from .utils import assert_valid_response, confirm_transaction, decode_byte_strin
 
 
 @pytest.mark.integration
-def test_create_mint(stubbed_sender, test_http_client):
+@pytest.fixture(scope="module")
+def test_token(stubbed_sender, test_http_client) -> Token:
     """Test create mint."""
     resp = test_http_client.request_airdrop(stubbed_sender.public_key(), 10000000)
     assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
 
     expected_decimals = 6
     expected_freeze_authority = Account()
-    actual = Token.create_mint(
+    token_client = Token.create_mint(
         test_http_client,
         stubbed_sender,
         stubbed_sender.public_key(),
@@ -27,11 +28,11 @@ def test_create_mint(stubbed_sender, test_http_client):
         expected_freeze_authority.public_key(),
     )
 
-    assert actual.pubkey
-    assert actual.program_id == TOKEN_PROGRAM_ID
-    assert actual.payer.public_key() == stubbed_sender.public_key()
+    assert token_client.pubkey
+    assert token_client.program_id == TOKEN_PROGRAM_ID
+    assert token_client.payer.public_key() == stubbed_sender.public_key()
 
-    resp = test_http_client.get_account_info(actual.pubkey)
+    resp = test_http_client.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
 
@@ -41,3 +42,5 @@ def test_create_mint(stubbed_sender, test_http_client):
     assert mint_data.supply == 0
     assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key()
     assert PublicKey(mint_data.freeze_authority) == expected_freeze_authority.public_key()
+
+    return token_client
