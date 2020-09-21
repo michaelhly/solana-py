@@ -62,7 +62,7 @@ class MintInfo(NamedTuple):
     """ Optional authority to freeze token accounts."""
 
 
-class Token:
+class Token:  # pylint: disable=too-many-public-methods
     """An ERC20-like Token."""
 
     pubkey: PublicKey
@@ -280,7 +280,7 @@ class Token:
     def approve(  # pylint: disable=too-many-arguments
         self, account: PublicKey, delegate: PublicKey, owner: PublicKey, amount: int, signers: Optional[List[Account]]
     ) -> RPCResponse:
-        """Transfer tokens to another account.
+        """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
         :param source: Public key of the source account.
         :param delegate: Account authorized to perform a transfer tokens from the source account.
@@ -368,3 +368,71 @@ class Token:
         :param signers: (optional) Signing accounts if `owner` is a multiSig.
         """
         raise NotImplementedError("thaw_account not implemented")
+
+    def transfer2(  # pylint: disable=too-many-arguments
+        self,
+        source: PublicKey,
+        dest: PublicKey,
+        owner: PublicKey,
+        amount: int,
+        decimals: int,
+        signers: Optional[List[Account]],
+    ) -> RPCResponse:
+        """Transfer tokens to another account, asserting the token mint and decimals.
+
+        :param source: Public key of account to transfer tokens from.
+        :param dest: Public key of account to transfer tokens to.
+        :param owner: Owner of the source account.
+        :param amount: Number of tokens to transfer.
+        :param decimals: Number of decimals in transfer amount.
+        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        """
+        raise NotImplementedError("transfer2 not implemented")
+
+    def approve2(  # pylint: disable=too-many-arguments
+        self,
+        account: PublicKey,
+        delegate: PublicKey,
+        owner: PublicKey,
+        amount: int,
+        decimals: int,
+        signers: Optional[List[Account]],
+    ) -> RPCResponse:
+        """Grant a third-party permission to transfer up the specified number of tokens from an account.
+
+        This method also asserts the token mint and decimals.
+
+        :param source: Public key of the source account.
+        :param delegate: Account authorized to perform a transfer tokens from the source account.
+        :param owner: Owner of the source account.
+        :param amount: Maximum number of tokens the delegate may transfer.
+        :param decimals: Number of decimals in approve amount.
+        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        """
+        raise NotImplementedError("approve2 not implemented")
+
+    def mint_to2(  # pylint: disable=too-many-arguments
+        self, dest: PublicKey, mint_authority: PublicKey, amount: int, decimals: int, signers: Optional[List[Account]]
+    ) -> RPCResponse:
+        """Mint new tokens, asserting the token mint and decimals.
+
+        :param dest: Public key of the account to mint to.
+        :param mint_authority: Public key of the minting authority.
+        :param amount: Amount to mint.
+        :param decimals: Number of decimals in amount to mint.
+        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        """
+        raise NotImplementedError("mint_to2 not implemented")
+
+    def burn2(  # pylint: disable=too-many-arguments
+        self, account: PublicKey, owner: PublicKey, amount: int, decimals: int, signers: Optional[List[Account]]
+    ) -> RPCResponse:
+        """Burn tokens, asserting the token mint and decimals.
+
+        :param account: Account to burn tokens from.
+        :param owner: Owner of the account.
+        :param amount: Amount to burn.
+        :param decimals: Number of decimals in amount to burn.
+        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        """
+        raise NotImplementedError("burn2 not implemented")
