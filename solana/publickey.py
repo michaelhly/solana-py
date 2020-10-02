@@ -1,9 +1,11 @@
 """Library to interface with Solana public keys."""
 from __future__ import annotations
 
+from hashlib import sha256
 from typing import Any, List, Optional, Tuple, Union
 
 import base58
+from nacl.bindings.crypto_core import crypto_core_ed25519_is_valid_point  # type: ignore
 
 
 class PublicKey:
@@ -60,17 +62,22 @@ class PublicKey:
         """Public key in base58."""
         return base58.b58encode(bytes(self))
 
-    def create_with_seed(self, from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:
+    @staticmethod
+    def create_with_seed(from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:
         """Derive a public key from another key, a seed, and a program ID."""
         raise NotImplementedError("create_with_seed not implemented")
 
-    def create_program_address(self, seeds: Union[bytearray, List[bytes]], program_id: PublicKey) -> PublicKey:
+    @staticmethod
+    def create_program_address(seeds: List[bytes], program_id: PublicKey) -> PublicKey:
         """Derive a program address from seeds and a program ID."""
-        raise NotImplementedError("create_program_address not implemented")
+        buffer = b"".join(seeds + [bytes(program_id), b"ProgramDerivedAddress"])
+        hashbytes: bytes = sha256(buffer).digest()
+        if crypto_core_ed25519_is_valid_point(hashbytes):
+            raise Exception("Invalid seeds, address must fall off the curve")
+        return PublicKey(hashbytes)
 
-    def find_program_address(
-        self, seeds: Union[bytearray, List[bytes]], program_id: PublicKey
-    ) -> Tuple[PublicKey, int]:
+    @staticmethod
+    def find_program_address(seeds: List[bytes], program_id: PublicKey) -> Tuple[PublicKey, int]:
         """Find a valid program address.
 
         Valid program addresses must fall off the ed25519 curve.  This function
