@@ -208,3 +208,30 @@ def test_equal_2():
     )
     key_two = PublicKey(bytes(key_one))
     assert key_one == key_two
+
+
+def test_create_program_address():
+    """Test create program address."""
+    program_id = PublicKey("BPFLoader1111111111111111111111111111111111")
+    program_address = PublicKey.create_program_address([bytes(), bytes([1])], program_id)
+    assert program_address == PublicKey("3gF2KMe9KiC6FNVBmfg9i267aMPvK37FewCip4eGBFcT")
+
+    program_address = PublicKey.create_program_address([bytes("☉", "utf-8")], program_id)
+    assert program_address == PublicKey("7ytmC1nT1xY4RfxCV2ZgyA7UakC93do5ZdyhdF3EtPj7")
+
+    seeds = [bytes("Talking", "utf8"), bytes("Squirrels", "utf8")]
+    program_address = PublicKey.create_program_address(seeds, program_id)
+    assert program_address == PublicKey("HwRVBufQ4haG5XSgpspwKtNd3PC9GM9m1196uJW36vds")
+
+    program_address = PublicKey.create_program_address(
+        [bytes(PublicKey("SeedPubey1111111111111111111111111111111111"))], program_id
+    )
+    assert program_address == PublicKey("GUs5qLUfsEHkcMB9T38vjr18ypEhRuNWiePW2LoK4E3K")
+
+    program_address_2 = PublicKey.create_program_address([bytes("Talking", "utf8")], program_id)
+    assert program_address_2 != program_address
+
+    # https://github.com/solana-labs/solana/issues/11950
+    seeds = [bytes(PublicKey("H4snTKK9adiU15gP22ErfZYtro3aqR9BTMXiH3AwiUTQ")), bytes.fromhex("0200000000000000")]
+    program_address = PublicKey.create_program_address(seeds, PublicKey("4ckmDgGdxQoPDLUkDT3vHgSAkzA3QRdNq5ywwY4sUSJn"))
+    assert program_address == PublicKey("12rqwuEgBYiGhBrDJStCiqEtzQpTTiZbh7teNVLuYcFA")
