@@ -20,7 +20,7 @@ from .providers import http
 def DataSliceOpt(*args, **kwargs) -> types.DataSliceOpts:  # pylint: disable=invalid-name
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
     warn(
-        "solana.rpc.api.DataSliceOpt is deprecated, please use solana.rpc.types.DataSliceOpt",
+        "solana.rpc.api.DataSliceOpt is deprecated, please use solana.rpc.types.DataSliceOpts",
         category=DeprecationWarning,
     )
     return types.DataSliceOpts(*args, **kwargs)
@@ -28,7 +28,7 @@ def DataSliceOpt(*args, **kwargs) -> types.DataSliceOpts:  # pylint: disable=inv
 
 def MemcmpOpt(*args, **kwargs) -> types.MemcmpOpts:  # pylint: disable=invalid-name
     """Option to compare a provided series of bytes with program account data at a particular offset."""
-    warn("solana.rpc.api.MemcmpOpt is deprecated, please use solana.rpc.types.MemcmpOpt", category=DeprecationWarning)
+    warn("solana.rpc.api.MemcmpOpt is deprecated, please use solana.rpc.types.MemcmpOpts", category=DeprecationWarning)
     return types.MemcmpOpts(*args, **kwargs)
 
 
