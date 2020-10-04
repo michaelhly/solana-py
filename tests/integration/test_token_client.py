@@ -4,6 +4,7 @@ import pytest
 import spl.token._layouts as layouts
 from solana.account import Account
 from solana.publickey import PublicKey
+from solana.rpc.types import TxOpts
 from spl.token.client import Token
 from spl.token.constants import TOKEN_PROGRAM_ID
 
@@ -47,9 +48,18 @@ def test_token(stubbed_sender, test_http_client) -> Token:
 
 @pytest.mark.integration
 @pytest.fixture(scope="module")
-def stubbed_token_account_pk(stubbed_sender, test_token) -> PublicKey:  # pylint: disable=redefined-outer-name
-    """Stubbed token account."""
+def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> PublicKey:  # pylint: disable=redefined-outer-name
+    """Token account for stubbed sender."""
     return test_token.create_account(stubbed_sender.public_key())
+
+
+@pytest.mark.integration
+@pytest.fixture(scope="module")
+def stubbed_reciever_token_account_pk(
+    stubbed_reciever, test_token  # pylint: disable=redefined-outer-name
+) -> PublicKey:
+    """Token account for stubbed reciever."""
+    return test_token.create_account(stubbed_reciever)
 
 
 @pytest.mark.integration
@@ -75,13 +85,18 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
 
 
 @pytest.mark.integration
-def test_mint_to_and_get_balance(
-    stubbed_sender, stubbed_token_account_pk, test_token
-):  # pylint: disable=redefined-outer-name
+def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  # pylint: disable=redefined-outer-name
     """Test mint token to account and get balance."""
     expected_amount = 1000
-    assert_valid_response(test_token.mint_to(stubbed_token_account_pk, stubbed_sender, 1000))
-    resp = test_token.get_balance(stubbed_token_account_pk)
+    assert_valid_response(
+        test_token.mint_to(
+            dest=stubbed_sender_token_account_pk,
+            mint_authority=stubbed_sender,
+            amount=1000,
+            opts=TxOpts(skip_confirmation=False),
+        )
+    )
+    resp = test_token.get_balance(stubbed_sender_token_account_pk)
     balance_info = resp["result"]["value"]
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == 6
@@ -89,10 +104,33 @@ def test_mint_to_and_get_balance(
 
 
 @pytest.mark.integration
+def test_transfer(
+    stubbed_sender, stubbed_reciever_token_account_pk, stubbed_sender_token_account_pk, test_token
+):  # pylint: disable=redefined-outer-name
+    """Test token transfer."""
+    expected_amount = 500
+    assert_valid_response(
+        test_token.transfer(
+            source=stubbed_sender_token_account_pk,
+            dest=stubbed_reciever_token_account_pk,
+            owner=stubbed_sender,
+            amount=expected_amount,
+            opts=TxOpts(skip_confirmation=False),
+        )
+    )
+    resp = test_token.get_balance(stubbed_reciever_token_account_pk)
+    balance_info = resp["result"]["value"]
+    assert balance_info["amount"] == str(expected_amount)
+    assert balance_info["decimals"] == 6
+    assert balance_info["uiAmount"] == 0.0005
+
+
+@pytest.mark.integration
 def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
     """Test get token accounts."""
     resp = test_token.get_accounts(stubbed_sender.public_key())
     assert_valid_response(resp)
+    assert len(resp["result"]["value"]) == 2
     for resp_data in resp["result"]["value"]:
         assert PublicKey(resp_data["pubkey"])
         parsed_data = resp_data["account"]["data"]["parsed"]["info"]
