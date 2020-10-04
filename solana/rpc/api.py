@@ -62,7 +62,7 @@ class TxOpts(NamedTuple):
     skip_confirmation: bool = True
     """If false, `send_transaction` will try to confirm that the transaction was successfully broadcasted.
 
-    `send_transaction` will block for a maximum of 30 seconds to confirm the transaction. Wrap the call
+    When confirming a transaction, `send_transaction` will block for a maximum of 30 seconds. Wrap the call
     inside a thread to make it asynchronous.
     """
     skip_preflight: bool = False
