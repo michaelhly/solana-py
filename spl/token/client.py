@@ -7,8 +7,8 @@ import solana.system_program as sp
 import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
-from solana.rpc.api import Client, TokenAccountOpts
-from solana.rpc.types import RPCResponse
+from solana.rpc.api import Client
+from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 
@@ -78,20 +78,6 @@ class Token:  # pylint: disable=too-many-public-methods
         """Initialize a client to a SPL-Token program."""
         self._conn = conn
         self.pubkey, self.program_id, self.payer = pubkey, program_id, payer
-
-    def __send_transaction(
-        self, txn: Transaction, *signers: Account, skip_preflight: bool, skip_conf: bool
-    ) -> RPCResponse:
-        if skip_conf:
-            return self._conn.send_transaction(txn, *signers, skip_preflight=skip_preflight)
-        try:
-            resp = self._conn.send_and_confirm_transaction(txn, *signers, skip_preflight=skip_preflight)
-            err = resp["result"].get("meta").get("err") or resp.get("error")
-            if err:
-                raise Exception("Transaction error: ", err)
-        except Exception as excep:
-            raise Exception("Failed to confirm transaction") from excep
-        return resp
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
@@ -201,17 +187,9 @@ class Token:  # pylint: disable=too-many-public-methods
             )
         )
         # Send the two instructions
-        if skip_confirmation:
-            conn.send_transaction(txn, payer, mint_account, skip_preflight=True)
-        else:
-            try:
-                resp = conn.send_and_confirm_transaction(txn, payer, mint_account, skip_preflight=True)
-                err = resp["result"].get("meta").get("err") or resp.get("error")
-                if err:
-                    raise Exception("Transaction error: ", err)
-            except Exception as excep:
-                raise Exception("Failed to confirm transaction") from excep
-
+        conn.send_transaction(
+            txn, payer, mint_account, opts=TxOpts(skip_confirmation=skip_confirmation, skip_preflight=True)
+        )
         return token
 
     def create_account(
@@ -254,7 +232,9 @@ class Token:  # pylint: disable=too-many-public-methods
             )
         )
         # Send the two instructions
-        self.__send_transaction(txn, self.payer, new_account, skip_preflight=True, skip_conf=skip_confirmation)
+        self._conn.send_transaction(
+            txn, self.payer, new_account, opts=TxOpts(skip_preflight=True, skip_confirmation=skip_confirmation)
+        )
         return new_account.public_key()
 
     @staticmethod
@@ -382,7 +362,9 @@ class Token:  # pylint: disable=too-many-public-methods
                 )
             )
         )
-        return self.__send_transaction(txn, *signers, skip_preflight=skip_preflight, skip_conf=skip_confirmation)
+        return self._conn.send_transaction(
+            txn, *signers, opts=TxOpts(skip_preflight=skip_preflight, skip_confirmation=skip_confirmation)
+        )
 
     def burn(self, account: PublicKey, owner: PublicKey, amount: int, signers: Optional[List[Account]]) -> RPCResponse:
         """Burn tokens.
