@@ -78,7 +78,7 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
 def test_mint_to_and_get_balance(
     stubbed_sender, stubbed_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
-    """Test mint token to account."""
+    """Test mint token to account and get balance."""
     expected_amount = 1000
     assert_valid_response(test_token.mint_to(stubbed_token_account_pk, stubbed_sender, 1000))
     resp = test_token.get_balance(stubbed_token_account_pk)
@@ -86,3 +86,14 @@ def test_mint_to_and_get_balance(
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == 6
     assert balance_info["uiAmount"] == 0.001
+
+
+@pytest.mark.integration
+def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
+    """Test get token accounts."""
+    resp = test_token.get_accounts(stubbed_sender.public_key())
+    assert_valid_response(resp)
+    for resp_data in resp["result"]["value"]:
+        assert PublicKey(resp_data["pubkey"])
+        parsed_data = resp_data["account"]["data"]["parsed"]["info"]
+        assert parsed_data["owner"] == str(stubbed_sender.public_key())
