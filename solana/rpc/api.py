@@ -1,4 +1,4 @@
-"""API client to interact with the Solana JSON RPC Endpoint."""
+"""API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
 from __future__ import annotations
 
 from time import sleep
@@ -32,6 +32,28 @@ class MemcmpOpt(NamedTuple):
     """Offset into program account data to start comparison: <usize>."""
     bytes: str
     """Data to match, as base-58 encoded string: <string>."""
+
+
+class TokenAccountOpts(NamedTuple):
+    """Options when querying token accounts.
+
+    Provide one of mint or program_id.
+    """
+
+    mint: Optional[PublicKey] = None
+    """Public key of the specific token Mint to limit accounts to."""
+    program_id: Optional[PublicKey] = None
+    """Public key of the Token program ID that owns the accounts."""
+    encoding: str = "base64"
+    """Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
+
+    Parsed-JSON encoding attempts to use program-specific state parsers to return more
+    human-readable and explicit account state data. If parsed-JSON is requested but a
+    valid mint cannot be found for a particular account, that account will be filtered out
+    from results. jsonParsed encoding is UNSTABLE.
+    """
+    data_slice: Optional[DataSliceOpt] = None
+    """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
 
 class Client:  # pylint: disable=too-many-public-methods
@@ -745,13 +767,55 @@ class Client:  # pylint: disable=too-many-public-methods
             RPCMethod("getTokenAccountBalance"), str(pubkey), {self._comm_key: commitment}
         )
 
-    def get_token_accounts_by_delegate(self) -> RPCResponse:
-        """Returns all SPL Token accounts by approved Delegate (UNSTABLE)."""
-        raise NotImplementedError("get_token_account_by_delegate not implemented")
+    def get_token_accounts_by_delegate(
+        self,
+        delegate: PublicKey,
+        opts: TokenAccountOpts,
+        commitment: Commitment = Max,
+    ) -> RPCResponse:
+        """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
 
-    def get_token_accounts_by_owner(self) -> RPCResponse:
-        """Returns all SPL Token accounts by token owner (UNSTABLE)."""
-        raise NotImplementedError("get_token_account_by_owner not implemented")
+        :param pubkey: Public key of the delegate owner to query.
+        :param opt: Token account option specifying at least one of `mint` or `program_id`.
+        :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
+        """
+        return self.__get_token_accounts(RPCMethod("getTokenAccountsByDelegate"), str(delegate), opts, commitment)
+
+    def get_token_accounts_by_owner(
+        self,
+        owner: PublicKey,
+        opts: TokenAccountOpts,
+        commitment: Commitment = Max,
+    ) -> RPCResponse:
+        """Returns all SPL Token accounts by token owner (UNSTABLE).
+
+        :param pubkey: Public key of the account owner to query.
+        :param opt: Token account option specifying at least one of `mint` or `program_id`.
+        :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
+        """
+        return self.__get_token_accounts(RPCMethod("getTokenAccountsByOwner"), str(owner), opts, commitment)
+
+    def __get_token_accounts(
+        self,
+        method: RPCMethod,
+        pubkey: str,
+        opts: TokenAccountOpts,
+        commitment: Commitment,
+    ) -> RPCResponse:
+        if not opts.mint and not opts.program_id:
+            raise ValueError("Please provide one of mint or program_id")
+
+        acc_opts: Dict[str, str] = {}
+        if opts.mint:
+            acc_opts["mint"] = str(opts.mint)
+        if opts.program_id:
+            acc_opts["programId"] = str(opts.program_id)
+
+        rpc_opts: Dict[str, Any] = {self._comm_key: commitment, self._encoding_key: opts.encoding}
+        if opts.data_slice:
+            rpc_opts[self._data_slice_key] = dict(opts.data_slice._asdict())
+
+        return self._provider.make_request(method, pubkey, acc_opts, rpc_opts)
 
     def get_token_largest_accounts(self, pubkey: Union[PublicKey, str]) -> RPCResponse:
         """Returns the 20 largest accounts of a particular SPL Token type (UNSTABLE)."""
