@@ -1,2 +1,0 @@
-[run]
-omit = tests/*, setup.py, docsrc/conf.py

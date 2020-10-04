@@ -1,7 +1,7 @@
 """Token instruction layouts."""
 from enum import IntEnum
 
-from construct import Int8ul, Int64ul, Pass  # type: ignore
+from construct import Int8ul, Int32ul, Int64ul, Pass  # type: ignore
 from construct import Struct as cStruct
 from construct import Switch
 
@@ -70,4 +70,45 @@ INSTRUCTIONS_LAYOUT = cStruct(
             InstructionType.Burn2: _AMOUNT2_LAYOUT,
         },
     ),
+)
+
+MINT_LAYOUT = cStruct(
+    "mint_authority_option" / Int32ul,
+    "mint_authority" / PUBLIC_KEY_LAYOUT,
+    "supply" / Int64ul,
+    "decimals" / Int8ul,
+    "is_initialized" / Int8ul,
+    "freeze_authority_option" / Int32ul,
+    "freeze_authority" / PUBLIC_KEY_LAYOUT,
+)
+
+ACCOUNT_LAYOUT = cStruct(
+    "mint" / PUBLIC_KEY_LAYOUT,
+    "owner" / PUBLIC_KEY_LAYOUT,
+    "amount" / Int64ul,
+    "delegate_option" / Int32ul,
+    "delegate" / PUBLIC_KEY_LAYOUT,
+    "state" / Int8ul,
+    "is_native_option" / Int32ul,
+    "is_native" / Int64ul,
+    "delegated_amount" / Int64ul,
+    "close_authority_option" / Int32ul,
+    "close_authority" / PUBLIC_KEY_LAYOUT,
+)
+
+MULTISIG_LAYOUT = cStruct(
+    "m" / Int8ul,
+    "n" / Int8ul,
+    "is_initialized" / Int8ul,
+    "signer1" / PUBLIC_KEY_LAYOUT,
+    "signer2" / PUBLIC_KEY_LAYOUT,
+    "signer3" / PUBLIC_KEY_LAYOUT,
+    "signer4" / PUBLIC_KEY_LAYOUT,
+    "signer5" / PUBLIC_KEY_LAYOUT,
+    "signer6" / PUBLIC_KEY_LAYOUT,
+    "signer7" / PUBLIC_KEY_LAYOUT,
+    "signer8" / PUBLIC_KEY_LAYOUT,
+    "signer9" / PUBLIC_KEY_LAYOUT,
+    "signer10" / PUBLIC_KEY_LAYOUT,
+    "signer11" / PUBLIC_KEY_LAYOUT,
 )
