@@ -1,3 +1,4 @@
+# pylint: disable=too-many-arguments
 """SPL Token program client."""
 from __future__ import annotations
 
@@ -135,7 +136,7 @@ class Token:  # pylint: disable=too-many-public-methods
         return self._conn.get_token_account_balance(pubkey)
 
     @staticmethod
-    def create_mint(  # pylint: disable=too-many-arguments
+    def create_mint(
         conn: Client,
         payer: Account,
         mint_authority: PublicKey,
@@ -269,8 +270,14 @@ class Token:  # pylint: disable=too-many-public-methods
         """Retrieve account information."""
         raise NotImplementedError("get_account_info not implemented")
 
-    def transfer(  # pylint: disable=too-many-arguments
-        self, source: PublicKey, dest: PublicKey, owner: PublicKey, amount: int, signers: Optional[List[Account]]
+    def transfer(
+        self,
+        source: PublicKey,
+        dest: PublicKey,
+        owner: Union[Account, PublicKey],
+        amount: int,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Transfer tokens to another account.
 
@@ -278,12 +285,38 @@ class Token:  # pylint: disable=too-many-public-methods
         :param dest: Public key of account to transfer tokens to.
         :param owner: Owner of the source account.
         :param amount: Number of tokens to transfer.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
-        raise NotImplementedError("transfer not implemented")
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
 
-    def approve(  # pylint: disable=too-many-arguments
-        self, account: PublicKey, delegate: PublicKey, owner: PublicKey, amount: int, signers: Optional[List[Account]]
+        txn = Transaction().add(
+            spl_token.transfer(
+                spl_token.TransferParams(
+                    program_id=self.program_id,
+                    source=source,
+                    dest=dest,
+                    owner=owner_pubkey,
+                    amount=amount,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return self._conn.send_transaction(txn, *signers, opts=opts)
+
+    def approve(
+        self,
+        account: PublicKey,
+        delegate: PublicKey,
+        owner: PublicKey,
+        amount: int,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
@@ -291,26 +324,35 @@ class Token:  # pylint: disable=too-many-public-methods
         :param delegate: Account authorized to perform a transfer tokens from the source account.
         :param owner: Owner of the source account.
         :param amount: Maximum number of tokens the delegate may transfer.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("approve not implemented")
 
-    def revoke(self, account: PublicKey, owner: PublicKey, signers: Optional[List[Account]]) -> RPCResponse:
+    def revoke(
+        self,
+        account: PublicKey,
+        owner: PublicKey,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> RPCResponse:
         """Remove approval for the transfer of any remaining tokens.
 
         :param account:  Delegate account authorized to perform a transfer of tokens from the source account.
         :param owner: Owner of the source account.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("revoke not implemented")
 
-    def set_authority(  # pylint: disable=too-many-arguments
+    def set_authority(
         self,
         account: PublicKey,
         current_authority: PublicKey,
         authority_type: spl_token.AuthorityType,
-        new_authority: Optional[PublicKey],
-        signers: Optional[List[Account]],
+        new_authority: Optional[PublicKey] = None,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Assign a new authority to the account.
 
@@ -318,18 +360,18 @@ class Token:  # pylint: disable=too-many-public-methods
         :param current_authority: Current authority of the account.
         :param authority_type: Type of authority to set.
         :param new_authority: (optional) New authority of the account.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("set_authority not implemented")
 
-    def mint_to(  # pylint: disable=too-many-arguments
+    def mint_to(
         self,
         dest: PublicKey,
         mint_authority: Union[Account, PublicKey],
         amount: int,
         multi_signers: Optional[List[Account]] = None,
-        skip_confirmation: bool = False,
-        skip_preflight: bool = False,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Mint new tokens.
 
@@ -337,8 +379,7 @@ class Token:  # pylint: disable=too-many-public-methods
         :param mint_authority: Public key of the minting authority.
         :param amount: Amount to mint.
         :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param skip_confirmation: (optional) Option to skip transaction confirmation.
-        :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
+        :param opts: (optional) Transaction options.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -362,58 +403,80 @@ class Token:  # pylint: disable=too-many-public-methods
                 )
             )
         )
-        return self._conn.send_transaction(
-            txn, *signers, opts=TxOpts(skip_preflight=skip_preflight, skip_confirmation=skip_confirmation)
-        )
+        return self._conn.send_transaction(txn, *signers, opts=opts)
 
-    def burn(self, account: PublicKey, owner: PublicKey, amount: int, signers: Optional[List[Account]]) -> RPCResponse:
+    def burn(
+        self,
+        account: PublicKey,
+        owner: PublicKey,
+        amount: int,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
+    ) -> RPCResponse:
         """Burn tokens.
 
         :param account: Account to burn tokens from.
         :param owner: Owner of the account.
         :param amount: Amount to burn.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("burn not implemented")
 
     def close_account(
-        self, account: PublicKey, dest: PublicKey, authority: PublicKey, signers: Optional[List[Account]]
+        self,
+        account: PublicKey,
+        dest: PublicKey,
+        authority: PublicKey,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Remove approval for the transfer of any remaining tokens.
 
         :param account: Account to close.
         :param dest: Account to receive the remaining balance of the closed account.
         :param authority: Authority which is allowed to close the account.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("close_account not implemented")
 
-    def freeze_account(self, account: PublicKey, authority: PublicKey, signers: Optional[List[Account]]) -> RPCResponse:
+    def freeze_account(
+        self, account: PublicKey, authority: PublicKey, multi_signers: Optional[List[Account]]
+    ) -> RPCResponse:
         """Freeze account.
 
         :param account: Account to freeze.
         :param authority: The mint freeze authority.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
         """
         raise NotImplementedError("freeze_account not implemented")
 
-    def thaw_account(self, account: PublicKey, authority: PublicKey, signers: Optional[List[Account]]) -> RPCResponse:
+    def thaw_account(
+        self,
+        account: PublicKey,
+        authority: PublicKey,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
+    ) -> RPCResponse:
         """Thaw account.
 
         :param account: Account to thaw.
         :param authority: The mint freeze authority.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("thaw_account not implemented")
 
-    def transfer2(  # pylint: disable=too-many-arguments
+    def transfer2(
         self,
         source: PublicKey,
         dest: PublicKey,
         owner: PublicKey,
         amount: int,
         decimals: int,
-        signers: Optional[List[Account]],
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Transfer tokens to another account, asserting the token mint and decimals.
 
@@ -422,18 +485,20 @@ class Token:  # pylint: disable=too-many-public-methods
         :param owner: Owner of the source account.
         :param amount: Number of tokens to transfer.
         :param decimals: Number of decimals in transfer amount.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("transfer2 not implemented")
 
-    def approve2(  # pylint: disable=too-many-arguments
+    def approve2(
         self,
         account: PublicKey,
         delegate: PublicKey,
         owner: PublicKey,
         amount: int,
         decimals: int,
-        signers: Optional[List[Account]],
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
@@ -444,12 +509,19 @@ class Token:  # pylint: disable=too-many-public-methods
         :param owner: Owner of the source account.
         :param amount: Maximum number of tokens the delegate may transfer.
         :param decimals: Number of decimals in approve amount.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("approve2 not implemented")
 
-    def mint_to2(  # pylint: disable=too-many-arguments
-        self, dest: PublicKey, mint_authority: PublicKey, amount: int, decimals: int, signers: Optional[List[Account]]
+    def mint_to2(
+        self,
+        dest: PublicKey,
+        mint_authority: PublicKey,
+        amount: int,
+        decimals: int,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Mint new tokens, asserting the token mint and decimals.
 
@@ -457,12 +529,19 @@ class Token:  # pylint: disable=too-many-public-methods
         :param mint_authority: Public key of the minting authority.
         :param amount: Amount to mint.
         :param decimals: Number of decimals in amount to mint.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("mint_to2 not implemented")
 
-    def burn2(  # pylint: disable=too-many-arguments
-        self, account: PublicKey, owner: PublicKey, amount: int, decimals: int, signers: Optional[List[Account]]
+    def burn2(
+        self,
+        account: PublicKey,
+        owner: PublicKey,
+        amount: int,
+        decimals: int,
+        multi_signers: Optional[List[Account]] = None,
+        opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Burn tokens, asserting the token mint and decimals.
 
@@ -470,6 +549,7 @@ class Token:  # pylint: disable=too-many-public-methods
         :param owner: Owner of the account.
         :param amount: Amount to burn.
         :param decimals: Number of decimals in amount to burn.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param opts: (optional) Transaction options.
         """
         raise NotImplementedError("burn2 not implemented")

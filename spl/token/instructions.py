@@ -669,7 +669,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.Transfer, args=dict(amount=params.amount)))
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
     ]
     __add_signers(keys, params.owner, params.signers)
 
