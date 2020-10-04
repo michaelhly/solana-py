@@ -1,0 +1,1415 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Client &#8212; solana.py  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Solana Program Library (SPL)" href="spl.html" />
+    <link rel="prev" title="Solana" href="solana.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-solana.rpc.commitment">
+<span id="api-client"></span><h1>API Client<a class="headerlink" href="#module-solana.rpc.commitment" title="Permalink to this headline">¶</a></h1>
+<p>Commitment options.</p>
+<p>Solana nodes choose which bank state to query based on a commitment requirement set by the client.
+Clients may specify the following commitments:</p>
+<dl class="py function">
+<dt id="solana.rpc.commitment.Commitment">
+<code class="sig-prename descclassname">solana.rpc.commitment.</code><code class="sig-name descname">Commitment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#solana.rpc.commitment.Commitment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type for commitment.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="solana.rpc.commitment.Max">
+<code class="sig-prename descclassname">solana.rpc.commitment.</code><code class="sig-name descname">Max</code><em class="property"> = 'max'</em><a class="headerlink" href="#solana.rpc.commitment.Max" title="Permalink to this definition">¶</a></dt>
+<dd><p>The node will query the most recent bank confirmed by the cluster as having
+reached <cite>MAX_LOCKOUT_HISTORY</cite> confirmations.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="solana.rpc.commitment.Recent">
+<code class="sig-prename descclassname">solana.rpc.commitment.</code><code class="sig-name descname">Recent</code><em class="property"> = 'recent'</em><a class="headerlink" href="#solana.rpc.commitment.Recent" title="Permalink to this definition">¶</a></dt>
+<dd><p>The node will query its most recent bank.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="solana.rpc.commitment.Root">
+<code class="sig-prename descclassname">solana.rpc.commitment.</code><code class="sig-name descname">Root</code><em class="property"> = 'root'</em><a class="headerlink" href="#solana.rpc.commitment.Root" title="Permalink to this definition">¶</a></dt>
+<dd><p>The node will query the most recent bank having reached <cite>MAX_LOCKOUT_HISTORY</cite> confirmations on this node.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="solana.rpc.commitment.Single">
+<code class="sig-prename descclassname">solana.rpc.commitment.</code><code class="sig-name descname">Single</code><em class="property"> = 'single'</em><a class="headerlink" href="#solana.rpc.commitment.Single" title="Permalink to this definition">¶</a></dt>
+<dd><p>The node will query the most recent bank having reached 1 confirmation.</p>
+</dd></dl>
+
+<span class="target" id="module-solana.rpc.api"></span><p>API client to interact with the Solana JSON RPC Endpoint.</p>
+<dl class="py class">
+<dt id="solana.rpc.api.Client">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.api.</code><code class="sig-name descname">Client</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">endpoint</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/api.html#Client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Client class.</p>
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_account_info">
+<code class="sig-name descname">get_account_info</code><span class="sig-paren">(</span><em class="sig-param">pubkey: Union[solana.publickey.PublicKey, str], commitment: NewType.&lt;locals&gt;.new_type = 'max', encoding: str = 'base64', data_slice: Optional[solana.rpc.types.DataSliceOpts] = None</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_account_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_account_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the account info for the specified public key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Pubkey of account to query, as base-58 encoded string or PublicKey object.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+<li><p><strong>encoding</strong> – <p>(optional) Encoding for Account data, either “base58” (slow), “base64”, or
+“jsonParsed”. Default is “base64”.</p>
+<ul>
+<li><p>”base58” is limited to Account data of less than 128 bytes.</p></li>
+<li><p>”base64” will return base64 encoded data for Account data of any size.</p></li>
+<li><p>”jsonPrased” encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.</p></li>
+</ul>
+<p>If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
+detectable when the data field is type. (jsonParsed encoding is UNSTABLE).</p>
+</p></li>
+<li><p><strong>data_slice</strong> – (optional) Option to limit the returned account data using the provided <cite>offset</cite>: &lt;usize&gt; and
+<cite>length</cite>: &lt;usize&gt; fields; only available for “base58” or “base64” encoding.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">solana.publickey</span> <span class="kn">import</span> <span class="n">PublicKey</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_account_info</span><span class="p">(</span><span class="n">PublicKey</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 33265073},</span>
+<span class="go">  &#39;value&#39;: {&#39;data&#39;: &#39;&#39;,</span>
+<span class="go">   &#39;executable&#39;: False,</span>
+<span class="go">   &#39;lamports&#39;: 4459816188034584,</span>
+<span class="go">   &#39;owner&#39;: &#39;11111111111111111111111111111111&#39;,</span>
+<span class="go">   &#39;rentEpoch&#39;: 90}},</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_balance">
+<code class="sig-name descname">get_balance</code><span class="sig-paren">(</span><em class="sig-param">pubkey: Union[solana.publickey.PublicKey, str], commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the balance of the account of provided Pubkey.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Pubkey of account to query, as base-58 encoded string or PublicKey object.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">solana.publickey</span> <span class="kn">import</span> <span class="n">PublicKey</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_balance</span><span class="p">(</span><span class="n">PublicKey</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 228}, &#39;value&#39;: 0}, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_block_commitment">
+<code class="sig-name descname">get_block_commitment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slot</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_block_commitment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_block_commitment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch the commitment for particular block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>slot</strong> – Block, identified by Slot.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_block_commitment</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;commitment&#39;: [0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   0,</span>
+<span class="go">   497717120],</span>
+<span class="go">  &#39;totalStake&#39;: 497717120},</span>
+<span class="go">  &#39;id&#39;: 1}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_block_time">
+<code class="sig-name descname">get_block_time</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slot</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_block_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_block_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch the estimated production time of a block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>slot</strong> – Block, identified by Slot.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_block_time</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: 1598400007, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_cluster_nodes">
+<code class="sig-name descname">get_cluster_nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_cluster_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_cluster_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns information about all the nodes participating in the cluster.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_cluster_nodes</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: [{&#39;gossip&#39;: &#39;127.0.0.1:8001&#39;,</span>
+<span class="go">   &#39;pubkey&#39;: &#39;LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk&#39;,</span>
+<span class="go">   &#39;rpc&#39;: &#39;127.0.0.1:8899&#39;,</span>
+<span class="go">   &#39;tpu&#39;: &#39;127.0.0.1:8003&#39;,</span>
+<span class="go">   &#39;version&#39;: &#39;1.4.0 5332fcad&#39;}],</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_confirmed_block">
+<code class="sig-name descname">get_confirmed_block</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slot</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">encoding</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'json'</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_confirmed_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_confirmed_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns identity and transaction information about a confirmed block in the ledger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slot</strong> – Slot, as u64 integer.</p></li>
+<li><p><strong>encoding</strong> – (optional) Encoding for the returned Transaction, either “json”, “jsonParsed”,
+“base58” (slow), or “base64”. If parameter not provided, the default encoding is JSON.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_confirmed_block</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;blockTime&#39;: None,</span>
+<span class="go">  &#39;blockhash&#39;: &#39;39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj&#39;,</span>
+<span class="go">  &#39;parentSlot&#39;: 0,</span>
+<span class="go">  &#39;previousBlockhash&#39;: &#39;EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2&#39;,</span>
+<span class="go">  &#39;rewards&#39;: [],</span>
+<span class="go">  &#39;transactions&#39;: [{&#39;meta&#39;: {&#39;err&#39;: None,</span>
+<span class="go">     &#39;fee&#39;: 0,</span>
+<span class="go">     &#39;postBalances&#39;: [500000000000, 26858640, 1, 1, 1],</span>
+<span class="go">     &#39;preBalances&#39;: [500000000000, 26858640, 1, 1, 1],</span>
+<span class="go">     &#39;status&#39;: {&#39;Ok&#39;: None}},</span>
+<span class="go">    &#39;transaction&#39;: {&#39;message&#39;: {&#39;accountKeys&#39;: [&#39;LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk&#39;,</span>
+<span class="go">       &#39;EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po&#39;,</span>
+<span class="go">       &#39;SysvarS1otHashes111111111111111111111111111&#39;,</span>
+<span class="go">       &#39;SysvarC1ock11111111111111111111111111111111&#39;,</span>
+<span class="go">       &#39;Vote111111111111111111111111111111111111111&#39;],</span>
+<span class="go">      &#39;header&#39;: {&#39;numReadonlySignedAccounts&#39;: 0,</span>
+<span class="go">       &#39;numReadonlyUnsignedAccounts&#39;: 3,</span>
+<span class="go">       &#39;numRequiredSignatures&#39;: 1},</span>
+<span class="go">      &#39;instructions&#39;: [{&#39;accounts&#39;: [1, 2, 3, 0],</span>
+<span class="go">        &#39;data&#39;: &#39;37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q&#39;,</span>
+<span class="go">        &#39;programIdIndex&#39;: 4}],</span>
+<span class="go">      &#39;recentBlockhash&#39;: &#39;EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2&#39;},</span>
+<span class="go">     &#39;signatures&#39;: [&#39;63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE&#39;]}}]},</span>
+<span class="go"> &#39;id&#39;: 9}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_confirmed_block</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;base64&quot;</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;blockTime&#39;: None,</span>
+<span class="go">  &#39;blockhash&#39;: &#39;39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj&#39;,</span>
+<span class="go">  &#39;parentSlot&#39;: 0,</span>
+<span class="go">  &#39;previousBlockhash&#39;: &#39;EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2&#39;,</span>
+<span class="go">  &#39;rewards&#39;: [],</span>
+<span class="go">  &#39;transactions&#39;: [{&#39;meta&#39;: {&#39;err&#39;: None,</span>
+<span class="go">     &#39;fee&#39;: 0,</span>
+<span class="go">     &#39;postBalances&#39;: [500000000000, 26858640, 1, 1, 1],</span>
+<span class="go">     &#39;preBalances&#39;: [500000000000, 26858640, 1, 1, 1],</span>
+<span class="go">     &#39;status&#39;: {&#39;Ok&#39;: None}},</span>
+<span class="go">    &#39;transaction&#39;: [&#39;AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==&#39;,</span>
+<span class="go">     &#39;base64&#39;]}]},</span>
+<span class="go"> &#39;id&#39;: 10}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_confirmed_blocks">
+<code class="sig-name descname">get_confirmed_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_slot</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">end_slot</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_confirmed_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_confirmed_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of confirmed blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_slot</strong> – Start slot, as u64 integer.</p></li>
+<li><p><strong>end_slot</strong> – (optional) End slot, as u64 integer.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_confirmed_blocks</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: [5, 6, 7, 8, 9, 10], &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_confirmed_signature_for_address2">
+<code class="sig-name descname">get_confirmed_signature_for_address2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">account</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span><a class="reference internal" href="solana.html#solana.account.Account" title="solana.account.Account">solana.account.Account</a><span class="p">, </span><a class="reference internal" href="solana.html#solana.publickey.PublicKey" title="solana.publickey.PublicKey">solana.publickey.PublicKey</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">before</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">limit</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_confirmed_signature_for_address2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_confirmed_signature_for_address2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns confirmed signatures for transactions involving an address.</p>
+<p>Signatures are returned backwards in time from the provided signature or
+most recent confirmed block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account</strong> – Account to be queried.</p></li>
+<li><p><strong>before</strong> – (optional) Start searching backwards from this transaction signature.
+If not provided the search starts from the top of the highest max confirmed block.</p></li>
+<li><p><strong>limit</strong> – (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_confirmed_signature_for_address2</span><span class="p">(</span><span class="s2">&quot;Vote111111111111111111111111111111111111111&quot;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: [{&#39;err&#39;: None,</span>
+<span class="go">   &#39;memo&#39;: None,</span>
+<span class="go">   &#39;signature&#39;: &#39;v1BK8XcaPBzAGd7TB1K53pMdi6TBGe5CLCgx8cmZ4Bj63ZNvA6ca2QaxFpBFdvmpoFQ51VorBjifkBGLTDhwpqN&#39;,</span>
+<span class="go">   &#39;slot&#39;: 4290}],</span>
+<span class="go"> &#39;id&#39;: 2}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_confirmed_transaction">
+<code class="sig-name descname">get_confirmed_transaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tx_sig</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">encoding</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'json'</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_confirmed_transaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_confirmed_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns transaction details for a confirmed transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx_sig</strong> – Transaction signature as base-58 encoded string N encoding attempts to use program-specific
+instruction parsers to return more human-readable and explicit data in the
+<cite>transaction.message.instructions</cite> list.</p></li>
+<li><p><strong>encoding</strong> – (optional) Encoding for the returned Transaction, either “json”, “jsonParsed”,
+“base58” (slow), or “base64”. If parameter not provided, the default encoding is JSON.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_confirmed_transaction</span><span class="p">(</span><span class="s2">&quot;3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy&quot;</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;meta&#39;: {&#39;err&#39;: None,</span>
+<span class="go">   &#39;fee&#39;: 5000,</span>
+<span class="go">   &#39;postBalances&#39;: [498449233720610510, 1000001001987940, 1],</span>
+<span class="go">   &#39;preBalances&#39;: [498449233721615510, 1000001000987940, 1],</span>
+<span class="go">   &#39;status&#39;: {&#39;Ok&#39;: None}},</span>
+<span class="go">  &#39;slot&#39;: 1659335,</span>
+<span class="go">  &#39;transaction&#39;: {&#39;message&#39;: {&#39;accountKeys&#39;: [&#39;9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g&#39;,</span>
+<span class="go">     &#39;2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1&#39;,</span>
+<span class="go">     &#39;11111111111111111111111111111111&#39;],</span>
+<span class="go">    &#39;header&#39;: {&#39;numReadonlySignedAccounts&#39;: 0,</span>
+<span class="go">     &#39;numReadonlyUnsignedAccounts&#39;: 1,</span>
+<span class="go">     &#39;numRequiredSignatures&#39;: 1},</span>
+<span class="go">    &#39;instructions&#39;: [{&#39;accounts&#39;: [0, 1],</span>
+<span class="go">      &#39;data&#39;: &#39;3Bxs4Bc3VYuGVB19&#39;,</span>
+<span class="go">      &#39;programIdIndex&#39;: 2}],</span>
+<span class="go">    &#39;recentBlockhash&#39;: &#39;FwcsKNptGtMLccXAA9YgnivVFK95mKzECLT1DNPi3SDr&#39;},</span>
+<span class="go">   &#39;signatures&#39;: [&#39;3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy&#39;]}},</span>
+<span class="go"> &#39;id&#39;: 4}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_epoch_info">
+<code class="sig-name descname">get_epoch_info</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_epoch_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_epoch_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns information about the current epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_epoch_info</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;absoluteSlot&#39;: 5150,</span>
+<span class="go">  &#39;blockHeight&#39;: 5150,</span>
+<span class="go">  &#39;epoch&#39;: 0,</span>
+<span class="go">  &#39;slotIndex&#39;: 5150,</span>
+<span class="go">  &#39;slotsInEpoch&#39;: 8192},</span>
+<span class="go"> &#39;id&#39;: 5}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_epoch_schedule">
+<code class="sig-name descname">get_epoch_schedule</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_epoch_schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_epoch_schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns epoch schedule information from this cluster’s genesis config.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_epoch_schedule</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;firstNormalEpoch&#39;: 0,</span>
+<span class="go">  &#39;firstNormalSlot&#39;: 0,</span>
+<span class="go">  &#39;leaderScheduleSlotOffset&#39;: 8192,</span>
+<span class="go">  &#39;slotsPerEpoch&#39;: 8192,</span>
+<span class="go">  &#39;warmup&#39;: False},</span>
+<span class="go"> &#39;id&#39;: 6}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_fee_calculator_for_blockhash">
+<code class="sig-name descname">get_fee_calculator_for_blockhash</code><span class="sig-paren">(</span><em class="sig-param">blockhash: Union[str, NewType.&lt;locals&gt;.new_type], commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_fee_calculator_for_blockhash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_fee_calculator_for_blockhash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the fee calculator associated with the query blockhash, or null if the blockhash has expired.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blockhash</strong> – Blockhash to query as a Base58 encoded string.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_fee_calculator_for_blockhash</span><span class="p">(</span><span class="s2">&quot;BaQSR194dC4dZaRxATtxYyEwDkk7VgqUY8NVNkub8HFZ&quot;</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 7065},</span>
+<span class="go">  &#39;value&#39;: {&#39;feeCalculator&#39;: {&#39;lamportsPerSignature&#39;: 5000}}},</span>
+<span class="go"> &#39;id&#39;: 4}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_fee_rate_governor">
+<code class="sig-name descname">get_fee_rate_governor</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_fee_rate_governor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_fee_rate_governor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the fee rate governor information from the root bank.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_fee_rate_governor</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 7172},</span>
+<span class="go">  &#39;value&#39;: {&#39;feeRateGovernor&#39;: {&#39;burnPercent&#39;: 50,</span>
+<span class="go">    &#39;maxLamportsPerSignature&#39;: 100000,</span>
+<span class="go">    &#39;minLamportsPerSignature&#39;: 5000,</span>
+<span class="go">    &#39;targetLamportsPerSignature&#39;: 10000,</span>
+<span class="go">    &#39;targetSignaturesPerSlot&#39;: 20000}}},</span>
+<span class="go"> &#39;id&#39;: 5}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_fees">
+<code class="sig-name descname">get_fees</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_fees"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_fees" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a recent block hash from the ledger, a fee schedule and the last slot the blockhash will be valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_fees</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 7727},</span>
+<span class="go">  &#39;value&#39;: {&#39;blockhash&#39;: &#39;GGS6AEDqjF5irU6D6VQNherEZ2hckGaeBiVdfSZKg4gd&#39;,</span>
+<span class="go">   &#39;feeCalculator&#39;: {&#39;lamportsPerSignature&#39;: 5000},</span>
+<span class="go">   &#39;lastValidSlot&#39;: 8027}},</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_first_available_block">
+<code class="sig-name descname">get_first_available_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_first_available_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_first_available_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the slot of the lowest confirmed block that has not been purged from the ledger.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_fees</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: 1, &#39;id&#39;: 2}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_genesis_hash">
+<code class="sig-name descname">get_genesis_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_genesis_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_genesis_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the genesis hash.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_genesis_hash</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: &#39;EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2&#39;,</span>
+<span class="go"> &#39;id&#39;: 3}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_identity">
+<code class="sig-name descname">get_identity</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_identity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the identity pubkey for the current node.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_identity</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;identity&#39;: &#39;LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk&#39;},</span>
+<span class="go"> &#39;id&#39;: 4}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_inflation_governor">
+<code class="sig-name descname">get_inflation_governor</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_inflation_governor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_inflation_governor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current inflation governor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_inflation_governor</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;foundation&#39;: 0.05,</span>
+<span class="go">  &#39;foundationTerm&#39;: 7.0,</span>
+<span class="go">  &#39;initial&#39;: 0.15,</span>
+<span class="go">  &#39;taper&#39;: 0.15,</span>
+<span class="go">  &#39;terminal&#39;: 0.015},</span>
+<span class="go"> &#39;id&#39;: 5}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_inflation_rate">
+<code class="sig-name descname">get_inflation_rate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_inflation_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_inflation_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the specific inflation values for the current epoch.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_inflation_rate</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;epoch&#39;: 1,</span>
+<span class="go">  &#39;foundation&#39;: 0.007499746885736559,</span>
+<span class="go">  &#39;total&#39;: 0.14999493771473116,</span>
+<span class="go">  &#39;validator&#39;: 0.1424951908289946},</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_largest_accounts">
+<code class="sig-name descname">get_largest_accounts</code><span class="sig-paren">(</span><em class="sig-param">filter_opt: Optional[str] = None</em>, <em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_largest_accounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_largest_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the 20 largest accounts, by lamport balance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opt</strong> – Filter results by account type; currently supported: circulating|nonCirculating.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_largest_accounts</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 8890},</span>
+<span class="go">  &#39;value&#39;: [{&#39;address&#39;: &#39;95L7AsBCLRsqghsi6ksZkzjNbs6rqDgHCzKaGZ7bJi75&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 500000000000000000},</span>
+<span class="go">   {&#39;address&#39;: &#39;APnSR52EC1eH676m7qTBHUJ1nrGpHYpV7XKPxgRDD8gX&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 164511033098290000},</span>
+<span class="go">   {&#39;address&#39;: &#39;13LeFbG6m2EP1fqCj9k66fcXsoTHMMtgr7c78AivUrYD&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 153333632446109120},</span>
+<span class="go">   {&#39;address&#39;: &#39;GK2zqSsXLA2rwVZk347RYhh6jJpRsCA69FjLW93ZGi3B&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 57499999036109120},</span>
+<span class="go">   {&#39;address&#39;: &#39;8HVqyX9jebh31Q9Hp8t5sMVJs665979ZeEr3eCfzitUe&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 30301031036109120},</span>
+<span class="go">   {&#39;address&#39;: &#39;HbZ5FfmKWNHC7uwk6TF1hVi6TCs7dtYfdjEcuPGgzFAg&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 14999999036109120},</span>
+<span class="go">   {&#39;address&#39;: &#39;14FUT96s9swbmH7ZjpDvfEDywnAYy9zaNhv4xvezySGu&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 4999999036109120},</span>
+<span class="go">   {&#39;address&#39;: &#39;9huDUZfxoJ7wGMTffUE7vh1xePqef7gyrLJu9NApncqA&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 4999999036109120},</span>
+<span class="go">   {&#39;address&#39;: &#39;C7C8odR8oashR5Feyrq2tJKaXL18id1dSj2zbkDGL2C2&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 4999999036109120},</span>
+<span class="go">   {&#39;address&#39;: &#39;AYgECURrvuX6GtFe4tX7aAj87Xc5r5Znx96ntNk1nCv&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;AogcwQ1ubM76EPMhSD5cw1ES4W5econvQCFmBL6nTW1&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;gWgqQ4udVxE3uNxRHEwvftTHwpEmPHAd8JR9UzaHbR2&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;3D91zLQPRLamwJfGR5ZYMKQb4C18gsJNaSdmB6b2wLhw&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;3bHbMa5VW3np5AJazuacidrN4xPZgwhcXigmjwHmBg5e&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;4U3RFq7X5kLG6tZ9kcksFL8oXeGNjtuUN1YfkVKXbs5x&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;5cBVGBKY6kBaiTVmsQpxThJ2oqitBYuCAX9Zm2zMuV4y&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;8PjJTv657aeN9p5R2WoM6pPSz385chvTTytUWaEjSjkq&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;AHB94zKUASftTdqgdfiDSdnPJHkEFp7zX3yMrcSxABsv&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;Hc36Wh1ZqYGzGAnsJWNT9r2gY3h9n89uDpxZPsmEsiE3&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 2499999518054560},</span>
+<span class="go">   {&#39;address&#39;: &#39;GxyRKP2eVKACaSSnso4VLSAjZKmHsFXHWUfS3A5CtiMA&#39;,</span>
+<span class="go">    &#39;lamports&#39;: 1940147018054560}]},</span>
+<span class="go"> &#39;id&#39;: 2}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_leader_schedule">
+<code class="sig-name descname">get_leader_schedule</code><span class="sig-paren">(</span><em class="sig-param">epoch: Optional[int] = None</em>, <em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_leader_schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_leader_schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the leader schedule for an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> – Fetch the leader schedule for the epoch that corresponds to the provided slot.
+If unspecified, the leader schedule for the current epoch is fetched.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_leader_schedule</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;EWj2cuEuVhi7RX81cnAY3TzpyFwnHzzVwvuTyfmxmhs3&#39;: [0,</span>
+<span class="go">   1,</span>
+<span class="go">   2,</span>
+<span class="go">   3,</span>
+<span class="go">   4,</span>
+<span class="go">   5,</span>
+<span class="go">   ...]},</span>
+<span class="go"> &#39;id&#39;: 6}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_minimum_balance_for_rent_exemption">
+<code class="sig-name descname">get_minimum_balance_for_rent_exemption</code><span class="sig-paren">(</span><em class="sig-param">usize: int</em>, <em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_minimum_balance_for_rent_exemption"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_minimum_balance_for_rent_exemption" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns minimum balance required to make account rent exempt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>usize</strong> – Account data length.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_minimum_balance_for_rent_exemption</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: 1238880, &#39;id&#39;: 7}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_minimum_ledger_slot">
+<code class="sig-name descname">get_minimum_ledger_slot</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_minimum_ledger_slot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_minimum_ledger_slot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the lowest slot that the node has information about in its ledger.</p>
+<p>This value may increase over time if the node is configured to purge older ledger data.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_minimum_ledger_slot</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: 1234, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_program_accounts">
+<code class="sig-name descname">get_program_accounts</code><span class="sig-paren">(</span><em class="sig-param">pubkey: Union[str, solana.publickey.PublicKey], commitment: NewType.&lt;locals&gt;.new_type = 'max', encoding: Optional[str] = None, data_slice: Optional[solana.rpc.types.DataSliceOpts] = None, data_size: Optional[int] = None, memcmp_opts: Optional[List[solana.rpc.types.MemcmpOpts]] = None</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_program_accounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_program_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all accounts owned by the provided program Pubkey.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Pubkey of program, as base-58 encoded string or PublicKey object.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+<li><p><strong>encoding</strong> – (optional) Encoding for the returned Transaction, either jsonParsed”,
+“base58” (slow), or “base64”. If parameter not provided, the default encoding is JSON.</p></li>
+<li><p><strong>data_slice</strong> – (optional) Limit the returned account data using the provided <cite>offset</cite>: &lt;usize&gt; and
+<cite>length</cite>: &lt;usize&gt; fields; only available for “base58” or “base64” encoding.</p></li>
+<li><p><strong>data_size</strong> – (optional) Option to compare the program account data length with the provided data size.</p></li>
+<li><p><strong>memcmp_opts</strong> – (optional) Options to compare a provided series of bytes with program account data at a particular offset.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">memcmp_opts</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="n">MemcmpOpt</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="nb">bytes</span><span class="o">=</span><span class="s2">&quot;3Mc6vR&quot;</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_program_accounts</span><span class="p">(</span><span class="s2">&quot;4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T&quot;</span><span class="p">,</span> <span class="n">data_size</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">memcmp_opts</span><span class="o">=</span><span class="n">memcmp_opts</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &quot;2.0&quot;,</span>
+<span class="go"> &#39;result&#39; :[{</span>
+<span class="go">    &#39;account&#39; :{</span>
+<span class="go">         &#39;data&#39; :&#39;2R9jLfiAQ9bgdcw6h8s44439&#39;,</span>
+<span class="go">         &#39;executable&#39; :false,</span>
+<span class="go">         &#39;lamports&#39; :15298080,</span>
+<span class="go">         &#39;owner&#39; :&#39;4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T&#39;,</span>
+<span class="go">         &#39;rentEpoch&#39; :28},</span>
+<span class="go">    &#39;pubkey&#39; :&#39;CxELquR1gPP8wHe33gZ4QxqGB3sZ9RSwsJ2KshVewkFY&#39;}],</span>
+<span class="go"> &#39;id&#39; :1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_recent_blockhash">
+<code class="sig-name descname">get_recent_blockhash</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_recent_blockhash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_recent_blockhash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a recent block hash from the ledger.</p>
+<p>Response also includes a fee schedule that can be used to compute the cost
+of submitting a transaction using it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_recent_blockhash</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 1637},</span>
+<span class="go">  &#39;value&#39;: {&#39;blockhash&#39;: &#39;EALChog1mXQ9nEgEUQpWAtmA5UueUZvZiL16ZivmR7eb&#39;,</span>
+<span class="go">   &#39;feeCalculator&#39;: {&#39;lamportsPerSignature&#39;: 5000}}},</span>
+<span class="go"> &#39;id&#39;: 2}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_signature_statuses">
+<code class="sig-name descname">get_signature_statuses</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">signatures</span><span class="p">:</span> <span class="n">List<span class="p">[</span>Union<span class="p">[</span>str<span class="p">, </span>bytes<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">search_transaction_history</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_signature_statuses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_signature_statuses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the statuses of a list of signatures.</p>
+<p>Unless the <cite>searchTransactionHistory</cite> configuration parameter is included, this method only
+searches the recent status cache of signatures, which retains statuses for all active slots plus
+<cite>MAX_RECENT_BLOCKHASHES</cite> rooted slots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signatures</strong> – An array of transaction signatures to confirm.</p></li>
+<li><p><strong>search_transaction_history</strong> – If true, a Solana node will search its ledger cache for
+any signatures not found in the recent status cache.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signatures</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="s2">&quot;5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;5j7s6NiJS3JAkvgkoc18WVAsiSaci2pxB2A6ueCJP4tprA2TFg9wSyTLeYouxPBJEMzJinENTkpA52YStRW5Dia7&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_signature_statuses</span><span class="p">(</span><span class="n">signatures</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {</span>
+<span class="go">    &#39;context&#39;: {&#39;slot&#39;:82},</span>
+<span class="go">    &#39;value&#39;: [{</span>
+<span class="go">        &#39;slot&#39;: 72,</span>
+<span class="go">        &#39;confirmations&#39;: 10,</span>
+<span class="go">        &#39;err&#39;: null,</span>
+<span class="go">        &#39;status&#39;: {&#39;Ok&#39;: null}}, null]},</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_slot">
+<code class="sig-name descname">get_slot</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_slot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_slot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current slot the node is processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_slot</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: 7515, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_slot_leader">
+<code class="sig-name descname">get_slot_leader</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_slot_leader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_slot_leader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current slot leader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_slot_leader</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: &#39;EWj2cuEuVhi7RX81cnAY3TzpyFwnHzzVwvuTyfmxmhs3&#39;,</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_stake_activation">
+<code class="sig-name descname">get_stake_activation</code><span class="sig-paren">(</span><em class="sig-param">pubkey: Union[solana.publickey.PublicKey, str], epoch: Optional[int] = None, commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_stake_activation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_stake_activation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns epoch activation information for a stake account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Pubkey of stake account to query, as base-58 encoded string or PublicKey object.</p></li>
+<li><p><strong>epoch</strong> – (optional) Epoch for which to calculate activation details. If parameter not provided,
+defaults to current epoch.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_stake_activation</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,&#39;result&#39;: {&#39;active&#39;: 124429280, &#39;inactive&#39;: 73287840, &#39;state&#39;: &#39;activating&#39;}, &#39;id&#39;: 1}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_supply">
+<code class="sig-name descname">get_supply</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_supply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_supply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns information about the current supply.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_supply</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 3846},</span>
+<span class="go">  &#39;value&#39;: {&#39;circulating&#39;: 683635192454157660,</span>
+<span class="go">   &#39;nonCirculating&#39;: 316364808037127120,</span>
+<span class="go">   &#39;nonCirculatingAccounts&#39;: [&#39;ETfDYz7Cg5p9SDFmdpRerjBN5puKK7xydEBZZGM2V4Ay&#39;,</span>
+<span class="go">    &#39;7cKxv6UznFoWRuJkgw5bWj5rp5PiKTcXZeEaLqyd3Bbm&#39;,</span>
+<span class="go">    &#39;CV7qh8ZoqeUSTQagosGpkLptXoojf9yCszxkRx1jTD12&#39;,</span>
+<span class="go">    &#39;FZ9S7X9jMbCaMyJjRfSoBhFyarUMVwvx7HWRe4LnZHsg&#39;,</span>
+<span class="go">     ...]</span>
+<span class="go">   &#39;total&#39;: 1000000000491284780}},</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_token_account_balance">
+<code class="sig-name descname">get_token_account_balance</code><span class="sig-paren">(</span><em class="sig-param">pubkey: Union[str, solana.publickey.PublicKey], commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_token_account_balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_token_account_balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the token balance of an SPL Token account (UNSTABLE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Pubkey of Token account to query, as base-58 encoded string or PublicKey object.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_token_account_balance</span><span class="p">(</span><span class="s2">&quot;7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7&quot;</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,&#39;result&#39;: {</span>
+<span class="go">    &#39;context&#39;: {&#39;slot&#39;:1114},</span>
+<span class="go">    &#39;value&#39;: {</span>
+<span class="go">        &#39;uiAmount&#39;: 98.64,</span>
+<span class="go">        &#39;amount&#39;: &#39;9864&#39;,</span>
+<span class="go">        &#39;decimals&#39;: 2},</span>
+<span class="go"> &#39;id&#39; :1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_token_accounts_by_delegate">
+<code class="sig-name descname">get_token_accounts_by_delegate</code><span class="sig-paren">(</span><em class="sig-param">delegate: solana.publickey.PublicKey</em>, <em class="sig-param">opts: solana.rpc.types.TokenAccountOpts</em>, <em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_token_accounts_by_delegate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_token_accounts_by_delegate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all SPL Token accounts by approved Delegate (UNSTABLE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Public key of the delegate owner to query.</p></li>
+<li><p><strong>opt</strong> – Token account option specifying at least one of <cite>mint</cite> or <cite>program_id</cite>.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_token_accounts_by_owner">
+<code class="sig-name descname">get_token_accounts_by_owner</code><span class="sig-paren">(</span><em class="sig-param">owner: solana.publickey.PublicKey</em>, <em class="sig-param">opts: solana.rpc.types.TokenAccountOpts</em>, <em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_token_accounts_by_owner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_token_accounts_by_owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all SPL Token accounts by token owner (UNSTABLE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Public key of the account owner to query.</p></li>
+<li><p><strong>opt</strong> – Token account option specifying at least one of <cite>mint</cite> or <cite>program_id</cite>.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_token_largest_accounts">
+<code class="sig-name descname">get_token_largest_accounts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pubkey</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference internal" href="solana.html#solana.publickey.PublicKey" title="solana.publickey.PublicKey">solana.publickey.PublicKey</a><span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_token_largest_accounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_token_largest_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the 20 largest accounts of a particular SPL Token type (UNSTABLE).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_token_supply">
+<code class="sig-name descname">get_token_supply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pubkey</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference internal" href="solana.html#solana.publickey.PublicKey" title="solana.publickey.PublicKey">solana.publickey.PublicKey</a><span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_token_supply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_token_supply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the total supply of an SPL Token type(UNSTABLE).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_transaction_count">
+<code class="sig-name descname">get_transaction_count</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_transaction_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_transaction_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current Transaction count from the ledger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_transaction_count</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: 4554, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_version">
+<code class="sig-name descname">get_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current solana versions running on the node.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: {&#39;solana-core&#39;: &#39;1.4.0 5332fcad&#39;}, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.get_vote_accounts">
+<code class="sig-name descname">get_vote_accounts</code><span class="sig-paren">(</span><em class="sig-param">commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/api.html#Client.get_vote_accounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.get_vote_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the account info and associated stake for all the voting accounts in the current bank.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">get_vote_accounts</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;current&#39;: [{&#39;activatedStake&#39;: 0,</span>
+<span class="go">    &#39;commission&#39;: 100,</span>
+<span class="go">    &#39;epochCredits&#39;: [[165, 714644, 707372],</span>
+<span class="go">     [166, 722092, 714644],</span>
+<span class="go">     [167, 730285, 722092],</span>
+<span class="go">     [168, 738476, 730285],</span>
+<span class="go">     ...]</span>
+<span class="go">    &#39;epochVoteAccount&#39;: True,</span>
+<span class="go">    &#39;lastVote&#39;: 1872294,</span>
+<span class="go">    &#39;nodePubkey&#39;: &#39;J7v9ndmcoBuo9to2MnHegLnBkC9x3SAVbQBJo5MMJrN1&#39;,</span>
+<span class="go">    &#39;rootSlot&#39;: 1872263,</span>
+<span class="go">    &#39;votePubkey&#39;: &#39;HiFjzpR7e5Kv2tdU9jtE4FbH1X8Z9Syia3Uadadx18b5&#39;},</span>
+<span class="go">   {&#39;activatedStake&#39;: 500029968930560,</span>
+<span class="go">    &#39;commission&#39;: 100,</span>
+<span class="go">    &#39;epochCredits&#39;: [[165, 1359689, 1351498],</span>
+<span class="go">     [166, 1367881, 1359689],</span>
+<span class="go">     [167, 1376073, 1367881],</span>
+<span class="go">     [168, 1384265, 1376073],</span>
+<span class="go">     ...],</span>
+<span class="go">    &#39;epochVoteAccount&#39;: True,</span>
+<span class="go">    &#39;lastVote&#39;: 1872295,</span>
+<span class="go">    &#39;nodePubkey&#39;: &#39;dv1LfzJvDF7S1fBKpFgKoKXK5yoSosmkAdfbxBo1GqJ&#39;,</span>
+<span class="go">    &#39;rootSlot&#39;: 1872264,</span>
+<span class="go">    &#39;votePubkey&#39;: &#39;5MMCR4NbTZqjthjLGywmeT66iwE9J9f7kjtxzJjwfUx2&#39;},</span>
+<span class="go">   {&#39;activatedStake&#39;: 0,</span>
+<span class="go">    &#39;commission&#39;: 100,</span>
+<span class="go">    &#39;epochCredits&#39;: [[227, 2751, 0], [228, 7188, 2751]],</span>
+<span class="go">    &#39;epochVoteAccount&#39;: True,</span>
+<span class="go">    &#39;lastVote&#39;: 1872295,</span>
+<span class="go">    &#39;nodePubkey&#39;: &#39;H1wDvJ5HJc1SzhHoWtaycpzQpFbsL7g8peaRV3obKShs&#39;,</span>
+<span class="go">    &#39;rootSlot&#39;: 1872264,</span>
+<span class="go">    &#39;votePubkey&#39;: &#39;DPqpgoLQVU3aq72HEqSMsB9qh4KoXc9fGEpvgEuiwnp6&#39;}],</span>
+<span class="go">  &#39;delinquent&#39;: []},</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.is_connected">
+<code class="sig-name descname">is_connected</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/solana/rpc/api.html#Client.is_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.is_connected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Health check.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">is_connected</span><span class="p">()</span> 
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.request_airdrop">
+<code class="sig-name descname">request_airdrop</code><span class="sig-paren">(</span><em class="sig-param">pubkey: Union[solana.publickey.PublicKey, str], lamports: int, commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.request_airdrop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.request_airdrop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requests an airdrop of lamports to a Pubkey.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pubkey</strong> – Pubkey of account to receive lamports, as base-58 encoded string or public key object.</p></li>
+<li><p><strong>lamports</strong> – Amout of lamports.</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">solana.publickey</span> <span class="kn">import</span> <span class="n">PublicKey</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">request_airdrop</span><span class="p">(</span><span class="n">PublicKey</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">10000</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: &#39;uK6gbLbhnTEgjgmwn36D5BRTRkG4AT8r7Q162TLnJzQnHUZVL9r6BYZVfRttrhmkmno6Fp4VQELzL4AiriCo61U&#39;,</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.send_raw_transaction">
+<code class="sig-name descname">send_raw_transaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">txn</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>bytes<span class="p">, </span>str<span class="p">, </span><a class="reference internal" href="solana.html#solana.transaction.Transaction" title="solana.transaction.Transaction">solana.transaction.Transaction</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">opts</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#solana.rpc.types.TxOpts" title="solana.rpc.types.TxOpts">solana.rpc.types.TxOpts</a></span> <span class="o">=</span> <span class="default_value">TxOpts(skip_confirmation=True, skip_preflight=False, preflight_commitment='max')</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.send_raw_transaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.send_raw_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a transaction that has already been signed and serialized into the wire format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn</strong> – Fully-signed Transaction object, a fully sign transaction in wire format,
+or a fully transaction as base-58 encoded string.</p></li>
+<li><p><strong>opts</strong> – (optional) Transaction options.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Before submitting, the following preflight checks are performed (unless disabled with the <cite>skip_preflight</cite> option):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The transaction signatures are verified.</p></li>
+<li><dl class="simple">
+<dt>The transaction is simulated against the latest max confirmed bank and on failure an error</dt><dd><p>will be returned. Preflight checks may be disabled if desired.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">full_signed_tx_str</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">send_raw_transaction</span><span class="p">(</span><span class="n">full_signed_tx_str</span><span class="p">)</span>  
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: &#39;CMwyESM2NE74mghfbvsHJDERF7xMYKshwwm6VgH6GFqXzx8LfBFuP5ruccumfhTguha6seUHPpiHzzHUQXzq2kN&#39;,</span>
+<span class="go"> &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.send_transaction">
+<code class="sig-name descname">send_transaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">txn</span><span class="p">:</span> <span class="n"><a class="reference internal" href="solana.html#solana.transaction.Transaction" title="solana.transaction.Transaction">solana.transaction.Transaction</a></span></em>, <em class="sig-param"><span class="o">*</span><span class="n">signers</span><span class="p">:</span> <span class="n"><a class="reference internal" href="solana.html#solana.account.Account" title="solana.account.Account">solana.account.Account</a></span></em>, <em class="sig-param"><span class="n">opts</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#solana.rpc.types.TxOpts" title="solana.rpc.types.TxOpts">solana.rpc.types.TxOpts</a></span> <span class="o">=</span> <span class="default_value">TxOpts(skip_confirmation=True, skip_preflight=False, preflight_commitment='max')</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.send_transaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.send_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn</strong> – Transaction object.</p></li>
+<li><p><strong>signers</strong> – Signers to sign the transaction.</p></li>
+<li><p><strong>opts</strong> – (optional) Transaction options.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">solana.account</span> <span class="kn">import</span> <span class="n">Account</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">solana.system_program</span> <span class="kn">import</span> <span class="n">TransferParams</span><span class="p">,</span> <span class="n">transfer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sender</span><span class="p">,</span> <span class="n">reciever</span> <span class="o">=</span> <span class="n">Account</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Account</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tx</span> <span class="o">=</span> <span class="n">transfer</span><span class="p">(</span><span class="n">TransferParams</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">from_pubkey</span><span class="o">=</span><span class="n">sender</span><span class="o">.</span><span class="n">public_key</span><span class="p">(),</span> <span class="n">to_pubkey</span><span class="o">=</span><span class="n">reciever</span><span class="o">.</span><span class="n">public_key</span><span class="p">(),</span> <span class="n">lamports</span><span class="o">=</span><span class="mi">1000</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">send_transaction</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">sender</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: &#39;236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG&#39;,</span>
+<span class="go"> &#39;id&#39;: 12}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.set_log_filter">
+<code class="sig-name descname">set_log_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_filter</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.set_log_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.set_log_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the log filter on the validator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_filter</strong> – The new log filter to use.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">set_log_filter</span><span class="p">(</span><span class="s2">&quot;solana_core=debug&quot;</span><span class="p">)</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: None, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.simulate_transaction">
+<code class="sig-name descname">simulate_transaction</code><span class="sig-paren">(</span><em class="sig-param">txn: Union[bytes, str, solana.transaction.Transaction], sig_verify: bool = False, commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.simulate_transaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.simulate_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate sending a transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn</strong> – A Transaction object, a transaction in wire format, or a transaction as base-58 encoded string
+The transaction must have a valid blockhash, but is not required to be signed.</p></li>
+<li><p><strong>signer_verify</strong> – If true the transaction signatures will be verified (default: false).</p></li>
+<li><p><strong>commitment</strong> – Bank state to query. It can be either “max”, “root”, “single” or “recent”.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tx_str</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">simulate_transaction</span><span class="p">(</span><span class="n">tx_str</span><span class="p">)</span>  
+<span class="go">{&#39;jsonrpc&#39; :&#39;2.0&#39;,</span>
+<span class="go"> &#39;result&#39;: {&#39;context&#39;: {&#39;slot&#39;: 218},</span>
+<span class="go"> &#39;value&#39;: {</span>
+<span class="go">     &#39;err&#39;: null,</span>
+<span class="go">     &#39;logs&#39;: [&#39;BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success&#39;]},</span>
+<span class="go"> &#39;id&#39;:1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.api.Client.validator_exit">
+<code class="sig-name descname">validator_exit</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/api.html#Client.validator_exit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.api.Client.validator_exit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request to have the validator exit.</p>
+<p>Validator must have booted with RPC exit enabled (<cite>–enable-rpc-exit</cite> parameter).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solana_client</span><span class="o">.</span><span class="n">validator_exit</span><span class="p">()</span> 
+<span class="go">{&#39;jsonrpc&#39;: &#39;2.0&#39;, &#39;result&#39;: true, &#39;id&#39;: 1}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-solana.rpc.types">
+<span id="rpc-types"></span><h1>RPC Types<a class="headerlink" href="#module-solana.rpc.types" title="Permalink to this headline">¶</a></h1>
+<p>RPC types.</p>
+<dl class="py class">
+<dt id="solana.rpc.types.DataSliceOpts">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">DataSliceOpts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">offset</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">length</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/types.html#DataSliceOpts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.types.DataSliceOpts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Option to limit the returned account data, only available for “base58” or “base64” encoding.</p>
+<dl class="py method">
+<dt id="solana.rpc.types.DataSliceOpts.length">
+<em class="property">property </em><code class="sig-name descname">length</code><a class="headerlink" href="#solana.rpc.types.DataSliceOpts.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limit the returned account data using the provided length: &lt;usize&gt;.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.types.DataSliceOpts.offset">
+<em class="property">property </em><code class="sig-name descname">offset</code><a class="headerlink" href="#solana.rpc.types.DataSliceOpts.offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limit the returned account data using the provided offset: &lt;usize&gt;.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="solana.rpc.types.MemcmpOpts">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">MemcmpOpts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">offset</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">bytes</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/types.html#MemcmpOpts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.types.MemcmpOpts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Option to compare a provided series of bytes with program account data at a particular offset.</p>
+<dl class="py method">
+<dt id="solana.rpc.types.MemcmpOpts.bytes">
+<em class="property">property </em><code class="sig-name descname">bytes</code><a class="headerlink" href="#solana.rpc.types.MemcmpOpts.bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data to match, as base-58 encoded string: &lt;string&gt;.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.types.MemcmpOpts.offset">
+<em class="property">property </em><code class="sig-name descname">offset</code><a class="headerlink" href="#solana.rpc.types.MemcmpOpts.offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Offset into program account data to start comparison: &lt;usize&gt;.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="solana.rpc.types.RPCError">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">RPCError</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/types.html#RPCError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.types.RPCError" title="Permalink to this definition">¶</a></dt>
+<dd><p>RPC error.</p>
+<dl class="py attribute">
+<dt id="solana.rpc.types.RPCError.code">
+<code class="sig-name descname">code</code><em class="property">: int</em><a class="headerlink" href="#solana.rpc.types.RPCError.code" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP status code.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="solana.rpc.types.RPCError.message">
+<code class="sig-name descname">message</code><em class="property">: str</em><a class="headerlink" href="#solana.rpc.types.RPCError.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="solana.rpc.types.RPCMethod">
+<code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">RPCMethod</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#solana.rpc.types.RPCMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type for RPC method.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="solana.rpc.types.RPCResponse">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">RPCResponse</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/types.html#RPCResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.types.RPCResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>RPC Response.</p>
+<dl class="py attribute">
+<dt id="solana.rpc.types.RPCResponse.error">
+<code class="sig-name descname">error</code><em class="property">: Union<span class="p">[</span><a class="reference internal" href="#solana.rpc.types.RPCError" title="solana.rpc.types.RPCError">solana.rpc.types.RPCError</a><span class="p">, </span>str<span class="p">]</span></em><a class="headerlink" href="#solana.rpc.types.RPCResponse.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>RPC error.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="solana.rpc.types.RPCResponse.id">
+<code class="sig-name descname">id</code><em class="property">: int</em><a class="headerlink" href="#solana.rpc.types.RPCResponse.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request ID.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="solana.rpc.types.RPCResponse.jsonrpc">
+<code class="sig-name descname">jsonrpc</code><em class="property">: typing_extensions.Literal[2.0]</em><a class="headerlink" href="#solana.rpc.types.RPCResponse.jsonrpc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Protocol.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="solana.rpc.types.RPCResponse.result">
+<code class="sig-name descname">result</code><em class="property">: Any</em><a class="headerlink" href="#solana.rpc.types.RPCResponse.result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Response results.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="solana.rpc.types.TokenAccountOpts">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">TokenAccountOpts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mint</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="solana.html#solana.publickey.PublicKey" title="solana.publickey.PublicKey">solana.publickey.PublicKey</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">program_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="solana.html#solana.publickey.PublicKey" title="solana.publickey.PublicKey">solana.publickey.PublicKey</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">encoding</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'base64'</span></em>, <em class="sig-param"><span class="n">data_slice</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="#solana.rpc.types.DataSliceOpts" title="solana.rpc.types.DataSliceOpts">solana.rpc.types.DataSliceOpts</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/types.html#TokenAccountOpts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.types.TokenAccountOpts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Options when querying token accounts.</p>
+<p>Provide one of mint or program_id.</p>
+<dl class="py method">
+<dt id="solana.rpc.types.TokenAccountOpts.data_slice">
+<em class="property">property </em><code class="sig-name descname">data_slice</code><a class="headerlink" href="#solana.rpc.types.TokenAccountOpts.data_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Option to limit the returned account data, only available for “base58” or “base64” encoding.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.types.TokenAccountOpts.encoding">
+<em class="property">property </em><code class="sig-name descname">encoding</code><a class="headerlink" href="#solana.rpc.types.TokenAccountOpts.encoding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encoding for Account data, either “base58” (slow), “base64” or jsonParsed”.</p>
+<p>Parsed-JSON encoding attempts to use program-specific state parsers to return more
+human-readable and explicit account state data. If parsed-JSON is requested but a
+valid mint cannot be found for a particular account, that account will be filtered out
+from results. jsonParsed encoding is UNSTABLE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.types.TokenAccountOpts.mint">
+<em class="property">property </em><code class="sig-name descname">mint</code><a class="headerlink" href="#solana.rpc.types.TokenAccountOpts.mint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Public key of the specific token Mint to limit accounts to.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.types.TokenAccountOpts.program_id">
+<em class="property">property </em><code class="sig-name descname">program_id</code><a class="headerlink" href="#solana.rpc.types.TokenAccountOpts.program_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Public key of the Token program ID that owns the accounts.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="solana.rpc.types.TxOpts">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">TxOpts</code><span class="sig-paren">(</span><em class="sig-param">skip_confirmation: bool = True</em>, <em class="sig-param">skip_preflight: bool = False</em>, <em class="sig-param">preflight_commitment: NewType.&lt;locals&gt;.new_type = 'max'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/types.html#TxOpts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.types.TxOpts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Options to specify when broadcasting a transaction.</p>
+<dl class="py method">
+<dt id="solana.rpc.types.TxOpts.preflight_commitment">
+<em class="property">property </em><code class="sig-name descname">preflight_commitment</code><a class="headerlink" href="#solana.rpc.types.TxOpts.preflight_commitment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commitment level to use for preflight.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.types.TxOpts.skip_confirmation">
+<em class="property">property </em><code class="sig-name descname">skip_confirmation</code><a class="headerlink" href="#solana.rpc.types.TxOpts.skip_confirmation" title="Permalink to this definition">¶</a></dt>
+<dd><p>If false, <cite>send_transaction</cite> will try to confirm that the transaction was successfully broadcasted.</p>
+<p>When confirming a transaction, <cite>send_transaction</cite> will block for a maximum of 30 seconds. Wrap the call
+inside a thread to make it asynchronous.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.types.TxOpts.skip_preflight">
+<em class="property">property </em><code class="sig-name descname">skip_preflight</code><a class="headerlink" href="#solana.rpc.types.TxOpts.skip_preflight" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, skip the preflight transaction checks.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="solana.rpc.types.URI">
+<code class="sig-prename descclassname">solana.rpc.types.</code><code class="sig-name descname">URI</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#solana.rpc.types.URI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type for endpoint URI.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-solana.rpc.providers.base">
+<span id="rpc-providers"></span><h1>RPC Providers<a class="headerlink" href="#module-solana.rpc.providers.base" title="Permalink to this headline">¶</a></h1>
+<p>Base RPC Provider.</p>
+<dl class="py class">
+<dt id="solana.rpc.providers.base.BaseProvider">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.providers.base.</code><code class="sig-name descname">BaseProvider</code><a class="reference internal" href="_modules/solana/rpc/providers/base.html#BaseProvider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.providers.base.BaseProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for RPC providers to implement.</p>
+<dl class="py method">
+<dt id="solana.rpc.providers.base.BaseProvider.is_connected">
+<code class="sig-name descname">is_connected</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/solana/rpc/providers/base.html#BaseProvider.is_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.providers.base.BaseProvider.is_connected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Health check.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.providers.base.BaseProvider.make_request">
+<code class="sig-name descname">make_request</code><span class="sig-paren">(</span><em class="sig-param">method: NewType.&lt;locals&gt;.new_type</em>, <em class="sig-param">*params: Any</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/providers/base.html#BaseProvider.make_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.providers.base.BaseProvider.make_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a request ot the rpc endpoint.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-solana.rpc.providers.http"></span><p>HTTP RPC Provider.</p>
+<dl class="py class">
+<dt id="solana.rpc.providers.http.HTTPProvider">
+<em class="property">class </em><code class="sig-prename descclassname">solana.rpc.providers.http.</code><code class="sig-name descname">HTTPProvider</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">endpoint</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/solana/rpc/providers/http.html#HTTPProvider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.providers.http.HTTPProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP provider interact with the http rpc endpoint.</p>
+<dl class="py method">
+<dt id="solana.rpc.providers.http.HTTPProvider.is_connected">
+<code class="sig-name descname">is_connected</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/solana/rpc/providers/http.html#HTTPProvider.is_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.providers.http.HTTPProvider.is_connected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Health check.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="solana.rpc.providers.http.HTTPProvider.make_request">
+<code class="sig-name descname">make_request</code><span class="sig-paren">(</span><em class="sig-param">method: NewType.&lt;locals&gt;.new_type</em>, <em class="sig-param">*params: Any</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#solana.rpc.types.RPCResponse" title="solana.rpc.types.RPCResponse">solana.rpc.types.RPCResponse</a><a class="reference internal" href="_modules/solana/rpc/providers/http.html#HTTPProvider.make_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.providers.http.HTTPProvider.make_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make an HTTP request to an http rpc endpoint.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="solana.rpc.providers.http.get_default_endpoint">
+<code class="sig-prename descclassname">solana.rpc.providers.http.</code><code class="sig-name descname">get_default_endpoint</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; NewType.&lt;locals&gt;.new_type<a class="reference internal" href="_modules/solana/rpc/providers/http.html#get_default_endpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#solana.rpc.providers.http.get_default_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the default http rpc endpoint.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">solana.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="solana.html">Solana</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-solana.rpc.types">RPC Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-solana.rpc.providers.base">RPC Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spl.html">Solana Program Library (SPL)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="solana.html" title="previous chapter">Solana</a></li>
+      <li>Next: <a href="spl.html" title="next chapter">Solana Program Library (SPL)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Michael Huang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

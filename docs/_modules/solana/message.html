@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>solana.message &#8212; solana.py  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for solana.message</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Library for generating a message from a sequence of instructions.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">base58</span> <span class="kn">import</span> <span class="n">b58decode</span><span class="p">,</span> <span class="n">b58encode</span>
+
+<span class="kn">from</span> <span class="nn">solana.blockhash</span> <span class="kn">import</span> <span class="n">Blockhash</span>
+<span class="kn">from</span> <span class="nn">solana.publickey</span> <span class="kn">import</span> <span class="n">PublicKey</span>
+<span class="kn">from</span> <span class="nn">solana.utils</span> <span class="kn">import</span> <span class="n">helpers</span>
+<span class="kn">from</span> <span class="nn">solana.utils</span> <span class="kn">import</span> <span class="n">shortvec_encoding</span> <span class="k">as</span> <span class="n">shortvec</span>
+
+
+<div class="viewcode-block" id="CompiledInstruction"><a class="viewcode-back" href="../../solana.html#solana.message.CompiledInstruction">[docs]</a><span class="k">class</span> <span class="nc">CompiledInstruction</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An instruction to execute by a program.&quot;&quot;&quot;</span>
+
+    <span class="n">accounts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span>
+    <span class="sd">&quot;&quot;&quot;Ordered indices into the transaction keys array indicating which accounts to pass to the program.&quot;&quot;&quot;</span>
+    <span class="n">program_id_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Index into the transaction keys array indicating the program account that executes this instruction.&quot;&quot;&quot;</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span>
+    <span class="sd">&quot;&quot;&quot;The program input data encoded as base 58.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MessageHeader"><a class="viewcode-back" href="../../solana.html#solana.message.MessageHeader">[docs]</a><span class="k">class</span> <span class="nc">MessageHeader</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The message header, identifying signed and read-only account.&quot;&quot;&quot;</span>
+
+    <span class="n">num_required_signatures</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;The number of signatures required for this message to be considered valid.&quot;&quot;&quot;</span>
+    <span class="n">num_readonly_signed_accounts</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;The last `numReadonlySignedAccounts` of the signed keys are read-only accounts.&quot;&quot;&quot;</span>
+    <span class="n">num_readonly_unsigned_accounts</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;The last `numReadonlySignedAccounts` of the unsigned keys are read-only accounts.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MessageArgs"><a class="viewcode-back" href="../../solana.html#solana.message.MessageArgs">[docs]</a><span class="k">class</span> <span class="nc">MessageArgs</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Message constructor arguments.&quot;&quot;&quot;</span>
+
+    <span class="n">header</span><span class="p">:</span> <span class="n">MessageHeader</span>
+    <span class="sd">&quot;&quot;&quot;The message header, identifying signed and read-only `accountKeys`.&quot;&quot;&quot;</span>
+    <span class="n">account_keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;All the account keys used by this transaction.&quot;&quot;&quot;</span>
+    <span class="n">recent_blockhash</span><span class="p">:</span> <span class="n">Blockhash</span>
+    <span class="sd">&quot;&quot;&quot;The hash of a recent ledger block.&quot;&quot;&quot;</span>
+    <span class="n">instructions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CompiledInstruction</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;Instructions that will be executed in sequence and committed in one atomic transaction if all succeed.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Message"><a class="viewcode-back" href="../../solana.html#solana.message.Message">[docs]</a><span class="k">class</span> <span class="nc">Message</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Message object to be used to to build a transaction.</span>
+
+<span class="sd">    A message contains a header, followed by a compact-array of account addresses, followed by a recent blockhash,</span>
+<span class="sd">    followed by a compact-array of instructions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">MessageArgs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Init message object.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">account_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">PublicKey</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">account_keys</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recent_blockhash</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">recent_blockhash</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">instructions</span>
+
+    <span class="k">def</span> <span class="nf">__encode_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>  <span class="c1"># TODO: Replace this with a construct struct.</span>
+        <span class="n">MessageFormat</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span>
+            <span class="s2">&quot;HeaderFormat&quot;</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s2">&quot;num_required_signatures&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;num_readonly_signed_accounts&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;num_readonly_unsigned_accounts&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;pubkeys_length&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;pubkeys&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;recent_blockhash&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">MessageFormat</span><span class="p">(</span>
+                <span class="n">num_required_signatures</span><span class="o">=</span><span class="n">helpers</span><span class="o">.</span><span class="n">to_uint8_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_required_signatures</span><span class="p">),</span>
+                <span class="n">num_readonly_signed_accounts</span><span class="o">=</span><span class="n">helpers</span><span class="o">.</span><span class="n">to_uint8_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_readonly_signed_accounts</span><span class="p">),</span>
+                <span class="n">num_readonly_unsigned_accounts</span><span class="o">=</span><span class="n">helpers</span><span class="o">.</span><span class="n">to_uint8_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_readonly_unsigned_accounts</span><span class="p">),</span>
+                <span class="n">pubkeys_length</span><span class="o">=</span><span class="n">shortvec</span><span class="o">.</span><span class="n">encode_length</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">account_keys</span><span class="p">)),</span>
+                <span class="n">pubkeys</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">bytes</span><span class="p">(</span><span class="n">pubkey</span><span class="p">)</span> <span class="k">for</span> <span class="n">pubkey</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_keys</span><span class="p">]),</span>
+                <span class="n">recent_blockhash</span><span class="o">=</span><span class="n">b58decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__encode_instruction</span><span class="p">(</span>
+        <span class="n">instruction</span><span class="p">:</span> <span class="s2">&quot;CompiledInstruction&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>  <span class="c1"># TODO: Replace this with a construct struct.</span>
+        <span class="n">InstructionFormat</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span>
+            <span class="s2">&quot;InstructionFormat&quot;</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s2">&quot;program_idx&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;accounts_length&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;accounts&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;data_length&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">b58decode</span><span class="p">(</span><span class="n">instruction</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">data_length</span> <span class="o">=</span> <span class="n">shortvec</span><span class="o">.</span><span class="n">encode_length</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">return</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">InstructionFormat</span><span class="p">(</span>
+                <span class="n">program_idx</span><span class="o">=</span><span class="n">helpers</span><span class="o">.</span><span class="n">to_uint8_bytes</span><span class="p">(</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id_index</span><span class="p">),</span>
+                <span class="n">accounts_length</span><span class="o">=</span><span class="n">shortvec</span><span class="o">.</span><span class="n">encode_length</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">instruction</span><span class="o">.</span><span class="n">accounts</span><span class="p">)),</span>
+                <span class="n">accounts</span><span class="o">=</span><span class="nb">bytes</span><span class="p">(</span><span class="n">instruction</span><span class="o">.</span><span class="n">accounts</span><span class="p">),</span>
+                <span class="n">data_length</span><span class="o">=</span><span class="n">data_length</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Message.is_account_writable"><a class="viewcode-back" href="../../solana.html#solana.message.Message.is_account_writable">[docs]</a>    <span class="k">def</span> <span class="nf">is_account_writable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check if account is write eligble.&quot;&quot;&quot;</span>
+        <span class="n">writable</span> <span class="o">=</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_required_signatures</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_readonly_signed_accounts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">writable</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_required_signatures</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">account_keys</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_readonly_unsigned_accounts</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Message.serialize"><a class="viewcode-back" href="../../solana.html#solana.message.Message.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Serialize message to bytes.</span>
+
+<span class="sd">        &gt;&gt;&gt; from solana.blockhash import Blockhash</span>
+<span class="sd">        &gt;&gt;&gt; account_keys = [str(PublicKey(i + 1)) for i in range(5)]</span>
+<span class="sd">        &gt;&gt;&gt; msg = Message(</span>
+<span class="sd">        ...     MessageArgs(</span>
+<span class="sd">        ...         account_keys=account_keys,</span>
+<span class="sd">        ...         header=MessageHeader(</span>
+<span class="sd">        ...             num_readonly_signed_accounts=0, num_readonly_unsigned_accounts=3, num_required_signatures=2</span>
+<span class="sd">        ...         ),</span>
+<span class="sd">        ...         instructions=[</span>
+<span class="sd">        ...             CompiledInstruction(accounts=[1, 2, 3], data=b58encode(bytes([9] * 5)), program_id_index=4)],</span>
+<span class="sd">        ...         recent_blockhash=Blockhash(&quot;EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k&quot;),</span>
+<span class="sd">        ...     )</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; msg.serialize().hex()</span>
+<span class="sd">        &#39;0200030500000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000005c49ae77603782054f17a9decea43b444eba0edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># pylint: disable=line-too-long</span>
+        <span class="n">message_buffer</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
+        <span class="c1"># Message body</span>
+        <span class="n">message_buffer</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__encode_message</span><span class="p">())</span>
+        <span class="c1"># Instructions</span>
+        <span class="n">instruction_count</span> <span class="o">=</span> <span class="n">shortvec</span><span class="o">.</span><span class="n">encode_length</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">))</span>
+        <span class="n">message_buffer</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">instruction_count</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">instr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">message_buffer</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">Message</span><span class="o">.</span><span class="n">__encode_instruction</span><span class="p">(</span><span class="n">instr</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">message_buffer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Message.deserialize"><a class="viewcode-back" href="../../solana.html#solana.message.Message.deserialize">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="n">raw_message</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Deserialize raw message bytes.</span>
+
+<span class="sd">        &gt;&gt;&gt; raw_message = bytes.fromhex(</span>
+<span class="sd">        ...     &#39;0200030500000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000100000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000200000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000000000000000300000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0004000000000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000005c49ae77603782054f17a9decea43b444eba0&#39;</span>
+<span class="sd">        ...     &#39;edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909&#39;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; type(Message.deserialize(raw_message))</span>
+<span class="sd">        &lt;class &#39;solana.message.Message&#39;&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">HEADER_OFFSET</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">HEADER_OFFSET</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;byte representation of message is missing message header&quot;</span><span class="p">)</span>
+        <span class="n">num_required_signatures</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">num_readonly_signed_accounts</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">num_readonly_unsigned_accounts</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">MessageHeader</span><span class="p">(</span>
+            <span class="n">num_required_signatures</span><span class="o">=</span><span class="n">num_required_signatures</span><span class="p">,</span>
+            <span class="n">num_readonly_signed_accounts</span><span class="o">=</span><span class="n">num_readonly_signed_accounts</span><span class="p">,</span>
+            <span class="n">num_readonly_unsigned_accounts</span><span class="o">=</span><span class="n">num_readonly_unsigned_accounts</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">HEADER_OFFSET</span><span class="p">:]</span>
+
+        <span class="n">account_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">accounts_length</span><span class="p">,</span> <span class="n">accounts_offset</span> <span class="o">=</span> <span class="n">shortvec</span><span class="o">.</span><span class="n">decode_length</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">accounts_length</span><span class="p">):</span>
+            <span class="n">key_bytes</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">accounts_offset</span> <span class="p">:</span> <span class="n">accounts_offset</span> <span class="o">+</span> <span class="n">PublicKey</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">]</span>  <span class="c1"># noqa: E203</span>
+            <span class="n">account_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">PublicKey</span><span class="p">(</span><span class="n">key_bytes</span><span class="p">)))</span>
+            <span class="n">accounts_offset</span> <span class="o">+=</span> <span class="n">PublicKey</span><span class="o">.</span><span class="n">LENGTH</span>
+        <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">accounts_offset</span><span class="p">:]</span>
+
+        <span class="n">recent_blockhash</span> <span class="o">=</span> <span class="n">Blockhash</span><span class="p">(</span><span class="n">b58encode</span><span class="p">(</span><span class="n">raw_message</span><span class="p">[:</span> <span class="n">PublicKey</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">PublicKey</span><span class="o">.</span><span class="n">LENGTH</span> <span class="p">:]</span>  <span class="c1"># noqa: E203</span>
+
+        <span class="n">instructions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">instruction_count</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">shortvec</span><span class="o">.</span><span class="n">decode_length</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
+        <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">offset</span><span class="p">:]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">instruction_count</span><span class="p">):</span>
+            <span class="n">program_id_index</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+            <span class="n">accounts_length</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">shortvec</span><span class="o">.</span><span class="n">decode_length</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
+            <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">offset</span><span class="p">:]</span>
+            <span class="n">accounts</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[:</span><span class="n">accounts_length</span><span class="p">]</span>
+            <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">accounts_length</span><span class="p">:]</span>
+
+            <span class="n">data_length</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">shortvec</span><span class="o">.</span><span class="n">decode_length</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
+            <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">offset</span><span class="p">:]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">b58encode</span><span class="p">(</span><span class="n">raw_message</span><span class="p">[:</span><span class="n">data_length</span><span class="p">])</span>
+            <span class="n">raw_message</span> <span class="o">=</span> <span class="n">raw_message</span><span class="p">[</span><span class="n">data_length</span><span class="p">:]</span>
+
+            <span class="n">instructions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CompiledInstruction</span><span class="p">(</span><span class="n">program_id_index</span><span class="o">=</span><span class="n">program_id_index</span><span class="p">,</span> <span class="n">accounts</span><span class="o">=</span><span class="n">accounts</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span>
+            <span class="n">MessageArgs</span><span class="p">(</span>
+                <span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span>
+                <span class="n">account_keys</span><span class="o">=</span><span class="n">account_keys</span><span class="p">,</span>
+                <span class="n">recent_blockhash</span><span class="o">=</span><span class="n">recent_blockhash</span><span class="p">,</span>
+                <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">solana.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../solana.html">Solana</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-solana.rpc.types">RPC Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-solana.rpc.providers.base">RPC Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spl.html">Solana Program Library (SPL)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Michael Huang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

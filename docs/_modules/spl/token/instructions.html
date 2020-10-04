@@ -1,0 +1,1026 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spl.token.instructions &#8212; solana.py  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spl.token.instructions</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;SPL token instructions.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">solana.publickey</span> <span class="kn">import</span> <span class="n">PublicKey</span>
+<span class="kn">from</span> <span class="nn">solana.sysvar</span> <span class="kn">import</span> <span class="n">SYSVAR_RENT_PUBKEY</span>
+<span class="kn">from</span> <span class="nn">solana.transaction</span> <span class="kn">import</span> <span class="n">AccountMeta</span><span class="p">,</span> <span class="n">TransactionInstruction</span>
+<span class="kn">from</span> <span class="nn">solana.utils.validate</span> <span class="kn">import</span> <span class="n">validate_instruction_keys</span><span class="p">,</span> <span class="n">validate_instruction_type</span>
+<span class="kn">from</span> <span class="nn">spl.token._layouts</span> <span class="kn">import</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="p">,</span> <span class="n">InstructionType</span>  <span class="c1"># type: ignore</span>
+
+
+<div class="viewcode-block" id="AuthorityType"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.AuthorityType">[docs]</a><span class="k">class</span> <span class="nc">AuthorityType</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Specifies the authority type for SetAuthority instructions.&quot;&quot;&quot;</span>
+
+    <span class="n">MintTokens</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="sd">&quot;&quot;&quot;&quot;Authority to mint new tokens.&quot;&quot;&quot;</span>
+    <span class="n">FreezeAccount</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="sd">&quot;&quot;&quot;Authority to freeze any account associated with the Mint.&quot;&quot;&quot;</span>
+    <span class="n">AccountOwner</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="sd">&quot;&quot;&quot;Owner of a given token account.&quot;&quot;&quot;</span>
+    <span class="n">CloseAccount</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="sd">&quot;&quot;&quot;Authority to close a token account.&quot;&quot;&quot;</span></div>
+
+
+<span class="c1"># Instruction Params</span>
+<div class="viewcode-block" id="InitializeMintParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.InitializeMintParams">[docs]</a><span class="k">class</span> <span class="nc">InitializeMintParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialize token mint transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Number of base 10 digits to the right of the decimal place.&quot;&quot;&quot;</span>
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">mint_authority</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;The authority/multisignature to mint tokens.&quot;&quot;&quot;</span>
+    <span class="n">freeze_authority</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The freeze authority/multisignature of the mint.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="InitializeAccountParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.InitializeAccountParams">[docs]</a><span class="k">class</span> <span class="nc">InitializeAccountParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialize token account transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">account</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the new account.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the new account.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="InitializeMultisigParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.InitializeMultisigParams">[docs]</a><span class="k">class</span> <span class="nc">InitializeMultisigParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialize multisig token account transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">multisig</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;New multisig account address.&quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;The number of signers (M) required to validate this multisignature account.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Addresses of multisig signers.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="TransferParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.TransferParams">[docs]</a><span class="k">class</span> <span class="nc">TransferParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transfer token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Source account.&quot;&quot;&quot;</span>
+    <span class="n">dest</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Destination account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the source account.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Number of tokens to transfer.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ApproveParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.ApproveParams">[docs]</a><span class="k">class</span> <span class="nc">ApproveParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Approve token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Source account.&quot;&quot;&quot;</span>
+    <span class="n">delegate</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Delegate account authorized to perform a transfer of tokens from the source account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the source account.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Maximum number of tokens the delegate may transfer.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="RevokeParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.RevokeParams">[docs]</a><span class="k">class</span> <span class="nc">RevokeParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Revoke token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">delegate</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Delegate account authorized to perform a transfer of tokens from the source account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the source account.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="SetAuthorityParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.SetAuthorityParams">[docs]</a><span class="k">class</span> <span class="nc">SetAuthorityParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set token authority transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">account</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the token account.&quot;&quot;&quot;</span>
+    <span class="n">authority</span><span class="p">:</span> <span class="n">AuthorityType</span>
+    <span class="sd">&quot;&quot;&quot;The type of authority to update.&quot;&quot;&quot;</span>
+    <span class="n">current_authority</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Current authority of the specified type.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `current_authority` is a multiSig.&quot;&quot;&quot;</span>
+    <span class="n">new_authority</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;New authority of the account.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MintToParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.MintToParams">[docs]</a><span class="k">class</span> <span class="nc">MintToParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mint token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">dest</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the account to mint to.&quot;&quot;&quot;</span>
+    <span class="n">mint_authority</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;The mint authority.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount to mint.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `mint_authority` is a multiSig.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="BurnParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.BurnParams">[docs]</a><span class="k">class</span> <span class="nc">BurnParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Burn token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">account</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Account to burn tokens from.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the account.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount to burn.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="CloseAccountParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.CloseAccountParams">[docs]</a><span class="k">class</span> <span class="nc">CloseAccountParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Close token account transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">account</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Address of account to close.&quot;&quot;&quot;</span>
+    <span class="n">dest</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Address of account to receive the remaining balance of the closed account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the account.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="FreezeAccountParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.FreezeAccountParams">[docs]</a><span class="k">class</span> <span class="nc">FreezeAccountParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Freeze token account transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">account</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Account to freeze.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the account.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ThawAccountParams"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.ThawAccountParams">[docs]</a><span class="k">class</span> <span class="nc">ThawAccountParams</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Thaw token account transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">account</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Account to thaw.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the account.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Transfer2Params"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.Transfer2Params">[docs]</a><span class="k">class</span> <span class="nc">Transfer2Params</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transfer2 token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Source account.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">dest</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Destination account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the source account.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Number of tokens to transfer.&quot;&quot;&quot;</span>
+    <span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount decimals.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Approve2Params"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.Approve2Params">[docs]</a><span class="k">class</span> <span class="nc">Approve2Params</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Approve2 token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Source account.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">delegate</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Delegate account authorized to perform a transfer of tokens from the source account.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the source account.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Maximum number of tokens the delegate may transfer.&quot;&quot;&quot;</span>
+    <span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount decimals.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MintTo2Params"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.MintTo2Params">[docs]</a><span class="k">class</span> <span class="nc">MintTo2Params</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;MintTo2 token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">dest</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the account to mint to.&quot;&quot;&quot;</span>
+    <span class="n">mint_authority</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;The mint authority.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount to mint.&quot;&quot;&quot;</span>
+    <span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount decimals.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `mint_authority` is a multiSig.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Burn2Params"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.Burn2Params">[docs]</a><span class="k">class</span> <span class="nc">Burn2Params</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Burn2 token transaction params.&quot;&quot;&quot;</span>
+
+    <span class="n">program_id</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;SPL Token program account.&quot;&quot;&quot;</span>
+    <span class="n">mint</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Public key of the minter account.&quot;&quot;&quot;</span>
+    <span class="n">account</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Account to burn tokens from.&quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span>
+    <span class="sd">&quot;&quot;&quot;Owner of the account.&quot;&quot;&quot;</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount to burn.&quot;&quot;&quot;</span>
+    <span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Amount decimals.&quot;&quot;&quot;</span>
+    <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Signing accounts if `owner` is a multiSig&quot;&quot;&quot;</span></div>
+
+
+<span class="k">def</span> <span class="nf">__parse_and_validate_instruction</span><span class="p">(</span>
+    <span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">,</span>
+    <span class="n">expected_keys</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">expected_type</span><span class="p">:</span> <span class="n">InstructionType</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>  <span class="c1"># Returns a Construct container.</span>
+    <span class="n">validate_instruction_keys</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="n">expected_keys</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">instruction</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">validate_instruction_type</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">expected_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="decode_initialize_mint"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_initialize_mint">[docs]</a><span class="k">def</span> <span class="nf">decode_initialize_mint</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InitializeMintParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode an initialize mint token instruction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">InitializeMint</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">InitializeMintParams</span><span class="p">(</span>
+        <span class="n">decimals</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">decimals</span><span class="p">,</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint_authority</span><span class="o">=</span><span class="n">PublicKey</span><span class="p">(</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">mint_authority</span><span class="p">),</span>
+        <span class="n">freeze_authority</span><span class="o">=</span><span class="n">PublicKey</span><span class="p">(</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">freeze_authority</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">freeze_authority_option</span>
+        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_initialize_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_initialize_account">[docs]</a><span class="k">def</span> <span class="nf">decode_initialize_account</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InitializeAccountParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode an initialize account token instruction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">InitializeAccount</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">InitializeAccountParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_initialize_multisig"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_initialize_multisig">[docs]</a><span class="k">def</span> <span class="nf">decode_initialize_multisig</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InitializeMultisigParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode an initialize multisig account token instruction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">InitializeMultisig</span><span class="p">)</span>
+    <span class="n">num_signers</span> <span class="o">=</span> <span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">m</span>
+    <span class="n">validate_instruction_keys</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">num_signers</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">InitializeMultisigParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">multisig</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="n">num_signers</span><span class="p">:]],</span>
+        <span class="n">m</span><span class="o">=</span><span class="n">num_signers</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_transfer"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_transfer">[docs]</a><span class="k">def</span> <span class="nf">decode_transfer</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransferParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a transfer token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">Transfer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">TransferParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_approve"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_approve">[docs]</a><span class="k">def</span> <span class="nf">decode_approve</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ApproveParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a approve token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">Approve</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ApproveParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">delegate</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_revoke"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_revoke">[docs]</a><span class="k">def</span> <span class="nf">decode_revoke</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RevokeParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a revoke token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">Revoke</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">RevokeParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">delegate</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_set_authority"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_set_authority">[docs]</a><span class="k">def</span> <span class="nf">decode_set_authority</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SetAuthorityParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a set authority token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">SetAuthority</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">SetAuthorityParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">authority</span><span class="o">=</span><span class="n">AuthorityType</span><span class="p">(</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">authority_type</span><span class="p">),</span>
+        <span class="n">new_authority</span><span class="o">=</span><span class="n">PublicKey</span><span class="p">(</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">new_authority</span><span class="p">)</span> <span class="k">if</span> <span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">new_authority_option</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">current_authority</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_mint_to"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_mint_to">[docs]</a><span class="k">def</span> <span class="nf">decode_mint_to</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MintToParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a mint to token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">MintTo</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MintToParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint_authority</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_burn"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_burn">[docs]</a><span class="k">def</span> <span class="nf">decode_burn</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BurnParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a burn token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">Burn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">BurnParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_close_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_close_account">[docs]</a><span class="k">def</span> <span class="nf">decode_close_account</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CloseAccountParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a close account token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">CloseAccount</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">CloseAccountParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_freeze_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_freeze_account">[docs]</a><span class="k">def</span> <span class="nf">decode_freeze_account</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FreezeAccountParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a freeze account token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">FreezeAccount</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FreezeAccountParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_thaw_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_thaw_account">[docs]</a><span class="k">def</span> <span class="nf">decode_thaw_account</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ThawAccountParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a thaw account token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">ThawAccount</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ThawAccountParams</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_transfer2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_transfer2">[docs]</a><span class="k">def</span> <span class="nf">decode_transfer2</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Transfer2Params</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a transfer2 token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">Transfer2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Transfer2Params</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+        <span class="n">decimals</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">decimals</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">4</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_approve2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_approve2">[docs]</a><span class="k">def</span> <span class="nf">decode_approve2</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Approve2Params</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a approve2 token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">Approve2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Approve2Params</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+        <span class="n">decimals</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">decimals</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">delegate</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">4</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_mint_to2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_mint_to2">[docs]</a><span class="k">def</span> <span class="nf">decode_mint_to2</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MintTo2Params</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a mintTo2 token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">MintTo2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MintTo2Params</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+        <span class="n">decimals</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">decimals</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint_authority</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="decode_burn2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.decode_burn2">[docs]</a><span class="k">def</span> <span class="nf">decode_burn2</span><span class="p">(</span><span class="n">instruction</span><span class="p">:</span> <span class="n">TransactionInstruction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Burn2Params</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decode a burn2 token transaction and retrieve the instruction params.&quot;&quot;&quot;</span>
+    <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">__parse_and_validate_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">Burn2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Burn2Params</span><span class="p">(</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">amount</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span>
+        <span class="n">decimals</span><span class="o">=</span><span class="n">parsed_data</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">decimals</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">mint</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pubkey</span><span class="p">,</span>
+        <span class="n">signers</span><span class="o">=</span><span class="p">[</span><span class="n">signer</span><span class="o">.</span><span class="n">pubkey</span> <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">instruction</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">3</span><span class="p">:]],</span>
+    <span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AccountMeta</span><span class="p">],</span> <span class="n">owner</span><span class="p">:</span> <span class="n">PublicKey</span><span class="p">,</span> <span class="n">signers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PublicKey</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">signers</span><span class="p">:</span>
+        <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">owner</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">signers</span><span class="p">:</span>
+            <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">signer</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">owner</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">__burn_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">BurnParams</span><span class="p">,</span> <span class="n">Burn2Params</span><span class="p">],</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">account</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">__freeze_or_thaw_instruction</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">FreezeAccountParams</span><span class="p">,</span> <span class="n">ThawAccountParams</span><span class="p">],</span> <span class="n">instruction_type</span><span class="p">:</span> <span class="n">InstructionType</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">instruction_type</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">account</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">__mint_to_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">MintToParams</span><span class="p">,</span> <span class="n">MintTo2Params</span><span class="p">],</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">mint_authority</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="initialize_mint"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.initialize_mint">[docs]</a><span class="k">def</span> <span class="nf">initialize_mint</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">InitializeMintParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to initialize a new mint newly.</span>
+
+<span class="sd">    This instruction requires no signers and MUST be included within the same Transaction as</span>
+<span class="sd">    the system program&#39;s `CreateInstruction` that creates the account being initialized.</span>
+<span class="sd">    Otherwise another party can acquire ownership of the uninitialized account.</span>
+
+<span class="sd">    &gt;&gt;&gt; from spl.token.constants import TOKEN_PROGRAM_ID</span>
+<span class="sd">    &gt;&gt;&gt; mint_account, mint_authority, freeze_authority, owner = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = InitializeMintParams(</span>
+<span class="sd">    ...     decimals=6,</span>
+<span class="sd">    ...     freeze_authority=freeze_authority,</span>
+<span class="sd">    ...     mint=mint_account,</span>
+<span class="sd">    ...     mint_authority=mint_authority,</span>
+<span class="sd">    ...     program_id=TOKEN_PROGRAM_ID,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(initialize_mint(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">freeze_authority</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">freeze_authority</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">freeze_authority</span> <span class="k">else</span> <span class="p">(</span><span class="n">PublicKey</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">InitializeMint</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">decimals</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">decimals</span><span class="p">,</span>
+                <span class="n">mint_authority</span><span class="o">=</span><span class="nb">bytes</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">mint_authority</span><span class="p">),</span>
+                <span class="n">freeze_authority_option</span><span class="o">=</span><span class="n">opt</span><span class="p">,</span>
+                <span class="n">freeze_authority</span><span class="o">=</span><span class="nb">bytes</span><span class="p">(</span><span class="n">freeze_authority</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span>
+        <span class="n">keys</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">SYSVAR_RENT_PUBKEY</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="initialize_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.initialize_account">[docs]</a><span class="k">def</span> <span class="nf">initialize_account</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">InitializeAccountParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to initialize a new account to hold tokens.</span>
+
+<span class="sd">    This instruction requires no signers and MUST be included within the same Transaction as</span>
+<span class="sd">    the system program&#39;s `CreateInstruction` that creates the account being initialized.</span>
+<span class="sd">    Otherwise another party can acquire ownership of the uninitialized account.</span>
+
+<span class="sd">    &gt;&gt;&gt; account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = InitializeAccountParams(</span>
+<span class="sd">    ...     account=account,</span>
+<span class="sd">    ...     mint=mint,</span>
+<span class="sd">    ...     owner=owner,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(initialize_account(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">InitializeAccount</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span>
+        <span class="n">keys</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">account</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">SYSVAR_RENT_PUBKEY</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="initialize_multisig"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.initialize_multisig">[docs]</a><span class="k">def</span> <span class="nf">initialize_multisig</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">InitializeMultisigParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to initialize a multisignature account with N provided signers.</span>
+
+<span class="sd">    This instruction requires no signers and MUST be included within the same Transaction as</span>
+<span class="sd">    the system program&#39;s `CreateInstruction` that creates the account being initialized.</span>
+<span class="sd">    Otherwise another party can acquire ownership of the uninitialized account.</span>
+
+<span class="sd">    &gt;&gt;&gt; m = 2   # Two signers</span>
+<span class="sd">    &gt;&gt;&gt; signers = [PublicKey(i) for i in range(m)]</span>
+<span class="sd">    &gt;&gt;&gt; multisig_account, token = PublicKey(1), PublicKey(2)</span>
+<span class="sd">    &gt;&gt;&gt; params = InitializeMultisigParams(</span>
+<span class="sd">    ...     m=m,</span>
+<span class="sd">    ...     multisig=multisig_account,</span>
+<span class="sd">    ...     signers=signers,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(initialize_multisig(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">InitializeMultisig</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">m</span><span class="p">)))</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">multisig</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">SYSVAR_RENT_PUBKEY</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">signer</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">:</span>
+        <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">signer</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="transfer"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.transfer">[docs]</a><span class="k">def</span> <span class="nf">transfer</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">TransferParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to transfers tokens from one account to another.</span>
+
+<span class="sd">    Either directly or via a delegate.</span>
+
+<span class="sd">    &gt;&gt;&gt; dest, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = TransferParams(</span>
+<span class="sd">    ...     amount=1000,</span>
+<span class="sd">    ...     dest=dest,</span>
+<span class="sd">    ...     owner=owner,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ...     source=source,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(transfer(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">Transfer</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">)))</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="approve"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.approve">[docs]</a><span class="k">def</span> <span class="nf">approve</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">ApproveParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to approves a delegate.</span>
+
+<span class="sd">    &gt;&gt;&gt; delegate, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = ApproveParams(</span>
+<span class="sd">    ...     amount=123,</span>
+<span class="sd">    ...     delegate=delegate,</span>
+<span class="sd">    ...     owner=owner,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ...     source=source</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(approve(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">Approve</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">)))</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">delegate</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="revoke"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.revoke">[docs]</a><span class="k">def</span> <span class="nf">revoke</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">RevokeParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to revokes the delegate&#39;s authority.</span>
+
+<span class="sd">    &gt;&gt;&gt; delegate, owner, token = PublicKey(1), PublicKey(2), PublicKey(3)</span>
+<span class="sd">    &gt;&gt;&gt; params = RevokeParams(</span>
+<span class="sd">    ...     delegate=delegate, owner=owner, program_id=token</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(revoke(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">Revoke</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">delegate</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="set_authority"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.set_authority">[docs]</a><span class="k">def</span> <span class="nf">set_authority</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">SetAuthorityParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to sets a new authority of a mint or account.</span>
+
+<span class="sd">    &gt;&gt;&gt; account, current_authority, new_authority, token = (</span>
+<span class="sd">    ...     PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; params = SetAuthorityParams(</span>
+<span class="sd">    ...     account=account,</span>
+<span class="sd">    ...     authority=AuthorityType.AccountOwner,</span>
+<span class="sd">    ...     current_authority=current_authority,</span>
+<span class="sd">    ...     new_authority=new_authority,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(set_authority(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_authority</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">new_authority</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">new_authority</span> <span class="k">else</span> <span class="p">(</span><span class="n">PublicKey</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">SetAuthority</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">authority_type</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">authority</span><span class="p">,</span> <span class="n">new_authority_option</span><span class="o">=</span><span class="n">opt</span><span class="p">,</span> <span class="n">new_authority</span><span class="o">=</span><span class="nb">bytes</span><span class="p">(</span><span class="n">new_authority</span><span class="p">)),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">account</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">current_authority</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mint_to"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.mint_to">[docs]</a><span class="k">def</span> <span class="nf">mint_to</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MintToParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to mint new tokens to an account.</span>
+
+<span class="sd">    The native mint does not support minting.</span>
+
+<span class="sd">    &gt;&gt;&gt; dest, mint, mint_authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = MintToParams(</span>
+<span class="sd">    ...     amount=123,</span>
+<span class="sd">    ...     dest=dest,</span>
+<span class="sd">    ...     mint=mint,</span>
+<span class="sd">    ...     mint_authority=mint_authority,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(mint_to(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">MintTo</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">__mint_to_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="burn"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.burn">[docs]</a><span class="k">def</span> <span class="nf">burn</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">BurnParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to burns tokens by removing them from an account.</span>
+
+<span class="sd">    &gt;&gt;&gt; account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = BurnParams(</span>
+<span class="sd">    ...     amount=123, account=account, mint=mint, owner=owner, program_id=token,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(burn(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">Burn</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">__burn_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="close_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.close_account">[docs]</a><span class="k">def</span> <span class="nf">close_account</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">CloseAccountParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to close an account by transferring all its SOL to the destination account.</span>
+
+<span class="sd">    Non-native accounts may only be closed if its token amount is zero.</span>
+
+<span class="sd">    &gt;&gt;&gt; account, dest, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = CloseAccountParams(</span>
+<span class="sd">    ...     account=account, dest=dest, owner=owner, program_id=token)</span>
+<span class="sd">    &gt;&gt;&gt; type(close_account(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">CloseAccount</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">account</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="freeze_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.freeze_account">[docs]</a><span class="k">def</span> <span class="nf">freeze_account</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FreezeAccountParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to freeze an initialized account using the mint&#39;s freeze_authority (if set).</span>
+
+<span class="sd">    &gt;&gt;&gt; account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = FreezeAccountParams(</span>
+<span class="sd">    ...     account=account, mint=mint, owner=owner, program_id=token)</span>
+<span class="sd">    &gt;&gt;&gt; type(freeze_account(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">__freeze_or_thaw_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">FreezeAccount</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="thaw_account"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.thaw_account">[docs]</a><span class="k">def</span> <span class="nf">thaw_account</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">ThawAccountParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a transaction instruction to thaw a frozen account using the Mint&#39;s freeze_authority (if set).</span>
+
+<span class="sd">    &gt;&gt;&gt; account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = ThawAccountParams(</span>
+<span class="sd">    ...     account=account, mint=mint, owner=owner, program_id=token)</span>
+<span class="sd">    &gt;&gt;&gt; type(thaw_account(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">__freeze_or_thaw_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">InstructionType</span><span class="o">.</span><span class="n">ThawAccount</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="transfer2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.transfer2">[docs]</a><span class="k">def</span> <span class="nf">transfer2</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Transfer2Params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller.</span>
+
+<span class="sd">    &gt;&gt;&gt; dest, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)</span>
+<span class="sd">    &gt;&gt;&gt; params = Transfer2Params(</span>
+<span class="sd">    ...     amount=1000,</span>
+<span class="sd">    ...     decimals=6,</span>
+<span class="sd">    ...     dest=dest,</span>
+<span class="sd">    ...     mint=mint,</span>
+<span class="sd">    ...     owner=owner,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ...     source=source,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(transfer2(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">Transfer2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">decimals</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="approve2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.approve2">[docs]</a><span class="k">def</span> <span class="nf">approve2</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Approve2Params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller.</span>
+
+<span class="sd">    &gt;&gt;&gt; delegate, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)</span>
+<span class="sd">    &gt;&gt;&gt; params = Approve2Params(</span>
+<span class="sd">    ...     amount=1000,</span>
+<span class="sd">    ...     decimals=6,</span>
+<span class="sd">    ...     delegate=delegate,</span>
+<span class="sd">    ...     mint=mint,</span>
+<span class="sd">    ...     owner=owner,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ...     source=source,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(approve2(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">Approve2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">decimals</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">AccountMeta</span><span class="p">(</span><span class="n">pubkey</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">delegate</span><span class="p">,</span> <span class="n">is_signer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_writable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">__add_signers</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">signers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TransactionInstruction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">program_id</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">program_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mint_to2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.mint_to2">[docs]</a><span class="k">def</span> <span class="nf">mint_to2</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">MintTo2Params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This instruction differs from `mint_to` in that the decimals value is asserted by the caller.</span>
+
+<span class="sd">    &gt;&gt;&gt; dest, mint, mint_authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = MintTo2Params(</span>
+<span class="sd">    ...     amount=123,</span>
+<span class="sd">    ...     decimals=6,</span>
+<span class="sd">    ...     dest=dest,</span>
+<span class="sd">    ...     mint=mint,</span>
+<span class="sd">    ...     mint_authority=mint_authority,</span>
+<span class="sd">    ...     program_id=token,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(mint_to2(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">MintTo2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">decimals</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">__mint_to_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="burn2"><a class="viewcode-back" href="../../../spl.html#spl.token.instructions.burn2">[docs]</a><span class="k">def</span> <span class="nf">burn2</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Burn2Params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransactionInstruction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This instruction differs from `burn` in that the decimals value is asserted by the caller.</span>
+
+<span class="sd">    &gt;&gt;&gt; account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)</span>
+<span class="sd">    &gt;&gt;&gt; params = Burn2Params(</span>
+<span class="sd">    ...     amount=123, account=account, decimals=6, mint=mint, owner=owner, program_id=token,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; type(burn2(params))</span>
+<span class="sd">    &lt;class &#39;solana.transaction.TransactionInstruction&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">INSTRUCTIONS_LAYOUT</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">instruction_type</span><span class="o">=</span><span class="n">InstructionType</span><span class="o">.</span><span class="n">Burn2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">decimals</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">__burn_instruction</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">solana.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../solana.html">Solana</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html#module-solana.rpc.types">RPC Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html#module-solana.rpc.providers.base">RPC Providers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spl.html">Solana Program Library (SPL)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Michael Huang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
