@@ -56,6 +56,21 @@ class TokenAccountOpts(NamedTuple):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
 
+class TxOpts(NamedTuple):
+    """Options to specify when broadcasting a transaction."""
+
+    skip_confirmation: bool = True
+    """If false, `send_transaction` will try to confirm that the transaction was successfully broadcasted.
+
+    `send_transaction` will block for a maximum of 30 seconds to confirm the transaction. Wrap the call
+    inside a thread to make it asynchronous.
+    """
+    skip_preflight: bool = False
+    """If true, skip the preflight transaction checks."""
+    preflight_commitment: Commitment = Max
+    """Commitment level to use for preflight."""
+
+
 class Client:  # pylint: disable=too-many-public-methods
     """Client class."""
 
@@ -921,16 +936,14 @@ class Client:  # pylint: disable=too-many-public-methods
             RPCMethod("requestAirdrop"), str(pubkey), lamports, {self._comm_key: commitment}
         )
 
-    def send_raw_transaction(
-        self, txn: Union[bytes, str, Transaction], preflight_commitment: Commitment = Max
-    ) -> RPCResponse:
+    def send_raw_transaction(self, txn: Union[bytes, str, Transaction], opts: TxOpts = TxOpts()) -> RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         :param txn: Fully-signed Transaction object, a fully sign transaction in wire format,
             or a fully transaction as base-58 encoded string.
-        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
+        :param opts: (optional) Transaction options.
 
-        Before submitting, the following preflight checks are performed:
+        Before submitting, the following preflight checks are performed (unless disabled with the `skip_preflight` option):
 
             - The transaction signatures are verified.
 
@@ -952,19 +965,20 @@ class Client:  # pylint: disable=too-many-public-methods
         else:
             wire_format = txn
 
-        return self._provider.make_request(
-            RPCMethod("sendTransaction"), wire_format, {self._preflight_comm_key: preflight_commitment}
+        resp = self._provider.make_request(
+            RPCMethod("sendTransaction"),
+            wire_format,
+            {self._skip_preflight_key: opts.skip_preflight, self._preflight_comm_key: opts.preflight_commitment},
         )
 
-    def send_transaction(
-        self, txn: Transaction, *signers: Account, skip_preflight: bool = False, preflight_commitment: Commitment = Max
-    ) -> RPCResponse:
+        return self.__post_send(resp, opts.skip_confirmation, opts.preflight_commitment)
+
+    def send_transaction(self, txn: Transaction, *signers: Account, opts: TxOpts = TxOpts()) -> RPCResponse:
         """Send a transaction.
 
         :param txn: Transaction object.
         :param signers: Signers to sign the transaction.
-        :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
-        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
+        :param opts: (optional) Transaction options.
 
         >>> from solana.account import Account
         >>> from solana.system_program import TransferParams, transfer
@@ -988,11 +1002,13 @@ class Client:  # pylint: disable=too-many-public-methods
 
         txn.sign(*signers)
         wire_format = b58encode(txn.serialize()).decode("utf-8")
-        return self._provider.make_request(
+        resp = self._provider.make_request(
             RPCMethod("sendTransaction"),
             wire_format,
-            {self._skip_preflight_key: skip_preflight, self._preflight_comm_key: preflight_commitment},
+            {self._skip_preflight_key: opts.skip_preflight, self._preflight_comm_key: opts.preflight_commitment},
         )
+
+        return self.__post_send(resp, opts.skip_confirmation, opts.preflight_commitment)
 
     def simulate_transaction(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Commitment = Max
@@ -1052,15 +1068,19 @@ class Client:  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(RPCMethod("validatorExit"))
 
-    def confirm_transaction(self, tx_sig: str, commitment: Commitment = Max) -> RPCResponse:
-        """Confirm the transaction identified by the specified signature.
+    def __post_send(self, resp: RPCResponse, skip_confirm: bool, conf_comm: Commitment) -> RPCResponse:
+        if not resp.get("result"):
+            raise Exception("Failed to send transaction")
+        if skip_confirm:
+            return resp
 
-        Note: This function will block for a maximum of 30 seconds. Wrap this function inside a thread
-        to make this call asynchronous.
+        self._provider.logger.info(
+            "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
+        )
 
-        :param tx_sig: Transaction signature as base-58 encoded string.
-        :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
-        """
+        return self.__confirm_transaction(resp["result"], conf_comm)
+
+    def __confirm_transaction(self, tx_sig: str, commitment: Commitment = Max) -> RPCResponse:
         # TODO: Use websockets and check confirmation with onSignature subscription.
         TIMEOUT = 30  # 30 seconds  pylint: disable=invalid-name
         elapsed_time = 0
@@ -1084,26 +1104,3 @@ class Client:  # pylint: disable=too-many-public-methods
             self._provider.logger.error("Transaction error: %s", err)
 
         return resp
-
-    def send_and_confirm_transaction(
-        self, txn: Transaction, *signers: Account, preflight_commitment: Commitment = Max, skip_preflight: bool = False
-    ) -> RPCResponse:
-        """Send and confirm a transaction.
-
-        Note: This function will block for a maximum of 30 seconds. Wrap this function inside a thread
-        to make this call asynchronous.
-
-        :param txn: Transaction object.
-        :param signers: Signers to sign the transaction
-        :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
-        :param preflight_commitment: (optional) Commitment level to use for preflight (default: "max").
-        """
-        resp = self.send_transaction(
-            txn, *signers, preflight_commitment=preflight_commitment, skip_preflight=skip_preflight
-        )
-        if not resp.get("result"):
-            raise Exception("Failed to send transaction")
-        self._provider.logger.info(
-            "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
-        )
-        return self.confirm_transaction(resp["result"])
