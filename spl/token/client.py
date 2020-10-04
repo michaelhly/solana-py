@@ -123,46 +123,30 @@ class Token:  # pylint: disable=too-many-public-methods
         resp = conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
 
+    def get_accounts(self, owner: PublicKey, is_delegate: bool = False, encoding: str = "jsonParsed") -> RPCResponse:
+        """Get token accounts of the provided owner by the token's mint.
+
+        :param owner: Public Key of the token account owner.
+        :param is_delegate: (optional) Flag specifying if the `owner` public key is a delegate.
+        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
+
+        Parsed-JSON encoding attempts to use program-specific state parsers to return more
+        human-readable and explicit account state data. If parsed-JSON is requested but a
+        valid mint cannot be found for a particular account, that account will be filtered out
+        from results. jsonParsed encoding is UNSTABLE.
+        """
+        return (
+            self._conn.get_token_accounts_by_delegate(owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding))
+            if is_delegate
+            else self._conn.get_token_accounts_by_owner(owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding))
+        )
+
     def get_balance(self, pubkey: PublicKey) -> RPCResponse:
         """Get the balance of the provided token account.
 
         :param pubkey: Public Key of the token account.
         """
         return self._conn.get_token_account_balance(pubkey)
-
-    def get_delegate_accounts_by_mint(self, delegate: PublicKey) -> RPCResponse:
-        """Get delegate account information by the token's mint.
-
-        :param delegate: Public Key of the token delegate.
-        """
-        return self._conn.get_token_accounts_by_delegate(
-            delegate, TokenAccountOpts(mint=self.pubkey, encoding="jsonParsed")
-        )
-
-    def get_delegate_accounts_by_program_id(self, delegate: PublicKey) -> RPCResponse:
-        """Get delegate account information owner by the token's program ID.
-
-        :param delegate: Public Key of the token delegate.
-        """
-        return self._conn.get_token_accounts_by_delegate(
-            delegate, TokenAccountOpts(program_id=self.program_id, encoding="jsonParsed")
-        )
-
-    def get_token_accounts_by_mint(self, owner: PublicKey) -> RPCResponse:
-        """Get token account information of the provided owner by the token's mint.
-
-        :param pubkey: Public Key of the owner account.
-        """
-        return self._conn.get_token_accounts_by_owner(owner, TokenAccountOpts(mint=self.pubkey, encoding="jsonParsed"))
-
-    def get_token_accounts_by_program_id(self, owner: PublicKey) -> RPCResponse:
-        """Get token account information of the provided owner by the token's program ID.
-
-        :param pubkey: Public Key of the owner account.
-        """
-        return self._conn.get_token_accounts_by_owner(
-            owner, TokenAccountOpts(program_id=self.program_id, encoding="jsonParsed")
-        )
 
     @staticmethod
     def create_mint(  # pylint: disable=too-many-arguments
