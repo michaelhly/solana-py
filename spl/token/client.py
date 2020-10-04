@@ -7,8 +7,8 @@ import solana.system_program as sp
 import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
-from solana.rpc.api import Client, TokenAccountOpts, TxOpts
-from solana.rpc.types import RPCResponse
+from solana.rpc.api import Client
+from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 
