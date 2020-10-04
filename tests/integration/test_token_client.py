@@ -46,6 +46,13 @@ def test_token(stubbed_sender, test_http_client) -> Token:
 
 
 @pytest.mark.integration
+@pytest.fixture(scope="module")
+def stubbed_token_account_pk(stubbed_sender, test_token) -> PublicKey:  # pylint: disable=redefined-outer-name
+    """Stubbed token account."""
+    return test_token.create_account(stubbed_sender.public_key())
+
+
+@pytest.mark.integration
 def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
     token_account_pk = test_token.create_account(stubbed_sender.public_key())
@@ -65,3 +72,17 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     assert not account_data.is_native_option and not account_data.is_native
     assert PublicKey(account_data.mint) == test_token.pubkey
     assert PublicKey(account_data.owner) == stubbed_sender.public_key()
+
+
+@pytest.mark.integration
+def test_mint_to_and_get_balance(
+    stubbed_sender, stubbed_token_account_pk, test_token
+):  # pylint: disable=redefined-outer-name
+    """Test mint token to account."""
+    expected_amount = 1000
+    assert_valid_response(test_token.mint_to(stubbed_token_account_pk, stubbed_sender, 1000))
+    resp = test_token.get_balance(stubbed_token_account_pk)
+    balance_info = resp["result"]["value"]
+    assert balance_info["amount"] == str(expected_amount)
+    assert balance_info["decimals"] == 6
+    assert balance_info["uiAmount"] == 0.001
