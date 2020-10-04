@@ -1,13 +1,13 @@
 """SPL Token program client."""
 from __future__ import annotations
 
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple, Optional, Union
 
 import solana.system_program as sp
 import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
-from solana.rpc.api import Client
+from solana.rpc.api import Client, TokenAccountOpts
 from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
@@ -122,6 +122,31 @@ class Token:  # pylint: disable=too-many-public-methods
         """
         resp = conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
+
+    def get_accounts(self, owner: PublicKey, is_delegate: bool = False, encoding: str = "jsonParsed") -> RPCResponse:
+        """Get token accounts of the provided owner by the token's mint.
+
+        :param owner: Public Key of the token account owner.
+        :param is_delegate: (optional) Flag specifying if the `owner` public key is a delegate.
+        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
+
+        Parsed-JSON encoding attempts to use program-specific state parsers to return more
+        human-readable and explicit account state data. If parsed-JSON is requested but a
+        valid mint cannot be found for a particular account, that account will be filtered out
+        from results. jsonParsed encoding is UNSTABLE.
+        """
+        return (
+            self._conn.get_token_accounts_by_delegate(owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding))
+            if is_delegate
+            else self._conn.get_token_accounts_by_owner(owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding))
+        )
+
+    def get_balance(self, pubkey: PublicKey) -> RPCResponse:
+        """Get the balance of the provided token account.
+
+        :param pubkey: Public Key of the token account.
+        """
+        return self._conn.get_token_account_balance(pubkey)
 
     @staticmethod
     def create_mint(  # pylint: disable=too-many-arguments
@@ -317,17 +342,47 @@ class Token:  # pylint: disable=too-many-public-methods
         """
         raise NotImplementedError("set_authority not implemented")
 
-    def mint_to(
-        self, dest: PublicKey, mint_authority: PublicKey, amount: int, signers: Optional[List[Account]]
+    def mint_to(  # pylint: disable=too-many-arguments
+        self,
+        dest: PublicKey,
+        mint_authority: Union[Account, PublicKey],
+        amount: int,
+        multi_signers: Optional[List[Account]] = None,
+        skip_confirmation: bool = False,
+        skip_preflight: bool = False,
     ) -> RPCResponse:
         """Mint new tokens.
 
         :param dest: Public key of the account to mint to.
         :param mint_authority: Public key of the minting authority.
         :param amount: Amount to mint.
-        :param signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+        :param skip_confirmation: (optional) Option to skip transaction confirmation.
+        :param skip_preflight: (optional) If true, skip the preflight transaction checks (default: false).
+
+        If skip confirmation is set to `False`, this method will block for at most 30 seconds
+        or until the transaction is confirmed.
         """
-        raise NotImplementedError("mint_to not implemented")
+        if isinstance(mint_authority, Account):
+            owner_pubkey = mint_authority.public_key()
+            signers = [mint_authority]
+        else:
+            owner_pubkey = mint_authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.mint_to(
+                spl_token.MintToParams(
+                    program_id=self.program_id,
+                    mint=self.pubkey,
+                    dest=dest,
+                    mint_authority=owner_pubkey,
+                    amount=amount,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return self.__send_transaction(txn, *signers, skip_preflight=skip_preflight, skip_conf=skip_confirmation)
 
     def burn(self, account: PublicKey, owner: PublicKey, amount: int, signers: Optional[List[Account]]) -> RPCResponse:
         """Burn tokens.
