@@ -19,7 +19,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - uses: dschep/install-pipenv-action@v1
+
+      - name: Doc dependencies
+        run: pipenv lock -r > requirements.txt
 
       - name: Sphinx Build
         uses: ammaraskar/sphinx-action@0.4

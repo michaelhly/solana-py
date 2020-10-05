@@ -33,6 +33,7 @@ pynacl = "*"
 base58 = "*"
 requests = "*"
 construct = "*"
+typing-extensions = "*"
 
 [requires]
 python_version = "3.7"
