@@ -8,7 +8,7 @@ coverage:
   range: "70...100"
 
   status:
-    project: 
+    project:
       default:
         target: auto
         threshold: 1.5%
@@ -21,6 +21,6 @@ comment:
   require_changes: no
 
 ignore:
-    - tests
-    - docsrc/conf.py
-    - setup.py
+  - tests
+  - docs/conf.py
+  - setup.py
