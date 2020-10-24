@@ -18,6 +18,8 @@ def test_request_air_drop(stubbed_sender, test_http_client):
     expected_meta = {
         "err": None,
         "fee": 0,
+        "innerInstructions": [],
+        "logMessages": [],
         "postBalances": [499999990000000000, 10000000000, 1],
         "preBalances": [500000000000000000, 0, 1],
         "status": {"Ok": None},
@@ -42,6 +44,8 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test
     expected_meta = {
         "err": None,
         "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [],
         "postBalances": [9999994000, 954, 1],
         "preBalances": [10000000000, 0, 1],
         "status": {"Ok": None},
@@ -80,6 +84,8 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_reciever, 
     expected_meta = {
         "err": None,
         "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [],
         "postBalances": [9999988000, 1954, 1],
         "preBalances": [9999994000, 954, 1],
         "status": {"Ok": None},
