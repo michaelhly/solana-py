@@ -76,7 +76,7 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_reciever, 
     # Sign transaction
     transfer_tx.sign(stubbed_sender)
     # Send raw transaction
-    resp = test_http_client.send_raw_transaction(transfer_tx)
+    resp = test_http_client.send_raw_transaction(transfer_tx.serialize())
     assert_valid_response(resp)
     # Confirm transaction
     resp = confirm_transaction(test_http_client, resp["result"])
