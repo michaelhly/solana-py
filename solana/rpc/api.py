@@ -1,6 +1,7 @@
 """API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
 from __future__ import annotations
 
+from base64 import b64encode
 from time import sleep
 from typing import Any, Dict, List, Optional, Union
 from warnings import warn
@@ -899,13 +900,11 @@ class Client:  # pylint: disable=too-many-public-methods
             types.RPCMethod("requestAirdrop"), str(pubkey), lamports, {self._comm_key: commitment}
         )
 
-    def send_raw_transaction(
-        self, txn: Union[bytes, str, Transaction], opts: types.TxOpts = types.TxOpts()
-    ) -> types.RPCResponse:
+    def send_raw_transaction(self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         :param txn: Fully-signed Transaction object, a fully sign transaction in wire format,
-            or a fully transaction as base-58 encoded string.
+            or a fully transaction as base-64 encoded string.
         :param opts: (optional) Transaction options.
 
         Before submitting, the following preflight checks are performed (unless disabled with the `skip_preflight` option):
@@ -917,23 +916,25 @@ class Client:  # pylint: disable=too-many-public-methods
 
         >>> solana_client = Client("http://localhost:8899")
         >>> full_signed_tx_str = (
-        ...     "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT")
+        ...     "AbN5XM+qw+7oOLsFw7goQSLBis7c1kXJFP6OF4w7YmQNhhbQYcyBiybKuOzzhV7McvoRP3Mey9AhXojtwDCdbwoBAAEDE5j2"
+        ...     "LG0aRXxRumpLXz29L2n8qTIWIY3ImX5Ba9F9k8poq0Z3/7HyiU3QphU8Ix1F7ENq5TrmAUnb4V8y5LhwPwAAAAAAAAAAAAAA"
+        ...     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAg5YY9wG6fpuieuWYJd1ta7ZtFPbV0OriFRYdcYUaEGkBAgIAAQwCAAAAQEIPAAAAAAA=")
         >>> solana_client.send_raw_transaction(full_signed_tx_str)  # doctest: +SKIP
         {'jsonrpc': '2.0',
          'result': 'CMwyESM2NE74mghfbvsHJDERF7xMYKshwwm6VgH6GFqXzx8LfBFuP5ruccumfhTguha6seUHPpiHzzHUQXzq2kN',
          'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        if isinstance(txn, Transaction):
-            wire_format = b58encode(txn.serialize()).decode("utf-8")
-        elif isinstance(txn, bytes):
-            wire_format = b58encode(txn).decode("utf-8")
-        else:
-            wire_format = txn
+        if isinstance(txn, bytes):
+            txn = b64encode(txn).decode("utf-8")
 
         resp = self._provider.make_request(
             types.RPCMethod("sendTransaction"),
-            wire_format,
-            {self._skip_preflight_key: opts.skip_preflight, self._preflight_comm_key: opts.preflight_commitment},
+            txn,
+            {
+                self._skip_preflight_key: opts.skip_preflight,
+                self._preflight_comm_key: opts.preflight_commitment,
+                self._encoding_key: "base64",
+            },
         )
 
         return self.__post_send(resp, opts.skip_confirmation, opts.preflight_commitment)
@@ -968,28 +969,24 @@ class Client:  # pylint: disable=too-many-public-methods
             raise RuntimeError("failed to get recent blockhash") from err
 
         txn.sign(*signers)
-        wire_format = b58encode(txn.serialize()).decode("utf-8")
-        resp = self._provider.make_request(
-            types.RPCMethod("sendTransaction"),
-            wire_format,
-            {self._skip_preflight_key: opts.skip_preflight, self._preflight_comm_key: opts.preflight_commitment},
-        )
-
-        return self.__post_send(resp, opts.skip_confirmation, opts.preflight_commitment)
+        return self.send_raw_transaction(txn.serialize(), opts=opts)
 
     def simulate_transaction(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Commitment = Max
     ) -> types.RPCResponse:
         """Simulate sending a transaction.
 
-        :param txn: A Transaction object, a transaction in wire format, or a transaction as base-58 encoded string
+        :param txn: A Transaction object, a transaction in wire format, or a transaction as base-64 encoded string
             The transaction must have a valid blockhash, but is not required to be signed.
         :param signer_verify: If true the transaction signatures will be verified (default: false).
         :param commitment: Bank state to query. It can be either "max", "root", "single" or "recent".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> tx_str = (
-        ...     "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT")
+        ...     "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BF"
+        ...     "ggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8"
+        ...     "TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2t"
+        ... )
         >>> solana_client.simulate_transaction(tx_str)  # doctest: +SKIP
         {'jsonrpc' :'2.0',
          'result': {'context': {'slot': 218},
@@ -1004,14 +1001,17 @@ class Client:  # pylint: disable=too-many-public-methods
             except Exception as err:
                 raise ValueError("transaction must have a valid blockhash") from err
 
-            wire_format = b58encode(txn.serialize()).decode("utf-8")
+            wire_format = b64encode(txn.serialize()).decode("utf-8")
         elif isinstance(txn, bytes):
-            wire_format = b58encode(txn).decode("utf-8")
+            wire_format = txn.decode("utf-8")
         else:
             wire_format = txn
 
-        opts = {self._comm_key: commitment, "sigVerify": sig_verify}
-        return self._provider.make_request(types.RPCMethod("simulateTransaction"), wire_format, opts)
+        return self._provider.make_request(
+            types.RPCMethod("simulateTransaction"),
+            wire_format,
+            {self._comm_key: commitment, "sigVerify": sig_verify, self._encoding_key: "base64"},
+        )
 
     def set_log_filter(self, log_filter: str) -> types.RPCResponse:
         """Sets the log filter on the validator.
@@ -1036,6 +1036,8 @@ class Client:  # pylint: disable=too-many-public-methods
         return self._provider.make_request(types.RPCMethod("validatorExit"))
 
     def __post_send(self, resp: types.RPCResponse, skip_confirm: bool, conf_comm: Commitment) -> types.RPCResponse:
+        if resp.get("error"):
+            self._provider.logger.error(resp.get("error"))
         if not resp.get("result"):
             raise Exception("Failed to send transaction")
         if skip_confirm:
