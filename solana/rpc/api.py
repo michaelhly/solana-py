@@ -900,9 +900,7 @@ class Client:  # pylint: disable=too-many-public-methods
             types.RPCMethod("requestAirdrop"), str(pubkey), lamports, {self._comm_key: commitment}
         )
 
-    def send_raw_transaction(
-        self, txn: Union[bytes, str, Transaction], opts: types.TxOpts = types.TxOpts()
-    ) -> types.RPCResponse:
+    def send_raw_transaction(self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         :param txn: Fully-signed Transaction object, a fully sign transaction in wire format,
@@ -918,15 +916,15 @@ class Client:  # pylint: disable=too-many-public-methods
 
         >>> solana_client = Client("http://localhost:8899")
         >>> full_signed_tx_str = (
-        ...     "AbN5XM+qw+7oOLsFw7goQSLBis7c1kXJFP6OF4w7YmQNhhbQYcyBiybKuOzzhV7McvoRP3Mey9AhXojtwDCdbwoBAAEDE5j2LG0aRXxRumpLXz29L2n8qTIWIY3ImX5Ba9F9k8poq0Z3/7HyiU3QphU8Ix1F7ENq5TrmAUnb4V8y5LhwPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg5YY9wG6fpuieuWYJd1ta7ZtFPbV0OriFRYdcYUaEGkBAgIAAQwCAAAAQEIPAAAAAAA="
+        ...     "AbN5XM+qw+7oOLsFw7goQSLBis7c1kXJFP6OF4w7YmQNhhbQYcyBiybKuOzzhV7McvoRP3Mey9AhXojtwDCdbwoBAAEDE5j2"
+        ...     "LG0aRXxRumpLXz29L2n8qTIWIY3ImX5Ba9F9k8poq0Z3/7HyiU3QphU8Ix1F7ENq5TrmAUnb4V8y5LhwPwAAAAAAAAAAAAAA"
+        ...     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAg5YY9wG6fpuieuWYJd1ta7ZtFPbV0OriFRYdcYUaEGkBAgIAAQwCAAAAQEIPAAAAAAA=")
         >>> solana_client.send_raw_transaction(full_signed_tx_str)  # doctest: +SKIP
         {'jsonrpc': '2.0',
          'result': 'CMwyESM2NE74mghfbvsHJDERF7xMYKshwwm6VgH6GFqXzx8LfBFuP5ruccumfhTguha6seUHPpiHzzHUQXzq2kN',
          'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        if isinstance(txn, Transaction):
-            wire_format = b64encode(txn.serialize()).decode("utf-8")
-        elif isinstance(txn, bytes):
+        if isinstance(txn, bytes):
             wire_format = b64encode(txn).decode("utf-8")
         else:
             wire_format = txn
@@ -973,8 +971,7 @@ class Client:  # pylint: disable=too-many-public-methods
             raise RuntimeError("failed to get recent blockhash") from err
 
         txn.sign(*signers)
-        wire_format = b64encode(txn.serialize()).decode("utf-8")
-        return self.send_raw_transaction(wire_format, opts=opts)
+        return self.send_raw_transaction(txn.serialize(), opts=opts)
 
     def simulate_transaction(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Commitment = Max
@@ -988,7 +985,10 @@ class Client:  # pylint: disable=too-many-public-methods
 
         >>> solana_client = Client("http://localhost:8899")
         >>> tx_str = (
-        ...     "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT")
+        ...     "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BF"
+        ...     "ggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8"
+        ...     "TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2t"
+        ... )
         >>> solana_client.simulate_transaction(tx_str)  # doctest: +SKIP
         {'jsonrpc' :'2.0',
          'result': {'context': {'slot': 218},
