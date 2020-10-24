@@ -925,13 +925,11 @@ class Client:  # pylint: disable=too-many-public-methods
          'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
         if isinstance(txn, bytes):
-            wire_format = b64encode(txn).decode("utf-8")
-        else:
-            wire_format = txn
+            txn = b64encode(txn).decode("utf-8")
 
         resp = self._provider.make_request(
             types.RPCMethod("sendTransaction"),
-            wire_format,
+            txn,
             {
                 self._skip_preflight_key: opts.skip_preflight,
                 self._preflight_comm_key: opts.preflight_commitment,
