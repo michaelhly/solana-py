@@ -17,6 +17,12 @@ spl.token.constants
 .. automodule:: spl.token.constants
     :members:
 
+spl.token.client
+****************
+
+.. automodule:: spl.token.client
+    :members:
+
 spl.token.instructions
 **********************
 
