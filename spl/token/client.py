@@ -9,6 +9,7 @@ import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
+from solana.rpc.commitment import Commitment, Single
 from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
@@ -128,12 +129,13 @@ class Token:  # pylint: disable=too-many-public-methods
             else self._conn.get_token_accounts_by_owner(owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding))
         )
 
-    def get_balance(self, pubkey: PublicKey) -> RPCResponse:
+    def get_balance(self, pubkey: PublicKey, commitment: Commitment = Single) -> RPCResponse:
         """Get the balance of the provided token account.
 
         :param pubkey: Public Key of the token account.
+        :param commitment: (optional) Bank state to query.
         """
-        return self._conn.get_token_account_balance(pubkey)
+        return self._conn.get_token_account_balance(pubkey, commitment)
 
     @staticmethod
     def create_mint(
