@@ -111,12 +111,15 @@ class Token:  # pylint: disable=too-many-public-methods
         resp = conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
 
-    def get_accounts(self, owner: PublicKey, is_delegate: bool = False, encoding: str = "jsonParsed") -> RPCResponse:
+    def get_accounts(
+        self, owner: PublicKey, is_delegate: bool = False, commitment: Commitment = Single, encoding: str = "jsonParsed"
+    ) -> RPCResponse:
         """Get token accounts of the provided owner by the token's mint.
 
         :param owner: Public Key of the token account owner.
         :param is_delegate: (optional) Flag specifying if the `owner` public key is a delegate.
         :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
+        :param commitment: (optional) Bank state to query.
 
         Parsed-JSON encoding attempts to use program-specific state parsers to return more
         human-readable and explicit account state data. If parsed-JSON is requested but a
@@ -124,9 +127,13 @@ class Token:  # pylint: disable=too-many-public-methods
         from results. jsonParsed encoding is UNSTABLE.
         """
         return (
-            self._conn.get_token_accounts_by_delegate(owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding))
+            self._conn.get_token_accounts_by_delegate(
+                owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment
+            )
             if is_delegate
-            else self._conn.get_token_accounts_by_owner(owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding))
+            else self._conn.get_token_accounts_by_owner(
+                owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment
+            )
         )
 
     def get_balance(self, pubkey: PublicKey, commitment: Commitment = Single) -> RPCResponse:
