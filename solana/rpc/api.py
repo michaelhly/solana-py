@@ -950,11 +950,12 @@ class Client:  # pylint: disable=too-many-public-methods
 
         >>> from solana.account import Account
         >>> from solana.system_program import TransferParams, transfer
+        >>> from solana.transaction import Transaction
         >>> sender, reciever = Account(1), Account(2)
-        >>> tx = transfer(TransferParams(
-        ...     from_pubkey=sender.public_key(), to_pubkey=reciever.public_key(), lamports=1000))
+        >>> txn = Transaction().add(transfer(TransferParams(
+        ...     from_pubkey=sender.public_key(), to_pubkey=reciever.public_key(), lamports=1000)))
         >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.send_transaction(tx, sender) # doctest: +SKIP
+        >>> solana_client.send_transaction(txn, sender) # doctest: +SKIP
         {'jsonrpc': '2.0',
          'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
          'id': 12}
