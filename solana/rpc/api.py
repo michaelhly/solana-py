@@ -1068,7 +1068,7 @@ class Client:  # pylint: disable=too-many-public-methods
             elapsed_time += sleep_time
 
         if not resp["result"]:
-            self._provider.logger.warning("Transaction was not confirmed in %d seconds.", TIMEOUT)
+            raise Exception("Unable to confirm transaction %s" % tx_sig)
         err = resp.get("error") or resp["result"].get("meta").get("err")
         if err:
             self._provider.logger.error("Transaction error: %s", err)
