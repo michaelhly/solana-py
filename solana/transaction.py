@@ -162,7 +162,8 @@ class Transaction:
             pubkey = str(a_m.pubkey)
             if pubkey in seen:
                 idx = seen[pubkey]
-                uniq_metas[idx].is_writable = uniq_metas[idx].is_writable or a_m.is_writable
+                # uniq_metas[idx].is_writable = uniq_metas[idx].is_writable or a_m.is_writable
+                uniq_metas[idx].is_writable = a_m.is_writable
             else:
                 uniq_metas.append(a_m)
                 seen[pubkey] = len(uniq_metas) - 1
@@ -266,7 +267,7 @@ class Transaction:
         if len(signature) != SIG_LENGTH:
             raise ValueError("signature has invalid length", signature)
         idx = next((i for i, sig_pair in enumerate(self.signatures) if sig_pair.pubkey == pubkey), None)
-        if not idx:
+        if idx is None:
             raise ValueError("unknown signer: ", str(pubkey))
         self.signatures[idx].signature = signature
 
@@ -328,6 +329,7 @@ class Transaction:
         # Encode signatures
         for sig_pair in self.signatures:
             if not sig_pair.signature:
+                wire_transaction.extend(bytearray(64))
                 continue
             if len(sig_pair.signature) != SIG_LENGTH:
                 raise RuntimeError("signature has invalid length", sig_pair.signature)
