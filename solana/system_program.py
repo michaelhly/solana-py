@@ -205,7 +205,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     >>> decode_create_account(instruction)
     CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
     """  # noqa: E501 # pylint: disable=line-too-long
-    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.CreateAccount)
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.CREATE_ACCOUNT)
     return CreateAccountParams(
         from_pubkey=instruction.keys[0].pubkey,
         new_account_pubkey=instruction.keys[1].pubkey,
@@ -226,7 +226,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     >>> decode_transfer(instruction)
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
-    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.Transfer)
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.TRANSFER)
     return TransferParams(
         from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=parsed_data.args.lamports
     )
@@ -253,7 +253,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     >>> decode_assign(instruction)
     AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
     """
-    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.Assign)
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ASSIGN)
     return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
 
 
@@ -302,7 +302,7 @@ def create_account(params: CreateAccountParams) -> TransactionInstruction:
     """
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
         dict(
-            instruction_type=InstructionType.CreateAccount,
+            instruction_type=InstructionType.CREATE_ACCOUNT,
             args=dict(lamports=params.lamports, space=params.space, program_id=bytes(params.program_id)),
         )
     )
@@ -332,7 +332,7 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInst
         raise NotImplementedError("assign with key is not implemented")
     else:
         data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-            dict(instruction_type=InstructionType.Assign, args=dict(program_id=bytes(params.program_id)))
+            dict(instruction_type=InstructionType.ASSIGN, args=dict(program_id=bytes(params.program_id)))
         )
 
     return TransactionInstruction(
@@ -356,7 +356,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
     <class 'solana.transaction.TransactionInstruction'>
     """
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.Transfer, args=dict(lamports=params.lamports))
+        dict(instruction_type=InstructionType.TRANSFER, args=dict(lamports=params.lamports))
     )
 
     return TransactionInstruction(

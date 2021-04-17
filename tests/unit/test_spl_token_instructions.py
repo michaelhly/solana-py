@@ -133,7 +133,7 @@ def test_set_authority():
     params = spl_token.SetAuthorityParams(
         program_id=TOKEN_PROGRAM_ID,
         account=account,
-        authority=spl_token.AuthorityType.FreezeAccount,
+        authority=spl_token.AuthorityType.FREEZE_ACCOUNT,
         new_authority=new_authority,
         current_authority=current_authority,
     )
@@ -143,7 +143,7 @@ def test_set_authority():
     multisig_params = spl_token.SetAuthorityParams(
         program_id=TOKEN_PROGRAM_ID,
         account=account,
-        authority=spl_token.AuthorityType.FreezeAccount,
+        authority=spl_token.AuthorityType.FREEZE_ACCOUNT,
         current_authority=current_authority,
         signers=[PublicKey(i) for i in range(3, 10)],
     )

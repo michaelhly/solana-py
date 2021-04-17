@@ -11,22 +11,22 @@ from solana._layouts.shared import PUBLIC_KEY_LAYOUT
 class InstructionType(IntEnum):
     """Token instruction types."""
 
-    InitializeMint = 0
-    InitializeAccount = 1
-    InitializeMultisig = 2
-    Transfer = 3
-    Approve = 4
-    Revoke = 5
-    SetAuthority = 6
-    MintTo = 7
-    Burn = 8
-    CloseAccount = 9
-    FreezeAccount = 10
-    ThawAccount = 11
-    Transfer2 = 12
-    Approve2 = 13
-    MintTo2 = 14
-    Burn2 = 15
+    INITIALIZE_MINT = 0
+    INITIALIZE_ACCOUNT = 1
+    INITIALIZE_MULTISIG = 2
+    TRANSFER = 3
+    APPROVE = 4
+    REVOKE = 5
+    SET_AUTHORITY = 6
+    MINT_TO = 7
+    BURN = 8
+    CLOSE_ACCOUNT = 9
+    FREEZE_ACCOUNT = 10
+    THAW_ACCOUNT = 11
+    TRANSFER2 = 12
+    APPROVE2 = 13
+    MINT_TO2 = 14
+    BURN2 = 15
 
 
 _INITIALIZE_MINT_LAYOUT = cStruct(
@@ -52,22 +52,22 @@ INSTRUCTIONS_LAYOUT = cStruct(
     / Switch(
         lambda this: this.instruction_type,
         {
-            InstructionType.InitializeMint: _INITIALIZE_MINT_LAYOUT,
-            InstructionType.InitializeAccount: Pass,
-            InstructionType.InitializeMultisig: _INITIALIZE_MULTISIG_LAYOUT,
-            InstructionType.Transfer: _AMOUNT_LAYOUT,
-            InstructionType.Approve: _AMOUNT_LAYOUT,
-            InstructionType.Revoke: Pass,
-            InstructionType.SetAuthority: _SET_AUTHORITY_LAYOUT,
-            InstructionType.MintTo: _AMOUNT_LAYOUT,
-            InstructionType.Burn: _AMOUNT_LAYOUT,
-            InstructionType.CloseAccount: Pass,
-            InstructionType.FreezeAccount: Pass,
-            InstructionType.ThawAccount: Pass,
-            InstructionType.Transfer2: _AMOUNT2_LAYOUT,
-            InstructionType.Approve2: _AMOUNT2_LAYOUT,
-            InstructionType.MintTo2: _AMOUNT2_LAYOUT,
-            InstructionType.Burn2: _AMOUNT2_LAYOUT,
+            InstructionType.INITIALIZE_MINT: _INITIALIZE_MINT_LAYOUT,
+            InstructionType.INITIALIZE_ACCOUNT: Pass,
+            InstructionType.INITIALIZE_MULTISIG: _INITIALIZE_MULTISIG_LAYOUT,
+            InstructionType.TRANSFER: _AMOUNT_LAYOUT,
+            InstructionType.APPROVE: _AMOUNT_LAYOUT,
+            InstructionType.REVOKE: Pass,
+            InstructionType.SET_AUTHORITY: _SET_AUTHORITY_LAYOUT,
+            InstructionType.MINT_TO: _AMOUNT_LAYOUT,
+            InstructionType.BURN: _AMOUNT_LAYOUT,
+            InstructionType.CLOSE_ACCOUNT: Pass,
+            InstructionType.FREEZE_ACCOUNT: Pass,
+            InstructionType.THAW_ACCOUNT: Pass,
+            InstructionType.TRANSFER2: _AMOUNT2_LAYOUT,
+            InstructionType.APPROVE2: _AMOUNT2_LAYOUT,
+            InstructionType.MINT_TO2: _AMOUNT2_LAYOUT,
+            InstructionType.BURN2: _AMOUNT2_LAYOUT,
         },
     ),
 )

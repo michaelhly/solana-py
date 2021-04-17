@@ -11,18 +11,18 @@ from .shared import PUBLIC_KEY_LAYOUT, RUST_STRING_LAYOUT
 class InstructionType(IntEnum):
     """Instruction types for system program."""
 
-    CreateAccount = 0
-    Assign = 1
-    Transfer = 2
-    CreateAccountWithSeed = 3
-    AdvanceNonceAccount = 4
-    WithdrawNonceAccount = 5
-    InitializeNonceAccount = 6
-    AuthorizeNonceAccount = 7
-    Allocate = 8
-    AllocateWithSeed = 9
-    AssignWithSeed = 10
-    TransferWithSeed = 11
+    CREATE_ACCOUNT = 0
+    ASSIGN = 1
+    TRANSFER = 2
+    CREATE_ACCOUNT_WITH_SEED = 3
+    ADVANCE_NONCE_ACCOUNT = 4
+    WITHDRAW_NONCE_ACCOUNT = 5
+    INITIALIZE_NONCE_ACCOUNT = 6
+    AUTHORIZE_NONCE_ACCOUNT = 7
+    ALLOCATE = 8
+    ALLOCATE_WITH_SEED = 9
+    ASSIGN_WITH_SEED = 10
+    TRANSFER_WITH_SEED = 11
 
 
 _CREATE_ACCOUNT_LAYOUT = cStruct(
@@ -71,18 +71,18 @@ SYSTEM_INSTRUCTIONS_LAYOUT = cStruct(
     / Switch(
         lambda this: this.instruction_type,
         {
-            InstructionType.CreateAccount: _CREATE_ACCOUNT_LAYOUT,
-            InstructionType.Assign: _ASSIGN_LAYOUT,
-            InstructionType.Transfer: _TRANFER_LAYOUT,
-            InstructionType.CreateAccountWithSeed: _CREATE_ACCOUNT_WTIH_SEED_LAYOUT,
-            InstructionType.AdvanceNonceAccount: Pass,  # No args
-            InstructionType.WithdrawNonceAccount: _WITHDRAW_NONCE_ACCOUNT_LAYOUT,
-            InstructionType.InitializeNonceAccount: _INITIALIZE_NONCE_ACCOUNT_LAYOUT,
-            InstructionType.AuthorizeNonceAccount: _AUTHORIZE_NONCE_ACCOUNT_LAYOUT,
-            InstructionType.Allocate: _ALLOCATE_LAYOUT,
-            InstructionType.AllocateWithSeed: _ALLOCATE_WITH_SEED_LAYOUT,
-            InstructionType.AssignWithSeed: _ASSIGN_WITH_SEED_LAYOUT,
-            InstructionType.TransferWithSeed: _TRANSFER_WITH_SEED_LAYOUT,
+            InstructionType.CREATE_ACCOUNT: _CREATE_ACCOUNT_LAYOUT,
+            InstructionType.ASSIGN: _ASSIGN_LAYOUT,
+            InstructionType.TRANSFER: _TRANFER_LAYOUT,
+            InstructionType.CREATE_ACCOUNT_WITH_SEED: _CREATE_ACCOUNT_WTIH_SEED_LAYOUT,
+            InstructionType.ADVANCE_NONCE_ACCOUNT: Pass,  # No args
+            InstructionType.WITHDRAW_NONCE_ACCOUNT: _WITHDRAW_NONCE_ACCOUNT_LAYOUT,
+            InstructionType.INITIALIZE_NONCE_ACCOUNT: _INITIALIZE_NONCE_ACCOUNT_LAYOUT,
+            InstructionType.AUTHORIZE_NONCE_ACCOUNT: _AUTHORIZE_NONCE_ACCOUNT_LAYOUT,
+            InstructionType.ALLOCATE: _ALLOCATE_LAYOUT,
+            InstructionType.ALLOCATE_WITH_SEED: _ALLOCATE_WITH_SEED_LAYOUT,
+            InstructionType.ASSIGN_WITH_SEED: _ASSIGN_WITH_SEED_LAYOUT,
+            InstructionType.TRANSFER_WITH_SEED: _TRANSFER_WITH_SEED_LAYOUT,
         },
     ),
 )
