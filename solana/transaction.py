@@ -60,6 +60,7 @@ class NonceInformation(NamedTuple):
 @dataclass
 class SigPubkeyPair:
     """Pair of signature and corresponding public key."""
+
     pubkey: PublicKey
     signature: Optional[bytes] = None
 
