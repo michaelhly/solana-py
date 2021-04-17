@@ -328,12 +328,13 @@ class Transaction:
         wire_transaction.extend(signature_count)
         # Encode signatures
         for sig_pair in self.signatures:
-            if not sig_pair.signature:
-                wire_transaction.extend(bytearray(64))
-                continue
             if len(sig_pair.signature) != SIG_LENGTH:
                 raise RuntimeError("signature has invalid length", sig_pair.signature)
-            wire_transaction.extend(sig_pair.signature)
+
+            if not sig_pair.signature:
+                wire_transaction.extend(bytearray(SIG_LENGTH))
+            else:
+                wire_transaction.extend(sig_pair.signature)
         # Encode signed data
         wire_transaction.extend(signed_data)
 
