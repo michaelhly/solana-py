@@ -19,9 +19,14 @@ def test_request_air_drop(stubbed_sender, test_http_client):
         "err": None,
         "fee": 0,
         "innerInstructions": [],
-        "logMessages": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
         "postBalances": [499999990000000000, 10000000000, 1],
+        "postTokenBalances": [],
         "preBalances": [500000000000000000, 0, 1],
+        "preTokenBalances": [],
         "status": {"Ok": None},
     }
     assert resp["result"]["meta"] == expected_meta
@@ -45,9 +50,14 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test
         "err": None,
         "fee": 5000,
         "innerInstructions": [],
-        "logMessages": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
         "postBalances": [9999994000, 954, 1],
+        "postTokenBalances": [],
         "preBalances": [10000000000, 0, 1],
+        "preTokenBalances": [],
         "status": {"Ok": None},
     }
     assert resp["result"]["meta"] == expected_meta
@@ -85,9 +95,14 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_reciever, 
         "err": None,
         "fee": 5000,
         "innerInstructions": [],
-        "logMessages": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
         "postBalances": [9999988000, 1954, 1],
+        "postTokenBalances": [],
         "preBalances": [9999994000, 954, 1],
+        "preTokenBalances": [],
         "status": {"Ok": None},
     }
     assert resp["result"]["meta"] == expected_meta
