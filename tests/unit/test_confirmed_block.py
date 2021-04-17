@@ -48,7 +48,7 @@ def test_verify_confirmed_block(stubbed_blockhash):
     # Verify signatures in confirmed_block
     assert all(tx_with_meta["transaction"].verify_signatures() for tx_with_meta in confirmed_block["transactions"])
     # Test block with bogus signature
-    bogus_signature = txlib._SigPubkeyPair(acc2.public_key(), bytes([9] * 64))  # pylint: disable=protected-access
+    bogus_signature = txlib.SigPubkeyPair(acc2.public_key(), bytes([9] * 64))  # pylint: disable=protected-access
     txn1.signatures[0] = bogus_signature
     bad_confirmed_block = confirmed_block
     bad_confirmed_block["transactions"][0]["transaction"] = txn1
