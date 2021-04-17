@@ -162,8 +162,7 @@ class Transaction:
             pubkey = str(a_m.pubkey)
             if pubkey in seen:
                 idx = seen[pubkey]
-                # uniq_metas[idx].is_writable = uniq_metas[idx].is_writable or a_m.is_writable
-                uniq_metas[idx].is_writable = a_m.is_writable
+                uniq_metas[idx].is_writable = uniq_metas[idx].is_writable or a_m.is_writable
             else:
                 uniq_metas.append(a_m)
                 seen[pubkey] = len(uniq_metas) - 1
