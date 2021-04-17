@@ -98,6 +98,9 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_reciever, stu
     with pytest.raises(AttributeError):
         txn.serialize()
     assert len(txn.signatures) == 0
+
+    # Set fee payer
+    txn.fee_payer = stubbed_sender.public_key()
     # Serialize message
     assert b64encode(txn.serialize_message()) == (
         b"AQABAxOY9ixtGkV8UbpqS189vS9p/KkyFiGNyJl+QWvRfZPK/UOfzLZnJ/KJxcbeO8So/l3V13dwvI/xXD7u3LFK8/wAAAAAAAAA"

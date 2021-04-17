@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from sys import maxsize
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
 from base58 import b58decode, b58encode
@@ -57,7 +58,9 @@ class NonceInformation(NamedTuple):
 
 
 @dataclass
-class _SigPubkeyPair:
+class SigPubkeyPair:
+    """Pair of signature and corresponding public key."""
+
     pubkey: PublicKey
     signature: Optional[bytes] = None
 
@@ -72,11 +75,13 @@ class Transaction:
         self,
         recent_blockhash: Optional[Blockhash] = None,
         nonce_info: Optional[NonceInformation] = None,
-        signatures: Optional[List[_SigPubkeyPair]] = None,
+        signatures: Optional[List[SigPubkeyPair]] = None,
+        fee_payer: Optional[PublicKey] = None,
     ) -> None:
         """Init transaction object."""
+        self.fee_payer = fee_payer
         self.instructions: List[TransactionInstruction] = []
-        self.signatures: List[_SigPubkeyPair] = signatures if signatures else []
+        self.signatures: List[SigPubkeyPair] = signatures if signatures else []
         self.recent_blockhash, self.nonce_info = recent_blockhash, nonce_info
 
     def __eq__(self, other: Any) -> bool:
@@ -117,6 +122,14 @@ class Transaction:
         if len(self.instructions) < 1:
             raise AttributeError("no instructions provided")
 
+        fee_payer = self.fee_payer
+        if not fee_payer and len(self.signatures) > 0 and self.signatures[0].pubkey:
+            # Use implicit fee payer
+            fee_payer = self.signatures[0].pubkey
+
+        if not fee_payer:
+            raise AttributeError("transaction feePayer required")
+
         account_metas, program_ids = [], set()
         for instr in self.instructions:
             if not instr.program_id or not instr.keys:
@@ -128,12 +141,11 @@ class Transaction:
         for pg_id in program_ids:
             account_metas.append(AccountMeta(PublicKey(pg_id), False, False))
 
-        # Prefix accountMetas with feePayer here whenever that gets implemented.
-
         # Sort. Prioritizing first by signer, then by writable and converting from set to list.
         account_metas.sort(key=lambda account: (not account.is_signer, not account.is_writable))
 
         # Cull duplicate accounts
+        fee_payer_idx = maxsize
         seen: Dict[str, int] = dict()
         uniq_metas: List[AccountMeta] = []
         for sig in self.signatures:
@@ -143,6 +155,8 @@ class Transaction:
             else:
                 uniq_metas.append(AccountMeta(sig.pubkey, True, True))
                 seen[pubkey] = len(uniq_metas) - 1
+                if sig.pubkey == fee_payer:
+                    fee_payer_idx = min(fee_payer_idx, seen[pubkey])
 
         for a_m in account_metas:
             pubkey = str(a_m.pubkey)
@@ -152,23 +166,32 @@ class Transaction:
             else:
                 uniq_metas.append(a_m)
                 seen[pubkey] = len(uniq_metas) - 1
+                if a_m.pubkey == fee_payer:
+                    fee_payer_idx = min(fee_payer_idx, seen[pubkey])
+
+        # Move fee payer to the front
+        if fee_payer_idx == maxsize:
+            uniq_metas = [AccountMeta(fee_payer, True, True)] + uniq_metas
+        else:
+            uniq_metas = (
+                [uniq_metas[fee_payer_idx]] + uniq_metas[:fee_payer_idx] + uniq_metas[fee_payer_idx + 1 :]  # noqa: E203
+            )
 
         # Split out signing from nonsigning keys and count readonlys
         signed_keys: List[str] = []
         unsigned_keys: List[str] = []
-        num_readonly_signed_accounts = num_readonly_unsigned_accounts = 0
+        num_required_signatures = num_readonly_signed_accounts = num_readonly_unsigned_accounts = 0
         for a_m in uniq_metas:
             if a_m.is_signer:
-                # Promote the first signer to writable as it is the fee payer
-                if len(signed_keys) != 0 and not a_m.is_writable:
-                    num_readonly_signed_accounts += 1
                 signed_keys.append(str(a_m.pubkey))
+                num_required_signatures += 1
+                num_readonly_signed_accounts += int(not a_m.is_writable)
             else:
                 num_readonly_unsigned_accounts += int(not a_m.is_writable)
                 unsigned_keys.append(str(a_m.pubkey))
         # Initialize signature array, if needed
         if not self.signatures:
-            self.signatures = [_SigPubkeyPair(pubkey=PublicKey(key), signature=None) for key in signed_keys]
+            self.signatures = [SigPubkeyPair(pubkey=PublicKey(key), signature=None) for key in signed_keys]
 
         account_keys: List[str] = signed_keys + unsigned_keys
         account_indices: Dict[str, int] = {str(key): i for i, key in enumerate(account_keys)}
@@ -184,7 +207,7 @@ class Transaction:
         return Message(
             MessageArgs(
                 header=MessageHeader(
-                    num_required_signatures=len(self.signatures),
+                    num_required_signatures=num_required_signatures,
                     num_readonly_signed_accounts=num_readonly_signed_accounts,
                     num_readonly_unsigned_accounts=num_readonly_unsigned_accounts,
                 ),
@@ -211,8 +234,8 @@ class Transaction:
         def partial_signer_pubkey(account_or_pubkey: Union[PublicKey, Account]):
             return account_or_pubkey.public_key() if isinstance(account_or_pubkey, Account) else account_or_pubkey
 
-        signatures: List[_SigPubkeyPair] = [
-            _SigPubkeyPair(pubkey=partial_signer_pubkey(partial_signer)) for partial_signer in partial_signers
+        signatures: List[SigPubkeyPair] = [
+            SigPubkeyPair(pubkey=partial_signer_pubkey(partial_signer)) for partial_signer in partial_signers
         ]
         self.signatures = signatures
         sign_data = self.serialize_message()
@@ -368,7 +391,7 @@ class Transaction:
 
         for idx, sig in enumerate(signatures):
             signature = None if sig == b58encode(Transaction.__DEFAULT_SIG) else b58decode(sig)
-            transaction.signatures.append(_SigPubkeyPair(pubkey=message.account_keys[idx], signature=signature))
+            transaction.signatures.append(SigPubkeyPair(pubkey=message.account_keys[idx], signature=signature))
 
         for instr in message.instructions:
             account_metas: List[AccountMeta] = []
