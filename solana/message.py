@@ -62,7 +62,7 @@ class Message:
 
     def __encode_message(self) -> bytes:  # TODO: Replace this with a construct struct.
         MessageFormat = NamedTuple(
-            "HeaderFormat",
+            "MessageFormat",
             [
                 ("num_required_signatures", bytes),
                 ("num_readonly_signed_accounts", bytes),

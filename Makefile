@@ -9,7 +9,7 @@ lint:
 	pipenv run pydocstyle setup.py solana spl/**/*.py test
 	pipenv run flake8 setup.py solana spl tests
 	pipenv run mypy solana
-	pipenv run mypy --namespace-packages spl/**/*.py
+	pipenv run mypy --namespace-packages --explicit-package-bases spl
 	pipenv run pylint --rcfile=.pylintrc setup.py solana spl tests
 
 .PHONY: notebook
