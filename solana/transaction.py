@@ -173,7 +173,9 @@ class Transaction:
         if fee_payer_idx == maxsize:
             uniq_metas = [AccountMeta(fee_payer, True, True)] + uniq_metas
         else:
-            uniq_metas = [uniq_metas[fee_payer_idx]] + uniq_metas[:fee_payer_idx] + uniq_metas[fee_payer_idx + 1 :]
+            uniq_metas = (
+                [uniq_metas[fee_payer_idx]] + uniq_metas[:fee_payer_idx] + uniq_metas[fee_payer_idx + 1 :]  # noqa: E203
+            )
 
         # Split out signing from nonsigning keys and count readonlys
         signed_keys: List[str] = []
