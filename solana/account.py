@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Union
 
+from base58 import b58encode
 from nacl import public, signing  # type: ignore
 
 from solana.publickey import PublicKey
@@ -29,13 +30,17 @@ class Account:
         self._secret = public.PrivateKey(key) if key else public.PrivateKey.generate()
 
     def public_key(self) -> PublicKey:
-        """The Public key for this account."""
+        """The public key for this account."""
         verify_key = signing.SigningKey(self.secret_key()).verify_key
         return PublicKey(bytes(verify_key))
 
     def secret_key(self) -> bytes:
         """The **Unencrypted** secret key for this account."""
         return bytes(self._secret)
+
+    def keypair(self) -> bytes:
+        """The 64 byte keypair for this account (base 58 encoded)."""
+        return b58encode(self.secret_key() + bytes(signing.SigningKey(self.secret_key()).verify_key))
 
     def sign(self, msg: bytes) -> signing.SignedMessage:
         """Sign a message with this account.

@@ -1,4 +1,5 @@
 """Unit tests for solana.account."""
+from base58 import b58decode
 from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
@@ -58,3 +59,14 @@ def test_sign_message(stubbed_sender):
     msg = b"hello"
     signed_msg = stubbed_sender.sign(msg)
     assert VerifyKey(bytes(stubbed_sender.public_key())).verify(signed_msg.message, signed_msg.signature) == msg
+
+
+def test_account_keypair():
+    """Validate account keypair against account's private and public key."""
+    expected_account = Account()
+    keypair = expected_account.keypair()
+    decoded_keypair = b58decode(keypair)
+
+    actual_account = Account(decoded_keypair[:32])
+    assert expected_account.public_key() == actual_account.public_key()
+    assert expected_account.secret_key() == actual_account.secret_key()
