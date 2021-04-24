@@ -13,7 +13,6 @@ class Account:
     """An account key pair (public and secret keys).
 
     >>> # Import account from 64-byte keypair
-    >>> from random import randint
     >>> keypair = [
     ...     90, 249, 112, 214, 86, 235, 20, 215, 175, 33, 227, 50, 72, 214, 59, 49,
     ...     38, 161, 99, 83, 107, 188, 57, 48, 119, 189, 46, 148, 160, 214, 239, 148,
