@@ -10,7 +10,19 @@ from solana.publickey import PublicKey
 
 
 class Account:
-    """An account key pair (public and secret keys)."""
+    """An account key pair (public and secret keys).
+
+    >>> # Import account from 64-byte keypair
+    >>> from random import randint
+    >>> keypair = [
+    ...     90, 249, 112, 214, 86, 235, 20, 215, 175, 33, 227, 50, 72, 214, 59, 49,
+    ...     38, 161, 99, 83, 107, 188, 57, 48, 119, 189, 46, 148, 160, 214, 239, 148,
+    ...     219, 250, 20, 106, 35, 41, 118, 107, 89, 96, 195, 15, 153, 248, 223, 6,
+    ...     46, 71, 142, 92, 169, 240, 177, 106, 86, 194, 21, 62, 29, 222, 206, 82]
+    >>> account = Account(keypair[:32])
+    >>> account.public_key()
+    4HtxMbEK1QYzo9KjXEZoDeGrkhYkDtWdiQUARxz5VCoW
+    """
 
     def __init__(self, secret_key: Optional[Union[bytes, str, List[int], int]] = None):
         """Create a new Account object.
