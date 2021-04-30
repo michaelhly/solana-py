@@ -947,7 +947,7 @@ def get_associated_token_address(params: AssociatedTokenAccountParams) -> Public
     >>> payer, owner, mint = PublicKey(1), PublicKey(2), PublicKey(3)
     >>> params = AssociatedTokenAccountParams(payer=payer, owner=owner, mint=mint)
     >>> type(get_associated_token_address(params))
-
+    <class 'solana.publickey.PublicKey'>
     """
     return params.owner.find_program_address(
         seeds=[bytes(params.owner), bytes(TOKEN_PROGRAM_ID), bytes(params.mint)], program_id=ASSOCIATED_TOKEN_PROGRAM_ID
