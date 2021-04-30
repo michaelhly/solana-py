@@ -60,8 +60,9 @@ def test_initialize_multisig():
 def test_create_associated_token_account(stubbed_sender):
     """Test create associated token account."""
     mint = PublicKey(0)
-    params = spl_token.AssociatedTokenAccountParams(payer=stubbed_sender.public_key(),
-                                                    owner=stubbed_sender.public_key(), mint=mint)
+    params = spl_token.AssociatedTokenAccountParams(
+        payer=stubbed_sender.public_key(), owner=stubbed_sender.public_key(), mint=mint
+    )
     instruction = spl_token.create_associated_token_account(params)
     assert spl_token.decode_create_associated_token_account(instruction) == params
 

@@ -3,7 +3,7 @@ from enum import IntEnum
 
 from construct import Int8ul, Int32ul, Int64ul, Pass  # type: ignore
 from construct import Struct as cStruct
-from construct import Switch
+from construct import Switch  # type: ignore
 
 from solana._layouts.shared import PUBLIC_KEY_LAYOUT
 
