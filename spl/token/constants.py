@@ -11,6 +11,8 @@ ACCOUNT_LEN: int = 165
 MULTISIG_LEN: int = 355
 """Data length of a multisig token account."""
 
+ASSOCIATED_TOKEN_PROGRAM_ID = PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
+"""Program ID for the associated token account program."""
 
 TOKEN_PROGRAM_ID: PublicKey = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 """Public key that identifies the SPL token program."""
