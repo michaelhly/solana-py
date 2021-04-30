@@ -6,7 +6,7 @@ from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
 from spl.token.client import Token
-from spl.token.constants import TOKEN_PROGRAM_ID
+from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
 
 from .utils import assert_valid_response, confirm_transaction, decode_byte_string
 
@@ -56,7 +56,7 @@ def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> PublicKey:  #
 @pytest.mark.integration
 @pytest.fixture(scope="module")
 def stubbed_reciever_token_account_pk(
-    stubbed_reciever, test_token  # pylint: disable=redefined-outer-name
+        stubbed_reciever, test_token  # pylint: disable=redefined-outer-name
 ) -> PublicKey:
     """Token account for stubbed reciever."""
     return test_token.create_account(stubbed_reciever)
@@ -74,14 +74,27 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     assert account_data.state
     assert not account_data.amount
     assert (
-        not account_data.delegate_option
-        and not account_data.delegated_amount
-        and PublicKey(account_data.delegate) == PublicKey(0)
+            not account_data.delegate_option
+            and not account_data.delegated_amount
+            and PublicKey(account_data.delegate) == PublicKey(0)
     )
     assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == PublicKey(0)
     assert not account_data.is_native_option and not account_data.is_native
     assert PublicKey(account_data.mint) == test_token.pubkey
     assert PublicKey(account_data.owner) == stubbed_sender.public_key()
+
+
+@pytest.mark.integration
+def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
+    """Test creating a new associated token account."""
+    new_acct = PublicKey(0)
+    token_account_pubkey = test_token.create_associated_token_account(new_acct)
+
+    assert token_account_pubkey == new_acct.find_program_address(seeds=[bytes(new_acct),
+                                                                        bytes(TOKEN_PROGRAM_ID),
+                                                                        bytes(test_token.pubkey)],
+                                                                 program_id=ASSOCIATED_TOKEN_PROGRAM_ID
+                                                                 )[0]
 
 
 @pytest.mark.integration
@@ -105,7 +118,7 @@ def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  
 
 @pytest.mark.integration
 def test_transfer(
-    stubbed_sender, stubbed_reciever_token_account_pk, stubbed_sender_token_account_pk, test_token
+        stubbed_sender, stubbed_reciever_token_account_pk, stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
     """Test token transfer."""
     expected_amount = 500

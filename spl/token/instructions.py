@@ -4,10 +4,12 @@ from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 
 from solana.publickey import PublicKey
+from solana.system_program import SYS_PROGRAM_ID
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, TransactionInstruction
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType  # type: ignore
+from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
 
 
 class AuthorityType(IntEnum):
@@ -288,6 +290,17 @@ class Burn2Params(NamedTuple):
     """Signing accounts if `owner` is a multiSig"""
 
 
+class AssociatedTokenAccountParams(NamedTuple):
+    """Create associated token account transaction params."""
+
+    payer: PublicKey
+    """Account paying for the transaction."""
+    owner: PublicKey
+    """Owner of the associated token account."""
+    mint: PublicKey
+    """Public key of the minter account."""
+
+
 def __parse_and_validate_instruction(
     instruction: TransactionInstruction,
     expected_keys: int,
@@ -335,6 +348,14 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
         signers=[signer.pubkey for signer in instruction.keys[-num_signers:]],
         m=num_signers,
     )
+
+
+def decode_create_associated_token_account(instruction: TransactionInstruction) -> AssociatedTokenAccountParams:
+    """Decode a create associated token account call."""
+    _ = __parse_and_validate_instruction(instruction, 7, InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT)
+    return AssociatedTokenAccountParams(payer=instruction.keys[0].pubkey,
+                                        owner=instruction.keys[2].pubkey,
+                                        mint=instruction.keys[3].pubkey)
 
 
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
@@ -918,3 +939,40 @@ def burn2(params: Burn2Params) -> TransactionInstruction:
         dict(instruction_type=InstructionType.BURN2, args=dict(amount=params.amount, decimals=params.decimals))
     )
     return __burn_instruction(params, data)
+
+
+def get_associated_token_address(params: AssociatedTokenAccountParams) -> PublicKey:
+    """Derives the associated token address for the given wallet address and token mint.
+
+    >>> payer, owner, mint = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> params = AssociatedTokenAccountParams(payer=payer, owner=owner, mint=mint)
+    >>> type(get_associated_token_address(params))
+
+    """
+    return params.owner.find_program_address(
+        seeds=[bytes(params.owner), bytes(TOKEN_PROGRAM_ID), bytes(params.mint)], program_id=ASSOCIATED_TOKEN_PROGRAM_ID
+    )[0]
+
+
+def create_associated_token_account(params: AssociatedTokenAccountParams) -> TransactionInstruction:
+    """Creates a transaction instruction to create an associated token account.
+
+    >>> payer, owner, mint = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> params = AssociatedTokenAccountParams(payer=payer, owner=owner, mint=mint)
+    >>> type(create_associated_token_account(params))
+    <class 'solana.transaction.TransactionInstruction'>
+    """
+    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT, args=None))
+    associated_token_address = get_associated_token_address(params)
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.payer, is_signer=True, is_writable=True),
+            AccountMeta(pubkey=associated_token_address, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.owner, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=TOKEN_PROGRAM_ID, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        ],
+        program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
+        data=data,)

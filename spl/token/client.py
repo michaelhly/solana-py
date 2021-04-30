@@ -112,7 +112,8 @@ class Token:  # pylint: disable=too-many-public-methods
         return resp["result"]
 
     def get_accounts(
-        self, owner: PublicKey, is_delegate: bool = False, commitment: Commitment = Single, encoding: str = "jsonParsed"
+            self, owner: PublicKey, is_delegate: bool = False, commitment: Commitment = Single,
+            encoding: str = "jsonParsed"
     ) -> RPCResponse:
         """Get token accounts of the provided owner by the token's mint.
 
@@ -146,13 +147,13 @@ class Token:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def create_mint(
-        conn: Client,
-        payer: Account,
-        mint_authority: PublicKey,
-        decimals: int,
-        program_id: PublicKey,
-        freeze_authority: Optional[PublicKey] = None,
-        skip_confirmation: bool = False,
+            conn: Client,
+            payer: Account,
+            mint_authority: PublicKey,
+            decimals: int,
+            program_id: PublicKey,
+            freeze_authority: Optional[PublicKey] = None,
+            skip_confirmation: bool = False,
     ) -> Token:
         """Create and initialize a token.
 
@@ -203,9 +204,9 @@ class Token:  # pylint: disable=too-many-public-methods
         return token
 
     def create_account(
-        self,
-        owner: PublicKey,
-        skip_confirmation: bool = False,
+            self,
+            owner: PublicKey,
+            skip_confirmation: bool = False,
     ) -> PublicKey:
         """Create and initialize a new account.
 
@@ -247,9 +248,31 @@ class Token:  # pylint: disable=too-many-public-methods
         )
         return new_account.public_key()
 
+    def create_associated_token_account(
+            self,
+            owner: PublicKey,
+            skip_confirmation: bool = False,
+    ) -> PublicKey:
+        """Create an associated token account.
+
+        :param owner: User account that will own the associated token account.
+        :param skip_confirmation: (optional) Option to skip transaction confirmation.
+        :return: Public key of the new associated account.
+
+        If skip confirmation is set to `False`, this method will block for at most 30 seconds
+        or until the transaction is confirmed.
+        """
+        # Construct transaction
+        txn = Transaction()
+        create_txn = spl_token.create_associated_token_account(
+            spl_token.AssociatedTokenAccountParams(payer=self.payer.public_key(), owner=owner, mint=self.pubkey))
+        txn.add(create_txn)
+        self._conn.send_transaction(txn, self.payer, opts=TxOpts(skip_confirmation=skip_confirmation))
+        return create_txn.keys[1].pubkey
+
     @staticmethod
     def create_wrapped_native_account(
-        conn: Client, program_id: PublicKey, owner: PublicKey, payer: Account, amount: int
+            conn: Client, program_id: PublicKey, owner: PublicKey, payer: Account, amount: int
     ) -> PublicKey:
         """Create and initialize a new account on the special native token mint.
 
@@ -280,13 +303,13 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("get_account_info not implemented")
 
     def transfer(
-        self,
-        source: PublicKey,
-        dest: PublicKey,
-        owner: Union[Account, PublicKey],
-        amount: int,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            source: PublicKey,
+            dest: PublicKey,
+            owner: Union[Account, PublicKey],
+            amount: int,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Transfer tokens to another account.
 
@@ -319,13 +342,13 @@ class Token:  # pylint: disable=too-many-public-methods
         return self._conn.send_transaction(txn, *signers, opts=opts)
 
     def approve(
-        self,
-        account: PublicKey,
-        delegate: PublicKey,
-        owner: PublicKey,
-        amount: int,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            delegate: PublicKey,
+            owner: PublicKey,
+            amount: int,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
@@ -339,11 +362,11 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("approve not implemented")
 
     def revoke(
-        self,
-        account: PublicKey,
-        owner: PublicKey,
-        multi_signers: Optional[List[Account]],
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            owner: PublicKey,
+            multi_signers: Optional[List[Account]],
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Remove approval for the transfer of any remaining tokens.
 
@@ -355,13 +378,13 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("revoke not implemented")
 
     def set_authority(
-        self,
-        account: PublicKey,
-        current_authority: PublicKey,
-        authority_type: spl_token.AuthorityType,
-        new_authority: Optional[PublicKey] = None,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            current_authority: PublicKey,
+            authority_type: spl_token.AuthorityType,
+            new_authority: Optional[PublicKey] = None,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Assign a new authority to the account.
 
@@ -375,12 +398,12 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("set_authority not implemented")
 
     def mint_to(
-        self,
-        dest: PublicKey,
-        mint_authority: Union[Account, PublicKey],
-        amount: int,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            dest: PublicKey,
+            mint_authority: Union[Account, PublicKey],
+            amount: int,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Mint new tokens.
 
@@ -415,12 +438,12 @@ class Token:  # pylint: disable=too-many-public-methods
         return self._conn.send_transaction(txn, *signers, opts=opts)
 
     def burn(
-        self,
-        account: PublicKey,
-        owner: PublicKey,
-        amount: int,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            owner: PublicKey,
+            amount: int,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Burn tokens.
 
@@ -433,12 +456,12 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("burn not implemented")
 
     def close_account(
-        self,
-        account: PublicKey,
-        dest: PublicKey,
-        authority: PublicKey,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            dest: PublicKey,
+            authority: PublicKey,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Remove approval for the transfer of any remaining tokens.
 
@@ -451,7 +474,7 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("close_account not implemented")
 
     def freeze_account(
-        self, account: PublicKey, authority: PublicKey, multi_signers: Optional[List[Account]]
+            self, account: PublicKey, authority: PublicKey, multi_signers: Optional[List[Account]]
     ) -> RPCResponse:
         """Freeze account.
 
@@ -462,11 +485,11 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("freeze_account not implemented")
 
     def thaw_account(
-        self,
-        account: PublicKey,
-        authority: PublicKey,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            authority: PublicKey,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Thaw account.
 
@@ -478,14 +501,14 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("thaw_account not implemented")
 
     def transfer2(
-        self,
-        source: PublicKey,
-        dest: PublicKey,
-        owner: PublicKey,
-        amount: int,
-        decimals: int,
-        multi_signers: Optional[List[Account]],
-        opts: TxOpts = TxOpts(),
+            self,
+            source: PublicKey,
+            dest: PublicKey,
+            owner: PublicKey,
+            amount: int,
+            decimals: int,
+            multi_signers: Optional[List[Account]],
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Transfer tokens to another account, asserting the token mint and decimals.
 
@@ -500,14 +523,14 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("transfer2 not implemented")
 
     def approve2(
-        self,
-        account: PublicKey,
-        delegate: PublicKey,
-        owner: PublicKey,
-        amount: int,
-        decimals: int,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            delegate: PublicKey,
+            owner: PublicKey,
+            amount: int,
+            decimals: int,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
@@ -524,13 +547,13 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("approve2 not implemented")
 
     def mint_to2(
-        self,
-        dest: PublicKey,
-        mint_authority: PublicKey,
-        amount: int,
-        decimals: int,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            dest: PublicKey,
+            mint_authority: PublicKey,
+            amount: int,
+            decimals: int,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Mint new tokens, asserting the token mint and decimals.
 
@@ -544,13 +567,13 @@ class Token:  # pylint: disable=too-many-public-methods
         raise NotImplementedError("mint_to2 not implemented")
 
     def burn2(
-        self,
-        account: PublicKey,
-        owner: PublicKey,
-        amount: int,
-        decimals: int,
-        multi_signers: Optional[List[Account]] = None,
-        opts: TxOpts = TxOpts(),
+            self,
+            account: PublicKey,
+            owner: PublicKey,
+            amount: int,
+            decimals: int,
+            multi_signers: Optional[List[Account]] = None,
+            opts: TxOpts = TxOpts(),
     ) -> RPCResponse:
         """Burn tokens, asserting the token mint and decimals.
 

@@ -27,6 +27,7 @@ class InstructionType(IntEnum):
     APPROVE2 = 13
     MINT_TO2 = 14
     BURN2 = 15
+    CREATE_ASSOCIATED_TOKEN_ACCOUNT = 16
 
 
 _INITIALIZE_MINT_LAYOUT = cStruct(
@@ -68,6 +69,7 @@ INSTRUCTIONS_LAYOUT = cStruct(
             InstructionType.APPROVE2: _AMOUNT2_LAYOUT,
             InstructionType.MINT_TO2: _AMOUNT2_LAYOUT,
             InstructionType.BURN2: _AMOUNT2_LAYOUT,
+            InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT: Pass,
         },
     ),
 )

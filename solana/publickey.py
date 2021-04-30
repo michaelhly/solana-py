@@ -7,6 +7,8 @@ from typing import Any, List, Optional, Tuple, Union
 import base58
 from nacl.bindings.crypto_core import crypto_core_ed25519_is_valid_point  # type: ignore
 
+from solana.utils import helpers
+
 
 class PublicKey:
     """The public key of a keypair.
@@ -84,4 +86,13 @@ class PublicKey:
         iterates a nonce until it finds one that when combined with the seeds
         results in a valid program address.
         """
-        raise NotImplementedError("find_program_address not implemented")
+        nonce = 255
+        while nonce != 0:
+            try:
+                buffer = seeds + [helpers.to_uint8_bytes(nonce)]
+                address = PublicKey.create_program_address(buffer, program_id)
+            except Exception:
+                nonce -= 1
+                continue
+            return address, nonce
+        raise KeyError("Unable to find a viable program address nonce")
