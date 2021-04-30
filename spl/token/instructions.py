@@ -9,7 +9,7 @@ from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, TransactionInstruction
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType  # type: ignore
-from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
 
 class AuthorityType(IntEnum):
@@ -353,9 +353,9 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
 def decode_create_associated_token_account(instruction: TransactionInstruction) -> AssociatedTokenAccountParams:
     """Decode a create associated token account call."""
     _ = __parse_and_validate_instruction(instruction, 7, InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT)
-    return AssociatedTokenAccountParams(payer=instruction.keys[0].pubkey,
-                                        owner=instruction.keys[2].pubkey,
-                                        mint=instruction.keys[3].pubkey)
+    return AssociatedTokenAccountParams(
+        payer=instruction.keys[0].pubkey, owner=instruction.keys[2].pubkey, mint=instruction.keys[3].pubkey
+    )
 
 
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
@@ -975,4 +975,5 @@ def create_associated_token_account(params: AssociatedTokenAccountParams) -> Tra
             AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
         ],
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
-        data=data,)
+        data=data,
+    )
