@@ -960,7 +960,7 @@ def create_associated_token_account(params: AssociatedTokenAccountParams) -> Tra
     >>> payer, owner, mint = PublicKey(1), PublicKey(2), PublicKey(3)
     >>> params = AssociatedTokenAccountParams(payer=payer, owner=owner, mint=mint)
     >>> type(create_associated_token_account(params))
-
+    <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT, args=None))
     associated_token_address = get_associated_token_address(params)
