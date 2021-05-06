@@ -67,6 +67,16 @@ def test_create_associated_token_account(stubbed_sender):
     assert spl_token.decode_create_associated_token_account(instruction) == params
 
 
+def test_get_associated_token_account(stubbed_sender):
+    """Test get associated token account.
+    The expected value is derived from the rust implementation."""
+    owner = PublicKey("7qDbTKsBCFR5ZpAzHNX8xRFYAmexr2NHXMRSoyFPwU1F")
+    mint = PublicKey("DF55N1ZCBfEaQAc8PstaQ657sFmGjDwvNDoGQucuqbrD")
+    params = spl_token.AssociatedTokenAccountParams(payer=stubbed_sender.public_key(), owner=owner, mint=mint)
+    associated_token_account_address = spl_token.get_associated_token_address(params)
+    assert associated_token_account_address == PublicKey("7jQW5zjh4BogwnaC9hbXXz88vSWAfdvzXYuMVZEMARZX")
+
+
 def test_transfer(stubbed_reciever, stubbed_sender):
     """Test transfer."""
     params = spl_token.TransferParams(
