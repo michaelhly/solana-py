@@ -86,7 +86,7 @@ class PublicKey:
         iterates a nonce until it finds one that when combined with the seeds
         results in a valid program address.
         """
-        nonce = 255
+        nonce = 254
         while nonce != 0:
             try:
                 buffer = seeds + [helpers.to_uint8_bytes(nonce)]
