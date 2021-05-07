@@ -352,7 +352,6 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
 
 def decode_create_associated_token_account(instruction: TransactionInstruction) -> AssociatedTokenAccountParams:
     """Decode a create associated token account call."""
-    _ = __parse_and_validate_instruction(instruction, 7, InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT)
     return AssociatedTokenAccountParams(
         payer=instruction.keys[0].pubkey, owner=instruction.keys[2].pubkey, mint=instruction.keys[3].pubkey
     )
@@ -962,7 +961,6 @@ def create_associated_token_account(params: AssociatedTokenAccountParams) -> Tra
     >>> type(create_associated_token_account(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT, args=None))
     associated_token_address = get_associated_token_address(params)
     return TransactionInstruction(
         keys=[
@@ -975,5 +973,4 @@ def create_associated_token_account(params: AssociatedTokenAccountParams) -> Tra
             AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
         ],
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
-        data=data,
     )

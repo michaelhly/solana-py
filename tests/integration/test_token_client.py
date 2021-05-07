@@ -87,10 +87,10 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
 @pytest.mark.integration
 def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new associated token account."""
-    new_acct = Account().public_key()
-    token_account_pubkey = test_token.create_associated_token_account(new_acct)
-    expected_token_account_key, _ = new_acct.find_program_address(
-        seeds=[bytes(new_acct), bytes(TOKEN_PROGRAM_ID), bytes(test_token.pubkey)],
+    new_acct = Account()
+    token_account_pubkey = test_token.create_associated_token_account(new_acct.public_key())
+    expected_token_account_key, _ = PublicKey.find_program_address(
+        seeds=[bytes(new_acct.public_key()), bytes(TOKEN_PROGRAM_ID), bytes(test_token.pubkey)],
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
     )
     assert token_account_pubkey == expected_token_account_key
