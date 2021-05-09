@@ -39,13 +39,13 @@ class TransactionInstruction(NamedTuple):
     """Transaction Instruction class."""
 
     keys: List[AccountMeta]
-    """Program input."""
-    program_id: PublicKey
     """Public keys to include in this transaction Boolean represents whether this
     pubkey needs to sign the transaction.
     """
-    data: bytes = bytes(0)
+    program_id: PublicKey
     """Program Id to execute."""
+    data: bytes = bytes(0)
+    """Program input."""
 
 
 class NonceInformation(NamedTuple):
