@@ -264,7 +264,7 @@ class Token:  # pylint: disable=too-many-public-methods
         # Construct transaction
         txn = Transaction()
         create_txn = spl_token.create_associated_token_account(
-            spl_token.AssociatedTokenAccountParams(payer=self.payer.public_key(), owner=owner, mint=self.pubkey)
+            payer=self.payer.public_key(), owner=owner, mint=self.pubkey
         )
         txn.add(create_txn)
         self._conn.send_transaction(txn, self.payer, opts=TxOpts(skip_confirmation=skip_confirmation))

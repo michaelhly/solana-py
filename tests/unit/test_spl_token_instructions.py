@@ -60,11 +60,12 @@ def test_initialize_multisig():
 def test_create_associated_token_account(stubbed_sender):
     """Test create associated token account."""
     owner = PublicKey(0)
-    params = spl_token.AssociatedTokenAccountParams(
+    payer = stubbed_sender.public_key()
+    mint = stubbed_sender.public_key()
+    instruction = spl_token.create_associated_token_account(
         payer=stubbed_sender.public_key(), owner=owner, mint=stubbed_sender.public_key()
     )
-    instruction = spl_token.create_associated_token_account(params)
-    assert spl_token.decode_create_associated_token_account(instruction) == params
+    assert spl_token.decode_create_associated_token_account(instruction) == (payer, owner, mint)
 
 
 def test_transfer(stubbed_reciever, stubbed_sender):

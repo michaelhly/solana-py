@@ -5,9 +5,8 @@ from hashlib import sha256
 from typing import Any, List, Optional, Tuple, Union
 
 import base58
-from nacl.bindings.crypto_core import crypto_core_ed25519_is_valid_point  # type: ignore
 
-from solana.utils import helpers
+from solana.utils import ed25519_base, helpers
 
 
 class PublicKey:
@@ -74,9 +73,9 @@ class PublicKey:
         """Derive a program address from seeds and a program ID."""
         buffer = b"".join(seeds + [bytes(program_id), b"ProgramDerivedAddress"])
         hashbytes: bytes = sha256(buffer).digest()
-        if crypto_core_ed25519_is_valid_point(hashbytes):
-            raise Exception("Invalid seeds, address must fall off the curve")
-        return PublicKey(hashbytes)
+        if not PublicKey.is_on_curve(hashbytes):
+            return PublicKey(hashbytes)
+        raise Exception("Invalid seeds, address must fall off the curve")
 
     @staticmethod
     def find_program_address(seeds: List[bytes], program_id: PublicKey) -> Tuple[PublicKey, int]:
@@ -96,3 +95,8 @@ class PublicKey:
                 continue
             return address, nonce
         raise KeyError("Unable to find a viable program address nonce")
+
+    @staticmethod
+    def is_on_curve(pubkey_bytes: bytes) -> bool:
+        """Verify the point is on curve or not."""
+        return ed25519_base.is_on_curve(pubkey_bytes)
