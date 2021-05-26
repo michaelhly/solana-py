@@ -1,4 +1,4 @@
-"""Solana.py is the Python API for interfacing with the `Solana JSON RPC <https://docs.solana.com/apps/jsonrpc-api/>`_.
+"""Solana.py is the Python API for interfacing with the `Solana JSON RPC <https://docs.solana.com/developing/clients/jsonrpc-api/>`_. # noqa: E501 # pylint: disable=line-too-long
 
 Installation
 ------------
