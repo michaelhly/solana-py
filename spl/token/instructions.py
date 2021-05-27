@@ -1,7 +1,7 @@
 """SPL token instructions."""
 
 from enum import IntEnum
-from typing import Any, List, NamedTuple, Optional, Tuple, Union
+from typing import Any, List, NamedTuple, Optional, Union
 
 from solana.publickey import PublicKey
 from solana.system_program import SYS_PROGRAM_ID
@@ -337,17 +337,6 @@ def decode_initialize_multisig(instruction: TransactionInstruction) -> Initializ
         signers=[signer.pubkey for signer in instruction.keys[-num_signers:]],
         m=num_signers,
     )
-
-
-def decode_create_associated_token_account(
-    instruction: TransactionInstruction,
-) -> Tuple[PublicKey, PublicKey, PublicKey]:
-    """Decode a create associated token account call.
-
-    :return (payer, owner, mint)
-    """
-    _ = __parse_and_validate_instruction(instruction, 7, InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT)
-    return instruction.keys[0].pubkey, instruction.keys[2].pubkey, instruction.keys[3].pubkey
 
 
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
@@ -935,14 +924,14 @@ def burn2(params: Burn2Params) -> TransactionInstruction:
 
 def get_associated_token_address(owner: PublicKey, mint: PublicKey) -> PublicKey:
     """Derives the associated token address for the given wallet address and token mint."""
-    return PublicKey.find_program_address(
+    key, _ = PublicKey.find_program_address(
         seeds=[bytes(owner), bytes(TOKEN_PROGRAM_ID), bytes(mint)], program_id=ASSOCIATED_TOKEN_PROGRAM_ID
-    )[0]
+    )
+    return key
 
 
 def create_associated_token_account(payer: PublicKey, owner: PublicKey, mint: PublicKey) -> TransactionInstruction:
     """Creates a transaction instruction to create an associated token account."""
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CREATE_ASSOCIATED_TOKEN_ACCOUNT, args=None))
     associated_token_address = get_associated_token_address(owner, mint)
     return TransactionInstruction(
         keys=[
@@ -955,5 +944,4 @@ def create_associated_token_account(payer: PublicKey, owner: PublicKey, mint: Pu
             AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
         ],
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
-        data=data,
     )
