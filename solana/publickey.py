@@ -73,7 +73,7 @@ class PublicKey:
         """Derive a program address from seeds and a program ID."""
         buffer = b"".join(seeds + [bytes(program_id), b"ProgramDerivedAddress"])
         hashbytes: bytes = sha256(buffer).digest()
-        if not PublicKey.is_on_curve(hashbytes):
+        if not PublicKey._is_on_curve(hashbytes):
             return PublicKey(hashbytes)
         raise Exception("Invalid seeds, address must fall off the curve")
 
@@ -97,6 +97,6 @@ class PublicKey:
         raise KeyError("Unable to find a viable program address nonce")
 
     @staticmethod
-    def is_on_curve(pubkey_bytes: bytes) -> bool:
+    def _is_on_curve(pubkey_bytes: bytes) -> bool:
         """Verify the point is on curve or not."""
         return ed25519_base.is_on_curve(pubkey_bytes)

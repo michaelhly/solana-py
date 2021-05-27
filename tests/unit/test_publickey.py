@@ -248,7 +248,7 @@ def test_find_program_address():
 def test_is_on_curve():
     """Test on curve verify."""
     on_curve = PublicKey("4fwsi7ei2vDcUByZWXV3YmMEyLwBnLamiuDzUrEKADnm")
-    assert PublicKey.is_on_curve(pubkey_bytes=bytes(on_curve))
+    assert PublicKey._is_on_curve(pubkey_bytes=bytes(on_curve))  # pylint: disable=protected-access
 
     off_curve = PublicKey("12rqwuEgBYiGhBrDJStCiqEtzQpTTiZbh7teNVLuYcFA")
-    assert not PublicKey.is_on_curve(pubkey_bytes=bytes(off_curve))
+    assert not PublicKey._is_on_curve(pubkey_bytes=bytes(off_curve))  # pylint: disable=protected-access
