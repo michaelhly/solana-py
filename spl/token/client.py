@@ -247,6 +247,29 @@ class Token:  # pylint: disable=too-many-public-methods
         )
         return new_account.public_key()
 
+    def create_associated_token_account(
+        self,
+        owner: PublicKey,
+        skip_confirmation: bool = False,
+    ) -> PublicKey:
+        """Create an associated token account.
+
+        :param owner: User account that will own the associated token account.
+        :param skip_confirmation: (optional) Option to skip transaction confirmation.
+        :return: Public key of the new associated account.
+
+        If skip confirmation is set to `False`, this method will block for at most 30 seconds
+        or until the transaction is confirmed.
+        """
+        # Construct transaction
+        txn = Transaction()
+        create_txn = spl_token.create_associated_token_account(
+            payer=self.payer.public_key(), owner=owner, mint=self.pubkey
+        )
+        txn.add(create_txn)
+        self._conn.send_transaction(txn, self.payer, opts=TxOpts(skip_confirmation=skip_confirmation))
+        return create_txn.keys[1].pubkey
+
     @staticmethod
     def create_wrapped_native_account(
         conn: Client, program_id: PublicKey, owner: PublicKey, payer: Account, amount: int

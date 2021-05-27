@@ -3,6 +3,7 @@
 import pytest
 
 from solana.publickey import PublicKey
+from solana.utils import helpers
 
 
 def test_invalid_pubkeys():
@@ -235,3 +236,19 @@ def test_create_program_address():
     seeds = [bytes(PublicKey("H4snTKK9adiU15gP22ErfZYtro3aqR9BTMXiH3AwiUTQ")), bytes.fromhex("0200000000000000")]
     program_address = PublicKey.create_program_address(seeds, PublicKey("4ckmDgGdxQoPDLUkDT3vHgSAkzA3QRdNq5ywwY4sUSJn"))
     assert program_address == PublicKey("12rqwuEgBYiGhBrDJStCiqEtzQpTTiZbh7teNVLuYcFA")
+
+
+def test_find_program_address():
+    """Test create associated_token_address."""
+    program_id = PublicKey("BPFLoader1111111111111111111111111111111111")
+    program_address, nonce = PublicKey.find_program_address([bytes()], program_id)
+    assert program_address == PublicKey.create_program_address([bytes(), helpers.to_uint8_bytes(nonce)], program_id)
+
+
+def test_is_on_curve():
+    """Test on curve verify."""
+    on_curve = PublicKey("4fwsi7ei2vDcUByZWXV3YmMEyLwBnLamiuDzUrEKADnm")
+    assert PublicKey._is_on_curve(pubkey_bytes=bytes(on_curve))  # pylint: disable=protected-access
+
+    off_curve = PublicKey("12rqwuEgBYiGhBrDJStCiqEtzQpTTiZbh7teNVLuYcFA")
+    assert not PublicKey._is_on_curve(pubkey_bytes=bytes(off_curve))  # pylint: disable=protected-access

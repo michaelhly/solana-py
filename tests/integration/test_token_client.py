@@ -6,7 +6,7 @@ from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
 from spl.token.client import Token
-from spl.token.constants import TOKEN_PROGRAM_ID
+from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
 from .utils import assert_valid_response, confirm_transaction, decode_byte_string
 
@@ -82,6 +82,18 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     assert not account_data.is_native_option and not account_data.is_native
     assert PublicKey(account_data.mint) == test_token.pubkey
     assert PublicKey(account_data.owner) == stubbed_sender.public_key()
+
+
+@pytest.mark.integration
+def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
+    """Test creating a new associated token account."""
+    new_acct = PublicKey(0)
+    token_account_pubkey = test_token.create_associated_token_account(new_acct)
+    expected_token_account_key, _ = new_acct.find_program_address(
+        seeds=[bytes(new_acct), bytes(TOKEN_PROGRAM_ID), bytes(test_token.pubkey)],
+        program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
+    )
+    assert token_account_pubkey == expected_token_account_key
 
 
 @pytest.mark.integration

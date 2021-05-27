@@ -1,9 +1,9 @@
 """Byte layouts for system program instructions."""
 from enum import IntEnum
 
+from construct import Switch  # type: ignore
 from construct import Int32ul, Int64ul, Pass  # type: ignore
 from construct import Struct as cStruct
-from construct import Switch
 
 from .shared import PUBLIC_KEY_LAYOUT, RUST_STRING_LAYOUT
 

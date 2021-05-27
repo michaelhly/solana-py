@@ -4,10 +4,12 @@ from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 
 from solana.publickey import PublicKey
+from solana.system_program import SYS_PROGRAM_ID
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, TransactionInstruction
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType  # type: ignore
+from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
 
 class AuthorityType(IntEnum):
@@ -918,3 +920,28 @@ def burn2(params: Burn2Params) -> TransactionInstruction:
         dict(instruction_type=InstructionType.BURN2, args=dict(amount=params.amount, decimals=params.decimals))
     )
     return __burn_instruction(params, data)
+
+
+def get_associated_token_address(owner: PublicKey, mint: PublicKey) -> PublicKey:
+    """Derives the associated token address for the given wallet address and token mint."""
+    key, _ = PublicKey.find_program_address(
+        seeds=[bytes(owner), bytes(TOKEN_PROGRAM_ID), bytes(mint)], program_id=ASSOCIATED_TOKEN_PROGRAM_ID
+    )
+    return key
+
+
+def create_associated_token_account(payer: PublicKey, owner: PublicKey, mint: PublicKey) -> TransactionInstruction:
+    """Creates a transaction instruction to create an associated token account."""
+    associated_token_address = get_associated_token_address(owner, mint)
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=payer, is_signer=True, is_writable=True),
+            AccountMeta(pubkey=associated_token_address, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=owner, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=TOKEN_PROGRAM_ID, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        ],
+        program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
+    )
