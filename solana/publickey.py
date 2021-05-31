@@ -66,7 +66,8 @@ class PublicKey:
     @staticmethod
     def create_with_seed(from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:
         """Derive a public key from another key, a seed, and a program ID."""
-        raise NotImplementedError("create_with_seed not implemented")
+        buf = bytes(from_public_key) + seed.encode("utf-8") + bytes(program_id)
+        return PublicKey(sha256(buf).digest())
 
     @staticmethod
     def create_program_address(seeds: List[bytes], program_id: PublicKey) -> PublicKey:

@@ -252,3 +252,10 @@ def test_is_on_curve():
 
     off_curve = PublicKey("12rqwuEgBYiGhBrDJStCiqEtzQpTTiZbh7teNVLuYcFA")
     assert not PublicKey._is_on_curve(pubkey_bytes=bytes(off_curve))  # pylint: disable=protected-access
+
+
+def test_create_with_seed():
+    """Test create with seed"""
+    default_public_key = PublicKey("11111111111111111111111111111111")
+    derived_key = PublicKey.create_with_seed(default_public_key, "limber chicken: 4/45", default_public_key)
+    assert derived_key == PublicKey("9h1HyLCW5dZnBVap8C5egQ9Z6pHyjsh5MNy83iPqqRuq")
