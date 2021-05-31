@@ -1,4 +1,4 @@
-"""Solana.py is the Python API for interfacing with the `Solana JSON RPC <https://docs.solana.com/developing/clients/jsonrpc-api/>`_. # noqa: E501 # pylint: disable=line-too-long
+"""Solana.py is the Python API for interfacing with the `Solana JSON RPC <https://docs.solana.com/developing/clients/jsonrpc-api/>`_.
 
 Installation
 ------------
@@ -27,8 +27,6 @@ API Client:
 
     http_client = Client("https://devnet.solana.com")
 
-"""
-import sys
-
+"""  # pylint: disable=line-too-long # noqa: E501
 if sys.version_info < (3, 7):
     raise EnvironmentError("Python 3.7 or above is required.")
