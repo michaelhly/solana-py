@@ -27,6 +27,7 @@ def test_request_air_drop(stubbed_sender, test_http_client):
         "postTokenBalances": [],
         "preBalances": [500000000000000000, 0, 1],
         "preTokenBalances": [],
+        "rewards": [],
         "status": {"Ok": None},
     }
     assert resp["result"]["meta"] == expected_meta
@@ -58,6 +59,14 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test
         "postTokenBalances": [],
         "preBalances": [10000000000, 0, 1],
         "preTokenBalances": [],
+        "rewards": [
+            {
+                "lamports": -46,
+                "postBalance": 954,
+                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99",
+                "rewardType": "Rent",
+            }
+        ],
         "status": {"Ok": None},
     }
     assert resp["result"]["meta"] == expected_meta
@@ -103,6 +112,7 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_reciever, 
         "postTokenBalances": [],
         "preBalances": [9999994000, 954, 1],
         "preTokenBalances": [],
+        "rewards": [],
         "status": {"Ok": None},
     }
     assert resp["result"]["meta"] == expected_meta
