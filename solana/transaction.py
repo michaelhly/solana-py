@@ -132,7 +132,7 @@ class Transaction:
 
         account_metas, program_ids = [], set()
         for instr in self.instructions:
-            if not instr.program_id or not instr.keys:
+            if not instr.program_id:
                 raise AttributeError("invalid instruction:", instr)
             account_metas.extend(instr.keys)
             program_ids.add(str(instr.program_id))
