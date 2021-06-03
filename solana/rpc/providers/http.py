@@ -25,6 +25,7 @@ class HTTPProvider(BaseProvider, FriendlyJsonSerde):
         """Init HTTPProvider."""
         self._request_counter = itertools.count()
         self.endpoint_uri = get_default_endpoint() if not endpoint else URI(endpoint)
+        self.data_send: dict = {}
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
@@ -41,7 +42,8 @@ class HTTPProvider(BaseProvider, FriendlyJsonSerde):
             params,
         )
         headers = {"Content-Type": "application/json"}
-        data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
+        self.data_send.update({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
+        data = self.json_encode(self.data_send)
         raw_response = requests.post(self.endpoint_uri, headers=headers, data=data)
         raw_response.raise_for_status()
         self.logger.debug(

@@ -46,6 +46,10 @@ class Client:  # pylint: disable=too-many-public-methods
         """Init API client."""
         self._provider = http.HTTPProvider(endpoint)
 
+    @property
+    def request_dict(self):
+        return self._provider.data_send
+
     def is_connected(self) -> bool:
         """Health check.
 
