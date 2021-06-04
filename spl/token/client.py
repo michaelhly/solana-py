@@ -435,7 +435,7 @@ class Token:  # pylint: disable=too-many-public-methods
                 )
             )
         )
-        return self._conn.send_transaction(txn, *signers, opts=opts)
+        return self._conn.send_transaction(txn, self.payer, *signers, opts=opts)
 
     def burn(
         self,
