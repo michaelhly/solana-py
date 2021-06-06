@@ -395,7 +395,27 @@ class Token:  # pylint: disable=too-many-public-methods
         :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
         :param opts: (optional) Transaction options.
         """
-        raise NotImplementedError("set_authority not implemented")
+        
+        if isinstance(current_authority, Account):
+            current_authority_pubkey = current_authority.public_key()
+            signers = [current_authority]
+        else:
+            current_authority_pubkey = current_authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.set_authority(
+                spl_token.SetAuthorityParams(
+                    program_id=self.program_id,
+                    account=account,
+                    authority=authority_type,
+                    current_authority=current_authority_pubkey,
+                    signers=[signer.public_key() for signer in signers],
+                    new_authority=new_authority,
+                )
+            )
+        )    
+        return self._conn.send_transaction(txn, self.payer, *signers, opts=opts)
 
     def mint_to(
         self,
