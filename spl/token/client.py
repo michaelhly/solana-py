@@ -327,7 +327,6 @@ class Token:  # pylint: disable=too-many-public-methods
             )
         )
 
-        # Send the two instructions
         conn.send_transaction(
             txn, payer, new_account, opts=TxOpts(skip_preflight=True, skip_confirmation=False)
         )
