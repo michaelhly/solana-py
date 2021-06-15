@@ -27,6 +27,7 @@ sphinx = "*"
 twine = "*"
 setuptools = "*"
 bump2version = "*"
+types-requests = "*"
 
 [packages]
 pynacl = "*"
