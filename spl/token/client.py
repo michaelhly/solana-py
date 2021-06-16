@@ -273,11 +273,7 @@ class Token:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def create_wrapped_native_account(
-        conn: Client,
-        program_id: PublicKey,
-        owner: PublicKey,
-        payer: Account,
-        amount: int
+        conn: Client, program_id: PublicKey, owner: PublicKey, payer: Account, amount: int
     ) -> PublicKey:
         """Create and initialize a new account on the special native token mint.
 
@@ -288,7 +284,7 @@ class Token:  # pylint: disable=too-many-public-methods
         :param amount: The amount of lamports to wrap.
         :return: The new token account.
         """
-        
+
         new_account = Account()
         # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
@@ -301,36 +297,27 @@ class Token:  # pylint: disable=too-many-public-methods
                     new_account_pubkey=new_account.public_key(),
                     lamports=balance_needed,
                     space=ACCOUNT_LAYOUT.sizeof(),
-                    program_id=program_id
+                    program_id=program_id,
                 )
             )
         )
 
         txn.add(
             sp.transfer(
-                sp.TransferParams(
-                    from_pubkey=payer.public_key(),
-                    to_pubkey=new_account.public_key(),
-                    lamports=amount
-                )
+                sp.TransferParams(from_pubkey=payer.public_key(), to_pubkey=new_account.public_key(), lamports=amount)
             )
         )
-        
+
         txn.add(
             spl_token.initialize_account(
                 spl_token.InitializeAccountParams(
-                    account=new_account.public_key(),
-                    mint=WRAPPED_SOL_MINT,
-                    owner=owner,
-                    program_id=program_id
+                    account=new_account.public_key(), mint=WRAPPED_SOL_MINT, owner=owner, program_id=program_id
                 )
             )
         )
 
-        conn.send_transaction(
-            txn, payer, new_account, opts=TxOpts(skip_preflight=True, skip_confirmation=False)
-        )
-        
+        conn.send_transaction(txn, payer, new_account, opts=TxOpts(skip_preflight=True, skip_confirmation=False))
+
         return new_account.public_key()
 
     def create_multisig(self, m: int, signers: List[PublicKey]) -> PublicKey:  # pylint: disable=invalid-name
