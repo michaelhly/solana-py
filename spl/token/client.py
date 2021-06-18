@@ -284,7 +284,6 @@ class Token:  # pylint: disable=too-many-public-methods
         :param amount: The amount of lamports to wrap.
         :return: The new token account.
         """
-
         new_account = Account()
         # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
