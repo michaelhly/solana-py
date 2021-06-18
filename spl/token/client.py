@@ -395,7 +395,7 @@ class Token:  # pylint: disable=too-many-public-methods
         :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
         :param opts: (optional) Transaction options.
         """
-        
+
         if isinstance(current_authority, Account):
             current_authority_pubkey = current_authority.public_key()
             signers = [current_authority]
@@ -414,7 +414,7 @@ class Token:  # pylint: disable=too-many-public-methods
                     new_authority=new_authority,
                 )
             )
-        )    
+        )
         return self._conn.send_transaction(txn, self.payer, *signers, opts=opts)
 
     def mint_to(
