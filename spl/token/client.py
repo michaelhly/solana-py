@@ -380,7 +380,7 @@ class Token:  # pylint: disable=too-many-public-methods
     def set_authority(
         self,
         account: PublicKey,
-        current_authority: PublicKey,
+        current_authority: Union[Account, PublicKey],
         authority_type: spl_token.AuthorityType,
         new_authority: Optional[PublicKey] = None,
         multi_signers: Optional[List[Account]] = None,
@@ -395,7 +395,6 @@ class Token:  # pylint: disable=too-many-public-methods
         :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
         :param opts: (optional) Transaction options.
         """
-
         if isinstance(current_authority, Account):
             current_authority_pubkey = current_authority.public_key()
             signers = [current_authority]
@@ -415,6 +414,7 @@ class Token:  # pylint: disable=too-many-public-methods
                 )
             )
         )
+
         return self._conn.send_transaction(txn, self.payer, *signers, opts=opts)
 
     def mint_to(
