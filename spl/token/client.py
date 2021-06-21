@@ -273,7 +273,12 @@ class Token:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def create_wrapped_native_account(
-        conn: Client, program_id: PublicKey, owner: PublicKey, payer: Account, amount: int
+        conn: Client,
+        program_id: PublicKey,
+        owner: PublicKey,
+        payer: Account,
+        amount: int,
+        skip_confirmation: bool = False,
     ) -> PublicKey:
         """Create and initialize a new account on the special native token mint.
 
@@ -282,7 +287,11 @@ class Token:  # pylint: disable=too-many-public-methods
         :param owner: The owner of the new token account.
         :param payer: The source of the lamports to initialize, and payer of the initialization fees.
         :param amount: The amount of lamports to wrap.
+        :param skip_confirmation: (optional) Option to skip transaction confirmation.
         :return: The new token account.
+
+        If skip confirmation is set to `False`, this method will block for at most 30 seconds
+        or until the transaction is confirmed.
         """
         new_account = Account()
         # Allocate memory for the account
@@ -315,7 +324,7 @@ class Token:  # pylint: disable=too-many-public-methods
             )
         )
 
-        conn.send_transaction(txn, payer, new_account, opts=TxOpts(skip_preflight=True, skip_confirmation=False))
+        conn.send_transaction(txn, payer, new_account, opts=TxOpts(skip_confirmation=skip_confirmation))
 
         return new_account.public_key()
 
