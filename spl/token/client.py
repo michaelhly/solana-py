@@ -13,6 +13,7 @@ from solana.rpc.commitment import Commitment, Single
 from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
+from spl.token.constants import WRAPPED_SOL_MINT
 
 
 class AccountInfo(NamedTuple):
@@ -272,7 +273,12 @@ class Token:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def create_wrapped_native_account(
-        conn: Client, program_id: PublicKey, owner: PublicKey, payer: Account, amount: int
+        conn: Client,
+        program_id: PublicKey,
+        owner: PublicKey,
+        payer: Account,
+        amount: int,
+        skip_confirmation: bool = False,
     ) -> PublicKey:
         """Create and initialize a new account on the special native token mint.
 
@@ -281,9 +287,46 @@ class Token:  # pylint: disable=too-many-public-methods
         :param owner: The owner of the new token account.
         :param payer: The source of the lamports to initialize, and payer of the initialization fees.
         :param amount: The amount of lamports to wrap.
+        :param skip_confirmation: (optional) Option to skip transaction confirmation.
         :return: The new token account.
+
+        If skip confirmation is set to `False`, this method will block for at most 30 seconds
+        or until the transaction is confirmed.
         """
-        raise NotImplementedError("create_wrapped_native_account not implemented")
+        new_account = Account()
+        # Allocate memory for the account
+        balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
+        # Construct transaction
+        txn = Transaction()
+        txn.add(
+            sp.create_account(
+                sp.CreateAccountParams(
+                    from_pubkey=payer.public_key(),
+                    new_account_pubkey=new_account.public_key(),
+                    lamports=balance_needed,
+                    space=ACCOUNT_LAYOUT.sizeof(),
+                    program_id=program_id,
+                )
+            )
+        )
+
+        txn.add(
+            sp.transfer(
+                sp.TransferParams(from_pubkey=payer.public_key(), to_pubkey=new_account.public_key(), lamports=amount)
+            )
+        )
+
+        txn.add(
+            spl_token.initialize_account(
+                spl_token.InitializeAccountParams(
+                    account=new_account.public_key(), mint=WRAPPED_SOL_MINT, owner=owner, program_id=program_id
+                )
+            )
+        )
+
+        conn.send_transaction(txn, payer, new_account, opts=TxOpts(skip_confirmation=skip_confirmation))
+
+        return new_account.public_key()
 
     def create_multisig(self, m: int, signers: List[PublicKey]) -> PublicKey:  # pylint: disable=invalid-name
         """Create and initialize a new multisig.
