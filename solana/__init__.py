@@ -25,7 +25,7 @@ API Client:
 
     from solana.rpc.api import Client
 
-    http_client = Client("https://devnet.solana.com")
+    http_client = Client("https://api.devnet.solana.com")
 
 """  # pylint: disable=line-too-long # noqa: E501
 import sys
