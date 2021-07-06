@@ -271,6 +271,10 @@ class Client:  # pylint: disable=too-many-public-methods
            'slot': 4290}],
          'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
+        warn(
+            "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, please use solana.rpc.api.getSignaturesForAddress",  # noqa: E501 # pylint: disable=line-too-long
+            category=DeprecationWarning,
+        )
         opts: Dict[str, Union[int, str]] = {}
         if before:
             opts["before"] = before
@@ -283,6 +287,41 @@ class Client:  # pylint: disable=too-many-public-methods
             account = str(account)
 
         return self._provider.make_request(types.RPCMethod("getConfirmedSignaturesForAddress2"), account, opts)
+
+    def get_signatures_for_address(
+        self, account: Union[str, Account, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
+    ) -> types.RPCResponse:
+        """Returns confirmed signatures for transactions involving an address.
+
+        Signatures are returned backwards in time from the provided signature or
+        most recent confirmed block.
+
+        :param account: Account to be queried.
+        :param before: (optional) Start searching backwards from this transaction signature.
+            If not provided the search starts from the top of the highest max confirmed block.
+        :param limit: (optional) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
+
+        >>> solana_client = Client("http://localhost:8899")
+        >>> solana_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
+        {'jsonrpc': '2.0',
+         'result': [{'err': None,
+           'memo': None,
+           'signature': 'v1BK8XcaPBzAGd7TB1K53pMdi6TBGe5CLCgx8cmZ4Bj63ZNvA6ca2QaxFpBFdvmpoFQ51VorBjifkBGLTDhwpqN',
+           'slot': 4290}],
+         'id': 2}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        opts: Dict[str, Union[int, str]] = {}
+        if before:
+            opts["before"] = before
+        if limit:
+            opts["limit"] = limit
+
+        if isinstance(account, Account):
+            account = str(account.public_key())
+        if isinstance(account, PublicKey):
+            account = str(account)
+
+        return self._provider.make_request(types.RPCMethod("getSignaturesForAddress"), account, opts)
 
     def get_confirmed_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
