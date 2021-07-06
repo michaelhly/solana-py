@@ -273,7 +273,7 @@ class Client:  # pylint: disable=too-many-public-methods
         """  # noqa: E501 # pylint: disable=line-too-long
         warn(
             "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, please use solana.rpc.api.getSignaturesForAddress",  # noqa: E501 # pylint: disable=line-too-long
-            category=DeprecationWarning
+            category=DeprecationWarning,
         )
         opts: Dict[str, Union[int, str]] = {}
         if before:
