@@ -233,13 +233,45 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
 
 
 def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
-    """Decode an allocate system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_allocate not implemented")
+    """Decode an allocate system instruction and retrieve the instruction params.
+
+    >>> from solana.publickey import PublicKey
+    >>> allocator = PublicKey(1)
+    >>> instruction = allocate(
+    ...     AllocateParams(account_pubkey=allocator,space=65537)
+    ... )
+    >>> decode_allocate(instruction)
+    AllocateParams(account_pubkey=11111111111111111111111111111112, space=65537)
+    """  # pylint: disable=line-too-long # noqa: E501
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ALLOCATE)
+    return AllocateParams(account_pubkey=instruction.keys[0].pubkey, space=parsed_data.args.space)
 
 
 def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWithSeedParams:
-    """Decode an allocate with seed system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_allocate_with_seed not implemented")
+    """Decode an allocate with seed system instruction and retrieve the instruction params.
+
+    >>> from solana.publickey import PublicKey
+    >>> allocator, base, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> instruction = allocate(
+    ...     AllocateWithSeedParams(
+    ...         account_pubkey=allocator,
+    ...         base_pubkey=base,
+    ...         seed={"length": 4, "chars": "gqln"},
+    ...         space=65537,
+    ...         program_id=program_id
+    ...     )
+    ... )
+    >>> decode_allocate_with_seed(instruction)
+    AllocateWithSeedParams(account_pubkey=11111111111111111111111111111112, base_pubkey=11111111111111111111111111111113, seed=Container(length=4, chars=u'gqln'), space=65537, program_id=11111111111111111111111111111114)
+    """  # pylint: disable=line-too-long # noqa: E501
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ALLOCATE_WITH_SEED)
+    return AllocateWithSeedParams(
+        account_pubkey=instruction.keys[0].pubkey,
+        base_pubkey=PublicKey(parsed_data.args.base),
+        seed=parsed_data.args.seed,
+        space=parsed_data.args.space,
+        program_id=PublicKey(parsed_data.args.program_id),
+    )
 
 
 def decode_assign(instruction: TransactionInstruction) -> AssignParams:
@@ -374,31 +406,63 @@ def create_account_with_seed(params: CreateAccountWithSeedParams) -> Transaction
     raise NotImplementedError("create_account_with_seed not implemented")
 
 
-def create_nonce_account(param: Union[CreateNonceAccountParams, CreateAccountWithSeedParams]) -> Transaction:
+def create_nonce_account(params: Union[CreateNonceAccountParams, CreateAccountWithSeedParams]) -> Transaction:
     """Generate a Transaction that creates a new Nonce account."""
     raise NotImplementedError("create_nonce_account_params not implemented")
 
 
-def nonce_initialization(param: InitializeNonceParams) -> TransactionInstruction:
+def nonce_initialization(params: InitializeNonceParams) -> TransactionInstruction:
     """Generate an instruction to initialize a Nonce account."""
     raise NotImplementedError("nonce_initialization not implemented")
 
 
-def nonce_advance(param: AdvanceNonceParams) -> TransactionInstruction:
+def nonce_advance(params: AdvanceNonceParams) -> TransactionInstruction:
     """Generate an instruction to advance the nonce in a Nonce account."""
     raise NotImplementedError("nonce advance not implemented")
 
 
-def nonce_withdraw(param: WithdrawNonceParams) -> TransactionInstruction:
+def nonce_withdraw(params: WithdrawNonceParams) -> TransactionInstruction:
     """Generate an instruction that withdraws lamports from a Nonce account."""
     raise NotImplementedError("nonce_withdraw not implemented")
 
 
-def nonce_authorize(param: AuthorizeNonceParams) -> TransactionInstruction:
+def nonce_authorize(params: AuthorizeNonceParams) -> TransactionInstruction:
     """Generate an instruction that authorizes a new PublicKey as the authority on a Nonce account."""
     raise NotImplementedError("nonce_authorize not implemented")
 
 
-def allocate(param: Union[AllocateParams, AllocateWithSeedParams]) -> TransactionInstruction:
-    """Generate an instruction that allocates space in an account without funding."""
-    raise NotImplementedError("allocate not implemented")
+def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> TransactionInstruction:
+    """Generate an instruction that allocates space in an account without funding.
+
+    >>> from solana.publickey import PublicKey
+    >>> allocator = PublicKey(1)
+    >>> instruction = allocate(
+    ...     AllocateParams(account_pubkey=allocator, space=65537)
+    ... )
+    >>> type(instruction)
+    <class 'solana.transaction.TransactionInstruction'>
+    """
+    if isinstance(params, AllocateWithSeedParams):
+        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+            dict(
+                instruction_type=InstructionType.ALLOCATE_WITH_SEED,
+                args=dict(
+                    base=bytes(params.base_pubkey),
+                    seed=params.seed,
+                    space=params.space,
+                    program_id=bytes(params.program_id),
+                ),
+            )
+        )
+    else:
+        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+            dict(instruction_type=InstructionType.ALLOCATE, args=dict(space=params.space))
+        )
+
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
+        ],
+        program_id=SYS_PROGRAM_ID,
+        data=data,
+    )
