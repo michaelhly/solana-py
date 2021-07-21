@@ -28,6 +28,7 @@ twine = "*"
 setuptools = "*"
 bump2version = "*"
 types-requests = "*"
+notebook = "*"
 
 [packages]
 pynacl = "*"
