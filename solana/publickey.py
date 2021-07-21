@@ -31,8 +31,8 @@ class PublicKey:
                 self._key = base58.b58decode(value)
             except ValueError as err:
                 raise ValueError("invalid public key input:", value) from err
-            if len(self._key) != self.LENGTH:
-                raise ValueError("invalid public key input:", value)
+            # if len(self._key) != self.LENGTH:
+            #     raise ValueError("invalid public key input:", value)
         elif isinstance(value, int):
             self._key = bytes([value])
         else:

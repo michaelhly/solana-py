@@ -48,7 +48,7 @@ class Client:  # pylint: disable=too-many-public-methods
 
     @property
     def request_dict(self):
-        return self._provider.data_send
+        return self._provider.data_send if getattr(self, '_provider') else None
 
     def is_connected(self) -> bool:
         """Health check.
@@ -633,9 +633,10 @@ class Client:  # pylint: disable=too-many-public-methods
          'id' :1}
         """  # noqa: E501 # pylint: disable=line-too-long
         opts: Dict[str, Any] = {"filters": []}
-        for opt in [] if not memcmp_opts else memcmp_opts:
-            opts["filters"].append({"memcmp": dict(opt._asdict())})
-        if data_size:
+        # for opt in [] if not memcmp_opts else memcmp_opts:
+        if memcmp_opts:
+            opts["filters"].append({"memcmp": dict(memcmp_opts._asdict())})
+        if data_size is not None:
             opts["filters"].append({"dataSize": data_size})
         if data_slice:
             opts[self._data_slice_key] = dict(data_slice._asdict())
