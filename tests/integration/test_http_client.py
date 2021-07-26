@@ -61,6 +61,7 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test
         "preTokenBalances": [],
         "rewards": [
             {
+                "commission": None,
                 "lamports": -46,
                 "postBalance": 954,
                 "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99",
