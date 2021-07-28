@@ -9,14 +9,11 @@ from typing import NewType
 Commitment = NewType("Commitment", str)
 """Type for commitment."""
 
-Max = Commitment("max")
-"""The node will query the most recent bank confirmed by the cluster as having
-reached `MAX_LOCKOUT_HISTORY` confirmations."""
+Finalized = Commitment("finalized")
+"""The node will query the most recent block confirmed by supermajority of the cluster as having reached maximum
+ lockout, meaning the cluster has recognized this block as finalized."""
 
-Root = Commitment("root")
-"""The node will query the most recent bank having reached `MAX_LOCKOUT_HISTORY` confirmations on this node."""
-
-Single = Commitment("singleGossip")
+Confirmed = Commitment("confirmed")
 """The node will query the most recent block that has been voted on by supermajority of the cluster.
 
 - It incorporates votes from gossip and replay.
@@ -24,5 +21,17 @@ Single = Commitment("singleGossip")
 - This confirmation level also upholds "optimistic confirmation" guarantees in release 1.3 and onwards.
 """
 
+Processed = Commitment("processed")
+"""The node will query its most recent block. Note that the block may not be complete."""
+
+Max = Commitment("max")
+"""Deprecated"""
+
+Root = Commitment("root")
+"""Deprecated"""
+
+Single = Commitment("singleGossip")
+"""Deprecated"""
+
 Recent = Commitment("recent")
-"""The node will query its most recent bank."""
+"""Deprecated"""

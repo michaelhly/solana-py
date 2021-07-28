@@ -5,7 +5,7 @@ from typing_extensions import Literal, TypedDict  # noqa: F401
 
 from solana.publickey import PublicKey
 
-from .commitment import Commitment, Max
+from .commitment import Commitment, Finalized
 
 URI = NewType("URI", str)
 """Type for endpoint URI."""
@@ -87,5 +87,5 @@ class TxOpts(NamedTuple):
     """
     skip_preflight: bool = False
     """If true, skip the preflight transaction checks."""
-    preflight_commitment: Commitment = Max
+    preflight_commitment: Commitment = Finalized
     """Commitment level to use for preflight."""
