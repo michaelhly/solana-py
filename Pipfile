@@ -36,6 +36,7 @@ base58 = "*"
 requests = "*"
 construct = "*"
 typing-extensions = "*"
+httpx = "*"
 
 [requires]
 python_version = "3.7"
