@@ -61,6 +61,7 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test
         "preTokenBalances": [],
         "rewards": [
             {
+                "commission": None,
                 "lamports": -46,
                 "postBalance": 954,
                 "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99",
@@ -173,12 +174,12 @@ def test_get_confirmed_signature_for_address2(test_http_client):
     resp = test_http_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1)
     assert_valid_response(resp)
 
-
-@pytest.mark.integration
-def test_get_signatures_for_address(test_http_client):
-    """Test get signatures for addresses."""
-    resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
-    assert_valid_response(resp)
+# TODO(michael): This RPC call is only available in solana-core v1.7 or newer.
+# @pytest.mark.integration
+# def test_get_signatures_for_address(test_http_client):
+#     """Test get signatures for addresses."""
+#     resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
+#     assert_valid_response(resp)
 
 
 @pytest.mark.integration
