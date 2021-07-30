@@ -3,6 +3,7 @@ API Client
 
 .. automodule:: solana.rpc.commitment
    :members:
+   :member-order: bysource
 
 .. automodule:: solana.rpc.api
 

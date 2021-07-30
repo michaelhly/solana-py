@@ -9,7 +9,7 @@ import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
-from solana.rpc.commitment import Commitment, Single
+from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
@@ -113,7 +113,11 @@ class Token:  # pylint: disable=too-many-public-methods
         return resp["result"]
 
     def get_accounts(
-        self, owner: PublicKey, is_delegate: bool = False, commitment: Commitment = Single, encoding: str = "jsonParsed"
+        self,
+        owner: PublicKey,
+        is_delegate: bool = False,
+        commitment: Commitment = Confirmed,
+        encoding: str = "jsonParsed",
     ) -> RPCResponse:
         """Get token accounts of the provided owner by the token's mint.
 
@@ -137,7 +141,7 @@ class Token:  # pylint: disable=too-many-public-methods
             )
         )
 
-    def get_balance(self, pubkey: PublicKey, commitment: Commitment = Single) -> RPCResponse:
+    def get_balance(self, pubkey: PublicKey, commitment: Commitment = Confirmed) -> RPCResponse:
         """Get the balance of the provided token account.
 
         :param pubkey: Public Key of the token account.
