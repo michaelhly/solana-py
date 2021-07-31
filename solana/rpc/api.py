@@ -33,7 +33,7 @@ def MemcmpOpt(*args, **kwargs) -> types.MemcmpOpts:  # pylint: disable=invalid-n
     return types.MemcmpOpts(*args, **kwargs)
 
 
-class _ClientCore:
+class _ClientCore:  # pylint: disable=too-few-public-methods
     _comm_key = "commitment"
     _encoding_key = "encoding"
     _data_slice_key = "dataSlice"

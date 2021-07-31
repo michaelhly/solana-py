@@ -65,7 +65,7 @@ class MintInfo(NamedTuple):
     """ Optional authority to freeze token accounts."""
 
 
-class _TokenCore:
+class _TokenCore:  # pylint: disable=too-few-public-methods
 
     pubkey: PublicKey
     """The public key identifying this mint."""
