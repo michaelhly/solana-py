@@ -108,10 +108,12 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         return response.status_code == httpx.codes.OK
 
     async def __aenter__(self) -> "AsyncHTTPProvider":
+        """Use as a context manager."""
         await self.session.__aenter__()
         return self
 
     async def __aexit__(self, _exc_type, _exc, _tb):
+        """Exits the context manager."""
         await self.close()
 
     async def close(self) -> None:

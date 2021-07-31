@@ -2,7 +2,7 @@
 """SPL Token program client."""
 from __future__ import annotations
 
-from typing import List, NamedTuple, Optional, Union
+from typing import List, NamedTuple, Optional, Union, Tuple
 
 import solana.system_program as sp
 import spl.token.instructions as spl_token
@@ -65,8 +65,7 @@ class MintInfo(NamedTuple):
     """ Optional authority to freeze token accounts."""
 
 
-class Token:  # pylint: disable=too-many-public-methods
-    """An ERC20-like Token."""
+class _TokenCore:
 
     pubkey: PublicKey
     """The public key identifying this mint."""
@@ -77,10 +76,247 @@ class Token:  # pylint: disable=too-many-public-methods
     payer: Account
     """Fee payer."""
 
+    def __init__(self, pubkey: PublicKey, program_id: PublicKey, payer: Account) -> None:
+        """Initialize a client to a SPL-Token program."""
+        self.pubkey, self.program_id, self.payer = pubkey, program_id, payer
+
+    def _get_accounts_args(
+        self,
+        owner: PublicKey,
+        commitment: Commitment = Confirmed,
+        encoding: str = "jsonParsed",
+    ) -> Tuple[PublicKey, TokenAccountOpts, Commitment]:
+        return owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment
+
+    @staticmethod
+    def _create_mint_args(
+        conn: Client,
+        payer: Account,
+        mint_authority: PublicKey,
+        decimals: int,
+        program_id: PublicKey,
+        freeze_authority: Optional[PublicKey],
+        skip_confirmation: bool,
+        balance_needed: int,
+    ) -> Tuple[Token, Transaction, Account, Account, TxOpts]:
+        mint_account = Account()
+        token = Token(conn, mint_account.public_key(), program_id, payer)
+        # Construct transaction
+        txn = Transaction()
+        txn.add(
+            sp.create_account(
+                sp.CreateAccountParams(
+                    from_pubkey=payer.public_key(),
+                    new_account_pubkey=mint_account.public_key(),
+                    lamports=balance_needed,
+                    space=MINT_LAYOUT.sizeof(),
+                    program_id=program_id,
+                )
+            )
+        )
+        txn.add(
+            spl_token.initialize_mint(
+                spl_token.InitializeMintParams(
+                    program_id=program_id,
+                    mint=mint_account.public_key(),
+                    decimals=decimals,
+                    mint_authority=mint_authority,
+                    freeze_authority=freeze_authority,
+                )
+            )
+        )
+        return token, txn, payer, mint_account, TxOpts(skip_confirmation=skip_confirmation, skip_preflight=True)
+
+    def _create_account_args(
+        self,
+        owner: PublicKey,
+        skip_confirmation: bool,
+        balance_needed: int,
+    ) -> Tuple[PublicKey, Transaction, Account, Account, TxOpts]:
+        new_account = Account()
+        # Allocate memory for the account
+
+        # Construct transaction
+        txn = Transaction()
+        txn.add(
+            sp.create_account(
+                sp.CreateAccountParams(
+                    from_pubkey=self.payer.public_key(),
+                    new_account_pubkey=new_account.public_key(),
+                    lamports=balance_needed,
+                    space=ACCOUNT_LAYOUT.sizeof(),
+                    program_id=self.program_id,
+                )
+            )
+        )
+        txn.add(
+            spl_token.initialize_account(
+                spl_token.InitializeAccountParams(
+                    account=new_account.public_key(), mint=self.pubkey, owner=owner, program_id=self.program_id
+                )
+            )
+        )
+        return (
+            new_account.public_key(),
+            txn,
+            self.payer,
+            new_account,
+            TxOpts(skip_preflight=True, skip_confirmation=skip_confirmation),
+        )
+
+    def _create_associated_token_account_args(
+        self,
+        owner: PublicKey,
+        skip_confirmation: bool,
+    ) -> Tuple[PublicKey, Transaction, Account, TxOpts]:
+
+        # Construct transaction
+        txn = Transaction()
+        create_txn = spl_token.create_associated_token_account(
+            payer=self.payer.public_key(), owner=owner, mint=self.pubkey
+        )
+        txn.add(create_txn)
+        return create_txn.keys[1].pubkey, txn, self.payer, TxOpts(skip_confirmation=skip_confirmation)
+
+    @staticmethod
+    def _create_wrapped_native_account_args(
+        program_id: PublicKey,
+        owner: PublicKey,
+        payer: Account,
+        amount: int,
+        skip_confirmation: bool,
+        balance_needed: int,
+    ) -> Tuple[PublicKey, Transaction, Account, Account, TxOpts]:
+        new_account = Account()
+        # Allocate memory for the account
+        # Construct transaction
+        txn = Transaction()
+        txn.add(
+            sp.create_account(
+                sp.CreateAccountParams(
+                    from_pubkey=payer.public_key(),
+                    new_account_pubkey=new_account.public_key(),
+                    lamports=balance_needed,
+                    space=ACCOUNT_LAYOUT.sizeof(),
+                    program_id=program_id,
+                )
+            )
+        )
+
+        txn.add(
+            sp.transfer(
+                sp.TransferParams(from_pubkey=payer.public_key(), to_pubkey=new_account.public_key(), lamports=amount)
+            )
+        )
+
+        txn.add(
+            spl_token.initialize_account(
+                spl_token.InitializeAccountParams(
+                    account=new_account.public_key(), mint=WRAPPED_SOL_MINT, owner=owner, program_id=program_id
+                )
+            )
+        )
+
+        return new_account.public_key(), txn, payer, new_account, TxOpts(skip_confirmation=skip_confirmation)
+
+    def _transfer_args(
+        self,
+        source: PublicKey,
+        dest: PublicKey,
+        owner: Union[Account, PublicKey],
+        amount: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts,
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.transfer(
+                spl_token.TransferParams(
+                    program_id=self.program_id,
+                    source=source,
+                    dest=dest,
+                    owner=owner_pubkey,
+                    amount=amount,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _set_authority_args(
+        self,
+        account: PublicKey,
+        current_authority: Union[Account, PublicKey],
+        authority_type: spl_token.AuthorityType,
+        new_authority: Optional[PublicKey],
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> Tuple[Transaction, Account, List[Account], TxOpts]:
+        if isinstance(current_authority, Account):
+            current_authority_pubkey = current_authority.public_key()
+            signers = [current_authority]
+        else:
+            current_authority_pubkey = current_authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.set_authority(
+                spl_token.SetAuthorityParams(
+                    program_id=self.program_id,
+                    account=account,
+                    authority=authority_type,
+                    current_authority=current_authority_pubkey,
+                    signers=[signer.public_key() for signer in signers],
+                    new_authority=new_authority,
+                )
+            )
+        )
+
+        return txn, self.payer, signers, opts
+
+    def _mint_to_args(
+        self,
+        dest: PublicKey,
+        mint_authority: Union[Account, PublicKey],
+        amount: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts,
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(mint_authority, Account):
+            owner_pubkey = mint_authority.public_key()
+            signers = [mint_authority]
+        else:
+            owner_pubkey = mint_authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.mint_to(
+                spl_token.MintToParams(
+                    program_id=self.program_id,
+                    mint=self.pubkey,
+                    dest=dest,
+                    mint_authority=owner_pubkey,
+                    amount=amount,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+
+class Token(_TokenCore):  # pylint: disable=too-many-public-methods
+    """An ERC20-like Token."""
+
     def __init__(self, conn: Client, pubkey: PublicKey, program_id: PublicKey, payer: Account) -> None:
         """Initialize a client to a SPL-Token program."""
+        super().__init__(pubkey, program_id, payer)
         self._conn = conn
-        self.pubkey, self.program_id, self.payer = pubkey, program_id, payer
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
@@ -131,14 +367,11 @@ class Token:  # pylint: disable=too-many-public-methods
         valid mint cannot be found for a particular account, that account will be filtered out
         from results. jsonParsed encoding is UNSTABLE.
         """
+        args = self._get_accounts_args(owner, commitment, encoding)
         return (
-            self._conn.get_token_accounts_by_delegate(
-                owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment
-            )
+            self._conn.get_token_accounts_by_delegate(*args)
             if is_delegate
-            else self._conn.get_token_accounts_by_owner(
-                owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment
-            )
+            else self._conn.get_token_accounts_by_owner(*args)
         )
 
     def get_balance(self, pubkey: PublicKey, commitment: Commitment = Confirmed) -> RPCResponse:
@@ -178,33 +411,11 @@ class Token:  # pylint: disable=too-many-public-methods
         # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_mint(conn)
         # Construct transaction
-        txn = Transaction()
-        txn.add(
-            sp.create_account(
-                sp.CreateAccountParams(
-                    from_pubkey=payer.public_key(),
-                    new_account_pubkey=mint_account.public_key(),
-                    lamports=balance_needed,
-                    space=MINT_LAYOUT.sizeof(),
-                    program_id=program_id,
-                )
-            )
-        )
-        txn.add(
-            spl_token.initialize_mint(
-                spl_token.InitializeMintParams(
-                    program_id=program_id,
-                    mint=mint_account.public_key(),
-                    decimals=decimals,
-                    mint_authority=mint_authority,
-                    freeze_authority=freeze_authority,
-                )
-            )
+        token, txn, payer, mint_account, opts = _TokenCore._create_mint_args(
+            conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed
         )
         # Send the two instructions
-        conn.send_transaction(
-            txn, payer, mint_account, opts=TxOpts(skip_confirmation=skip_confirmation, skip_preflight=True)
-        )
+        conn.send_transaction(txn, payer, mint_account, opts=opts)
         return token
 
     def create_account(
@@ -223,34 +434,13 @@ class Token:  # pylint: disable=too-many-public-methods
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
         """
-        new_account = Account()
-        # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_account(self._conn)
-        # Construct transaction
-        txn = Transaction()
-        txn.add(
-            sp.create_account(
-                sp.CreateAccountParams(
-                    from_pubkey=self.payer.public_key(),
-                    new_account_pubkey=new_account.public_key(),
-                    lamports=balance_needed,
-                    space=ACCOUNT_LAYOUT.sizeof(),
-                    program_id=self.program_id,
-                )
-            )
-        )
-        txn.add(
-            spl_token.initialize_account(
-                spl_token.InitializeAccountParams(
-                    account=new_account.public_key(), mint=self.pubkey, owner=owner, program_id=self.program_id
-                )
-            )
+        new_account_pk, txn, payer, new_account, opts = self._create_account_args(
+            owner, skip_confirmation, balance_needed
         )
         # Send the two instructions
-        self._conn.send_transaction(
-            txn, self.payer, new_account, opts=TxOpts(skip_preflight=True, skip_confirmation=skip_confirmation)
-        )
-        return new_account.public_key()
+        self._conn.send_transaction(txn, payer, new_account, opts=opts)
+        return new_account_pk
 
     def create_associated_token_account(
         self,
@@ -267,13 +457,9 @@ class Token:  # pylint: disable=too-many-public-methods
         or until the transaction is confirmed.
         """
         # Construct transaction
-        txn = Transaction()
-        create_txn = spl_token.create_associated_token_account(
-            payer=self.payer.public_key(), owner=owner, mint=self.pubkey
-        )
-        txn.add(create_txn)
-        self._conn.send_transaction(txn, self.payer, opts=TxOpts(skip_confirmation=skip_confirmation))
-        return create_txn.keys[1].pubkey
+        public_key, txn, payer, opts = self._create_associated_token_account_args(owner, skip_confirmation)
+        self._conn.send_transaction(txn, payer, opts=opts)
+        return public_key
 
     @staticmethod
     def create_wrapped_native_account(
@@ -297,40 +483,13 @@ class Token:  # pylint: disable=too-many-public-methods
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
         """
-        new_account = Account()
         # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
-        # Construct transaction
-        txn = Transaction()
-        txn.add(
-            sp.create_account(
-                sp.CreateAccountParams(
-                    from_pubkey=payer.public_key(),
-                    new_account_pubkey=new_account.public_key(),
-                    lamports=balance_needed,
-                    space=ACCOUNT_LAYOUT.sizeof(),
-                    program_id=program_id,
-                )
-            )
+        new_account_public_key, txn, payer, new_account, opts = _TokenCore._create_wrapped_native_account_args(
+            program_id, owner, payer, amount, skip_confirmation, balance_needed
         )
-
-        txn.add(
-            sp.transfer(
-                sp.TransferParams(from_pubkey=payer.public_key(), to_pubkey=new_account.public_key(), lamports=amount)
-            )
-        )
-
-        txn.add(
-            spl_token.initialize_account(
-                spl_token.InitializeAccountParams(
-                    account=new_account.public_key(), mint=WRAPPED_SOL_MINT, owner=owner, program_id=program_id
-                )
-            )
-        )
-
-        conn.send_transaction(txn, payer, new_account, opts=TxOpts(skip_confirmation=skip_confirmation))
-
-        return new_account.public_key()
+        conn.send_transaction(txn, payer, new_account, opts=opts)
+        return new_account_public_key
 
     def create_multisig(self, m: int, signers: List[PublicKey]) -> PublicKey:  # pylint: disable=invalid-name
         """Create and initialize a new multisig.
@@ -367,25 +526,7 @@ class Token:  # pylint: disable=too-many-public-methods
         :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
         :param opts: (optional) Transaction options.
         """
-        if isinstance(owner, Account):
-            owner_pubkey = owner.public_key()
-            signers = [owner]
-        else:
-            owner_pubkey = owner
-            signers = multi_signers if multi_signers else []
-
-        txn = Transaction().add(
-            spl_token.transfer(
-                spl_token.TransferParams(
-                    program_id=self.program_id,
-                    source=source,
-                    dest=dest,
-                    owner=owner_pubkey,
-                    amount=amount,
-                    signers=[signer.public_key() for signer in signers],
-                )
-            )
-        )
+        txn, signers, opts = self._transfer_args(source, dest, owner, amount, multi_signers, opts)
         return self._conn.send_transaction(txn, *signers, opts=opts)
 
     def approve(
@@ -442,27 +583,10 @@ class Token:  # pylint: disable=too-many-public-methods
         :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
         :param opts: (optional) Transaction options.
         """
-        if isinstance(current_authority, Account):
-            current_authority_pubkey = current_authority.public_key()
-            signers = [current_authority]
-        else:
-            current_authority_pubkey = current_authority
-            signers = multi_signers if multi_signers else []
-
-        txn = Transaction().add(
-            spl_token.set_authority(
-                spl_token.SetAuthorityParams(
-                    program_id=self.program_id,
-                    account=account,
-                    authority=authority_type,
-                    current_authority=current_authority_pubkey,
-                    signers=[signer.public_key() for signer in signers],
-                    new_authority=new_authority,
-                )
-            )
+        txn, payer, signers, opts = self._set_authority_args(
+            account, current_authority, authority_type, new_authority, multi_signers, opts
         )
-
-        return self._conn.send_transaction(txn, self.payer, *signers, opts=opts)
+        return self._conn.send_transaction(txn, payer, *signers, opts=opts)
 
     def mint_to(
         self,
@@ -483,25 +607,7 @@ class Token:  # pylint: disable=too-many-public-methods
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
         """
-        if isinstance(mint_authority, Account):
-            owner_pubkey = mint_authority.public_key()
-            signers = [mint_authority]
-        else:
-            owner_pubkey = mint_authority
-            signers = multi_signers if multi_signers else []
-
-        txn = Transaction().add(
-            spl_token.mint_to(
-                spl_token.MintToParams(
-                    program_id=self.program_id,
-                    mint=self.pubkey,
-                    dest=dest,
-                    mint_authority=owner_pubkey,
-                    amount=amount,
-                    signers=[signer.public_key() for signer in signers],
-                )
-            )
-        )
+        txn, signers, opts = self._mint_to_args(dest, mint_authority, amount, multi_signers, opts)
         return self._conn.send_transaction(txn, *signers, opts=opts)
 
     def burn(
