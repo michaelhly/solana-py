@@ -2,7 +2,7 @@
 import pytest
 
 import solana.system_program as sp
-from solana.rpc.api import DataSliceOpt
+from solana.rpc.api import DataSliceOpt, AsyncClient
 from solana.transaction import Transaction
 
 from .utils import assert_valid_response, confirm_transaction, aconfirm_transaction, compare_responses_without_ids
@@ -443,3 +443,14 @@ def test_get_vote_accounts(test_http_clients):
     async_resp = loop.run_until_complete(test_http_clients.async_.get_vote_accounts())
     assert_valid_response(resp)
     compare_responses_without_ids(resp, async_resp)
+
+
+@pytest.mark.integration
+async def test_context_manager(test_http_clients):  # pylint: disable=unused-argument
+    """Just check that the context manager works."""
+    # We don't access test_http_clients here,
+    # we just rely on the fixture to ensure
+    # localnet is up and running
+    async with AsyncClient() as client:
+        res = await client.is_connected()
+    assert res
