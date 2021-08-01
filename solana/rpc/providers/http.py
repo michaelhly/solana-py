@@ -26,15 +26,18 @@ class _HTTPProviderCore(FriendlyJsonSerde):
         self.endpoint_uri = get_default_endpoint() if not endpoint else URI(endpoint)
         self.health_uri = URI(f"{self.endpoint_uri}/health")
 
-    def _build_request_kwargs(self, request_id: int, method: RPCMethod, params: Tuple[Any, ...]) -> Dict[str, Any]:
+    def _build_request_kwargs(
+        self, request_id: int, method: RPCMethod, params: Tuple[Any, ...], is_async: bool
+    ) -> Dict[str, Any]:
         headers = {"Content-Type": "application/json"}
         data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
-        return {"url": self.endpoint_uri, "headers": headers, "data": data}
+        data_kwarg = "content" if is_async else "data"
+        return {"url": self.endpoint_uri, "headers": headers, data_kwarg: data}
 
     def _increment_counter_and_get_id(self) -> int:
         return next(self._request_counter) + 1
 
-    def _before_request(self, method: RPCMethod, params: Tuple[Any, ...]) -> Dict[str, Any]:
+    def _before_request(self, method: RPCMethod, params: Tuple[Any, ...], is_async: bool) -> Dict[str, Any]:
         request_id = self._increment_counter_and_get_id()
         self.logger.debug(
             "Making HTTP request. URI: %s, RequestID: %d, Method: %s, Params: %s",
@@ -43,7 +46,7 @@ class _HTTPProviderCore(FriendlyJsonSerde):
             method,
             params,
         )
-        return self._build_request_kwargs(request_id=request_id, method=method, params=params)
+        return self._build_request_kwargs(request_id=request_id, method=method, params=params, is_async=is_async)
 
     def _after_request(self, raw_response: Union[requests.Response, httpx.Response], method: RPCMethod) -> RPCResponse:
         raw_response.raise_for_status()
@@ -62,7 +65,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
 
     def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
         """Make an HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_request(method=method, params=params)
+        request_kwargs = self._before_request(method=method, params=params, is_async=False)
         raw_response = requests.post(**request_kwargs)
         return self._after_request(raw_response=raw_response, method=method)
 
@@ -92,7 +95,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
 
     async def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_request(method=method, params=params)
+        request_kwargs = self._before_request(method=method, params=params, is_async=True)
         raw_response = await self.session.post(**request_kwargs)
         return self._after_request(raw_response=raw_response, method=method)
 
