@@ -2391,9 +2391,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             sleep_time = 3
             if not elapsed_time:
                 sleep_time = 7 if (commitment or self._commitment) == Finalized else sleep_time
-                asyncio.sleep(sleep_time)
+                await asyncio.sleep(sleep_time)
             else:
-                asyncio.sleep(sleep_time)
+                await asyncio.sleep(sleep_time)
 
             resp = await self.get_confirmed_transaction(tx_sig)
             if resp["result"]:
@@ -2401,6 +2401,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             elapsed_time += sleep_time
 
         if not resp["result"]:
+            print(f"resp: {resp}")
             raise Exception("Unable to confirm transaction %s" % tx_sig)
         err = resp.get("error") or resp["result"].get("meta").get("err")
         if err:

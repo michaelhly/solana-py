@@ -35,6 +35,12 @@ def stubbed_sender() -> Account:
     return Account(bytes([8] * PublicKey.LENGTH))
 
 
+@pytest.fixture(scope="session")
+def alt_stubbed_sender() -> Account:
+    """Another arbitrary known account to be used as sender."""
+    return Account(bytes([7] * PublicKey.LENGTH))
+
+
 @pytest.mark.integration
 @pytest.fixture(scope="session")
 def test_http_client(docker_services) -> Client:
