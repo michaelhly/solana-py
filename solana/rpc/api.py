@@ -1395,6 +1395,15 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         super().__init__(commitment)
         self._provider = http.AsyncHTTPProvider(endpoint)
 
+    async def __aenter__(self) -> "AsyncClient":
+        """Use as a context manager."""
+        await self._provider.__aenter__()
+        return self
+
+    async def __aexit__(self, _exc_type, _exc, _tb):
+        """Exits the context manager."""
+        await self.close()
+
     async def close(self) -> None:
         """Use this when you are done with the client."""
         await self._provider.close()
