@@ -1390,10 +1390,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     """Client class."""
 
-    def __init__(self, endpoint: Optional[str] = None, commitment: Optional[Commitment] = None):
+    def __init__(self, endpoint: Optional[str] = None, commitment: Optional[Commitment] = None) -> None:
         """Init API client."""
         super().__init__(commitment)
         self._provider = http.AsyncHTTPProvider(endpoint)
+
+    async def close(self) -> None:
+        """Use this when you are done with the client"""
+        await self._provider.close()
 
     async def is_connected(self) -> bool:
         """Health check.
@@ -2098,7 +2102,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         >>> solana_client = AsyncClient("http://localhost:8899")
-        >>> asyncio.run(solana_client.get_token_account_balance("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7")) # doctest: +SKIP # noqa: E501 # pylint: disable=line-too-long
+        >>> asyncio.run(solana_client.get_token_account_balance("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7"))  # noqa: E501 # pylint: disable=line-too-long # doctest: +SKIP
         {'jsonrpc': '2.0','result': {
             'context': {'slot':1114},
             'value': {
