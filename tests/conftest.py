@@ -10,7 +10,7 @@ from solana.rpc.api import Client, AsyncClient
 
 
 class Clients(NamedTuple):
-    """Container for http clients"""
+    """Container for http clients."""
 
     sync: Client
     async_: AsyncClient
