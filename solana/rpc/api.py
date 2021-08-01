@@ -1388,7 +1388,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
 
 class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
-    """Client class."""
+    """Async client class."""
 
     def __init__(self, endpoint: Optional[str] = None, commitment: Optional[Commitment] = None) -> None:
         """Init API client."""
