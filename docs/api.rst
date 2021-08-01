@@ -10,6 +10,9 @@ API Client
    .. autoclass:: solana.rpc.api.Client
         :members:
 
+   .. autoclass:: solana.rpc.api.AsyncClient
+        :members:
+
 RPC Types
 =========
 
