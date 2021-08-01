@@ -1396,7 +1396,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self._provider = http.AsyncHTTPProvider(endpoint)
 
     async def close(self) -> None:
-        """Use this when you are done with the client"""
+        """Use this when you are done with the client."""
         await self._provider.close()
 
     async def is_connected(self) -> bool:
