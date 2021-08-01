@@ -17,7 +17,7 @@ def assert_valid_response(resp: RPCResponse):
 
 
 def compare_responses_without_ids(left: RPCResponse, right: RPCResponse) -> None:
-    """Compare RPC responses but ignore IDs"""
+    """Compare RPC responses but ignore IDs."""
     assert {key: val for key, val in left.items() if key != "id"} == {
         key: val for key, val in right.items() if key != "id"
     }
