@@ -6,7 +6,8 @@ import spl.token._layouts as layouts
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
-from spl.token.client import Token, AsyncToken
+from spl.token.client import Token
+from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
 from .utils import (

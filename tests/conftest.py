@@ -6,7 +6,8 @@ import pytest
 from solana.account import Account
 from solana.blockhash import Blockhash
 from solana.publickey import PublicKey
-from solana.rpc.api import Client, AsyncClient
+from solana.rpc.api import Client
+from solana.rpc.async_api import AsyncClient
 
 
 class Clients(NamedTuple):

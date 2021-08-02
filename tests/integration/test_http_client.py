@@ -2,7 +2,8 @@
 import pytest
 
 import solana.system_program as sp
-from solana.rpc.api import DataSliceOpt, AsyncClient
+from solana.rpc.api import DataSliceOpt
+from solana.rpc.async_api import AsyncClient
 from solana.transaction import Transaction
 
 from .utils import assert_valid_response, confirm_transaction, aconfirm_transaction, compare_responses_without_ids

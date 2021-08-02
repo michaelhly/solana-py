@@ -5,7 +5,8 @@ from base64 import b64decode
 
 from base58 import b58decode
 
-from solana.rpc.api import Client, AsyncClient
+from solana.rpc.api import Client
+from solana.rpc.async_api import AsyncClient
 from solana.rpc.types import RPCResponse
 
 
