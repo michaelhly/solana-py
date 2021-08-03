@@ -1,58 +1,56 @@
 # pylint: disable=too-many-arguments
-"""SPL Token program client."""
+"""Async SPL Token program client."""
 from __future__ import annotations
-
-from typing import List, Optional, Union, cast
-
-import spl.token.instructions as spl_token
+from typing import Optional, List, Union, cast
 from solana.account import Account
 from solana.publickey import PublicKey
-from solana.rpc.api import Client
+from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.types import RPCResponse, TxOpts
+import spl.token.instructions as spl_token
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 from spl.token.core import _TokenCore, MintInfo, AccountInfo
 
 
-class Token(_TokenCore):  # pylint: disable=too-many-public-methods
+class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     """An ERC20-like Token."""
 
-    def __init__(self, conn: Client, pubkey: PublicKey, program_id: PublicKey, payer: Account) -> None:
+    def __init__(self, conn: AsyncClient, pubkey: PublicKey, program_id: PublicKey, payer: Account) -> None:
         """Initialize a client to a SPL-Token program."""
         super().__init__(pubkey, program_id, payer)
         self._conn = conn
 
     @staticmethod
-    def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
+    async def get_min_balance_rent_for_exempt_for_account(conn: AsyncClient) -> int:
         """Get the minimum balance for the account to be rent exempt.
 
         :param conn: RPC connection to a solana cluster.
         :return: Number of lamports required.
         """
-        resp = conn.get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
+        resp = await conn.get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
         return resp["result"]
 
     @staticmethod
-    def get_min_balance_rent_for_exempt_for_mint(conn: Client) -> int:
+    async def get_min_balance_rent_for_exempt_for_mint(conn: AsyncClient) -> int:
         """Get the minimum balance for the mint to be rent exempt.
 
         :param conn: RPC connection to a solana cluster.
         :return: Number of lamports required.
         """
-        resp = conn.get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
+        resp = await conn.get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
         return resp["result"]
 
     @staticmethod
-    def get_min_balance_rent_for_exempt_for_multisig(conn: Client) -> int:
+    async def get_min_balance_rent_for_exempt_for_multisig(conn: AsyncClient) -> int:
         """Get the minimum balance for the multsig to be rent exempt.
 
         :param conn: RPC connection to a solana cluster.
         :return: Number of lamports required.
         """
-        resp = conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
+        resp = await conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
 
-    def get_accounts(
+    async def get_accounts(
         self,
         owner: PublicKey,
         is_delegate: bool = False,
@@ -73,30 +71,30 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         args = self._get_accounts_args(owner, commitment, encoding)
         return (
-            self._conn.get_token_accounts_by_delegate(*args)
+            await self._conn.get_token_accounts_by_delegate(*args)
             if is_delegate
-            else self._conn.get_token_accounts_by_owner(*args)
+            else await self._conn.get_token_accounts_by_owner(*args)
         )
 
-    def get_balance(self, pubkey: PublicKey, commitment: Commitment = Confirmed) -> RPCResponse:
+    async def get_balance(self, pubkey: PublicKey, commitment: Commitment = Confirmed) -> RPCResponse:
         """Get the balance of the provided token account.
 
         :param pubkey: Public Key of the token account.
         :param commitment: (optional) Bank state to query.
         """
-        return self._conn.get_token_account_balance(pubkey, commitment)
+        return await self._conn.get_token_account_balance(pubkey, commitment)
 
     @classmethod
-    def create_mint(
+    async def create_mint(
         cls,
-        conn: Client,
+        conn: AsyncClient,
         payer: Account,
         mint_authority: PublicKey,
         decimals: int,
         program_id: PublicKey,
         freeze_authority: Optional[PublicKey] = None,
         skip_confirmation: bool = False,
-    ) -> Token:
+    ) -> AsyncToken:
         """Create and initialize a token.
 
         :param conn: RPC connection to a solana cluster.
@@ -112,16 +110,16 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         or until the transaction is confirmed.
         """
         # Allocate memory for the account
-        balance_needed = Token.get_min_balance_rent_for_exempt_for_mint(conn)
+        balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_mint(conn)
         # Construct transaction
         token, txn, payer, mint_account, opts = _TokenCore._create_mint_args(
             conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed, cls
         )
         # Send the two instructions
-        conn.send_transaction(txn, payer, mint_account, opts=opts)
-        return cast(Token, token)
+        await conn.send_transaction(txn, payer, mint_account, opts=opts)
+        return cast(AsyncToken, token)
 
-    def create_account(
+    async def create_account(
         self,
         owner: PublicKey,
         skip_confirmation: bool = False,
@@ -137,15 +135,15 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
         """
-        balance_needed = Token.get_min_balance_rent_for_exempt_for_account(self._conn)
+        balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_account(self._conn)
         new_account_pk, txn, payer, new_account, opts = self._create_account_args(
             owner, skip_confirmation, balance_needed
         )
         # Send the two instructions
-        self._conn.send_transaction(txn, payer, new_account, opts=opts)
+        await self._conn.send_transaction(txn, payer, new_account, opts=opts)
         return new_account_pk
 
-    def create_associated_token_account(
+    async def create_associated_token_account(
         self,
         owner: PublicKey,
         skip_confirmation: bool = False,
@@ -161,12 +159,12 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         # Construct transaction
         public_key, txn, payer, opts = self._create_associated_token_account_args(owner, skip_confirmation)
-        self._conn.send_transaction(txn, payer, opts=opts)
+        await self._conn.send_transaction(txn, payer, opts=opts)
         return public_key
 
     @staticmethod
-    def create_wrapped_native_account(
-        conn: Client,
+    async def create_wrapped_native_account(
+        conn: AsyncClient,
         program_id: PublicKey,
         owner: PublicKey,
         payer: Account,
@@ -187,14 +185,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         or until the transaction is confirmed.
         """
         # Allocate memory for the account
-        balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
+        balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_account(conn)
         new_account_public_key, txn, payer, new_account, opts = _TokenCore._create_wrapped_native_account_args(
             program_id, owner, payer, amount, skip_confirmation, balance_needed
         )
-        conn.send_transaction(txn, payer, new_account, opts=opts)
+        await conn.send_transaction(txn, payer, new_account, opts=opts)
         return new_account_public_key
 
-    def create_multisig(self, m: int, signers: List[PublicKey]) -> PublicKey:  # pylint: disable=invalid-name
+    async def create_multisig(self, m: int, signers: List[PublicKey]) -> PublicKey:  # pylint: disable=invalid-name
         """Create and initialize a new multisig.
 
         :param m: Number of required signatures.
@@ -203,15 +201,15 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         raise NotImplementedError("create_multisig not implemented")
 
-    def get_mint_info(self) -> MintInfo:
+    async def get_mint_info(self) -> MintInfo:
         """Retrieve mint information."""
         raise NotImplementedError("get_mint_info not implemented")
 
-    def get_account_info(self) -> AccountInfo:
+    async def get_account_info(self) -> AccountInfo:
         """Retrieve account information."""
         raise NotImplementedError("get_account_info not implemented")
 
-    def transfer(
+    async def transfer(
         self,
         source: PublicKey,
         dest: PublicKey,
@@ -230,9 +228,9 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._transfer_args(source, dest, owner, amount, multi_signers, opts)
-        return self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts)
 
-    def approve(
+    async def approve(
         self,
         account: PublicKey,
         delegate: PublicKey,
@@ -252,7 +250,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         raise NotImplementedError("approve not implemented")
 
-    def revoke(
+    async def revoke(
         self,
         account: PublicKey,
         owner: PublicKey,
@@ -268,7 +266,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         raise NotImplementedError("revoke not implemented")
 
-    def set_authority(
+    async def set_authority(
         self,
         account: PublicKey,
         current_authority: Union[Account, PublicKey],
@@ -289,9 +287,9 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         txn, payer, signers, opts = self._set_authority_args(
             account, current_authority, authority_type, new_authority, multi_signers, opts
         )
-        return self._conn.send_transaction(txn, payer, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, payer, *signers, opts=opts)
 
-    def mint_to(
+    async def mint_to(
         self,
         dest: PublicKey,
         mint_authority: Union[Account, PublicKey],
@@ -311,7 +309,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         or until the transaction is confirmed.
         """
         txn, signers, opts = self._mint_to_args(dest, mint_authority, amount, multi_signers, opts)
-        return self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts)
 
     def burn(
         self,
