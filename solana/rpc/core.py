@@ -157,7 +157,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         data_slice: Optional[types.DataSliceOpts],
         data_size: Optional[int],
         memcmp_opts: Optional[List[types.MemcmpOpts]],
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:  # pylint: disable=too-many-arguments
         opts: Dict[str, Any] = {"filters": []}
         for opt in [] if not memcmp_opts else memcmp_opts:
             opts["filters"].append({"memcmp": dict(opt._asdict())})

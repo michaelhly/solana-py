@@ -1,3 +1,4 @@
+# pylint: disable=too-many-arguments
 """Helper code for client.py and async_client.py."""
 from __future__ import annotations
 from typing import Tuple, Union, Optional, Type, TYPE_CHECKING, List, NamedTuple
