@@ -2,7 +2,7 @@
 """SPL Token program client."""
 from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast
 
 import spl.token.instructions as spl_token
 from solana.account import Account
@@ -119,7 +119,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         )
         # Send the two instructions
         conn.send_transaction(txn, payer, mint_account, opts=opts)
-        return token
+        return cast(Token, token)
 
     def create_account(
         self,

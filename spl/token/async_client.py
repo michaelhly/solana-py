@@ -1,6 +1,6 @@
 """Async SPL Token program client."""
 from __future__ import annotations
-from typing import Optional, List, Union
+from typing import Optional, List, Union, cast
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
@@ -116,7 +116,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         )
         # Send the two instructions
         await conn.send_transaction(txn, payer, mint_account, opts=opts)
-        return token
+        return cast(AsyncToken, token)
 
     async def create_account(
         self,

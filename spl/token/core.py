@@ -1,4 +1,4 @@
-"""Helper code for client.py and async_client.py"""
+"""Helper code for client.py and async_client.py."""
 from __future__ import annotations
 from typing import Tuple, Union, Optional, Type, TYPE_CHECKING, List, NamedTuple
 from solana.account import Account
@@ -101,10 +101,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         freeze_authority: Optional[PublicKey],
         skip_confirmation: bool,
         balance_needed: int,
-        cls: Union[Type[Client], Type[AsyncClient]],
-    ) -> Tuple[Type, Transaction, Account, Account, TxOpts]:
+        cls: Union[Type[Token], Type[AsyncToken]],
+    ) -> Tuple[Union[Token, AsyncToken], Transaction, Account, Account, TxOpts]:
         mint_account = Account()
-        token = cls(conn, mint_account.public_key(), program_id, payer)
+        token = cls(conn, mint_account.public_key(), program_id, payer)  # type: ignore
         # Construct transaction
         txn = Transaction()
         txn.add(
