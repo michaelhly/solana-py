@@ -40,7 +40,7 @@ http_client = Client("https://api.devnet.solana.com")
 
 ```py
 import asyncio
-from solana.rpc.api import AsyncClient
+from solana.rpc.async_api import AsyncClient
 
 async def main():
     async with AsyncClient("https://api.devnet.solana.com") as client:
