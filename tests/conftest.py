@@ -19,15 +19,29 @@ class Clients(NamedTuple):
 
 
 @pytest.fixture(scope="session")
+def event_loop():
+    """Event loop for pytest-asyncio"""
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="session")
 def stubbed_blockhash() -> Blockhash:
     """Arbitrary block hash."""
     return Blockhash("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k")
 
 
 @pytest.fixture(scope="session")
-def stubbed_reciever() -> PublicKey:
+def stubbed_receiver() -> PublicKey:
     """Arbitrary known public key to be used as reciever."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
+
+
+@pytest.fixture(scope="session")
+def alt_stubbed_receiver() -> PublicKey:
+    """Arbitrary known public key to be used as reciever."""
+    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98")
 
 
 @pytest.fixture(scope="session")
@@ -49,6 +63,20 @@ def test_http_client(docker_services) -> Client:
     http_client = Client()
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
+
+
+@pytest.mark.integration
+@pytest.fixture(scope="session")
+def test_http_client_async(docker_services, event_loop) -> AsyncClient:  # pylint: disable=redefined-outer-name
+    """Test http_client.is_connected."""
+    http_client = AsyncClient()
+
+    def check() -> bool:
+        return event_loop.run_until_complete(http_client.is_connected())
+
+    docker_services.wait_until_responsive(timeout=15, pause=1, check=check)
+    yield http_client
+    event_loop.run_until_complete(http_client.close())
 
 
 @pytest.mark.integration

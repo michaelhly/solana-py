@@ -1,6 +1,7 @@
 """Integration test utils."""
 import time
 import asyncio
+from typing import Dict, Any
 from base64 import b64decode
 
 from base58 import b58decode
@@ -8,6 +9,39 @@ from base58 import b58decode
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.types import RPCResponse
+
+AIRDROP_AMOUNT = 10_000_000_000
+
+
+def generate_expected_meta_after_airdrop(resp: RPCResponse) -> Dict[str, Any]:
+    """Checks that the balances have changed by expected amount
+    and that other fields are as expected."""
+    actual_meta = resp["result"]["meta"]
+    actual_pre_balances = actual_meta["preBalances"]
+    actual_fee = actual_meta["fee"]
+    expected_pre_balances = [*actual_pre_balances[:2], 1]
+    expected_post_balances = [
+        actual_pre_balances[0] - AIRDROP_AMOUNT - actual_fee,
+        actual_pre_balances[1] + AIRDROP_AMOUNT,
+        1,
+    ]
+    return {
+        "err": None,
+        "fee": actual_fee,  # fee is 0 for first airdrop and 5000 thereafter
+        # and it's tricky to tell if we've already requested an airdrop
+        # in this test session
+        "innerInstructions": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
+        "postBalances": expected_post_balances,
+        "postTokenBalances": [],
+        "preBalances": expected_pre_balances,
+        "preTokenBalances": [],
+        "rewards": [],
+        "status": {"Ok": None},
+    }
 
 
 def assert_valid_response(resp: RPCResponse):

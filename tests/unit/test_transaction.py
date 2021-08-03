@@ -50,10 +50,10 @@ def test_dedup_signatures(stubbed_blockhash):
     txn.sign(acc1)
 
 
-def test_wire_format_and_desrialize(stubbed_blockhash, stubbed_reciever, stubbed_sender):
+def test_wire_format_and_desrialize(stubbed_blockhash, stubbed_receiver, stubbed_sender):
     """Test serialize/derialize transaction to/from wire format."""
     transfer = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=49)
+        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_receiver, lamports=49)
     )
     expected_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     expected_txn.sign(stubbed_sender)
@@ -87,10 +87,10 @@ def test_populate(stubbed_blockhash):
     assert transaction.recent_blockhash == msg.recent_blockhash
 
 
-def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_reciever, stubbed_sender):
+def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stubbed_sender):
     """Test to serialize an unsigned transaction."""
     transfer = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=49)
+        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_receiver, lamports=49)
     )
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     assert len(txn.signatures) == 0

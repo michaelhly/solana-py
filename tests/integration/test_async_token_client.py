@@ -5,25 +5,32 @@ import spl.token._layouts as layouts
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
-from spl.token.client import Token
+from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import assert_valid_response, confirm_transaction, decode_byte_string, AIRDROP_AMOUNT
+from .utils import (
+    assert_valid_response,
+    aconfirm_transaction,
+    decode_byte_string,
+    AIRDROP_AMOUNT,
+)
 
 
+@pytest.mark.asyncio
 @pytest.mark.integration
 @pytest.fixture(scope="module")
-def test_token(stubbed_sender, test_http_client) -> Token:
+async def test_token(alt_stubbed_sender, test_http_client_async) -> AsyncToken:
     """Test create mint."""
-    resp = test_http_client.request_airdrop(stubbed_sender.public_key(), AIRDROP_AMOUNT)
-    assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
+    resp = await test_http_client_async.request_airdrop(alt_stubbed_sender.public_key(), AIRDROP_AMOUNT)
+    confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
+    assert_valid_response(confirmed)
 
     expected_decimals = 6
     expected_freeze_authority = Account()
-    token_client = Token.create_mint(
-        test_http_client,
-        stubbed_sender,
-        stubbed_sender.public_key(),
+    token_client = await AsyncToken.create_mint(
+        test_http_client_async,
+        alt_stubbed_sender,
+        alt_stubbed_sender.public_key(),
         expected_decimals,
         TOKEN_PROGRAM_ID,
         expected_freeze_authority.public_key(),
@@ -31,9 +38,9 @@ def test_token(stubbed_sender, test_http_client) -> Token:
 
     assert token_client.pubkey
     assert token_client.program_id == TOKEN_PROGRAM_ID
-    assert token_client.payer.public_key() == stubbed_sender.public_key()
+    assert token_client.payer.public_key() == alt_stubbed_sender.public_key()
 
-    resp = test_http_client.get_account_info(token_client.pubkey)
+    resp = await test_http_client_async.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
 
@@ -41,32 +48,39 @@ def test_token(stubbed_sender, test_http_client) -> Token:
     assert mint_data.is_initialized
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
-    assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key()
+    assert PublicKey(mint_data.mint_authority) == alt_stubbed_sender.public_key()
     assert PublicKey(mint_data.freeze_authority) == expected_freeze_authority.public_key()
     return token_client
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 @pytest.fixture(scope="module")
-def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> PublicKey:  # pylint: disable=redefined-outer-name
+async def alt_stubbed_sender_token_account_pk(
+    alt_stubbed_sender, test_token  # pylint: disable=redefined-outer-name
+) -> PublicKey:
     """Token account for stubbed sender."""
-    return test_token.create_account(stubbed_sender.public_key())
+    return await test_token.create_account(alt_stubbed_sender.public_key())
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 @pytest.fixture(scope="module")
-def stubbed_receiver_token_account_pk(
-    stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
+async def alt_stubbed_receiver_token_account_pk(
+    alt_stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
 ) -> PublicKey:
     """Token account for stubbed reciever."""
-    return test_token.create_account(stubbed_receiver)
+    return await test_token.create_account(alt_stubbed_receiver)
 
 
 @pytest.mark.integration
-def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: disable=redefined-outer-name
+@pytest.mark.asyncio
+async def test_new_account(
+    alt_stubbed_sender, test_http_client_async, test_token
+):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
-    token_account_pk = test_token.create_account(stubbed_sender.public_key())
-    resp = test_http_client.get_account_info(token_account_pk)
+    token_account_pk = await test_token.create_account(alt_stubbed_sender.public_key())
+    resp = await test_http_client_async.get_account_info(token_account_pk)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
 
@@ -81,14 +95,15 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == PublicKey(0)
     assert not account_data.is_native_option and not account_data.is_native
     assert PublicKey(account_data.mint) == test_token.pubkey
-    assert PublicKey(account_data.owner) == stubbed_sender.public_key()
+    assert PublicKey(account_data.owner) == alt_stubbed_sender.public_key()
 
 
 @pytest.mark.integration
-def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
+@pytest.mark.asyncio
+async def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new associated token account."""
     new_acct = PublicKey(0)
-    token_account_pubkey = test_token.create_associated_token_account(new_acct)
+    token_account_pubkey = await test_token.create_associated_token_account(new_acct)
     expected_token_account_key, _ = new_acct.find_program_address(
         seeds=[bytes(new_acct), bytes(TOKEN_PROGRAM_ID), bytes(test_token.pubkey)],
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -97,18 +112,20 @@ def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-
 
 
 @pytest.mark.integration
-def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  # pylint: disable=redefined-outer-name
+@pytest.mark.asyncio
+async def test_mint_to(
+    alt_stubbed_sender, alt_stubbed_sender_token_account_pk, test_token
+):  # pylint: disable=redefined-outer-name
     """Test mint token to account and get balance."""
     expected_amount = 1000
-    assert_valid_response(
-        test_token.mint_to(
-            dest=stubbed_sender_token_account_pk,
-            mint_authority=stubbed_sender,
-            amount=1000,
-            opts=TxOpts(skip_confirmation=False),
-        )
+    resp = await test_token.mint_to(
+        dest=alt_stubbed_sender_token_account_pk,
+        mint_authority=alt_stubbed_sender,
+        amount=1000,
+        opts=TxOpts(skip_confirmation=False),
     )
-    resp = test_token.get_balance(stubbed_sender_token_account_pk)
+    assert_valid_response(resp)
+    resp = await test_token.get_balance(alt_stubbed_sender_token_account_pk)
     balance_info = resp["result"]["value"]
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == 6
@@ -116,21 +133,21 @@ def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  
 
 
 @pytest.mark.integration
-def test_transfer(
-    stubbed_sender, stubbed_receiver_token_account_pk, stubbed_sender_token_account_pk, test_token
+@pytest.mark.asyncio
+async def test_transfer(
+    alt_stubbed_sender, alt_stubbed_receiver_token_account_pk, alt_stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
     """Test token transfer."""
     expected_amount = 500
-    assert_valid_response(
-        test_token.transfer(
-            source=stubbed_sender_token_account_pk,
-            dest=stubbed_receiver_token_account_pk,
-            owner=stubbed_sender,
-            amount=expected_amount,
-            opts=TxOpts(skip_confirmation=False),
-        )
+    resp = await test_token.transfer(
+        source=alt_stubbed_sender_token_account_pk,
+        dest=alt_stubbed_receiver_token_account_pk,
+        owner=alt_stubbed_sender,
+        amount=expected_amount,
+        opts=TxOpts(skip_confirmation=False),
     )
-    resp = test_token.get_balance(stubbed_receiver_token_account_pk)
+    assert_valid_response(resp)
+    resp = await test_token.get_balance(alt_stubbed_receiver_token_account_pk)
     balance_info = resp["result"]["value"]
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == 6
@@ -138,12 +155,13 @@ def test_transfer(
 
 
 @pytest.mark.integration
-def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
+@pytest.mark.asyncio
+async def test_get_accounts(alt_stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
     """Test get token accounts."""
-    resp = test_token.get_accounts(stubbed_sender.public_key())
+    resp = await test_token.get_accounts(alt_stubbed_sender.public_key())
     assert_valid_response(resp)
     assert len(resp["result"]["value"]) == 2
     for resp_data in resp["result"]["value"]:
         assert PublicKey(resp_data["pubkey"])
         parsed_data = resp_data["account"]["data"]["parsed"]["info"]
-        assert parsed_data["owner"] == str(stubbed_sender.public_key())
+        assert parsed_data["owner"] == str(alt_stubbed_sender.public_key())

@@ -8,10 +8,11 @@ from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.types import TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
+import solana.system_program as sp
 import spl.token.instructions as spl_token
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT  # type: ignore
 from spl.token.constants import WRAPPED_SOL_MINT
-import solana.system_program as sp
+
 
 if TYPE_CHECKING:
     from spl.token.client import Token  # noqa: F401
