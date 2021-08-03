@@ -1,3 +1,4 @@
+# pylint: disable=too-many-arguments
 """Async SPL Token program client."""
 from __future__ import annotations
 from typing import Optional, List, Union, cast

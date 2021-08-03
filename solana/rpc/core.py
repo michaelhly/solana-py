@@ -1,3 +1,4 @@
+# pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
 from typing import Any, Dict, List, Optional, Union, Tuple
 from warnings import warn
