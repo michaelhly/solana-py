@@ -14,8 +14,7 @@ AIRDROP_AMOUNT = 10_000_000_000
 
 
 def generate_expected_meta_after_airdrop(resp: RPCResponse) -> Dict[str, Any]:
-    """Checks that the balances have changed by expected amount
-    and that other fields are as expected."""
+    """Checks that the balances have changed by expected amount and that other fields are as expected."""
     actual_meta = resp["result"]["meta"]
     actual_pre_balances = actual_meta["preBalances"]
     actual_fee = actual_meta["fee"]

@@ -1,4 +1,4 @@
-"""Helper code for HTTP provider classes"""
+"""Helper code for HTTP provider classes."""
 import logging
 import os
 from typing import Optional, Tuple, Any, Dict, cast, Union

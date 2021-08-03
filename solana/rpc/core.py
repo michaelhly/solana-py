@@ -1,4 +1,4 @@
-"""Helper code for api.py and async_api.py"""
+"""Helper code for api.py and async_api.py."""
 from typing import Any, Dict, List, Optional, Union, Tuple
 from warnings import warn
 from base64 import b64encode
