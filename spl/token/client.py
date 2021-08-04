@@ -11,7 +11,7 @@ from solana.rpc.api import Client
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.types import RPCResponse, TxOpts
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
-from spl.token.core import _TokenCore, MintInfo, AccountInfo
+from spl.token.core import AccountInfo, MintInfo, _TokenCore
 
 
 class Token(_TokenCore):  # pylint: disable=too-many-public-methods

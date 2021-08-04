@@ -5,7 +5,7 @@ import solana.system_program as sp
 from solana.rpc.api import DataSliceOpt
 from solana.transaction import Transaction
 
-from .utils import assert_valid_response, aconfirm_transaction, AIRDROP_AMOUNT, generate_expected_meta_after_airdrop
+from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response, generate_expected_meta_after_airdrop
 
 
 @pytest.mark.integration

@@ -1,6 +1,7 @@
 """Fixtures for pytest."""
 import asyncio
 from typing import NamedTuple
+
 import pytest
 
 from solana.account import Account

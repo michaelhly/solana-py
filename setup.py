@@ -30,7 +30,7 @@ setup(
     author="Michael Huang",
     author_mail="michaelhly@gmail.com",
     description="""Solana.py""",
-    license_files = ('LICENSE',),
+    license_files=("LICENSE",),
     long_description=README_MD,
     long_description_content_type="text/markdown",
     include_package_data=True,

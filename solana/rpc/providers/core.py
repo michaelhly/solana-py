@@ -1,10 +1,12 @@
 """Helper code for HTTP provider classes."""
+import itertools
 import logging
 import os
-from typing import Optional, Tuple, Any, Dict, cast, Union
-import itertools
-import requests
+from typing import Any, Dict, Optional, Tuple, Union, cast
+
 import httpx
+import requests
+
 from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI, RPCMethod, RPCResponse
 

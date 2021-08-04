@@ -1,15 +1,17 @@
 # pylint: disable=too-many-arguments
 """Async SPL Token program client."""
 from __future__ import annotations
-from typing import Optional, List, Union, cast
+
+from typing import List, Optional, Union, cast
+
+import spl.token.instructions as spl_token
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.types import RPCResponse, TxOpts
-import spl.token.instructions as spl_token
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
-from spl.token.core import _TokenCore, MintInfo, AccountInfo
+from spl.token.core import AccountInfo, MintInfo, _TokenCore
 
 
 class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods

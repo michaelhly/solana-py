@@ -8,7 +8,7 @@ from solana.rpc.types import TxOpts
 from spl.token.client import Token
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import assert_valid_response, confirm_transaction, decode_byte_string, AIRDROP_AMOUNT
+from .utils import AIRDROP_AMOUNT, assert_valid_response, confirm_transaction, decode_byte_string
 
 
 @pytest.mark.integration

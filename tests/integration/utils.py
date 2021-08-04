@@ -1,8 +1,8 @@
 """Integration test utils."""
-import time
 import asyncio
-from typing import Dict, Any
+import time
 from base64 import b64decode
+from typing import Any, Dict
 
 from base58 import b58decode
 
