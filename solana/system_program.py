@@ -362,10 +362,9 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInst
     """
     if isinstance(params, AssignWithSeedParams):
         raise NotImplementedError("assign with key is not implemented")
-    else:
-        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-            dict(instruction_type=InstructionType.ASSIGN, args=dict(program_id=bytes(params.program_id)))
-        )
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(instruction_type=InstructionType.ASSIGN, args=dict(program_id=bytes(params.program_id)))
+    )
 
     return TransactionInstruction(
         keys=[
