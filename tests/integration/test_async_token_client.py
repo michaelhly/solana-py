@@ -1,3 +1,4 @@
+# pylint: disable=R0401
 """Tests for the SPL Token Client."""
 import pytest
 
