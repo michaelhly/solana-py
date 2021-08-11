@@ -40,8 +40,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self._provider = http.HTTPProvider(endpoint)
 
     @property
-    def request_dict(self):
-        return self._provider.data_send if getattr(self, '_provider') else None
+    def request_raw(self):
+        return self._provider.data if getattr(self, '_provider') else None
 
     def is_connected(self) -> bool:
         """Health check.

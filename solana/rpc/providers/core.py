@@ -29,9 +29,9 @@ class _HTTPProviderCore(FriendlyJsonSerde):
         self, request_id: int, method: RPCMethod, params: Tuple[Any, ...], is_async: bool
     ) -> Dict[str, Any]:
         headers = {"Content-Type": "application/json"}
-        data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
+        self.data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
         data_kwarg = "content" if is_async else "data"
-        return {"url": self.endpoint_uri, "headers": headers, data_kwarg: data}
+        return {"url": self.endpoint_uri, "headers": headers, data_kwarg: self.data}
 
     def _increment_counter_and_get_id(self) -> int:
         return next(self._request_counter) + 1
