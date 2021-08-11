@@ -5,41 +5,27 @@ import solana.system_program as sp
 from solana.rpc.api import DataSliceOpt
 from solana.transaction import Transaction
 
-from .utils import assert_valid_response, confirm_transaction
+from .utils import AIRDROP_AMOUNT, assert_valid_response, confirm_transaction, generate_expected_meta_after_airdrop
 
 
 @pytest.mark.integration
 def test_request_air_drop(stubbed_sender, test_http_client):
     """Test air drop to stubbed_sender."""
-    resp = test_http_client.request_airdrop(stubbed_sender.public_key(), 10000000000)
+    resp = test_http_client.request_airdrop(stubbed_sender.public_key(), AIRDROP_AMOUNT)
     assert_valid_response(resp)
     resp = confirm_transaction(test_http_client, resp["result"])
     assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 0,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [499999990000000000, 10000000000, 1],
-        "postTokenBalances": [],
-        "preBalances": [500000000000000000, 0, 1],
-        "preTokenBalances": [],
-        "rewards": [],
-        "status": {"Ok": None},
-    }
+    expected_meta = generate_expected_meta_after_airdrop(resp)
     assert resp["result"]["meta"] == expected_meta
 
 
 @pytest.mark.integration
-def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test_http_client):
+def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client):
     """Test sending a transaction to localnet."""
-    # Create transfer tx to transfer lamports from stubbed sender to stubbed_reciever
+    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction().add(
         sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
+            sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_receiver, lamports=1000)
         )
     )
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
@@ -61,6 +47,7 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test
         "preTokenBalances": [],
         "rewards": [
             {
+                "commission": None,
                 "lamports": -46,
                 "postBalance": 954,
                 "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99",
@@ -74,22 +61,22 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test
     resp = test_http_client.get_balance(stubbed_sender.public_key())
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999994000
-    resp = test_http_client.get_balance(stubbed_reciever)
+    resp = test_http_client.get_balance(stubbed_receiver)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 954
 
 
 @pytest.mark.integration
-def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_reciever, test_http_client):
+def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client):
     """Test sending a raw transaction to localnet."""
     # Get a recent blockhash
     resp = test_http_client.get_recent_blockhash()
     assert_valid_response(resp)
     recent_blockhash = resp["result"]["value"]["blockhash"]
-    # Create transfer tx transfer lamports from stubbed sender to stubbed_reciever
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_reciever, lamports=1000)
+            sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_receiver, lamports=1000)
         )
     )
     # Sign transaction
@@ -120,7 +107,7 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_reciever, 
     resp = test_http_client.get_balance(stubbed_sender.public_key())
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999988000
-    resp = test_http_client.get_balance(stubbed_reciever)
+    resp = test_http_client.get_balance(stubbed_receiver)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 1954
 
@@ -174,11 +161,12 @@ def test_get_confirmed_signature_for_address2(test_http_client):
     assert_valid_response(resp)
 
 
-@pytest.mark.integration
-def test_get_signatures_for_address(test_http_client):
-    """Test get signatures for addresses."""
-    resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
-    assert_valid_response(resp)
+# TODO(michael): This RPC call is only available in solana-core v1.7 or newer.
+# @pytest.mark.integration
+# def test_get_signatures_for_address(test_http_client):
+#     """Test get signatures for addresses."""
+#     resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
+#     assert_valid_response(resp)
 
 
 @pytest.mark.integration

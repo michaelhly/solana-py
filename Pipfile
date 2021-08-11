@@ -17,7 +17,6 @@ jupyterlab = "*"
 black = "*"
 pytest = "*"
 pylint = "*"
-pytest-tornasync = "*"
 mypy = "*"
 pydocstyle = "*"
 flake8 = "*"
@@ -29,6 +28,7 @@ setuptools = "*"
 bump2version = "*"
 types-requests = "*"
 notebook = "*"
+pytest-asyncio = "*"
 
 [packages]
 pynacl = "*"
@@ -36,6 +36,7 @@ base58 = "*"
 requests = "*"
 construct = "*"
 typing-extensions = "*"
+httpx = "*"
 
 [requires]
 python_version = "3.7"
