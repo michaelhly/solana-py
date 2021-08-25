@@ -437,6 +437,18 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(self._get_genesis_hash)
 
+    def get_health(self) -> types.RPCResponse:
+        """Returns the current health of the node.
+
+        >>> solana_client = Client("http://localhost:8899")
+        >>> solana_client.get_health() # doctest: +SKIP
+        Healthy result:
+            {"jsonrpc":"2.0",
+             "result": "ok",
+             "id":1}
+        """
+        return self._provider.make_request(self._get_health)
+
     def get_identity(self) -> types.RPCResponse:
         """Returns the identity pubkey for the current node.
 
