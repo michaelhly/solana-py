@@ -27,6 +27,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _get_fee_rate_governor = types.RPCMethod("getFeeRateGovernor")
     _get_first_available_block = types.RPCMethod("getFirstAvailableBlock")
     _get_genesis_hash = types.RPCMethod("getGenesisHash")
+    _get_health = types.RPCMethod("getHealth")
     _get_identity = types.RPCMethod("getIdentity")
     _get_inflation_rate = types.RPCMethod("getInflationRate")
     _minimum_ledger_slot = types.RPCMethod("minimumLedgerSlot")
