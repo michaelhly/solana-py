@@ -11,10 +11,11 @@ from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed
-from solana.rpc.types import TokenAccountOpts, TxOpts
+from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
-from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
+from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 from spl.token.constants import WRAPPED_SOL_MINT
+from tests.integration.utils import decode_byte_string
 
 if TYPE_CHECKING:
     from spl.token.async_client import AsyncToken  # noqa: F401
@@ -314,3 +315,415 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             )
         )
         return txn, signers, opts
+
+    def _create_mint_info(self, info: RPCResponse) -> MintInfo:
+        if not info:
+            raise ValueError("Failed to find mint account")
+
+        if info["result"]["value"]["owner"] != str(self.program_id):
+            raise AttributeError("Invalid mint owner: {}".format(info["result"]["value"]["owner"]))
+
+        bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+        if len(bytes_data) != MINT_LAYOUT.sizeof():
+            raise ValueError("Invalid mint size")
+
+        decoded_data = MINT_LAYOUT.parse(bytes_data)
+        decimals = decoded_data.decimals
+
+        if decoded_data.mint_authority_option == 0:
+            mint_authority = None
+        else:
+            mint_authority = PublicKey(decoded_data.mint_authority)
+
+        supply = decoded_data.supply
+        is_initialized = decoded_data.is_initialized != 0
+
+        if decoded_data.freeze_authority_option == 0:
+            freeze_authority = None
+        else:
+            freeze_authority = PublicKey(decoded_data.freeze_authority)
+
+        return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
+
+    def _create_account_info(self, info: RPCResponse) -> AccountInfo:
+        if not info:
+            raise ValueError("Invalid account owner")
+
+        if info["result"]["value"]["owner"] != str(self.program_id):
+            raise AttributeError("Invalid account owner")
+
+        bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+        if len(bytes_data) != ACCOUNT_LAYOUT.sizeof():
+            raise ValueError("Invalid account size")
+
+        decoded_data = ACCOUNT_LAYOUT.parse(bytes_data)
+
+        mint = PublicKey(decoded_data.mint)
+        owner = PublicKey(decoded_data.owner)
+        amount = decoded_data.amount
+
+        if decoded_data.delegate_option == 0:
+            delegate = None
+            delegated_amount = 0
+        else:
+            delegate = PublicKey(decoded_data.delegate)
+            delegated_amount = decoded_data.delegated_amount
+
+        is_initialized = decoded_data.state != 0
+        is_frozen = decoded_data.state == 2
+
+        if decoded_data.is_native_option == 1:
+            rent_exempt_reserve = decoded_data.is_native
+            is_native = True
+        else:
+            rent_exempt_reserve = None
+            is_native = False
+
+        if decoded_data.close_authority_option == 0:
+            close_authority = None
+        else:
+            close_authority = PublicKey(decoded_data.owner)
+
+        if mint != self.pubkey:
+            raise AttributeError("Invalid account mint: {} != {}".format(decoded_data.mint, self.pubkey))
+
+        return AccountInfo(
+            mint,
+            owner,
+            amount,
+            delegate,
+            delegated_amount,
+            is_initialized,
+            is_frozen,
+            is_native,
+            rent_exempt_reserve,
+            close_authority,
+        )
+
+    def _approve_args(
+        self,
+        source: PublicKey,
+        delegate: PublicKey,
+        owner: Union[Account, PublicKey],
+        amount: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> Tuple[Transaction, Account, List[Account], TxOpts]:
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.approve(
+                spl_token.ApproveParams(
+                    program_id=self.program_id,
+                    source=source,
+                    delegate=delegate,
+                    owner=owner_pubkey,
+                    amount=amount,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, self.payer, signers, opts
+
+    def _revoke_args(
+        self,
+        account: PublicKey,
+        owner: Union[Account, PublicKey],
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> Tuple[Transaction, Account, List[Account], TxOpts]:
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.revoke(
+                spl_token.RevokeParams(
+                    program_id=self.program_id,
+                    account=account,
+                    owner=owner_pubkey,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, self.payer, signers, opts
+
+    def _freeze_account_args(
+        self,
+        account: PublicKey,
+        authority: Union[PublicKey, Account],
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(authority, Account):
+            authority_pubkey = authority.public_key()
+            signers = [authority]
+        else:
+            authority_pubkey = authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.freeze_account(
+                spl_token.FreezeAccountParams(
+                    program_id=self.program_id,
+                    account=account,
+                    mint=self.pubkey,
+                    authority=authority_pubkey,
+                    multi_signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _thaw_account_args(
+        self,
+        account: PublicKey,
+        authority: Union[PublicKey, Account],
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(authority, Account):
+            authority_pubkey = authority.public_key()
+            signers = [authority]
+        else:
+            authority_pubkey = authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.thaw_account(
+                spl_token.ThawAccountParams(
+                    program_id=self.program_id,
+                    account=account,
+                    mint=self.pubkey,
+                    authority=authority_pubkey,
+                    multi_signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _close_account_args(
+        self,
+        account: PublicKey,
+        dest: PublicKey,
+        authority: Union[PublicKey, Account],
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(authority, Account):
+            authority_pubkey = authority.public_key()
+            signers = [authority]
+        else:
+            authority_pubkey = authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.close_account(
+                spl_token.CloseAccountParams(
+                    program_id=self.program_id,
+                    account=account,
+                    dest=dest,
+                    owner=authority_pubkey,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _burn_args(
+        self,
+        account: PublicKey,
+        owner: Union[PublicKey, Account],
+        amount: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts = TxOpts(),
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.burn(
+                spl_token.BurnParams(
+                    program_id=self.program_id,
+                    account=account,
+                    mint=self.pubkey,
+                    owner=owner_pubkey,
+                    amount=amount,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _create_multisig_args(
+        self,
+        m: int,
+        signers: List[PublicKey],
+        balance_needed: int,
+    ) -> Tuple[Transaction, Account, Account]:
+        multisig_account = Account()
+
+        txn = Transaction()
+        txn.add(
+            sp.create_account(
+                sp.CreateAccountParams(
+                    from_pubkey=self.payer.public_key(),
+                    new_account_pubkey=multisig_account.public_key(),
+                    lamports=balance_needed,
+                    space=MULTISIG_LAYOUT.sizeof(),
+                    program_id=self.program_id,
+                )
+            )
+        )
+        txn.add(
+            spl_token.initialize_multisig(
+                spl_token.InitializeMultisigParams(
+                    program_id=self.program_id,
+                    multisig=multisig_account.public_key(),
+                    m=m,
+                    signers=signers,
+                )
+            )
+        )
+
+        return txn, self.payer, multisig_account
+
+    def _transfer_checked_args(
+        self,
+        source: PublicKey,
+        dest: PublicKey,
+        owner: Union[Account, PublicKey],
+        amount: int,
+        decimals: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts,
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.transfer_checked(
+                spl_token.TransferCheckedParams(
+                    program_id=self.program_id,
+                    source=source,
+                    mint=self.pubkey,
+                    dest=dest,
+                    owner=owner_pubkey,
+                    amount=amount,
+                    decimals=decimals,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _mint_to_checked_args(
+        self,
+        dest: PublicKey,
+        mint_authority: Union[Account, PublicKey],
+        amount: int,
+        decimals: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts,
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(mint_authority, Account):
+            owner_pubkey = mint_authority.public_key()
+            signers = [mint_authority]
+        else:
+            owner_pubkey = mint_authority
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.mint_to_checked(
+                spl_token.MintToCheckedParams(
+                    program_id=self.program_id,
+                    mint=self.pubkey,
+                    dest=dest,
+                    mint_authority=owner_pubkey,
+                    amount=amount,
+                    decimals=decimals,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _burn_checked_args(
+        self,
+        account: PublicKey,
+        owner: Union[Account, PublicKey],
+        amount: int,
+        decimals: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts,
+    ) -> Tuple[Transaction, List[Account], TxOpts]:
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.burn_checked(
+                spl_token.BurnCheckedParams(
+                    program_id=self.program_id,
+                    mint=self.pubkey,
+                    account=account,
+                    owner=owner_pubkey,
+                    amount=amount,
+                    decimals=decimals,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, signers, opts
+
+    def _approve_checked_args(
+        self,
+        source: PublicKey,
+        delegate: PublicKey,
+        owner: Union[Account, PublicKey],
+        amount: int,
+        decimals: int,
+        multi_signers: Optional[List[Account]],
+        opts: TxOpts,
+    ) -> Tuple[Transaction, Account, List[Account], TxOpts]:
+        if isinstance(owner, Account):
+            owner_pubkey = owner.public_key()
+            signers = [owner]
+        else:
+            owner_pubkey = owner
+            signers = multi_signers if multi_signers else []
+
+        txn = Transaction().add(
+            spl_token.approve_checked(
+                spl_token.ApproveCheckedParams(
+                    program_id=self.program_id,
+                    source=source,
+                    mint=self.pubkey,
+                    delegate=delegate,
+                    owner=owner_pubkey,
+                    amount=amount,
+                    decimals=decimals,
+                    signers=[signer.public_key() for signer in signers],
+                )
+            )
+        )
+        return txn, self.payer, signers, opts

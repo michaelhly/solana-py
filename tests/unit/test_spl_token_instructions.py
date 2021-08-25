@@ -111,7 +111,7 @@ def test_revoke(stubbed_sender):
     delegate_account = PublicKey(0)
     params = spl_token.RevokeParams(
         program_id=TOKEN_PROGRAM_ID,
-        delegate=delegate_account,
+        account=delegate_account,
         owner=stubbed_sender.public_key(),
     )
     instruction = spl_token.revoke(params)
@@ -119,7 +119,7 @@ def test_revoke(stubbed_sender):
 
     multisig_params = spl_token.RevokeParams(
         program_id=TOKEN_PROGRAM_ID,
-        delegate=delegate_account,
+        account=delegate_account,
         owner=stubbed_sender.public_key(),
         signers=[PublicKey(i + 1) for i in range(3)],
     )
@@ -233,7 +233,7 @@ def test_freeze_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        owner=stubbed_sender.public_key(),
+        authority=stubbed_sender.public_key(),
     )
     instruction = spl_token.freeze_account(params)
     assert spl_token.decode_freeze_account(instruction) == params
@@ -242,8 +242,8 @@ def test_freeze_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        owner=stubbed_sender.public_key(),
-        signers=[PublicKey(i) for i in range(2, 10)],
+        authority=stubbed_sender.public_key(),
+        multi_signers=[PublicKey(i) for i in range(2, 10)],
     )
     instruction = spl_token.freeze_account(multisig_params)
     assert spl_token.decode_freeze_account(instruction) == multisig_params
@@ -256,7 +256,7 @@ def test_thaw_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        owner=stubbed_sender.public_key(),
+        authority=stubbed_sender.public_key(),
     )
     instruction = spl_token.thaw_account(params)
     assert spl_token.decode_thaw_account(instruction) == params
@@ -265,17 +265,17 @@ def test_thaw_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        owner=stubbed_sender.public_key(),
-        signers=[PublicKey(i) for i in range(2, 10)],
+        authority=stubbed_sender.public_key(),
+        multi_signers=[PublicKey(i) for i in range(2, 10)],
     )
     instruction = spl_token.thaw_account(multisig_params)
     assert spl_token.decode_thaw_account(instruction) == multisig_params
 
 
-def test_transfer2(stubbed_receiver, stubbed_sender):
-    """Test transfer2."""
+def test_transfer_checked(stubbed_receiver, stubbed_sender):
+    """Test transfer_checked."""
     mint = PublicKey(0)
-    params = spl_token.Transfer2Params(
+    params = spl_token.TransferCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
         mint=mint,
@@ -284,10 +284,10 @@ def test_transfer2(stubbed_receiver, stubbed_sender):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.transfer2(params)
-    assert spl_token.decode_transfer2(instruction) == params
+    instruction = spl_token.transfer_checked(params)
+    assert spl_token.decode_transfer_checked(instruction) == params
 
-    multisig_params = spl_token.Transfer2Params(
+    multisig_params = spl_token.TransferCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
         mint=mint,
@@ -297,14 +297,14 @@ def test_transfer2(stubbed_receiver, stubbed_sender):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.transfer2(multisig_params)
-    assert spl_token.decode_transfer2(instruction) == multisig_params
+    instruction = spl_token.transfer_checked(multisig_params)
+    assert spl_token.decode_transfer_checked(instruction) == multisig_params
 
 
-def test_approve2(stubbed_receiver, stubbed_sender):
-    """Test approve2."""
+def test_approve_checked(stubbed_receiver, stubbed_sender):
+    """Test approve_checked."""
     mint = PublicKey(0)
-    params = spl_token.Approve2Params(
+    params = spl_token.ApproveCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
         mint=mint,
@@ -313,10 +313,10 @@ def test_approve2(stubbed_receiver, stubbed_sender):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.approve2(params)
-    assert spl_token.decode_approve2(instruction) == params
+    instruction = spl_token.approve_checked(params)
+    assert spl_token.decode_approve_checked(instruction) == params
 
-    multisig_params = spl_token.Approve2Params(
+    multisig_params = spl_token.ApproveCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key(),
         mint=mint,
@@ -326,14 +326,14 @@ def test_approve2(stubbed_receiver, stubbed_sender):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.approve2(multisig_params)
-    assert spl_token.decode_approve2(instruction) == multisig_params
+    instruction = spl_token.approve_checked(multisig_params)
+    assert spl_token.decode_approve_checked(instruction) == multisig_params
 
 
-def test_mint_to2(stubbed_receiver):
-    """Test mint_to2."""
+def test_mint_to_checked(stubbed_receiver):
+    """Test mint_to_checked."""
     mint, mint_authority = PublicKey(0), PublicKey(1)
-    params = spl_token.MintTo2Params(
+    params = spl_token.MintToCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,
         dest=stubbed_receiver,
@@ -341,10 +341,10 @@ def test_mint_to2(stubbed_receiver):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.mint_to2(params)
-    assert spl_token.decode_mint_to2(instruction) == params
+    instruction = spl_token.mint_to_checked(params)
+    assert spl_token.decode_mint_to_checked(instruction) == params
 
-    multisig_params = spl_token.MintTo2Params(
+    multisig_params = spl_token.MintToCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,
         dest=stubbed_receiver,
@@ -353,14 +353,14 @@ def test_mint_to2(stubbed_receiver):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.mint_to2(multisig_params)
-    assert spl_token.decode_mint_to2(instruction) == multisig_params
+    instruction = spl_token.mint_to_checked(multisig_params)
+    assert spl_token.decode_mint_to_checked(instruction) == multisig_params
 
 
-def test_burn2(stubbed_receiver):
-    """Test burn2."""
+def test_burn_checked(stubbed_receiver):
+    """Test burn_checked."""
     mint, owner = PublicKey(0), PublicKey(1)
-    params = spl_token.Burn2Params(
+    params = spl_token.BurnCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,
         account=stubbed_receiver,
@@ -368,10 +368,10 @@ def test_burn2(stubbed_receiver):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.burn2(params)
-    assert spl_token.decode_burn2(instruction) == params
+    instruction = spl_token.burn_checked(params)
+    assert spl_token.decode_burn_checked(instruction) == params
 
-    multisig_params = spl_token.Burn2Params(
+    multisig_params = spl_token.BurnCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,
         account=stubbed_receiver,
@@ -380,5 +380,5 @@ def test_burn2(stubbed_receiver):
         amount=123,
         decimals=6,
     )
-    instruction = spl_token.burn2(multisig_params)
-    assert spl_token.decode_burn2(instruction) == multisig_params
+    instruction = spl_token.burn_checked(multisig_params)
+    assert spl_token.decode_burn_checked(instruction) == multisig_params

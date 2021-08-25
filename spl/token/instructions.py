@@ -106,8 +106,8 @@ class RevokeParams(NamedTuple):
 
     program_id: PublicKey
     """SPL Token program account."""
-    delegate: PublicKey
-    """Delegate account authorized to perform a transfer of tokens from the source account."""
+    account: PublicKey
+    """Source account for which transfer authority is being revoked."""
     owner: PublicKey
     """Owner of the source account."""
     signers: List[PublicKey] = []
@@ -189,10 +189,10 @@ class FreezeAccountParams(NamedTuple):
     """Account to freeze."""
     mint: PublicKey
     """Public key of the minter account."""
-    owner: PublicKey
-    """Owner of the account."""
-    signers: List[PublicKey] = []
-    """Signing accounts if `owner` is a multiSig"""
+    authority: PublicKey
+    """Mint freeze authority"""
+    multi_signers: List[PublicKey] = []
+    """Signing accounts if `authority` is a multiSig"""
 
 
 class ThawAccountParams(NamedTuple):
@@ -204,14 +204,14 @@ class ThawAccountParams(NamedTuple):
     """Account to thaw."""
     mint: PublicKey
     """Public key of the minter account."""
-    owner: PublicKey
-    """Owner of the account."""
-    signers: List[PublicKey] = []
-    """Signing accounts if `owner` is a multiSig"""
+    authority: PublicKey
+    """Mint freeze authority"""
+    multi_signers: List[PublicKey] = []
+    """Signing accounts if `authority` is a multiSig"""
 
 
-class Transfer2Params(NamedTuple):
-    """Transfer2 token transaction params."""
+class TransferCheckedParams(NamedTuple):
+    """TransferChecked token transaction params."""
 
     program_id: PublicKey
     """SPL Token program account."""
@@ -231,8 +231,8 @@ class Transfer2Params(NamedTuple):
     """Signing accounts if `owner` is a multiSig."""
 
 
-class Approve2Params(NamedTuple):
-    """Approve2 token transaction params."""
+class ApproveCheckedParams(NamedTuple):
+    """ApproveChecked token transaction params."""
 
     program_id: PublicKey
     """SPL Token program account."""
@@ -252,8 +252,8 @@ class Approve2Params(NamedTuple):
     """Signing accounts if `owner` is a multiSig."""
 
 
-class MintTo2Params(NamedTuple):
-    """MintTo2 token transaction params."""
+class MintToCheckedParams(NamedTuple):
+    """MintToChecked token transaction params."""
 
     program_id: PublicKey
     """SPL Token program account."""
@@ -271,8 +271,8 @@ class MintTo2Params(NamedTuple):
     """Signing accounts if `mint_authority` is a multiSig."""
 
 
-class Burn2Params(NamedTuple):
-    """Burn2 token transaction params."""
+class BurnCheckedParams(NamedTuple):
+    """BurnChecked token transaction params."""
 
     program_id: PublicKey
     """SPL Token program account."""
@@ -370,7 +370,7 @@ def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
     _ = __parse_and_validate_instruction(instruction, 2, InstructionType.REVOKE)
     return RevokeParams(
         program_id=instruction.program_id,
-        delegate=instruction.keys[0].pubkey,
+        account=instruction.keys[0].pubkey,
         owner=instruction.keys[1].pubkey,
         signers=[signer.pubkey for signer in instruction.keys[2:]],
     )
@@ -434,8 +434,8 @@ def decode_freeze_account(instruction: TransactionInstruction) -> FreezeAccountP
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
         mint=instruction.keys[1].pubkey,
-        owner=instruction.keys[2].pubkey,
-        signers=[signer.pubkey for signer in instruction.keys[3:]],
+        authority=instruction.keys[2].pubkey,
+        multi_signers=[signer.pubkey for signer in instruction.keys[3:]],
     )
 
 
@@ -446,15 +446,15 @@ def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParam
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
         mint=instruction.keys[1].pubkey,
-        owner=instruction.keys[2].pubkey,
-        signers=[signer.pubkey for signer in instruction.keys[3:]],
+        authority=instruction.keys[2].pubkey,
+        multi_signers=[signer.pubkey for signer in instruction.keys[3:]],
     )
 
 
-def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
-    """Decode a transfer2 token transaction and retrieve the instruction params."""
+def decode_transfer_checked(instruction: TransactionInstruction) -> TransferCheckedParams:
+    """Decode a transfer_checked token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.TRANSFER2)
-    return Transfer2Params(
+    return TransferCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -466,10 +466,10 @@ def decode_transfer2(instruction: TransactionInstruction) -> Transfer2Params:
     )
 
 
-def decode_approve2(instruction: TransactionInstruction) -> Approve2Params:
-    """Decode a approve2 token transaction and retrieve the instruction params."""
+def decode_approve_checked(instruction: TransactionInstruction) -> ApproveCheckedParams:
+    """Decode a approve_checked token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.APPROVE2)
-    return Approve2Params(
+    return ApproveCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -481,10 +481,10 @@ def decode_approve2(instruction: TransactionInstruction) -> Approve2Params:
     )
 
 
-def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
+def decode_mint_to_checked(instruction: TransactionInstruction) -> MintToCheckedParams:
     """Decode a mintTo2 token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MINT_TO2)
-    return MintTo2Params(
+    return MintToCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -495,10 +495,10 @@ def decode_mint_to2(instruction: TransactionInstruction) -> MintTo2Params:
     )
 
 
-def decode_burn2(instruction: TransactionInstruction) -> Burn2Params:
-    """Decode a burn2 token transaction and retrieve the instruction params."""
+def decode_burn_checked(instruction: TransactionInstruction) -> BurnCheckedParams:
+    """Decode a burn_checked token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.BURN2)
-    return Burn2Params(
+    return BurnCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -518,7 +518,7 @@ def __add_signers(keys: List[AccountMeta], owner: PublicKey, signers: List[Publi
         keys.append(AccountMeta(pubkey=owner, is_signer=True, is_writable=False))
 
 
-def __burn_instruction(params: Union[BurnParams, Burn2Params], data: Any) -> TransactionInstruction:
+def __burn_instruction(params: Union[BurnParams, BurnCheckedParams], data: Any) -> TransactionInstruction:
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
@@ -536,12 +536,12 @@ def __freeze_or_thaw_instruction(
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
     ]
-    __add_signers(keys, params.owner, params.signers)
+    __add_signers(keys, params.authority, params.multi_signers)
 
     return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
-def __mint_to_instruction(params: Union[MintToParams, MintTo2Params], data: Any) -> TransactionInstruction:
+def __mint_to_instruction(params: Union[MintToParams, MintToCheckedParams], data: Any) -> TransactionInstruction:
     keys = [
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
@@ -679,7 +679,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
 
 
 def approve(params: ApproveParams) -> TransactionInstruction:
-    """Creates a transaction instruction to approves a delegate.
+    """Creates a transaction instruction to approve a delegate.
 
     >>> delegate, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
     >>> params = ApproveParams(
@@ -703,17 +703,17 @@ def approve(params: ApproveParams) -> TransactionInstruction:
 
 
 def revoke(params: RevokeParams) -> TransactionInstruction:
-    """Creates a transaction instruction to revokes the delegate's authority.
+    """Creates a transaction instruction that revokes delegate authority for a given account.
 
-    >>> delegate, owner, token = PublicKey(1), PublicKey(2), PublicKey(3)
+    >>> account, owner, token = PublicKey(1), PublicKey(2), PublicKey(3)
     >>> params = RevokeParams(
-    ...     delegate=delegate, owner=owner, program_id=token
+    ...     account=account, owner=owner, program_id=token
     ... )
     >>> type(revoke(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.REVOKE, args=None))
-    keys = [AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False)]
+    keys = [AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)]
     __add_signers(keys, params.owner, params.signers)
 
     return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
@@ -806,9 +806,9 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set).
 
-    >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> account, mint, authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
     >>> params = FreezeAccountParams(
-    ...     account=account, mint=mint, owner=owner, program_id=token)
+    ...     account=account, mint=mint, authority=authority, program_id=token)
     >>> type(freeze_account(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
@@ -818,20 +818,20 @@ def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
 def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
     """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set).
 
-    >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+    >>> account, mint, authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
     >>> params = ThawAccountParams(
-    ...     account=account, mint=mint, owner=owner, program_id=token)
+    ...     account=account, mint=mint, authority=authority, program_id=token)
     >>> type(thaw_account(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
     return __freeze_or_thaw_instruction(params, InstructionType.THAW_ACCOUNT)
 
 
-def transfer2(params: Transfer2Params) -> TransactionInstruction:
+def transfer_checked(params: TransferCheckedParams) -> TransactionInstruction:
     """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller.
 
     >>> dest, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)
-    >>> params = Transfer2Params(
+    >>> params = TransferCheckedParams(
     ...     amount=1000,
     ...     decimals=6,
     ...     dest=dest,
@@ -840,7 +840,7 @@ def transfer2(params: Transfer2Params) -> TransactionInstruction:
     ...     program_id=token,
     ...     source=source,
     ... )
-    >>> type(transfer2(params))
+    >>> type(transfer_checked(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(
@@ -856,11 +856,11 @@ def transfer2(params: Transfer2Params) -> TransactionInstruction:
     return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
-def approve2(params: Approve2Params) -> TransactionInstruction:
+def approve_checked(params: ApproveCheckedParams) -> TransactionInstruction:
     """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller.
 
     >>> delegate, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)
-    >>> params = Approve2Params(
+    >>> params = ApproveCheckedParams(
     ...     amount=1000,
     ...     decimals=6,
     ...     delegate=delegate,
@@ -869,7 +869,7 @@ def approve2(params: Approve2Params) -> TransactionInstruction:
     ...     program_id=token,
     ...     source=source,
     ... )
-    >>> type(approve2(params))
+    >>> type(approve_checked(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(
@@ -885,11 +885,11 @@ def approve2(params: Approve2Params) -> TransactionInstruction:
     return TransactionInstruction(keys=keys, program_id=params.program_id, data=data)
 
 
-def mint_to2(params: MintTo2Params) -> TransactionInstruction:
+def mint_to_checked(params: MintToCheckedParams) -> TransactionInstruction:
     """This instruction differs from `mint_to` in that the decimals value is asserted by the caller.
 
     >>> dest, mint, mint_authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
-    >>> params = MintTo2Params(
+    >>> params = MintToCheckedParams(
     ...     amount=123,
     ...     decimals=6,
     ...     dest=dest,
@@ -897,7 +897,7 @@ def mint_to2(params: MintTo2Params) -> TransactionInstruction:
     ...     mint_authority=mint_authority,
     ...     program_id=token,
     ... )
-    >>> type(mint_to2(params))
+    >>> type(mint_to_checked(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(
@@ -906,14 +906,14 @@ def mint_to2(params: MintTo2Params) -> TransactionInstruction:
     return __mint_to_instruction(params, data)
 
 
-def burn2(params: Burn2Params) -> TransactionInstruction:
+def burn_checked(params: BurnCheckedParams) -> TransactionInstruction:
     """This instruction differs from `burn` in that the decimals value is asserted by the caller.
 
     >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
-    >>> params = Burn2Params(
+    >>> params = BurnCheckedParams(
     ...     amount=123, account=account, decimals=6, mint=mint, owner=owner, program_id=token,
     ... )
-    >>> type(burn2(params))
+    >>> type(burn_checked(params))
     <class 'solana.transaction.TransactionInstruction'>
     """
     data = INSTRUCTIONS_LAYOUT.build(

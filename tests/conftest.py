@@ -57,6 +57,12 @@ def alt_stubbed_sender() -> Account:
     return Account(bytes([7] * PublicKey.LENGTH))
 
 
+@pytest.fixture(scope="session")
+def freeze_authority() -> Account:
+    """Arbitrary known account to be used as freeze authority."""
+    return Account(bytes([6] * PublicKey.LENGTH))
+
+
 @pytest.mark.integration
 @pytest.fixture(scope="session")
 def test_http_client(docker_services) -> Client:
