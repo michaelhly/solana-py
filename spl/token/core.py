@@ -12,10 +12,10 @@ from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
+from solana.utils.helpers import decode_byte_string
 from solana.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 from spl.token.constants import WRAPPED_SOL_MINT
-from tests.integration.utils import decode_byte_string
 
 if TYPE_CHECKING:
     from spl.token.async_client import AsyncToken  # noqa: F401
