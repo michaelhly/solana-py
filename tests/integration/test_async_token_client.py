@@ -5,10 +5,11 @@ import pytest
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
+from solana.utils.helpers import decode_byte_string
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response, decode_byte_string
+from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response
 
 
 @pytest.mark.integration
