@@ -133,6 +133,17 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getInflationGovernor"), {self._comm_key: commitment or self._commitment}
 
+    def _get_inflation_reward_args(
+            self, address_list: List[Union[str, PublicKey]],
+            commitment: Optional[Commitment] = None,
+            epoch: Optional[int] = None
+    ) -> Tuple[types.RPCMethod, List[Union[str, PublicKey]], Dict[str, Any]]:
+        opts: Dict[str, Any] = {}
+        if epoch:
+            opts["epoch"] = epoch
+        opts[self._comm_key] = commitment or self._commitment
+        return types.RPCMethod("getInflationReward"), address_list, opts
+
     def _get_largest_accounts_args(
         self, filter_opt: Optional[str], commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, Dict[Optional[str], Optional[str]]]:

@@ -492,6 +492,37 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(self._get_inflation_rate)
 
+    def get_inflation_reward(
+            self,
+            address_list: List[Union[str, PublicKey]],
+            commitment: Optional[Commitment] = None,
+            epoch: Optional[int] = None,
+    ) -> types.RPCResponse:
+        """Returns the inflation reward for a list of addresses for an epoch.
+
+        :param address_list: An array of addresses to query, as base-58 encoded strings
+        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param epoch: An epoch for which the reward occurs. If omitted, the previous epoch will be used
+
+        >>> solana_client = Client("http://localhost:8899")
+        >>> solana_client.get_inflation_reward(address_list) # doctest: +SKIP
+        {
+            "jsonrpc": "2.0",
+            "result": [
+                {
+                    "amount": 2500,
+                    "effectiveSlot": 224,
+                    "epoch": 2,
+                    "postBalance": 499999442500
+                },
+                null
+            ],
+            "id": 1
+          }
+        """
+        args = self._get_inflation_reward_args(address_list=address_list, commitment=commitment, epoch=epoch)
+        return self._provider.make_request(*args)
+
     def get_largest_accounts(
         self, filter_opt: Optional[str] = None, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
