@@ -138,11 +138,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             commitment: Optional[Commitment] = None,
             epoch: Optional[int] = None
     ) -> Tuple[types.RPCMethod, List[Union[str, PublicKey]], Dict[str, Any]]:
-        opts: Dict[str, Any] = {}
+
+        if isinstance(address_list, list):
+            prepared_list = [str(item) for item in address_list]
+        else:
+            prepared_list = address_list
+        opts: Dict[str, Any] = {"filters": []}
         if epoch:
             opts["epoch"] = epoch
         opts[self._comm_key] = commitment or self._commitment
-        return types.RPCMethod("getInflationReward"), address_list, opts
+        return types.RPCMethod("getInflationReward"), prepared_list, opts
 
     def _get_largest_accounts_args(
         self, filter_opt: Optional[str], commitment: Optional[Commitment]
