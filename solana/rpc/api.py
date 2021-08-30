@@ -595,8 +595,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             encoding: Optional[str] = None,
             data_slice: Optional[types.DataSliceOpts] = None,
     ) -> types.RPCResponse:
-        """
-        Returns the account information for a list of Pubkeys
+        """Returns the account information for a list of Pubkeys
 
         :param pubkey_list: An array of Pubkeys to query, as base-58 encoded strings.
         :param commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
