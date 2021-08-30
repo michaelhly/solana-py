@@ -154,6 +154,21 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             {self._comm_key: commitment or self._commitment},
         )
 
+    def _get_multiple_accounts(
+        self,
+        pubkey_list: List[Union[str, PublicKey]],
+        commitment: Optional[Commitment] = Finalized,
+        encoding: Optional[str] = None,
+        data_slice: Optional[types.DataSliceOpts] = None,
+    ) -> Tuple[types.RPCMethod, List[Union[str, PublicKey]], Dict[str, Any]]:
+        opts: Dict[str, Any] = {}
+        if data_slice:
+            opts[self._data_slice_key] = dict(data_slice._asdict())
+        if encoding:
+            opts[self._encoding_key] = encoding
+        opts[self._comm_key] = commitment
+        return types.RPCMethod("getMultipleAccounts"), pubkey_list,  opts
+
     def _get_program_accounts_args(
         self,
         pubkey: Union[str, PublicKey],

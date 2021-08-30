@@ -588,6 +588,65 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_minimum_balance_for_rent_exemption_args(usize, commitment)
         return self._provider.make_request(*args)
 
+    def get_multiple_accounts(
+            self,
+            pubkey_list: List[Union[str, PublicKey]],
+            commitment: Optional[Commitment] = Finalized,
+            encoding: Optional[str] = None,
+            data_slice: Optional[types.DataSliceOpts] = None,
+    ) -> types.RPCResponse:
+        """
+        Returns the account information for a list of Pubkeys
+
+        :param pubkey_list: An array of Pubkeys to query, as base-58 encoded strings.
+        :param commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
+        :param data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+        >>> from solana.publickey import PublicKey
+        >>> solana_client = Client("http://localhost:8899")
+        >>> data_slice = DataSliceOpt(offset=0, length=20)
+        >>> solana_client.get_multiple_accounts(["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"], data_slice=data_slice)   # doctest: +SKIP
+        {
+          "jsonrpc": "2.0",
+          "result": {
+            "context": {
+              "slot": 1
+            },
+            "value": [
+              {
+                "data": [
+                  "AAAAAAEAAAACtzNsyJrW0g==",
+                  "base64"
+                ],
+                "executable": false,
+                "lamports": 1000000000,
+                "owner": "11111111111111111111111111111111",
+                "rentEpoch": 2
+              },
+              {
+                "data": [
+                  "",
+                  "base64"
+                ],
+                "executable": false,
+                "lamports": 5000000000,
+                "owner": "11111111111111111111111111111111",
+                "rentEpoch": 2
+              }
+            ]
+          },
+          "id": 1
+        }
+        """
+        args = self._get_multiple_accounts(
+            pubkey_list=pubkey_list,
+            commitment=commitment,
+            encoding=encoding,
+            data_slice=data_slice
+        )
+        return self._provider.make_request(*args)
+
     def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
         pubkey: Union[str, PublicKey],
