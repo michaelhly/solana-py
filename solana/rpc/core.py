@@ -133,6 +133,22 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getInflationGovernor"), {self._comm_key: commitment or self._commitment}
 
+    def _get_inflation_reward_args(
+            self, address_list: List[Union[str, PublicKey]],
+            commitment: Optional[Commitment] = None,
+            epoch: Optional[int] = None
+    ) -> Tuple[types.RPCMethod, List[Union[str, PublicKey]], Dict[str, Any]]:
+
+        if isinstance(address_list, list):
+            prepared_list = [str(item) for item in address_list]
+        else:
+            prepared_list = address_list
+        opts: Dict[str, Any] = {"filters": []}
+        if epoch:
+            opts["epoch"] = epoch
+        opts[self._comm_key] = commitment or self._commitment
+        return types.RPCMethod("getInflationReward"), prepared_list, opts
+
     def _get_largest_accounts_args(
         self, filter_opt: Optional[str], commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, Dict[Optional[str], Optional[str]]]:
@@ -153,6 +169,25 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             usize,
             {self._comm_key: commitment or self._commitment},
         )
+
+    def _get_multiple_accounts(
+        self,
+        pubkey_list: List[Union[str, PublicKey]],
+        commitment: Optional[Commitment] = Finalized,
+        encoding: Optional[str] = None,
+        data_slice: Optional[types.DataSliceOpts] = None,
+    ) -> Tuple[types.RPCMethod, List[Union[str, PublicKey]], Dict[str, Any]]:
+        opts: Dict[str, Any] = {"filters": []}
+        if isinstance(pubkey_list, list):
+            prepared_list = [str(item) for item in pubkey_list]
+        else:
+            prepared_list = pubkey_list
+        if data_slice:
+            opts[self._data_slice_key] = dict(data_slice._asdict())
+        if encoding:
+            opts[self._encoding_key] = encoding
+        opts[self._comm_key] = commitment
+        return types.RPCMethod("getMultipleAccounts"), prepared_list,  opts
 
     def _get_program_accounts_args(
         self,

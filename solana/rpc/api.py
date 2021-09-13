@@ -492,6 +492,37 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(self._get_inflation_rate)
 
+    def get_inflation_reward(
+            self,
+            address_list: List[Union[str, PublicKey]],
+            commitment: Optional[Commitment] = None,
+            epoch: Optional[int] = None,
+    ) -> types.RPCResponse:
+        """Returns the inflation reward for a list of addresses for an epoch.
+
+        :param address_list: An array of addresses to query, as base-58 encoded strings
+        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param epoch: An epoch for which the reward occurs. If omitted, the previous epoch will be used
+
+        >>> solana_client = Client("http://localhost:8899")
+        >>> solana_client.get_inflation_reward(address_list) # doctest: +SKIP
+        {
+            "jsonrpc": "2.0",
+            "result": [
+                {
+                    "amount": 2500,
+                    "effectiveSlot": 224,
+                    "epoch": 2,
+                    "postBalance": 499999442500
+                },
+                null
+            ],
+            "id": 1
+          }
+        """
+        args = self._get_inflation_reward_args(address_list=address_list, commitment=commitment, epoch=epoch)
+        return self._provider.make_request(*args)
+
     def get_largest_accounts(
         self, filter_opt: Optional[str] = None, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
@@ -586,6 +617,64 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         {'jsonrpc': '2.0', 'result': 1238880, 'id': 7}
         """
         args = self._get_minimum_balance_for_rent_exemption_args(usize, commitment)
+        return self._provider.make_request(*args)
+
+    def get_multiple_accounts(
+            self,
+            pubkey_list: List[Union[str, PublicKey]],
+            commitment: Optional[Commitment] = Finalized,
+            encoding: Optional[str] = None,
+            data_slice: Optional[types.DataSliceOpts] = None,
+    ) -> types.RPCResponse:
+        """Returns the account information for a list of Pubkeys
+
+        :param pubkey_list: An array of Pubkeys to query, as base-58 encoded strings.
+        :param commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
+        :param data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+        >>> from solana.publickey import PublicKey
+        >>> solana_client = Client("http://localhost:8899")
+        >>> data_slice = DataSliceOpt(offset=0, length=20)
+        >>> solana_client.get_multiple_accounts(["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"], data_slice=data_slice)   # doctest: +SKIP
+        {
+          "jsonrpc": "2.0",
+          "result": {
+            "context": {
+              "slot": 1
+            },
+            "value": [
+              {
+                "data": [
+                  "AAAAAAEAAAACtzNsyJrW0g==",
+                  "base64"
+                ],
+                "executable": false,
+                "lamports": 1000000000,
+                "owner": "11111111111111111111111111111111",
+                "rentEpoch": 2
+              },
+              {
+                "data": [
+                  "",
+                  "base64"
+                ],
+                "executable": false,
+                "lamports": 5000000000,
+                "owner": "11111111111111111111111111111111",
+                "rentEpoch": 2
+              }
+            ]
+          },
+          "id": 1
+        }
+        """
+        args = self._get_multiple_accounts(
+            pubkey_list=pubkey_list,
+            commitment=commitment,
+            encoding=encoding,
+            data_slice=data_slice
+        )
         return self._provider.make_request(*args)
 
     def get_program_accounts(  # pylint: disable=too-many-arguments
