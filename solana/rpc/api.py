@@ -41,7 +41,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     @property
     def request_raw(self):
-        return self._provider.data if getattr(self, '_provider') else None
+        return self._provider.content if getattr(self, '_provider') else None
+
+    @property
+    def response_headers(self):
+        return self._provider.response_headers if getattr(self, '_provider') else None
 
     def is_connected(self) -> bool:
         """Health check.
