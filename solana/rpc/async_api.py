@@ -929,7 +929,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self.__post_send_with_confirm(*post_send_args)
 
     async def send_transaction(
-        self, txn: Transaction, *signers: Account, opts: types.TxOpts = types.TxOpts()
+        self,
+        txn: Transaction,
+        *signers: Account,
+        opts: types.TxOpts = types.TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
 
@@ -949,14 +953,16 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
          'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
          'id': 12}
         """
-        try:
-            # TODO: Cache recent blockhash
-            blockhash_resp = await self.get_recent_blockhash()
-            if not blockhash_resp["result"]:
-                raise RuntimeError("failed to get recent blockhash")
-            txn.recent_blockhash = Blockhash(blockhash_resp["result"]["value"]["blockhash"])
-        except Exception as err:
-            raise RuntimeError("failed to get recent blockhash") from err
+        if recent_blockhash is None:
+            try:
+                # TODO: Cache recent blockhash
+                blockhash_resp = await self.get_recent_blockhash()
+                if not blockhash_resp["result"]:
+                    raise RuntimeError("failed to get recent blockhash")
+                recent_blockhash = Blockhash(blockhash_resp["result"]["value"]["blockhash"])
+            except Exception as err:
+                raise RuntimeError("failed to get recent blockhash") from err
+        txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
         return await self.send_raw_transaction(txn.serialize(), opts=opts)

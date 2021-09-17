@@ -10,6 +10,7 @@ from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed
 from solana.rpc.types import RPCResponse, TxOpts
+from solana.blockhash import Blockhash
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
 from spl.token.core import AccountInfo, MintInfo, _TokenCore
 
@@ -96,6 +97,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         program_id: PublicKey,
         freeze_authority: Optional[PublicKey] = None,
         skip_confirmation: bool = False,
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> AsyncToken:
         """Create and initialize a token.
 
@@ -118,13 +120,14 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed, cls
         )
         # Send the two instructions
-        await conn.send_transaction(txn, payer, mint_account, opts=opts)
+        await conn.send_transaction(txn, payer, mint_account, opts=opts, recent_blockhash=recent_blockhash)
         return cast(AsyncToken, token)
 
     async def create_account(
         self,
         owner: PublicKey,
         skip_confirmation: bool = False,
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> PublicKey:
         """Create and initialize a new account.
 
@@ -142,13 +145,14 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             owner, skip_confirmation, balance_needed
         )
         # Send the two instructions
-        await self._conn.send_transaction(txn, payer, new_account, opts=opts)
+        await self._conn.send_transaction(txn, payer, new_account, opts=opts, recent_blockhash=recent_blockhash)
         return new_account_pk
 
     async def create_associated_token_account(
         self,
         owner: PublicKey,
         skip_confirmation: bool = False,
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> PublicKey:
         """Create an associated token account.
 
@@ -161,7 +165,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         # Construct transaction
         public_key, txn, payer, opts = self._create_associated_token_account_args(owner, skip_confirmation)
-        await self._conn.send_transaction(txn, payer, opts=opts)
+        await self._conn.send_transaction(txn, payer, opts=opts, recent_blockhash=recent_blockhash)
         return public_key
 
     @staticmethod
@@ -172,6 +176,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         payer: Account,
         amount: int,
         skip_confirmation: bool = False,
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> PublicKey:
         """Create and initialize a new account on the special native token mint.
 
@@ -191,7 +196,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         new_account_public_key, txn, payer, new_account, opts = _TokenCore._create_wrapped_native_account_args(
             program_id, owner, payer, amount, skip_confirmation, balance_needed
         )
-        await conn.send_transaction(txn, payer, new_account, opts=opts)
+        await conn.send_transaction(txn, payer, new_account, opts=opts, recent_blockhash=recent_blockhash)
         return new_account_public_key
 
     async def create_multisig(
@@ -199,6 +204,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         m: int,
         multi_signers: List[PublicKey],
         opts: TxOpts = TxOpts(skip_preflight=True, skip_confirmation=False),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> PublicKey:  # pylint: disable=invalid-name
         """Create and initialize a new multisig.
 
@@ -208,7 +214,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_multisig(self._conn)
         txn, payer, multisig = self._create_multisig_args(m, multi_signers, balance_needed)
-        await self._conn.send_transaction(txn, payer, multisig, opts=opts)
+        await self._conn.send_transaction(txn, payer, multisig, opts=opts, recent_blockhash=recent_blockhash)
         return multisig.public_key()
 
     async def get_mint_info(self) -> MintInfo:
@@ -229,6 +235,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         amount: int,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Transfer tokens to another account.
 
@@ -240,7 +247,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._transfer_args(source, dest, owner, amount, multi_signers, opts)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def approve(
         self,
@@ -250,6 +257,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         amount: int,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
@@ -261,7 +269,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, payer, signers, opts = self._approve_args(source, delegate, owner, amount, multi_signers, opts)
-        return await self._conn.send_transaction(txn, payer, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def revoke(
         self,
@@ -269,6 +277,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         owner: PublicKey,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Revoke transfer authority for a given account.
 
@@ -278,7 +287,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, payer, signers, opts = self._revoke_args(account, owner, multi_signers, opts)
-        return await self._conn.send_transaction(txn, payer, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def set_authority(
         self,
@@ -288,6 +297,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         new_authority: Optional[PublicKey] = None,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Assign a new authority to the account.
 
@@ -301,7 +311,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         txn, payer, signers, opts = self._set_authority_args(
             account, current_authority, authority_type, new_authority, multi_signers, opts
         )
-        return await self._conn.send_transaction(txn, payer, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def mint_to(
         self,
@@ -310,6 +320,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         amount: int,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Mint new tokens.
 
@@ -323,7 +334,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         or until the transaction is confirmed.
         """
         txn, signers, opts = self._mint_to_args(dest, mint_authority, amount, multi_signers, opts)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def burn(
         self,
@@ -332,6 +343,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         amount: int,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Burn tokens.
 
@@ -342,7 +354,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._burn_args(account, owner, amount, multi_signers, opts)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def close_account(
         self,
@@ -351,6 +363,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         authority: PublicKey,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Remove approval for the transfer of any remaining tokens.
 
@@ -361,7 +374,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._close_account_args(account, dest, authority, multi_signers)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def freeze_account(
         self,
@@ -369,6 +382,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         authority: PublicKey,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Freeze account.
 
@@ -378,7 +392,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._freeze_account_args(account, authority, multi_signers)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def thaw_account(
         self,
@@ -386,6 +400,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         authority: PublicKey,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Thaw account.
 
@@ -395,7 +410,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._thaw_account_args(account, authority, multi_signers)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def transfer_checked(
         self,
@@ -406,6 +421,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         decimals: int,
         multi_signers: Optional[List[Account]],
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Transfer tokens to another account, asserting the token mint and decimals.
 
@@ -418,7 +434,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._transfer_checked_args(source, dest, owner, amount, decimals, multi_signers, opts)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def approve_checked(
         self,
@@ -429,6 +445,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         decimals: int,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
@@ -445,7 +462,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         txn, payer, signers, opts = self._approve_checked_args(
             source, delegate, owner, amount, decimals, multi_signers, opts
         )
-        return await self._conn.send_transaction(txn, payer, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def mint_to_checked(
         self,
@@ -455,6 +472,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         decimals: int,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Mint new tokens, asserting the token mint and decimals.
 
@@ -466,7 +484,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._mint_to_checked_args(dest, mint_authority, amount, decimals, multi_signers, opts)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def burn_checked(
         self,
@@ -476,6 +494,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         decimals: int,
         multi_signers: Optional[List[Account]] = None,
         opts: TxOpts = TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
         """Burn tokens, asserting the token mint and decimals.
 
@@ -487,4 +506,4 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param opts: (optional) Transaction options.
         """
         txn, signers, opts = self._burn_checked_args(account, owner, amount, decimals, multi_signers, opts)
-        return await self._conn.send_transaction(txn, *signers, opts=opts)
+        return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
