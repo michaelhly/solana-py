@@ -20,6 +20,28 @@ def test_request_air_drop(stubbed_sender, test_http_client):
 
 
 @pytest.mark.integration
+def test_request_air_drop_prefetched_blockhash(stubbed_sender_prefetched_blockhash, test_http_client):
+    """Test air drop to stubbed_sender."""
+    resp = test_http_client.request_airdrop(stubbed_sender_prefetched_blockhash.public_key(), AIRDROP_AMOUNT)
+    assert_valid_response(resp)
+    resp = confirm_transaction(test_http_client, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = generate_expected_meta_after_airdrop(resp)
+    assert resp["result"]["meta"] == expected_meta
+
+
+@pytest.mark.integration
+def test_request_air_drop_cached_blockhash(stubbed_sender_cached_blockhash, test_http_client):
+    """Test air drop to stubbed_sender."""
+    resp = test_http_client.request_airdrop(stubbed_sender_cached_blockhash.public_key(), AIRDROP_AMOUNT)
+    assert_valid_response(resp)
+    resp = confirm_transaction(test_http_client, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = generate_expected_meta_after_airdrop(resp)
+    assert resp["result"]["meta"] == expected_meta
+
+
+@pytest.mark.integration
 def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
@@ -64,6 +86,154 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
     resp = test_http_client.get_balance(stubbed_receiver)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 954
+
+
+@pytest.mark.integration
+def test_send_transaction_prefetched_blockhash(
+    stubbed_sender_prefetched_blockhash, stubbed_receiver_prefetched_blockhash, test_http_client
+):
+    """Test sending a transaction to localnet."""
+    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=stubbed_sender_prefetched_blockhash.public_key(),
+                to_pubkey=stubbed_receiver_prefetched_blockhash,
+                lamports=1000,
+            )
+        )
+    )
+    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_recent_blockhash())
+    resp = test_http_client.send_transaction(
+        transfer_tx, stubbed_sender_prefetched_blockhash, recent_blockhash=recent_blockhash
+    )
+    assert_valid_response(resp)
+    # Confirm transaction
+    resp = confirm_transaction(test_http_client, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = {
+        "err": None,
+        "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
+        "postBalances": [9999994000, 954, 1],
+        "postTokenBalances": [],
+        "preBalances": [10000000000, 0, 1],
+        "preTokenBalances": [],
+        "rewards": [
+            {
+                "commission": None,
+                "lamports": -46,
+                "postBalance": 954,
+                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97",
+                "rewardType": "Rent",
+            }
+        ],
+        "status": {"Ok": None},
+    }
+    assert resp["result"]["meta"] == expected_meta
+    # Check balances
+    resp = test_http_client.get_balance(stubbed_sender_prefetched_blockhash.public_key())
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999994000
+    resp = test_http_client.get_balance(stubbed_receiver_prefetched_blockhash)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 954
+
+
+@pytest.mark.integration
+def test_send_transaction_cached_blockhash(
+    stubbed_sender_cached_blockhash, stubbed_receiver_cached_blockhash, test_http_client_cached_blockhash
+):
+    """Test sending a transaction to localnet."""
+    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=stubbed_sender_cached_blockhash.public_key(),
+                to_pubkey=stubbed_receiver_cached_blockhash,
+                lamports=1000,
+            )
+        )
+    )
+    resp = test_http_client_cached_blockhash.send_transaction(transfer_tx, stubbed_sender_cached_blockhash)
+    assert_valid_response(resp)
+    # Confirm transaction
+    resp = confirm_transaction(test_http_client_cached_blockhash, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = {
+        "err": None,
+        "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
+        "postBalances": [9999994000, 954, 1],
+        "postTokenBalances": [],
+        "preBalances": [10000000000, 0, 1],
+        "preTokenBalances": [],
+        "rewards": [
+            {
+                "commission": None,
+                "lamports": -46,
+                "postBalance": 954,
+                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i95",
+                "rewardType": "Rent",
+            }
+        ],
+        "status": {"Ok": None},
+    }
+    assert resp["result"]["meta"] == expected_meta
+    # Check balances
+    resp = test_http_client_cached_blockhash.get_balance(stubbed_sender_cached_blockhash.public_key())
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999994000
+    assert len(test_http_client_cached_blockhash.blockhash_cache.unused_blockhashes) == 1
+
+    # Second transaction
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=stubbed_sender_cached_blockhash.public_key(),
+                to_pubkey=stubbed_receiver_cached_blockhash,
+                lamports=2000,
+            )
+        )
+    )
+    resp = test_http_client_cached_blockhash.get_balance(stubbed_receiver_cached_blockhash)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 954
+    resp = test_http_client_cached_blockhash.send_transaction(transfer_tx, stubbed_sender_cached_blockhash)
+    assert_valid_response(resp)
+    # Confirm transaction
+    resp = confirm_transaction(test_http_client_cached_blockhash, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = {
+        "err": None,
+        "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
+        "postBalances": [9999987000, 2954, 1],
+        "postTokenBalances": [],
+        "preBalances": [9999994000, 954, 1],
+        "preTokenBalances": [],
+        "rewards": [],
+        "status": {"Ok": None},
+    }
+    assert resp["result"]["meta"] == expected_meta
+    # Check balances
+    resp = test_http_client_cached_blockhash.get_balance(stubbed_sender_cached_blockhash.public_key())
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999987000
+    assert len(test_http_client_cached_blockhash.blockhash_cache.unused_blockhashes) == 1
+    assert len(test_http_client_cached_blockhash.blockhash_cache.used_blockhashes) == 1
 
 
 @pytest.mark.integration
