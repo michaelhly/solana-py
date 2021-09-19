@@ -960,7 +960,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         txn: Transaction,
         *signers: Account,
         opts: types.TxOpts = types.TxOpts(),
-        recent_blockhash: Optional[Blockhash] = None
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
 
@@ -1076,7 +1076,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             elapsed_time += sleep_time
 
         if not resp["result"]:
-            raise Exception("Unable to confirm transaction %s" % tx_sig)
+            raise Exception(f"Unable to confirm transaction {tx_sig}")
         err = resp.get("error") or resp["result"].get("meta").get("err")
         if err:
             self._provider.logger.error("Transaction error: %s", err)

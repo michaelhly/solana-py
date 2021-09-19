@@ -1076,7 +1076,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         if not resp["result"]:
             print(f"resp: {resp}")
-            raise Exception("Unable to confirm transaction %s" % tx_sig)
+            raise Exception(f"Unable to confirm transaction {tx_sig}")
         err = resp.get("error") or resp["result"].get("meta").get("err")
         if err:
             self._provider.logger.error("Transaction error: %s", err)

@@ -341,7 +341,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             raise Exception("Failed to send transaction")
         return resp
 
-    def parse_recent_blockhash(self, blockhash_resp: types.RPCResponse) -> Blockhash:
+    @staticmethod
+    def parse_recent_blockhash(blockhash_resp: types.RPCResponse) -> Blockhash:
         """Extract blockhash from JSON RPC result."""
         if not blockhash_resp["result"]:
             raise RuntimeError("failed to get recent blockhash")
