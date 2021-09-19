@@ -29,6 +29,7 @@ bump2version = "*"
 types-requests = "*"
 notebook = "*"
 pytest-asyncio = "*"
+pytest-cov = "*"
 
 [packages]
 pynacl = "*"
