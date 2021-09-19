@@ -399,10 +399,41 @@ def transfer(params: TransferParams) -> TransactionInstruction:
         data=data,
     )
 
+def create_account_with_seed(
+    params: CreateAccountWithSeedParams,
+) -> TransactionInstruction:
+    """
+    Generate a transaction instruction that creates a new account at
+    an address generated with `from`, a seed, and programId
+    """
 
-def create_account_with_seed(params: CreateAccountWithSeedParams) -> TransactionInstruction:
-    """Generate an instruction that creates a new account at an address."""
-    raise NotImplementedError("create_account_with_seed not implemented")
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.CreateWithSeed,
+            args=dict(
+                lamports=params.lamports,
+                base=toBuffer(params.base_pubkey.toBuffer()),
+                seed=params.seed,
+                lamports=params.lamports,
+                space=params.space,
+                programId=toBuffer(params.program_id.toBuffer()),
+            ),
+        )
+    )
+
+    keys = [
+        AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
+        AccountMeta(
+            pubkey=params.new_account_pubkey, is_signer=False, is_writable=True
+        ),
+    ]
+
+    if params.base_pubkey != params.from_pubkey:
+        keys.append(
+            AccountMeta(pubkey=params.base_pubkey, is_signer=True, is_writable=False)
+        )
+
+    return TransactionInstruction(keys=keys, program_id=SYS_PROGRAM_ID, data=data)
 
 
 def create_nonce_account(params: Union[CreateNonceAccountParams, CreateAccountWithSeedParams]) -> Transaction:
