@@ -78,13 +78,19 @@ def stubbed_sender() -> Account:
 @pytest.fixture(scope="session")
 def stubbed_sender_prefetched_blockhash() -> Account:
     """Arbitrary known account to be used as sender."""
-    return Account(bytes([6] * PublicKey.LENGTH))
+    return Account(bytes([9] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def stubbed_sender_cached_blockhash() -> Account:
     """Arbitrary known account to be used as sender."""
     return Account(bytes([4] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_for_token() -> Account:
+    """Arbitrary known account to be used as sender."""
+    return Account(bytes([2] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
