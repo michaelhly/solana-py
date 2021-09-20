@@ -428,15 +428,11 @@ def create_account_with_seed(
 
     keys = [
         AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-        AccountMeta(
-            pubkey=params.new_account_pubkey, is_signer=False, is_writable=True
-        ),
+        AccountMeta(pubkey=params.new_account_pubkey, is_signer=False, is_writable=True),
     ]
 
     if params.base_pubkey != params.from_pubkey:
-        keys.append(
-            AccountMeta(pubkey=params.base_pubkey, is_signer=True, is_writable=False)
-        )
+        keys.append(AccountMeta(pubkey=params.base_pubkey, is_signer=True, is_writable=False))
 
     return TransactionInstruction(keys=keys, program_id=SYS_PROGRAM_ID, data=data)
 
