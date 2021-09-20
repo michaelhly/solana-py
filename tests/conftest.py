@@ -40,9 +40,33 @@ def stubbed_receiver() -> PublicKey:
 
 
 @pytest.fixture(scope="session")
-def alt_stubbed_receiver() -> PublicKey:
+def stubbed_receiver_prefetched_blockhash() -> PublicKey:
+    """Arbitrary known public key to be used as reciever."""
+    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97")
+
+
+@pytest.fixture(scope="session")
+def stubbed_receiver_cached_blockhash() -> PublicKey:
+    """Arbitrary known public key to be used as reciever."""
+    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i95")
+
+
+@pytest.fixture(scope="session")
+def async_stubbed_receiver() -> PublicKey:
     """Arbitrary known public key to be used as reciever."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98")
+
+
+@pytest.fixture(scope="session")
+def async_stubbed_receiver_prefetched_blockhash() -> PublicKey:
+    """Arbitrary known public key to be used as reciever."""
+    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96")
+
+
+@pytest.fixture(scope="session")
+def async_stubbed_receiver_cached_blockhash() -> PublicKey:
+    """Arbitrary known public key to be used as reciever."""
+    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i94")
 
 
 @pytest.fixture(scope="session")
@@ -52,9 +76,39 @@ def stubbed_sender() -> Account:
 
 
 @pytest.fixture(scope="session")
-def alt_stubbed_sender() -> Account:
+def stubbed_sender_prefetched_blockhash() -> Account:
+    """Arbitrary known account to be used as sender."""
+    return Account(bytes([9] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_cached_blockhash() -> Account:
+    """Arbitrary known account to be used as sender."""
+    return Account(bytes([4] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_for_token() -> Account:
+    """Arbitrary known account to be used as sender."""
+    return Account(bytes([2] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def async_stubbed_sender() -> Account:
     """Another arbitrary known account to be used as sender."""
     return Account(bytes([7] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def async_stubbed_sender_prefetched_blockhash() -> Account:
+    """Another arbitrary known account to be used as sender."""
+    return Account(bytes([5] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def async_stubbed_sender_cached_blockhash() -> Account:
+    """Another arbitrary known account to be used as sender."""
+    return Account(bytes([3] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
@@ -68,6 +122,15 @@ def freeze_authority() -> Account:
 def test_http_client(docker_services) -> Client:
     """Test http_client.is_connected."""
     http_client = Client()
+    docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
+    return http_client
+
+
+@pytest.mark.integration
+@pytest.fixture(scope="session")
+def test_http_client_cached_blockhash(docker_services) -> Client:
+    """Test http_client.is_connected."""
+    http_client = Client(blockhash_cache=True)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
@@ -88,19 +151,15 @@ def test_http_client_async(docker_services, event_loop) -> AsyncClient:  # pylin
 
 @pytest.mark.integration
 @pytest.fixture(scope="session")
-def test_http_clients(docker_services) -> Clients:
+def test_http_client_async_cached_blockhash(
+    docker_services, event_loop  # pylint: disable=redefined-outer-name
+) -> AsyncClient:
     """Test http_client.is_connected."""
-    http_client = Client()
-    async_client = AsyncClient()
-    loop = asyncio.get_event_loop()
+    http_client = AsyncClient(blockhash_cache=True)
 
     def check() -> bool:
-        sync_result = http_client.is_connected()
-        async_result = loop.run_until_complete(async_client.is_connected())
-        return sync_result and async_result
+        return event_loop.run_until_complete(http_client.is_connected())
 
     docker_services.wait_until_responsive(timeout=15, pause=1, check=check)
-    clients = Clients(sync=http_client, async_=async_client, loop=loop)
-    yield clients
-
-    clients.loop.run_until_complete(async_client.close())
+    yield http_client
+    event_loop.run_until_complete(http_client.close())

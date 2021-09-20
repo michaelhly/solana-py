@@ -3,7 +3,7 @@ import asyncio
 from typing import List, Optional, Union
 
 from solana.account import Account
-from solana.blockhash import Blockhash
+from solana.blockhash import Blockhash, BlockhashCache
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -16,9 +16,35 @@ from .providers import async_http
 class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     """Async client class."""
 
-    def __init__(self, endpoint: Optional[str] = None, commitment: Optional[Commitment] = None) -> None:
-        """Init API client."""
-        super().__init__(commitment)
+    def __init__(
+        self,
+        endpoint: Optional[str] = None,
+        commitment: Optional[Commitment] = None,
+        blockhash_cache: Union[BlockhashCache, bool] = False,
+    ) -> None:
+        """Init API client.
+
+        :param endpoint: URL of the RPC endpoint.
+        :param commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
+            `send_transaction` calls faster.
+            You can also pass your own BlockhashCache object to customize its parameters.
+
+            The cache works as follows:
+
+            1. Retrieve the oldest unused cached blockhash that is younger than `ttl` seconds,
+                where `ttl` is defined in the BlockhashCache
+                (we prefer unused blockhashes because reusing blockhashes can cause errors in some edge cases,
+                and we prefer slightly older blockhashes because they're more likely to be accepted by every validator).
+            2. If there are no unused blockhashes in the cache, take the oldest used
+                blockhash that is younger than `ttl` seconds.
+            3. Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
+
+            If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
+            and pass that value in your `.send_transaction` calls.
+
+        """
+        super().__init__(commitment, blockhash_cache)
         self._provider = async_http.AsyncHTTPProvider(endpoint)
 
     async def __aenter__(self) -> "AsyncClient":
@@ -929,13 +955,19 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self.__post_send_with_confirm(*post_send_args)
 
     async def send_transaction(
-        self, txn: Transaction, *signers: Account, opts: types.TxOpts = types.TxOpts()
+        self,
+        txn: Transaction,
+        *signers: Account,
+        opts: types.TxOpts = types.TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
 
         :param txn: Transaction object.
         :param signers: Signers to sign the transaction.
         :param opts: (optional) Transaction options.
+        :param recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
+            skip fetching the recent blockhash or relying on the cache.
 
         >>> from solana.account import Account
         >>> from solana.system_program import TransferParams, transfer
@@ -949,17 +981,24 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
          'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
          'id': 12}
         """
-        try:
-            # TODO: Cache recent blockhash
-            blockhash_resp = await self.get_recent_blockhash()
-            if not blockhash_resp["result"]:
-                raise RuntimeError("failed to get recent blockhash")
-            txn.recent_blockhash = Blockhash(blockhash_resp["result"]["value"]["blockhash"])
-        except Exception as err:
-            raise RuntimeError("failed to get recent blockhash") from err
+        if recent_blockhash is None:
+            if self.blockhash_cache:
+                try:
+                    recent_blockhash = self.blockhash_cache.get()
+                except ValueError:
+                    blockhash_resp = await self.get_recent_blockhash()
+                    recent_blockhash = self._process_blockhash_resp(blockhash_resp)
+            else:
+                blockhash_resp = await self.get_recent_blockhash()
+                recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
+        txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
-        return await self.send_raw_transaction(txn.serialize(), opts=opts)
+        txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts)
+        if self.blockhash_cache:
+            blockhash_resp = await self.get_recent_blockhash()
+            self._process_blockhash_resp(blockhash_resp)
+        return txn_resp
 
     async def simulate_transaction(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Optional[Commitment] = None
@@ -1037,7 +1076,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         if not resp["result"]:
             print(f"resp: {resp}")
-            raise Exception("Unable to confirm transaction %s" % tx_sig)
+            raise Exception(f"Unable to confirm transaction {tx_sig}")
         err = resp.get("error") or resp["result"].get("meta").get("err")
         if err:
             self._provider.logger.error("Transaction error: %s", err)

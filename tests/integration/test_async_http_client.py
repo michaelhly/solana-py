@@ -10,9 +10,9 @@ from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response, 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_request_air_drop(alt_stubbed_sender, test_http_client_async):
-    """Test air drop to alt_stubbed_sender."""
-    resp = await test_http_client_async.request_airdrop(alt_stubbed_sender.public_key(), AIRDROP_AMOUNT)
+async def test_request_air_drop(async_stubbed_sender, test_http_client_async):
+    """Test air drop to async_stubbed_sender."""
+    resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key(), AIRDROP_AMOUNT)
     assert_valid_response(resp)
     resp = await aconfirm_transaction(test_http_client_async, resp["result"])
     assert_valid_response(resp)
@@ -22,17 +22,47 @@ async def test_request_air_drop(alt_stubbed_sender, test_http_client_async):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_send_transaction_and_get_balance(alt_stubbed_sender, alt_stubbed_receiver, test_http_client_async):
+async def test_request_air_drop_prefetched_blockhash(async_stubbed_sender_prefetched_blockhash, test_http_client_async):
+    """Test air drop to async_stubbed_sender."""
+    resp = await test_http_client_async.request_airdrop(
+        async_stubbed_sender_prefetched_blockhash.public_key(), AIRDROP_AMOUNT
+    )
+    assert_valid_response(resp)
+    resp = await aconfirm_transaction(test_http_client_async, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = generate_expected_meta_after_airdrop(resp)
+    assert resp["result"]["meta"] == expected_meta
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_request_air_drop_cached_blockhash(
+    async_stubbed_sender_cached_blockhash, test_http_client_async_cached_blockhash
+):
+    """Test air drop to async_stubbed_sender."""
+    resp = await test_http_client_async_cached_blockhash.request_airdrop(
+        async_stubbed_sender_cached_blockhash.public_key(), AIRDROP_AMOUNT
+    )
+    assert_valid_response(resp)
+    resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = generate_expected_meta_after_airdrop(resp)
+    assert resp["result"]["meta"] == expected_meta
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stubbed_receiver, test_http_client_async):
     """Test sending a transaction to localnet."""
-    # Create transfer tx to transfer lamports from stubbed sender to alt_stubbed_receiver
+    # Create transfer tx to transfer lamports from stubbed sender to async_stubbed_receiver
     transfer_tx = Transaction().add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=alt_stubbed_sender.public_key(), to_pubkey=alt_stubbed_receiver, lamports=1000
+                from_pubkey=async_stubbed_sender.public_key(), to_pubkey=async_stubbed_receiver, lamports=1000
             )
         )
     )
-    resp = await test_http_client_async.send_transaction(transfer_tx, alt_stubbed_sender)
+    resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender)
     assert_valid_response(resp)
     # Confirm transaction
     resp = await aconfirm_transaction(test_http_client_async, resp["result"])
@@ -62,32 +92,187 @@ async def test_send_transaction_and_get_balance(alt_stubbed_sender, alt_stubbed_
     }
     assert resp["result"]["meta"] == expected_meta
     # Check balances
-    resp = await test_http_client_async.get_balance(alt_stubbed_sender.public_key())
+    resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key())
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999994000
-    resp = await test_http_client_async.get_balance(alt_stubbed_receiver)
+    resp = await test_http_client_async.get_balance(async_stubbed_receiver)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 954
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_send_raw_transaction_and_get_balance(alt_stubbed_sender, alt_stubbed_receiver, test_http_client_async):
+async def test_send_transaction_prefetched_blockhash(
+    async_stubbed_sender_prefetched_blockhash, async_stubbed_receiver_prefetched_blockhash, test_http_client_async
+):
+    """Test sending a transaction to localnet."""
+    # Create transfer tx to transfer lamports from stubbed sender to async_stubbed_receiver
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=async_stubbed_sender_prefetched_blockhash.public_key(),
+                to_pubkey=async_stubbed_receiver_prefetched_blockhash,
+                lamports=1000,
+            )
+        )
+    )
+    resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender_prefetched_blockhash)
+    assert_valid_response(resp)
+    # Confirm transaction
+    resp = await aconfirm_transaction(test_http_client_async, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = {
+        "err": None,
+        "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
+        "postBalances": [9999994000, 954, 1],
+        "postTokenBalances": [],
+        "preBalances": [10000000000, 0, 1],
+        "preTokenBalances": [],
+        "rewards": [
+            {
+                "commission": None,
+                "lamports": -46,
+                "postBalance": 954,
+                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96",
+                "rewardType": "Rent",
+            }
+        ],
+        "status": {"Ok": None},
+    }
+    assert resp["result"]["meta"] == expected_meta
+    # Check balances
+    resp = await test_http_client_async.get_balance(async_stubbed_sender_prefetched_blockhash.public_key())
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999994000
+    resp = await test_http_client_async.get_balance(async_stubbed_receiver_prefetched_blockhash)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 954
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_send_transaction_cached_blockhash(
+    async_stubbed_sender_cached_blockhash,
+    async_stubbed_receiver_cached_blockhash,
+    test_http_client_async_cached_blockhash,
+):
+    """Test sending a transaction to localnet."""
+    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=async_stubbed_sender_cached_blockhash.public_key(),
+                to_pubkey=async_stubbed_receiver_cached_blockhash,
+                lamports=1000,
+            )
+        )
+    )
+    resp = await test_http_client_async_cached_blockhash.send_transaction(
+        transfer_tx, async_stubbed_sender_cached_blockhash
+    )
+    assert_valid_response(resp)
+    # Confirm transaction
+    resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = {
+        "err": None,
+        "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
+        "postBalances": [9999994000, 954, 1],
+        "postTokenBalances": [],
+        "preBalances": [10000000000, 0, 1],
+        "preTokenBalances": [],
+        "rewards": [
+            {
+                "commission": None,
+                "lamports": -46,
+                "postBalance": 954,
+                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i94",
+                "rewardType": "Rent",
+            }
+        ],
+        "status": {"Ok": None},
+    }
+    assert resp["result"]["meta"] == expected_meta
+    # Check balances
+    resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.public_key())
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999994000
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) == 1
+
+    # Second transaction
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=async_stubbed_sender_cached_blockhash.public_key(),
+                to_pubkey=async_stubbed_receiver_cached_blockhash,
+                lamports=2000,
+            )
+        )
+    )
+    resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_receiver_cached_blockhash)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 954
+    resp = await test_http_client_async_cached_blockhash.send_transaction(
+        transfer_tx, async_stubbed_sender_cached_blockhash
+    )
+    assert_valid_response(resp)
+    # Confirm transaction
+    resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
+    assert_valid_response(resp)
+    expected_meta = {
+        "err": None,
+        "fee": 5000,
+        "innerInstructions": [],
+        "logMessages": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success",
+        ],
+        "postBalances": [9999987000, 2954, 1],
+        "postTokenBalances": [],
+        "preBalances": [9999994000, 954, 1],
+        "preTokenBalances": [],
+        "rewards": [],
+        "status": {"Ok": None},
+    }
+    assert resp["result"]["meta"] == expected_meta
+    # Check balances
+    resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.public_key())
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999987000
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) == 1
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) == 1
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_send_raw_transaction_and_get_balance(
+    async_stubbed_sender, async_stubbed_receiver, test_http_client_async
+):
     """Test sending a raw transaction to localnet."""
     # Get a recent blockhash
     resp = await test_http_client_async.get_recent_blockhash()
     assert_valid_response(resp)
     recent_blockhash = resp["result"]["value"]["blockhash"]
-    # Create transfer tx transfer lamports from stubbed sender to alt_stubbed_receiver
+    # Create transfer tx transfer lamports from stubbed sender to async_stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=alt_stubbed_sender.public_key(), to_pubkey=alt_stubbed_receiver, lamports=1000
+                from_pubkey=async_stubbed_sender.public_key(), to_pubkey=async_stubbed_receiver, lamports=1000
             )
         )
     )
     # Sign transaction
-    transfer_tx.sign(alt_stubbed_sender)
+    transfer_tx.sign(async_stubbed_sender)
     # Send raw transaction
     resp = await test_http_client_async.send_raw_transaction(transfer_tx.serialize())
     assert_valid_response(resp)
@@ -111,10 +296,10 @@ async def test_send_raw_transaction_and_get_balance(alt_stubbed_sender, alt_stub
     }
     assert resp["result"]["meta"] == expected_meta
     # Check balances
-    resp = await test_http_client_async.get_balance(alt_stubbed_sender.public_key())
+    resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key())
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999988000
-    resp = await test_http_client_async.get_balance(alt_stubbed_receiver)
+    resp = await test_http_client_async.get_balance(async_stubbed_receiver)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 1954
 
@@ -328,13 +513,15 @@ async def test_get_version(test_http_client_async):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_get_account_info(alt_stubbed_sender, test_http_client_async):
+async def test_get_account_info(async_stubbed_sender, test_http_client_async):
     """Test get_account_info."""
-    resp = await test_http_client_async.get_account_info(alt_stubbed_sender.public_key())
+    resp = await test_http_client_async.get_account_info(async_stubbed_sender.public_key())
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_account_info(alt_stubbed_sender.public_key(), encoding="jsonParsed")
+    resp = await test_http_client_async.get_account_info(async_stubbed_sender.public_key(), encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_account_info(alt_stubbed_sender.public_key(), data_slice=DataSliceOpt(1, 1))
+    resp = await test_http_client_async.get_account_info(
+        async_stubbed_sender.public_key(), data_slice=DataSliceOpt(1, 1)
+    )
     assert_valid_response(resp)
 
 

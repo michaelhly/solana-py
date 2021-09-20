@@ -2,12 +2,17 @@
 """Helper code for api.py and async_api.py."""
 from base64 import b64encode
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+try:
+    from typing import Literal  # type: ignore
+except ImportError:
+    from typing_extensions import Literal
 from warnings import warn
 
 from base58 import b58decode, b58encode
 
 from solana.account import Account
-from solana.blockhash import Blockhash
+from solana.blockhash import Blockhash, BlockhashCache
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -33,8 +38,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _get_version = types.RPCMethod("getVersion")
     _validator_exit = types.RPCMethod("validatorExit")
 
-    def __init__(self, commitment: Optional[Commitment] = None):
+    def __init__(self, commitment: Optional[Commitment] = None, blockhash_cache: Union[BlockhashCache, bool] = False):
         self._commitment = commitment or Finalized
+        self.blockhash_cache: Union[BlockhashCache, Literal[False]] = (
+            BlockhashCache() if blockhash_cache is True else blockhash_cache
+        )
 
     def _get_balance_args(
         self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment]
@@ -332,3 +340,17 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if not resp.get("result"):
             raise Exception("Failed to send transaction")
         return resp
+
+    @staticmethod
+    def parse_recent_blockhash(blockhash_resp: types.RPCResponse) -> Blockhash:
+        """Extract blockhash from JSON RPC result."""
+        if not blockhash_resp["result"]:
+            raise RuntimeError("failed to get recent blockhash")
+        return Blockhash(blockhash_resp["result"]["value"]["blockhash"])
+
+    def _process_blockhash_resp(self, blockhash_resp: types.RPCResponse) -> Blockhash:
+        recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
+        if self.blockhash_cache:
+            slot = blockhash_resp["result"]["context"]["slot"]
+            self.blockhash_cache.set(recent_blockhash, slot)
+        return recent_blockhash
