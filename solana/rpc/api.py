@@ -598,6 +598,62 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_minimum_balance_for_rent_exemption_args(usize, commitment)
         return self._provider.make_request(*args)
 
+    def get_multiple_accounts(
+        self,
+        pubkeys: List[Union[PublicKey, str]],
+        commitment: Optional[Commitment] = None,
+        encoding: str = "base64",
+        data_slice: Optional[types.DataSliceOpts] = None,
+    ) -> types.RPCResponse:
+        """Returns all the account info for a list of public keys.
+
+        :param pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
+        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
+            "jsonParsed". Default is "base64".
+
+            - "base58" is limited to Account data of less than 128 bytes.
+            - "base64" will return base64 encoded data for Account data of any size.
+            - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+
+            If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
+            detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
+        :param data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+
+        >>> from solana.publickey import PublicKey
+        >>> solana_client = Client("http://localhost:8899")
+        >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+        >>> solana_client.get_multiple_accounts(pubkeys) # doctest: +SKIP
+        {
+            "jsonrpc": "2.0",
+            "result": {
+                "context": {"slot": 97531946},
+                "value": [
+                    {
+                        "data": ["", "base64"],
+                        "executable": False,
+                        "lamports": 1,
+                        "owner": "11111111111111111111111111111111",
+                        "rentEpoch": 225,
+                    },
+                    {
+                        "data": ["", "base64"],
+                        "executable": False,
+                        "lamports": 809441127,
+                        "owner": "11111111111111111111111111111111",
+                        "rentEpoch": 225,
+                    },
+                ],
+            },
+            "id": 1,
+        }
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_multiple_accounts_args(
+            pubkeys=pubkeys, commitment=commitment, encoding=encoding, data_slice=data_slice
+        )
+        return self._provider.make_request(*args)
+
     def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
         pubkey: Union[str, PublicKey],

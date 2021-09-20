@@ -472,6 +472,18 @@ def test_get_account_info(stubbed_sender, test_http_client):
 
 
 @pytest.mark.integration
+def test_get_multiple_accounts(stubbed_sender, test_http_client):
+    """Test get_multiple_accounts."""
+    pubkeys = [stubbed_sender.public_key()] * 2
+    resp = test_http_client.get_multiple_accounts(pubkeys)
+    assert_valid_response(resp)
+    resp = test_http_client.get_multiple_accounts(pubkeys, encoding="jsonParsed")
+    assert_valid_response(resp)
+    resp = test_http_client.get_multiple_accounts(pubkeys, data_slice=DataSliceOpt(1, 1))
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
 def test_get_vote_accounts(test_http_client):
     """Test get vote accounts."""
     resp = test_http_client.get_vote_accounts()

@@ -527,6 +527,19 @@ async def test_get_account_info(async_stubbed_sender, test_http_client_async):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_async):
+    """Test get_multiple_accounts."""
+    pubkeys = [async_stubbed_sender.public_key()] * 2
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys)
+    assert_valid_response(resp)
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys, encoding="jsonParsed")
+    assert_valid_response(resp)
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys, data_slice=DataSliceOpt(1, 1))
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 async def test_get_vote_accounts(test_http_client_async):
     """Test get vote accounts."""
     resp = await test_http_client_async.get_vote_accounts()
