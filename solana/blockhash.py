@@ -12,16 +12,13 @@ Blockhash = NewType("Blockhash", str)
 
 
 class BlockhashCache:
-    """A recent blockhash cache that expires after a given number of seconds."""
+    """A recent blockhash cache that expires after a given number of seconds.
+
+    :param ttl: Seconds until cached blockhash expires.
+    """
 
     def __init__(self, ttl: int = 60) -> None:
-        """Instantiate the cache (you only need to do this once).
-
-        Args:
-        ----
-            ttl (int): Seconds until cached blockhash expires.
-
-        """
+        """Instantiate the cache (you only need to do this once)."""
         maxsize = 300
         self.unused_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
         self.used_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
@@ -29,10 +26,9 @@ class BlockhashCache:
     def set(self, blockhash: Blockhash, slot: int) -> None:
         """Update the cache.
 
-        Args:
-        ----
-            blockhash (Blockhash): new Blockhash value.
-            slot (int): the slot which the blockhash came from
+        :param blockhash: new Blockhash value.
+        :param slot: the slot which the blockhash came from
+
 
         """
         if slot in self.used_blockhashes or slot in self.unused_blockhashes:
@@ -42,9 +38,7 @@ class BlockhashCache:
     def get(self) -> Blockhash:
         """Get the cached Blockhash. Raises KeyError if cache has expired.
 
-        Returns
-        -------
-            Blockhash: cached Blockhash.
+        :return: cached Blockhash.
 
         """
         try:
