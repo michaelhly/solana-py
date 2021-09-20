@@ -294,9 +294,18 @@ def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSe
     raise NotImplementedError("decode_assign_with_seed not implemented")
 
 
-def decode_create_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
+def decode_create_account_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
     """Decode a create account with seed system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_create_with_seed not implemented")
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.CREATE_ACCOUNT_WITH_SEED)
+    return CreateAccountWithSeedParams(
+        from_pubkey=instruction.keys[0].pubkey,
+        new_account_pubkey=instruction.keys[1].pubkey,
+        base_pubkey=PublicKey(parsed_data.args.base),
+        seed=parsed_data.args.seed,
+        lamports=parsed_data.args.lamports,
+        space=parsed_data.args.space,
+        program_id=PublicKey(parsed_data.args.program_id),
+    )
 
 
 def decode_nonce_initialize(instruction: TransactionInstruction) -> InitializeNonceParams:
@@ -399,24 +408,20 @@ def transfer(params: TransferParams) -> TransactionInstruction:
         data=data,
     )
 
+
 def create_account_with_seed(
     params: CreateAccountWithSeedParams,
 ) -> TransactionInstruction:
-    """
-    Generate a transaction instruction that creates a new account at
-    an address generated with `from`, a seed, and programId
-    """
-
+    """Generate a instruction that creates a new account at an address generated with `from`, a seed, and programId."""
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
         dict(
-            instruction_type=InstructionType.CreateWithSeed,
+            instruction_type=InstructionType.CREATE_ACCOUNT_WITH_SEED,
             args=dict(
-                lamports=params.lamports,
-                base=toBuffer(params.base_pubkey.toBuffer()),
+                base=bytes(params.base_pubkey),
                 seed=params.seed,
                 lamports=params.lamports,
                 space=params.space,
-                programId=toBuffer(params.program_id.toBuffer()),
+                program_id=bytes(params.program_id),
             ),
         )
     )
