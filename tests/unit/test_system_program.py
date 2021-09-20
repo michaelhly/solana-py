@@ -50,3 +50,17 @@ def test_allocate_with_seed():
         program_id=PublicKey(2),
     )
     assert sp.decode_allocate_with_seed(sp.allocate(params)) == params
+
+
+def test_create_account_with_seed():
+    """Test creating a an account with seed."""
+    params = sp.CreateAccountWithSeedParams(
+        from_pubkey=Account().public_key(),
+        new_account_pubkey=PublicKey(3),
+        base_pubkey=PublicKey(1),
+        seed={"length": 4, "chars": "gqln"},
+        lamports=123,
+        space=4,
+        program_id=PublicKey(2),
+    )
+    assert sp.decode_create_account_with_seed(sp.create_account_with_seed(params)) == params
