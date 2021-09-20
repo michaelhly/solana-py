@@ -104,7 +104,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
             - "base58" is limited to Account data of less than 128 bytes.
             - "base64" will return base64 encoded data for Account data of any size.
-            - "jsonPrased" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+            - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
 
             If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
             detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
