@@ -360,9 +360,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             raise RuntimeError("failed to get recent blockhash")
         return Blockhash(blockhash_resp["result"]["value"]["blockhash"])
 
-    def _process_blockhash_resp(self, blockhash_resp: types.RPCResponse) -> Blockhash:
+    def _process_blockhash_resp(self, blockhash_resp: types.RPCResponse, used_immediately: bool) -> Blockhash:
         recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
         if self.blockhash_cache:
             slot = blockhash_resp["result"]["context"]["slot"]
-            self.blockhash_cache.set(recent_blockhash, slot)
+            self.blockhash_cache.set(recent_blockhash, slot, used_immediately=used_immediately)
         return recent_blockhash

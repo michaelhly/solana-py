@@ -23,14 +23,18 @@ class BlockhashCache:
         self.unused_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
         self.used_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
 
-    def set(self, blockhash: Blockhash, slot: int) -> None:
+    def set(self, blockhash: Blockhash, slot: int, used_immediately: bool = False) -> None:
         """Update the cache.
 
         :param blockhash: new Blockhash value.
-        :param slot: the slot which the blockhash came from
-
+        :param slot: the slot which the blockhash came from.
+        :param used_immediately: whether the client used the blockhash immediately after fetching it.
 
         """
+        if used_immediately:
+            if slot not in self.used_blockhashes:
+                self.used_blockhashes[slot] = blockhash
+            return
         if slot in self.used_blockhashes or slot in self.unused_blockhashes:
             return
         self.unused_blockhashes[slot] = blockhash
