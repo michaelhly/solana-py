@@ -30,6 +30,7 @@ types-requests = "*"
 notebook = "*"
 pytest-asyncio = "*"
 pytest-cov = "*"
+sphinx-rtd-theme = "*"
 
 [packages]
 pynacl = "*"

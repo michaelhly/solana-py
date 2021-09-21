@@ -161,6 +161,18 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             {self._comm_key: commitment or self._commitment},
         )
 
+    def _get_multiple_accounts_args(
+        self,
+        pubkeys: List[Union[PublicKey, str]],
+        commitment: Optional[Commitment],
+        encoding: str,
+        data_slice: Optional[types.DataSliceOpts],
+    ) -> Tuple[types.RPCMethod, List[str], Dict[str, Any]]:
+        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment or self._commitment}
+        if data_slice:
+            opts[self._data_slice_key] = dict(data_slice._asdict())
+        return types.RPCMethod("getMultipleAccounts"), [str(pubkey) for pubkey in pubkeys], opts
+
     def _get_program_accounts_args(
         self,
         pubkey: Union[str, PublicKey],
@@ -348,9 +360,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             raise RuntimeError("failed to get recent blockhash")
         return Blockhash(blockhash_resp["result"]["value"]["blockhash"])
 
-    def _process_blockhash_resp(self, blockhash_resp: types.RPCResponse) -> Blockhash:
+    def _process_blockhash_resp(self, blockhash_resp: types.RPCResponse, used_immediately: bool) -> Blockhash:
         recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
         if self.blockhash_cache:
             slot = blockhash_resp["result"]["context"]["slot"]
-            self.blockhash_cache.set(recent_blockhash, slot)
+            self.blockhash_cache.set(recent_blockhash, slot, used_immediately=used_immediately)
         return recent_blockhash

@@ -14,7 +14,27 @@ from .providers import async_http
 
 
 class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
-    """Async client class."""
+    """Async client class.
+
+    :param endpoint: URL of the RPC endpoint.
+    :param commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
+    :param blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
+        ``send_transaction`` calls faster.
+        You can also pass your own BlockhashCache object to customize its parameters.
+
+        The cache works as follows:
+
+        1.  Retrieve the oldest unused cached blockhash that is younger than ``ttl`` seconds,
+            where ``ttl`` is defined in the BlockhashCache (we prefer unused blockhashes because
+            reusing blockhashes can cause errors in some edge cases, and we prefer slightly
+            older blockhashes because they're more likely to be accepted by every validator).
+        2.  If there are no unused blockhashes in the cache, take the oldest used
+            blockhash that is younger than ``ttl`` seconds.
+        3.  Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
+
+        If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
+        and pass that value in your ``.send_transaction`` calls.
+    """
 
     def __init__(
         self,
@@ -22,28 +42,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         blockhash_cache: Union[BlockhashCache, bool] = False,
     ) -> None:
-        """Init API client.
-
-        :param endpoint: URL of the RPC endpoint.
-        :param commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
-        :param blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
-            `send_transaction` calls faster.
-            You can also pass your own BlockhashCache object to customize its parameters.
-
-            The cache works as follows:
-
-            1. Retrieve the oldest unused cached blockhash that is younger than `ttl` seconds,
-                where `ttl` is defined in the BlockhashCache
-                (we prefer unused blockhashes because reusing blockhashes can cause errors in some edge cases,
-                and we prefer slightly older blockhashes because they're more likely to be accepted by every validator).
-            2. If there are no unused blockhashes in the cache, take the oldest used
-                blockhash that is younger than `ttl` seconds.
-            3. Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
-
-            If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
-            and pass that value in your `.send_transaction` calls.
-
-        """
+        """Init API client."""
         super().__init__(commitment, blockhash_cache)
         self._provider = async_http.AsyncHTTPProvider(endpoint)
 
@@ -101,7 +100,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
             - "base58" is limited to Account data of less than 128 bytes.
             - "base64" will return base64 encoded data for Account data of any size.
-            - "jsonPrased" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+            - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
 
             If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
             detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
@@ -595,6 +594,62 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_minimum_balance_for_rent_exemption_args(usize, commitment)
         return await self._provider.make_request(*args)
 
+    async def get_multiple_accounts(
+        self,
+        pubkeys: List[Union[PublicKey, str]],
+        commitment: Optional[Commitment] = None,
+        encoding: str = "base64",
+        data_slice: Optional[types.DataSliceOpts] = None,
+    ) -> types.RPCResponse:
+        """Returns all the account info for a list of public keys.
+
+        :param pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
+        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
+            "jsonParsed". Default is "base64".
+
+            - "base58" is limited to Account data of less than 128 bytes.
+            - "base64" will return base64 encoded data for Account data of any size.
+            - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+
+            If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
+            detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
+        :param data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
+            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+
+        >>> from solana.publickey import PublicKey
+        >>> solana_client = AsyncClient("http://localhost:8899")
+        >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+        >>> asyncio.run(solana_client.get_multiple_accounts(pubkeys)) # doctest: +SKIP
+        {
+            "jsonrpc": "2.0",
+            "result": {
+                "context": {"slot": 97531946},
+                "value": [
+                    {
+                        "data": ["", "base64"],
+                        "executable": False,
+                        "lamports": 1,
+                        "owner": "11111111111111111111111111111111",
+                        "rentEpoch": 225,
+                    },
+                    {
+                        "data": ["", "base64"],
+                        "executable": False,
+                        "lamports": 809441127,
+                        "owner": "11111111111111111111111111111111",
+                        "rentEpoch": 225,
+                    },
+                ],
+            },
+            "id": 1,
+        }
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_multiple_accounts_args(
+            pubkeys=pubkeys, commitment=commitment, encoding=encoding, data_slice=data_slice
+        )
+        return await self._provider.make_request(*args)
+
     async def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
         pubkey: Union[str, PublicKey],
@@ -665,9 +720,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     ) -> types.RPCResponse:
         """Returns the statuses of a list of signatures.
 
-        Unless the `searchTransactionHistory` configuration parameter is included, this method only
+        Unless the ``search_transaction_history`` configuration parameter is included, this method only
         searches the recent status cache of signatures, which retains statuses for all active slots plus
-        `MAX_RECENT_BLOCKHASHES` rooted slots.
+        ``MAX_RECENT_BLOCKHASHES`` rooted slots.
 
         :param signatures: An array of transaction signatures to confirm.
         :param search_transaction_history: If true, a Solana node will search its ledger cache for
@@ -987,7 +1042,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                     recent_blockhash = self.blockhash_cache.get()
                 except ValueError:
                     blockhash_resp = await self.get_recent_blockhash()
-                    recent_blockhash = self._process_blockhash_resp(blockhash_resp)
+                    recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
             else:
                 blockhash_resp = await self.get_recent_blockhash()
                 recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
@@ -997,7 +1052,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts)
         if self.blockhash_cache:
             blockhash_resp = await self.get_recent_blockhash()
-            self._process_blockhash_resp(blockhash_resp)
+            self._process_blockhash_resp(blockhash_resp, used_immediately=False)
         return txn_resp
 
     async def simulate_transaction(

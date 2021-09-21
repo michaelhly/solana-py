@@ -172,9 +172,14 @@ async def test_send_transaction_cached_blockhash(
             )
         )
     )
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) == 0
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) == 0
     resp = await test_http_client_async_cached_blockhash.send_transaction(
         transfer_tx, async_stubbed_sender_cached_blockhash
     )
+    # we could have got a new blockhash or not depending on network latency and luck
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) in (0, 1)
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) == 1
     assert_valid_response(resp)
     # Confirm transaction
     resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
@@ -207,7 +212,6 @@ async def test_send_transaction_cached_blockhash(
     resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.public_key())
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999994000
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) == 1
 
     # Second transaction
     transfer_tx = Transaction().add(
@@ -225,6 +229,9 @@ async def test_send_transaction_cached_blockhash(
     resp = await test_http_client_async_cached_blockhash.send_transaction(
         transfer_tx, async_stubbed_sender_cached_blockhash
     )
+    # we could have got a new blockhash or not depending on network latency and luck
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) in (0, 1)
+    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) in (1, 2)
     assert_valid_response(resp)
     # Confirm transaction
     resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
@@ -249,8 +256,6 @@ async def test_send_transaction_cached_blockhash(
     resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.public_key())
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999987000
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) == 1
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) == 1
 
 
 @pytest.mark.integration
@@ -522,6 +527,19 @@ async def test_get_account_info(async_stubbed_sender, test_http_client_async):
     resp = await test_http_client_async.get_account_info(
         async_stubbed_sender.public_key(), data_slice=DataSliceOpt(1, 1)
     )
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_async):
+    """Test get_multiple_accounts."""
+    pubkeys = [async_stubbed_sender.public_key()] * 2
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys)
+    assert_valid_response(resp)
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys, encoding="jsonParsed")
+    assert_valid_response(resp)
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys, data_slice=DataSliceOpt(1, 1))
     assert_valid_response(resp)
 
 

@@ -30,9 +30,9 @@ class AccountMeta:
     pubkey: PublicKey
     """An account's public key."""
     is_signer: bool
-    """True if an instruction requires a transaction signature matching `pubkey`"""
+    """True if an instruction requires a transaction signature matching ``pubkey``"""
     is_writable: bool
-    """True if the `pubkey` can be loaded as a read-write account."""
+    """True if the ``pubkey`` can be loaded as a read-write account."""
 
 
 class TransactionInstruction(NamedTuple):

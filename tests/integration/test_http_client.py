@@ -159,7 +159,12 @@ def test_send_transaction_cached_blockhash(
             )
         )
     )
+    assert len(test_http_client_cached_blockhash.blockhash_cache.unused_blockhashes) == 0
+    assert len(test_http_client_cached_blockhash.blockhash_cache.used_blockhashes) == 0
     resp = test_http_client_cached_blockhash.send_transaction(transfer_tx, stubbed_sender_cached_blockhash)
+    # we could have got a new blockhash or not depending on network latency and luck
+    assert len(test_http_client_cached_blockhash.blockhash_cache.unused_blockhashes) in (0, 1)
+    assert len(test_http_client_cached_blockhash.blockhash_cache.used_blockhashes) == 1
     assert_valid_response(resp)
     # Confirm transaction
     resp = confirm_transaction(test_http_client_cached_blockhash, resp["result"])
@@ -192,7 +197,6 @@ def test_send_transaction_cached_blockhash(
     resp = test_http_client_cached_blockhash.get_balance(stubbed_sender_cached_blockhash.public_key())
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999994000
-    assert len(test_http_client_cached_blockhash.blockhash_cache.unused_blockhashes) == 1
 
     # Second transaction
     transfer_tx = Transaction().add(
@@ -208,6 +212,9 @@ def test_send_transaction_cached_blockhash(
     assert_valid_response(resp)
     assert resp["result"]["value"] == 954
     resp = test_http_client_cached_blockhash.send_transaction(transfer_tx, stubbed_sender_cached_blockhash)
+    # we could have got a new blockhash or not depending on network latency and luck
+    assert len(test_http_client_cached_blockhash.blockhash_cache.unused_blockhashes) in (0, 1)
+    assert len(test_http_client_cached_blockhash.blockhash_cache.used_blockhashes) in (1, 2)
     assert_valid_response(resp)
     # Confirm transaction
     resp = confirm_transaction(test_http_client_cached_blockhash, resp["result"])
@@ -468,6 +475,18 @@ def test_get_account_info(stubbed_sender, test_http_client):
     resp = test_http_client.get_account_info(stubbed_sender.public_key(), encoding="jsonParsed")
     assert_valid_response(resp)
     resp = test_http_client.get_account_info(stubbed_sender.public_key(), data_slice=DataSliceOpt(1, 1))
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_multiple_accounts(stubbed_sender, test_http_client):
+    """Test get_multiple_accounts."""
+    pubkeys = [stubbed_sender.public_key()] * 2
+    resp = test_http_client.get_multiple_accounts(pubkeys)
+    assert_valid_response(resp)
+    resp = test_http_client.get_multiple_accounts(pubkeys, encoding="jsonParsed")
+    assert_valid_response(resp)
+    resp = test_http_client.get_multiple_accounts(pubkeys, data_slice=DataSliceOpt(1, 1))
     assert_valid_response(resp)
 
 
