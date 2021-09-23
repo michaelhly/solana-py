@@ -491,6 +491,20 @@ def test_get_multiple_accounts(stubbed_sender, test_http_client):
 
 
 @pytest.mark.integration
+def test_get_token_largest_accounts(stubbed_token_addr, test_http_client):
+    """Test get token largest accounts."""
+    resp = test_http_client.get_token_largest_accounts(stubbed_token_addr.public_key())
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_token_supply(stubbed_token_addr, test_http_client):
+    """Test get token largest accounts."""
+    resp = test_http_client.get_token_supply(stubbed_token_addr.public_key())
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
 def test_get_vote_accounts(test_http_client):
     """Test get vote accounts."""
     resp = test_http_client.get_vote_accounts()

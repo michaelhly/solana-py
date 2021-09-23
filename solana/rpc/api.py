@@ -874,12 +874,16 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_token_accounts_args(method, pubkey, opts, commitment)
         return self._provider.make_request(*args)
 
-    def get_token_largest_accounts(self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_token_largest_accounts(
+        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
         """Returns the 20 largest accounts of a particular SPL Token type."""
         args = self._get_token_largest_account_args(pubkey, commitment)
         return self._provider.make_request(*args)
 
-    def get_token_supply(self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_token_supply(
+        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
         """Returns the total supply of an SPL Token type."""
         args = self._get_token_supply_args(pubkey, commitment)
         return self._provider.make_request(*args)

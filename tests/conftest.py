@@ -112,6 +112,12 @@ def async_stubbed_sender_cached_blockhash() -> Account:
 
 
 @pytest.fixture(scope="session")
+def stubbed_token_addr() -> PublicKey:
+    """An arbitrary known token address."""
+    return PublicKey("DeV3CnJsrhN5TzCZQvmuQgYn1Up8nDycqmzxZJWH9DAw")
+
+
+@pytest.fixture(scope="session")
 def freeze_authority() -> Account:
     """Arbitrary known account to be used as freeze authority."""
     return Account(bytes([6] * PublicKey.LENGTH))

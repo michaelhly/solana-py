@@ -279,7 +279,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self, pubkey: Union[str, PublicKey], commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
         return types.RPCMethod("getTokenLargestAccounts"), str(pubkey), {self._comm_key: commitment or self._commitment}
-    
+
     def _get_token_supply_args(
         self, pubkey: Union[str, PublicKey], commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
