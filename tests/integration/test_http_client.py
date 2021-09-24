@@ -500,7 +500,7 @@ def test_get_token_largest_accounts(test_http_client):
 
 @pytest.mark.integration
 def test_get_token_supply(test_http_client):
-    """Test get token largest accounts."""
+    """Test get token supply."""
     resp = test_http_client.get_token_supply(WRAPPED_SOL_MINT)
     assert_valid_response(resp)
 
