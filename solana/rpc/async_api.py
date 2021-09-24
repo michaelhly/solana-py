@@ -870,13 +870,19 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_token_accounts_args(method, pubkey, opts, commitment)
         return await self._provider.make_request(*args)
 
-    async def get_token_largest_accounts(self, pubkey: Union[PublicKey, str]) -> types.RPCResponse:
-        """Returns the 20 largest accounts of a particular SPL Token type (UNSTABLE)."""
-        raise NotImplementedError("get_token_largbest_accounts not implemented")
+    async def get_token_largest_accounts(
+        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
+        """Returns the 20 largest accounts of a particular SPL Token type."""
+        args = self._get_token_largest_account_args(pubkey, commitment)
+        return await self._provider.make_request(*args)
 
-    async def get_token_supply(self, pubkey: Union[PublicKey, str]) -> types.RPCResponse:
-        """Returns the total supply of an SPL Token type(UNSTABLE)."""
-        raise NotImplementedError("get_token_supply not implemented")
+    async def get_token_supply(
+        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
+        """Returns the total supply of an SPL Token type."""
+        args = self._get_token_supply_args(pubkey, commitment)
+        return await self._provider.make_request(*args)
 
     async def get_transaction_count(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns the current Transaction count from the ledger.

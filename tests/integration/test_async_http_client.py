@@ -4,6 +4,7 @@ import pytest
 import solana.system_program as sp
 from solana.rpc.api import DataSliceOpt
 from solana.transaction import Transaction
+from spl.token.constants import WRAPPED_SOL_MINT
 
 from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response, generate_expected_meta_after_airdrop
 
@@ -497,6 +498,20 @@ async def test_get_slot_leader(test_http_client_async):
 async def test_get_supply(test_http_client_async):
     """Test get slot leader."""
     resp = await test_http_client_async.get_supply()
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+async def test_get_token_largest_accounts(test_http_client):
+    """Test get token largest accounts."""
+    resp = test_http_client.get_token_largest_accounts(WRAPPED_SOL_MINT)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+async def test_get_token_supply(test_http_client):
+    """Test get token largest accounts."""
+    resp = test_http_client.get_token_supply(WRAPPED_SOL_MINT)
     assert_valid_response(resp)
 
 
