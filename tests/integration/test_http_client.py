@@ -4,6 +4,7 @@ import pytest
 import solana.system_program as sp
 from solana.rpc.api import DataSliceOpt
 from solana.transaction import Transaction
+from spl.token.constants import WRAPPED_SOL_MINT
 
 from .utils import AIRDROP_AMOUNT, assert_valid_response, confirm_transaction, generate_expected_meta_after_airdrop
 
@@ -487,6 +488,20 @@ def test_get_multiple_accounts(stubbed_sender, test_http_client):
     resp = test_http_client.get_multiple_accounts(pubkeys, encoding="jsonParsed")
     assert_valid_response(resp)
     resp = test_http_client.get_multiple_accounts(pubkeys, data_slice=DataSliceOpt(1, 1))
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_token_largest_accounts(test_http_client):
+    """Test get token largest accounts."""
+    resp = test_http_client.get_token_largest_accounts(WRAPPED_SOL_MINT)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_token_supply(test_http_client):
+    """Test get token supply."""
+    resp = test_http_client.get_token_supply(WRAPPED_SOL_MINT)
     assert_valid_response(resp)
 
 
