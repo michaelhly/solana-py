@@ -505,7 +505,7 @@ async def test_get_supply(test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_token_largest_accounts(test_http_client_async):
     """Test get token largest accounts."""
-    resp = test_http_client_async.get_token_largest_accounts(WRAPPED_SOL_MINT)
+    resp = await test_http_client_async.get_token_largest_accounts(WRAPPED_SOL_MINT)
     assert_valid_response(resp)
 
 
@@ -513,7 +513,7 @@ async def test_get_token_largest_accounts(test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_token_supply(test_http_client_async):
     """Test get token supply."""
-    resp = test_http_client_async.get_token_supply(WRAPPED_SOL_MINT)
+    resp = await test_http_client_async.get_token_supply(WRAPPED_SOL_MINT)
     assert_valid_response(resp)
 
 
