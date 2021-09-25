@@ -1,8 +1,8 @@
 Solana
 ======
 
-solana.account
---------------
+solana.account (deprecated)
+---------------------------
 
 .. automodule:: solana.account
    :members:

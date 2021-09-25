@@ -1,7 +1,7 @@
 """Keypair module to manage public-private key pair."""
 from __future__ import annotations
 
-from typing import NamedTuple, Optional
+from typing import Optional
 
 import nacl.public  # type: ignore
 from nacl import signing  # type: ignore
@@ -104,4 +104,4 @@ class Keypair:
 
     def __ne__(self, other) -> bool:
         """Implemented by negating __eq__."""
-        return not (self == other)
+        return not (self == other)  # pylint: disable=superfluous-parens
