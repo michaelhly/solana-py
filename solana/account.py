@@ -11,7 +11,7 @@ from solana.publickey import PublicKey
 
 
 class Account:
-    """An account key pair (public and secret keys).
+    """(Deprecated) An account key pair (public and secret keys).
 
     >>> # Import account from 64-byte keypair
     >>> keypair = [
