@@ -9,13 +9,6 @@ from nacl import signing  # type: ignore
 import solana.publickey
 
 
-class Signer(NamedTuple):
-    """Keypair signer interface."""
-
-    public_key: solana.publickey.PublicKey
-    secret_key: bytes
-
-
 class Keypair:
     """An account keypair used for signing transactions.
 
