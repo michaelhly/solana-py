@@ -146,7 +146,7 @@ class Transaction:
 
         # Cull duplicate accounts
         fee_payer_idx = maxsize
-        seen: Dict[str, int] = dict()
+        seen: Dict[str, int] = {}
         uniq_metas: List[AccountMeta] = []
         for sig in self.signatures:
             pubkey = str(sig.pubkey)

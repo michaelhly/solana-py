@@ -319,9 +319,9 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     def _create_mint_info(self, info: RPCResponse) -> MintInfo:
         if not info:
             raise ValueError("Failed to find mint account")
-
-        if info["result"]["value"]["owner"] != str(self.program_id):
-            raise AttributeError("Invalid mint owner: {}".format(info["result"]["value"]["owner"]))
+        owner = info["result"]["value"]["owner"]
+        if owner != str(self.program_id):
+            raise AttributeError(f"Invalid mint owner: {owner}")
 
         bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
         if len(bytes_data) != MINT_LAYOUT.sizeof():

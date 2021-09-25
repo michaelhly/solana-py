@@ -1,7 +1,6 @@
 """Unit tests for solana.system_program."""
 import solana.system_program as sp
 from solana.keypair import Keypair
-from solana.keypair import Keypair
 from solana.publickey import PublicKey
 
 

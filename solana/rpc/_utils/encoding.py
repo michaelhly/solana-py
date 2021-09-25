@@ -26,7 +26,7 @@ class FriendlyJsonSerde:
             try:
                 self._friendly_json_encode(element)
             except TypeError as exc:
-                yield "%d: because (%s)" % (index, exc)
+                yield f"{index}: because {exc}"
 
     @staticmethod
     def _is_list_like(obj: Any) -> bool:
@@ -42,7 +42,7 @@ class FriendlyJsonSerde:
                 raise TypeError("dict had unencodable value at keys: {{{}}}".format(item_errors)) from full_exception
             if FriendlyJsonSerde._is_list_like(obj):
                 element_errors = "; ".join(self._json_list_errors(obj))
-                raise TypeError("list had unencodable value at index: [{}]".format(element_errors)) from full_exception
+                raise TypeError(f"list had unencodable value at index: [{element_errors}]") from full_exception
             raise full_exception
 
     def json_decode(self, json_str: str) -> Dict[Any, Any]:  # pylint: disable=no-self-use
@@ -51,7 +51,7 @@ class FriendlyJsonSerde:
             decoded = json.loads(json_str)
             return decoded
         except json.decoder.JSONDecodeError as exc:
-            err_msg = "Could not decode {} because of {}.".format(repr(json_str), exc)
+            err_msg = f"Could not decode {repr(json_str)} because of {exc}."
             # Calling code may rely on catching JSONDecodeError to recognize bad json
             # so we have to re-raise the same type.
             raise json.decoder.JSONDecodeError(err_msg, exc.doc, exc.pos)

@@ -1,8 +1,8 @@
 """Keypair module to manage public-private key pair."""
 from __future__ import annotations
 from typing import NamedTuple, Optional
-import nacl.public
-from nacl import signing
+import nacl.public  # type: ignore
+from nacl import signing  # type: ignore
 import solana.publickey
 
 
