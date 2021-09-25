@@ -1,5 +1,7 @@
 import base64
+
 from nacl.bindings import crypto_box_PUBLICKEYBYTES
+
 from solana.keypair import Keypair
 
 

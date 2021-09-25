@@ -4,8 +4,8 @@ from typing import NamedTuple
 
 import pytest
 
-from solana.keypair import Keypair
 from solana.blockhash import Blockhash
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient

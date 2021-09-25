@@ -9,8 +9,8 @@ from base58 import b58decode, b58encode
 from nacl.exceptions import BadSignatureError  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
-from solana.keypair import Keypair
 from solana.blockhash import Blockhash
+from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solana.publickey import PublicKey
 from solana.utils import shortvec_encoding as shortvec
