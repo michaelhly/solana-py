@@ -6,7 +6,6 @@ from base58 import b58encode
 
 import solana.system_program as sp
 import solana.transaction as txlib
-from solana.account import Account
 from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solana.publickey import PublicKey

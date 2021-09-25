@@ -1,5 +1,4 @@
 import base64
-import pytest
 from nacl.bindings import crypto_box_PUBLICKEYBYTES
 from solana.keypair import Keypair
 

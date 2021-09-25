@@ -11,7 +11,7 @@ from warnings import warn
 
 from base58 import b58decode, b58encode
 
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.publickey import PublicKey
 from solana.rpc import types
@@ -81,7 +81,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _get_confirmed_signature_for_address2_args(
-        account: Union[str, Account, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         warn(
             "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
@@ -94,15 +94,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if limit:
             opts["limit"] = limit
 
-        if isinstance(account, Account):
-            account = str(account.public_key())
+        if isinstance(account, Keypair):
+            account = str(account.public_key)
         if isinstance(account, PublicKey):
             account = str(account)
         return types.RPCMethod("getConfirmedSignaturesForAddress2"), account, opts
 
     @staticmethod
     def _get_signatures_for_address_args(
-        account: Union[str, Account, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         opts: Dict[str, Union[int, str]] = {}
         if before:
@@ -110,8 +110,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if limit:
             opts["limit"] = limit
 
-        if isinstance(account, Account):
-            account = str(account.public_key())
+        if isinstance(account, Keypair):
+            account = str(account.public_key)
         if isinstance(account, PublicKey):
             account = str(account)
         return types.RPCMethod("getSignaturesForAddress"), account, opts

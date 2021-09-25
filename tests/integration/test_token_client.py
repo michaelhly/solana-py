@@ -26,12 +26,12 @@ def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
         stubbed_sender.public_key,
         expected_decimals,
         TOKEN_PROGRAM_ID,
-        freeze_authority.public_key(),
+        freeze_authority.public_key,
     )
 
     assert token_client.pubkey
     assert token_client.program_id == TOKEN_PROGRAM_ID
-    assert token_client.payer.public_key() == stubbed_sender.public_key
+    assert token_client.payer.public_key == stubbed_sender.public_key
 
     resp = test_http_client.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
@@ -42,7 +42,7 @@ def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
     assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key
-    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key()
+    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key
     return token_client
 
 
@@ -58,7 +58,7 @@ def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> PublicKey:  #
 def stubbed_receiver_token_account_pk(
     stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
 ) -> PublicKey:
-    """Token account for stubbed reciever."""
+    """Token account for stubbed receiver."""
     return test_token.create_account(stubbed_receiver)
 
 
@@ -122,7 +122,7 @@ def test_get_mint_info(stubbed_sender, freeze_authority, test_token):  # pylint:
     assert mint_info.supply == 0
     assert mint_info.decimals == 6
     assert mint_info.is_initialized is True
-    assert mint_info.freeze_authority == freeze_authority.public_key()
+    assert mint_info.freeze_authority == freeze_authority.public_key
 
 
 @pytest.mark.integration
@@ -344,7 +344,7 @@ def test_freeze_account(
     stubbed_sender_token_account_pk, freeze_authority, test_token, test_http_client
 ):  # pylint: disable=redefined-outer-name
     """Test freezing an account."""
-    resp = test_http_client.request_airdrop(freeze_authority.public_key(), AIRDROP_AMOUNT)
+    resp = test_http_client.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
     assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
 
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
