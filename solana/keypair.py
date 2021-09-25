@@ -1,98 +1,94 @@
+"""Keypair module to manage public-private key pair."""
+from __future__ import annotations
 from typing import NamedTuple, Optional
+import nacl.public
 from nacl import signing
-from .publickey import PublicKey
+import solana.publickey
+
 
 class Signer(NamedTuple):
     """Keypair signer interface."""
-    public_key: PublicKey
+
+    public_key: solana.publickey.PublicKey
     secret_key: bytes
 
-class Ed25519Keypair(NamedTuple):
-    """Ed25519 Keypair."""
-    public_key: bytes
-    secret_key: bytes
 
 class Keypair:
-    """An account keypair used for signing transactions."""
-    def __init__(self, keypair: Optional[Ed25519Keypair]) -> None:
+    """An account keypair used for signing transactions.
+
+    :param keypair: an nacl.public.PrivateKey instance.
+
+    Init with random keypair:
+
+    >>> keypair = Keypair()
+
+    Init with existing keypair:
+
+    >>> keys = nacl.public.PrivateKey.generate()
+    >>> keypair = Keypair(keys)
+    """
+
+    def __init__(self, keypair: Optional[nacl.public.PrivateKey] = None) -> None:
+        """Create a new keypair instance. Generate random keypair if no keypair is provided."""
         if keypair is None:
-            self._keypair
+            # the PrivateKey object comes with a public key too
+            self._keypair = nacl.public.PrivateKey.generate()
+        else:
+            self._keypair = keypair
 
-/**
- * An account keypair used for signing transactions.
- */
-export class Keypair {
-  private _keypair: Ed25519Keypair;
+    @classmethod
+    def generate(cls) -> Keypair:
+        """Generate a new random keypair.
 
-  /**
-   * Create a new keypair instance.
-   * Generate random keypair if no {@link Ed25519Keypair} is provided.
-   *
-   * @param keypair ed25519 keypair
-   */
-  constructor(keypair?: Ed25519Keypair) {
-    if (keypair) {
-      this._keypair = keypair;
-    } else {
-      this._keypair = nacl.sign.keyPair();
-    }
-  }
+        This method exists to provide familiarity for web3.js users.
+        There isn't much reason to use it instead of just instantiating
+        ``Keypair()``.
+        """
+        return cls()
 
-  /**
-   * Generate a new random keypair
-   */
-  static generate(): Keypair {
-    return new Keypair(nacl.sign.keyPair());
-  }
+    @classmethod
+    def from_secret_key(cls, secret_key: bytes) -> Keypair:
+        """Create a keypair from the 64-byte secret key.
 
-  /**
-   * Create a keypair from a raw secret key byte array.
-   *
-   * This method should only be used to recreate a keypair from a previously
-   * generated secret key. Generating keypairs from a random seed should be done
-   * with the {@link Keypair.fromSeed} method.
-   *
-   * @throws error if the provided secret key is invalid and validation is not skipped.
-   *
-   * @param secretKey secret key byte array
-   * @param options: skip secret key validation
-   */
-  static fromSecretKey(
-    secretKey: Uint8Array,
-    options?: {skipValidation?: boolean},
-  ): Keypair {
-    const keypair = nacl.sign.keyPair.fromSecretKey(secretKey);
-    if (!options || !options.skipValidation) {
-      const encoder = new TextEncoder();
-      const signData = encoder.encode('@solana/web3.js-validation-v1');
-      const signature = nacl.sign.detached(signData, keypair.secretKey);
-      if (!nacl.sign.detached.verify(signData, signature, keypair.publicKey)) {
-        throw new Error('provided secretKey is invalid');
-      }
-    }
-    return new Keypair(keypair);
-  }
+        This method should only be used to recreate a keypair from a previously
+        generated secret key. Generating keypairs from a random seed should be done
+        with the ``.from_seed`` method.
 
-  /**
-   * Generate a keypair from a 32 byte seed.
-   *
-   * @param seed seed byte array
-   */
-  static fromSeed(seed: Uint8Array): Keypair {
-    return new Keypair(nacl.sign.keyPair.fromSeed(seed));
-  }
+        :param secret_key: secret key in bytes.
+        """
+        seed = secret_key[:32]
+        return cls.from_seed(seed)
 
-  /**
-   * The public key for this keypair
-   */
-  get publicKey(): PublicKey {
-    return new PublicKey(this._keypair.publicKey);
-  }
+    @classmethod
+    def from_seed(cls, seed: bytes) -> Keypair:
+        """Generate a keypair from a 32 byte seed.
 
-  /**
-   * The raw secret key for this keypair
-   */
-  get secretKey(): Uint8Array {
-    return this._keypair.secretKey;
-  }
-}
+        :param seed: 32-byte seed.
+        """
+        return cls(nacl.public.PrivateKey(seed))
+
+    @property
+    def seed(self) -> bytes:
+        """The 32-byte secret seed."""
+        return bytes(self._keypair)
+
+    @property
+    def public_key(self) -> solana.publickey.PublicKey:
+        """The public key for this keypair."""
+        verify_key = signing.SigningKey(self.seed).verify_key
+        return solana.publickey.PublicKey(verify_key)
+
+    @property
+    def secret_key(self) -> bytes:
+        """The raw 64-byte secret key for this keypair."""
+        return self.seed + bytes(self.public_key)
+
+    def __eq__(self, other) -> bool:
+        """Checks for equality by comparing public keys."""
+        if not isinstance(other, self.__class__):
+            return False
+        return self.secret_key == other.secret_key
+
+    def __ne__(self, other) -> bool:
+        """Implemented by negating __eq__."""
+        return not (self == other)

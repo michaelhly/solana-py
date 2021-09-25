@@ -19,6 +19,12 @@ solana.instruction
 .. automodule:: solana.instruction
    :members:
 
+solana.keypair
+------------------
+
+.. automodule:: solana.keypair
+   :members:
+
 solana.message
 --------------
 
