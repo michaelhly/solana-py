@@ -67,6 +67,23 @@ class Keypair:
         """
         return cls(nacl.public.PrivateKey(seed))
 
+    def sign(self, msg: bytes) -> signing.SignedMessage:
+        """Sign a message with this keypair.
+
+        :param msg: message to sign.
+        :returns: A signed messeged object.
+
+        >>> seed = bytes([1] * 32)
+        >>> keypair = Keypair.from_seed(seed)
+        >>> msg = b"hello"
+        >>> signed_msg = keypair.sign(msg)
+        >>> signed_msg.signature.hex()
+        'e1430c6ebd0d53573b5c803452174f8991ef5955e0906a09e8fdc7310459e9c82a402526748c3431fe7f0e5faafbf7e703234789734063ee42be17af16438d08'
+        >>> signed_msg.message.decode('utf-8')
+        'hello'
+        """  # pylint: disable=line-too-long
+        return signing.SigningKey(self.seed).sign(msg)
+
     @property
     def seed(self) -> bytes:
         """The 32-byte secret seed."""

@@ -13,7 +13,7 @@ from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response, 
 @pytest.mark.asyncio
 async def test_request_air_drop(async_stubbed_sender, test_http_client_async):
     """Test air drop to async_stubbed_sender."""
-    resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key(), AIRDROP_AMOUNT)
+    resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     resp = await aconfirm_transaction(test_http_client_async, resp["result"])
     assert_valid_response(resp)
@@ -59,7 +59,7 @@ async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stub
     transfer_tx = Transaction().add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=async_stubbed_sender.public_key(), to_pubkey=async_stubbed_receiver, lamports=1000
+                from_pubkey=async_stubbed_sender.public_key, to_pubkey=async_stubbed_receiver, lamports=1000
             )
         )
     )
@@ -93,7 +93,7 @@ async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stub
     }
     assert resp["result"]["meta"] == expected_meta
     # Check balances
-    resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key())
+    resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999994000
     resp = await test_http_client_async.get_balance(async_stubbed_receiver)
@@ -273,7 +273,7 @@ async def test_send_raw_transaction_and_get_balance(
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=async_stubbed_sender.public_key(), to_pubkey=async_stubbed_receiver, lamports=1000
+                from_pubkey=async_stubbed_sender.public_key, to_pubkey=async_stubbed_receiver, lamports=1000
             )
         )
     )
@@ -302,7 +302,7 @@ async def test_send_raw_transaction_and_get_balance(
     }
     assert resp["result"]["meta"] == expected_meta
     # Check balances
-    resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key())
+    resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999988000
     resp = await test_http_client_async.get_balance(async_stubbed_receiver)
@@ -537,13 +537,11 @@ async def test_get_version(test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_account_info(async_stubbed_sender, test_http_client_async):
     """Test get_account_info."""
-    resp = await test_http_client_async.get_account_info(async_stubbed_sender.public_key())
+    resp = await test_http_client_async.get_account_info(async_stubbed_sender.public_key)
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_account_info(async_stubbed_sender.public_key(), encoding="jsonParsed")
+    resp = await test_http_client_async.get_account_info(async_stubbed_sender.public_key, encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_account_info(
-        async_stubbed_sender.public_key(), data_slice=DataSliceOpt(1, 1)
-    )
+    resp = await test_http_client_async.get_account_info(async_stubbed_sender.public_key, data_slice=DataSliceOpt(1, 1))
     assert_valid_response(resp)
 
 
@@ -551,7 +549,7 @@ async def test_get_account_info(async_stubbed_sender, test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_async):
     """Test get_multiple_accounts."""
-    pubkeys = [async_stubbed_sender.public_key()] * 2
+    pubkeys = [async_stubbed_sender.public_key] * 2
     resp = await test_http_client_async.get_multiple_accounts(pubkeys)
     assert_valid_response(resp)
     resp = await test_http_client_async.get_multiple_accounts(pubkeys, encoding="jsonParsed")
