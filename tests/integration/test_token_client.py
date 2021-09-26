@@ -16,22 +16,22 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response, confirm_transaction
 @pytest.fixture(scope="module")
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
-    resp = test_http_client.request_airdrop(stubbed_sender.public_key(), AIRDROP_AMOUNT)
+    resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
     assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
 
     expected_decimals = 6
     token_client = Token.create_mint(
         test_http_client,
         stubbed_sender,
-        stubbed_sender.public_key(),
+        stubbed_sender.public_key,
         expected_decimals,
         TOKEN_PROGRAM_ID,
-        freeze_authority.public_key(),
+        freeze_authority.public_key,
     )
 
     assert token_client.pubkey
     assert token_client.program_id == TOKEN_PROGRAM_ID
-    assert token_client.payer.public_key() == stubbed_sender.public_key()
+    assert token_client.payer.public_key == stubbed_sender.public_key
 
     resp = test_http_client.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
@@ -41,8 +41,8 @@ def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     assert mint_data.is_initialized
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
-    assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key()
-    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key()
+    assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key
+    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key
     return token_client
 
 
@@ -50,7 +50,7 @@ def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
 @pytest.fixture(scope="module")
 def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> PublicKey:  # pylint: disable=redefined-outer-name
     """Token account for stubbed sender."""
-    return test_token.create_account(stubbed_sender.public_key())
+    return test_token.create_account(stubbed_sender.public_key)
 
 
 @pytest.mark.integration
@@ -58,14 +58,14 @@ def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> PublicKey:  #
 def stubbed_receiver_token_account_pk(
     stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
 ) -> PublicKey:
-    """Token account for stubbed reciever."""
+    """Token account for stubbed receiver."""
     return test_token.create_account(stubbed_receiver)
 
 
 @pytest.mark.integration
 def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
-    token_account_pk = test_token.create_account(stubbed_sender.public_key())
+    token_account_pk = test_token.create_account(stubbed_sender.public_key)
     resp = test_http_client.get_account_info(token_account_pk)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
@@ -81,7 +81,7 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == PublicKey(0)
     assert not account_data.is_native_option and not account_data.is_native
     assert PublicKey(account_data.mint) == test_token.pubkey
-    assert PublicKey(account_data.owner) == stubbed_sender.public_key()
+    assert PublicKey(account_data.owner) == stubbed_sender.public_key
 
 
 @pytest.mark.integration
@@ -104,7 +104,7 @@ def test_get_account_info(
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_initialized is True
     assert account_info.mint == test_token.pubkey
-    assert account_info.owner == stubbed_sender.public_key()
+    assert account_info.owner == stubbed_sender.public_key
     assert account_info.amount == 0
     assert account_info.delegate is None
     assert account_info.delegated_amount == 0
@@ -118,11 +118,11 @@ def test_get_account_info(
 def test_get_mint_info(stubbed_sender, freeze_authority, test_token):  # pylint: disable=redefined-outer-name
     """Test get token mint info."""
     mint_info = test_token.get_mint_info()
-    assert mint_info.mint_authority == stubbed_sender.public_key()
+    assert mint_info.mint_authority == stubbed_sender.public_key
     assert mint_info.supply == 0
     assert mint_info.decimals == 6
     assert mint_info.is_initialized is True
-    assert mint_info.freeze_authority == freeze_authority.public_key()
+    assert mint_info.freeze_authority == freeze_authority.public_key
 
 
 @pytest.mark.integration
@@ -273,13 +273,13 @@ def test_burn_checked(
 @pytest.mark.integration
 def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
     """Test get token accounts."""
-    resp = test_token.get_accounts(stubbed_sender.public_key())
+    resp = test_token.get_accounts(stubbed_sender.public_key)
     assert_valid_response(resp)
     assert len(resp["result"]["value"]) == 2
     for resp_data in resp["result"]["value"]:
         assert PublicKey(resp_data["pubkey"])
         parsed_data = resp_data["account"]["data"]["parsed"]["info"]
-        assert parsed_data["owner"] == str(stubbed_sender.public_key())
+        assert parsed_data["owner"] == str(stubbed_sender.public_key)
 
 
 @pytest.mark.integration
@@ -291,7 +291,7 @@ def test_approve(
     resp = test_token.approve(
         source=stubbed_sender_token_account_pk,
         delegate=stubbed_receiver,
-        owner=stubbed_sender.public_key(),
+        owner=stubbed_sender.public_key,
         amount=expected_amount_delegated,
     )
     assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
@@ -312,7 +312,7 @@ def test_revoke(
 
     revoke_resp = test_token.revoke(
         account=stubbed_sender_token_account_pk,
-        owner=stubbed_sender.public_key(),
+        owner=stubbed_sender.public_key,
     )
     assert_valid_response(confirm_transaction(test_http_client, revoke_resp["result"]))
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
@@ -329,7 +329,7 @@ def test_approve_checked(
     resp = test_token.approve_checked(
         source=stubbed_sender_token_account_pk,
         delegate=stubbed_receiver,
-        owner=stubbed_sender.public_key(),
+        owner=stubbed_sender.public_key,
         amount=expected_amount_delegated,
         decimals=6,
     )
@@ -344,7 +344,7 @@ def test_freeze_account(
     stubbed_sender_token_account_pk, freeze_authority, test_token, test_http_client
 ):  # pylint: disable=redefined-outer-name
     """Test freezing an account."""
-    resp = test_http_client.request_airdrop(freeze_authority.public_key(), AIRDROP_AMOUNT)
+    resp = test_http_client.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
     assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
 
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
@@ -396,7 +396,7 @@ def test_create_multisig(
 ):  # pylint: disable=redefined-outer-name
     """Test creating a multisig account."""
     min_signers = 2
-    multisig_pubkey = test_token.create_multisig(min_signers, [stubbed_sender.public_key(), stubbed_receiver])
+    multisig_pubkey = test_token.create_multisig(min_signers, [stubbed_sender.public_key, stubbed_receiver])
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
@@ -404,5 +404,5 @@ def test_create_multisig(
     multisig_data = layouts.MULTISIG_LAYOUT.parse(decode_byte_string(resp["result"]["value"]["data"][0]))
     assert multisig_data.is_initialized
     assert multisig_data.m == min_signers
-    assert PublicKey(multisig_data.signer1) == stubbed_sender.public_key()
+    assert PublicKey(multisig_data.signer1) == stubbed_sender.public_key
     assert PublicKey(multisig_data.signer2) == stubbed_receiver

@@ -219,9 +219,9 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     """Decode a transfer system instruction and retrieve the instruction params.
 
     >>> from solana.publickey import PublicKey
-    >>> sender, reciever = PublicKey(1), PublicKey(2)
+    >>> sender, receiver = PublicKey(1), PublicKey(2)
     >>> instruction = transfer(
-    ...     TransferParams(from_pubkey=sender, to_pubkey=reciever, lamports=1000)
+    ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
     ... )
     >>> decode_transfer(instruction)
     TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
@@ -388,9 +388,9 @@ def transfer(params: TransferParams) -> TransactionInstruction:
     """Generate an instruction that transfers lamports from one account to another.
 
     >>> from solana.publickey import PublicKey
-    >>> sender, reciever = PublicKey(1), PublicKey(2)
+    >>> sender, receiver = PublicKey(1), PublicKey(2)
     >>> instruction = transfer(
-    ...     TransferParams(from_pubkey=sender, to_pubkey=reciever, lamports=1000)
+    ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
     ... )
     >>> type(instruction)
     <class 'solana.transaction.TransactionInstruction'>

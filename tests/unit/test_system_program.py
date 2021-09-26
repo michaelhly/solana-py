@@ -1,14 +1,14 @@
 """Unit tests for solana.system_program."""
 import solana.system_program as sp
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 
 
 def test_create_account():
     """Test creating a transaction for create account."""
     params = sp.CreateAccountParams(
-        from_pubkey=Account().public_key(),
-        new_account_pubkey=Account().public_key(),
+        from_pubkey=Keypair().public_key,
+        new_account_pubkey=Keypair().public_key,
         lamports=123,
         space=1,
         program_id=PublicKey(1),
@@ -18,14 +18,14 @@ def test_create_account():
 
 def test_transfer():
     """Test creating a transaction for transfer."""
-    params = sp.TransferParams(from_pubkey=Account().public_key(), to_pubkey=Account().public_key(), lamports=123)
+    params = sp.TransferParams(from_pubkey=Keypair().public_key, to_pubkey=Keypair().public_key, lamports=123)
     assert sp.decode_transfer(sp.transfer(params)) == params
 
 
 def test_assign():
     """Test creating a transaction for assign."""
     params = sp.AssignParams(
-        account_pubkey=Account().public_key(),
+        account_pubkey=Keypair().public_key,
         program_id=PublicKey(1),
     )
     assert sp.decode_assign(sp.assign(params)) == params
@@ -34,7 +34,7 @@ def test_assign():
 def test_allocate():
     """Test creating a transaction for allocate."""
     params = sp.AllocateParams(
-        account_pubkey=Account().public_key(),
+        account_pubkey=Keypair().public_key,
         space=12345,
     )
     assert sp.decode_allocate(sp.allocate(params)) == params
@@ -43,7 +43,7 @@ def test_allocate():
 def test_allocate_with_seed():
     """Test creating a transaction for allocate with seed."""
     params = sp.AllocateWithSeedParams(
-        account_pubkey=Account().public_key(),
+        account_pubkey=Keypair().public_key,
         base_pubkey=PublicKey(1),
         seed={"length": 4, "chars": "gqln"},
         space=65537,
@@ -55,7 +55,7 @@ def test_allocate_with_seed():
 def test_create_account_with_seed():
     """Test creating a an account with seed."""
     params = sp.CreateAccountWithSeedParams(
-        from_pubkey=Account().public_key(),
+        from_pubkey=Keypair().public_key,
         new_account_pubkey=PublicKey(3),
         base_pubkey=PublicKey(1),
         seed={"length": 4, "chars": "gqln"},

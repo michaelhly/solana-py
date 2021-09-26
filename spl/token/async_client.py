@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import List, Optional, Union, cast
 
 import spl.token.instructions as spl_token
-from solana.account import Account
 from solana.blockhash import Blockhash
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed
@@ -18,7 +18,7 @@ from spl.token.core import AccountInfo, MintInfo, _TokenCore
 class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     """An ERC20-like Token."""
 
-    def __init__(self, conn: AsyncClient, pubkey: PublicKey, program_id: PublicKey, payer: Account) -> None:
+    def __init__(self, conn: AsyncClient, pubkey: PublicKey, program_id: PublicKey, payer: Keypair) -> None:
         """Initialize a client to a SPL-Token program."""
         super().__init__(pubkey, program_id, payer)
         self._conn = conn
@@ -91,7 +91,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     async def create_mint(
         cls,
         conn: AsyncClient,
-        payer: Account,
+        payer: Keypair,
         mint_authority: PublicKey,
         decimals: int,
         program_id: PublicKey,
@@ -173,7 +173,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         conn: AsyncClient,
         program_id: PublicKey,
         owner: PublicKey,
-        payer: Account,
+        payer: Keypair,
         amount: int,
         skip_confirmation: bool = False,
         recent_blockhash: Optional[Blockhash] = None,
@@ -215,7 +215,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_multisig(self._conn)
         txn, payer, multisig = self._create_multisig_args(m, multi_signers, balance_needed)
         await self._conn.send_transaction(txn, payer, multisig, opts=opts, recent_blockhash=recent_blockhash)
-        return multisig.public_key()
+        return multisig.public_key
 
     async def get_mint_info(self) -> MintInfo:
         """Retrieve mint information."""
@@ -231,9 +231,9 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         self,
         source: PublicKey,
         dest: PublicKey,
-        owner: Union[Account, PublicKey],
+        owner: Union[Keypair, PublicKey],
         amount: int,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -255,7 +255,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         delegate: PublicKey,
         owner: PublicKey,
         amount: int,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -275,7 +275,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         self,
         account: PublicKey,
         owner: PublicKey,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -292,10 +292,10 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     async def set_authority(
         self,
         account: PublicKey,
-        current_authority: Union[Account, PublicKey],
+        current_authority: Union[Keypair, PublicKey],
         authority_type: spl_token.AuthorityType,
         new_authority: Optional[PublicKey] = None,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -316,9 +316,9 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     async def mint_to(
         self,
         dest: PublicKey,
-        mint_authority: Union[Account, PublicKey],
+        mint_authority: Union[Keypair, PublicKey],
         amount: int,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -341,7 +341,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         account: PublicKey,
         owner: PublicKey,
         amount: int,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -361,7 +361,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         account: PublicKey,
         dest: PublicKey,
         authority: PublicKey,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -380,7 +380,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         self,
         account: PublicKey,
         authority: PublicKey,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -398,7 +398,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         self,
         account: PublicKey,
         authority: PublicKey,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -419,7 +419,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         owner: PublicKey,
         amount: int,
         decimals: int,
-        multi_signers: Optional[List[Account]],
+        multi_signers: Optional[List[Keypair]],
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -443,7 +443,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         owner: PublicKey,
         amount: int,
         decimals: int,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -470,7 +470,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         mint_authority: PublicKey,
         amount: int,
         decimals: int,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:
@@ -492,7 +492,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         owner: PublicKey,
         amount: int,
         decimals: int,
-        multi_signers: Optional[List[Account]] = None,
+        multi_signers: Optional[List[Keypair]] = None,
         opts: TxOpts = TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> RPCResponse:

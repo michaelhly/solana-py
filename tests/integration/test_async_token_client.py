@@ -17,7 +17,7 @@ from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response
 @pytest.fixture(scope="module")
 async def test_token(async_stubbed_sender, freeze_authority, test_http_client_async) -> AsyncToken:
     """Test create mint."""
-    resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key(), AIRDROP_AMOUNT)
+    resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key, AIRDROP_AMOUNT)
     confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
     assert_valid_response(confirmed)
 
@@ -25,15 +25,15 @@ async def test_token(async_stubbed_sender, freeze_authority, test_http_client_as
     token_client = await AsyncToken.create_mint(
         test_http_client_async,
         async_stubbed_sender,
-        async_stubbed_sender.public_key(),
+        async_stubbed_sender.public_key,
         expected_decimals,
         TOKEN_PROGRAM_ID,
-        freeze_authority.public_key(),
+        freeze_authority.public_key,
     )
 
     assert token_client.pubkey
     assert token_client.program_id == TOKEN_PROGRAM_ID
-    assert token_client.payer.public_key() == async_stubbed_sender.public_key()
+    assert token_client.payer.public_key == async_stubbed_sender.public_key
 
     resp = await test_http_client_async.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
@@ -43,8 +43,8 @@ async def test_token(async_stubbed_sender, freeze_authority, test_http_client_as
     assert mint_data.is_initialized
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
-    assert PublicKey(mint_data.mint_authority) == async_stubbed_sender.public_key()
-    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key()
+    assert PublicKey(mint_data.mint_authority) == async_stubbed_sender.public_key
+    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key
     return token_client
 
 
@@ -55,7 +55,7 @@ async def async_stubbed_sender_token_account_pk(
     async_stubbed_sender, test_token  # pylint: disable=redefined-outer-name
 ) -> PublicKey:
     """Token account for stubbed sender."""
-    return await test_token.create_account(async_stubbed_sender.public_key())
+    return await test_token.create_account(async_stubbed_sender.public_key)
 
 
 @pytest.mark.integration
@@ -64,7 +64,7 @@ async def async_stubbed_sender_token_account_pk(
 async def async_stubbed_receiver_token_account_pk(
     async_stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
 ) -> PublicKey:
-    """Token account for stubbed reciever."""
+    """Token account for stubbed receiver."""
     return await test_token.create_account(async_stubbed_receiver)
 
 
@@ -74,7 +74,7 @@ async def test_new_account(
     async_stubbed_sender, test_http_client_async, test_token
 ):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
-    token_account_pk = await test_token.create_account(async_stubbed_sender.public_key())
+    token_account_pk = await test_token.create_account(async_stubbed_sender.public_key)
     resp = await test_http_client_async.get_account_info(token_account_pk)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
@@ -90,7 +90,7 @@ async def test_new_account(
     assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == PublicKey(0)
     assert not account_data.is_native_option and not account_data.is_native
     assert PublicKey(account_data.mint) == test_token.pubkey
-    assert PublicKey(account_data.owner) == async_stubbed_sender.public_key()
+    assert PublicKey(account_data.owner) == async_stubbed_sender.public_key
 
 
 @pytest.mark.integration
@@ -115,7 +115,7 @@ async def test_get_account_info(
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.is_initialized is True
     assert account_info.mint == test_token.pubkey
-    assert account_info.owner == async_stubbed_sender.public_key()
+    assert account_info.owner == async_stubbed_sender.public_key
     assert account_info.amount == 0
     assert account_info.delegate is None
     assert account_info.delegated_amount == 0
@@ -132,11 +132,11 @@ async def test_get_mint_info(
 ):  # pylint: disable=redefined-outer-name
     """Test get token mint info."""
     mint_info = await test_token.get_mint_info()
-    assert mint_info.mint_authority == async_stubbed_sender.public_key()
+    assert mint_info.mint_authority == async_stubbed_sender.public_key
     assert mint_info.supply == 0
     assert mint_info.decimals == 6
     assert mint_info.is_initialized is True
-    assert mint_info.freeze_authority == freeze_authority.public_key()
+    assert mint_info.freeze_authority == freeze_authority.public_key
 
 
 @pytest.mark.integration
@@ -294,13 +294,13 @@ async def test_burn_checked(
 @pytest.mark.asyncio
 async def test_get_accounts(async_stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
     """Test get token accounts."""
-    resp = await test_token.get_accounts(async_stubbed_sender.public_key())
+    resp = await test_token.get_accounts(async_stubbed_sender.public_key)
     assert_valid_response(resp)
     assert len(resp["result"]["value"]) == 2
     for resp_data in resp["result"]["value"]:
         assert PublicKey(resp_data["pubkey"])
         parsed_data = resp_data["account"]["data"]["parsed"]["info"]
-        assert parsed_data["owner"] == str(async_stubbed_sender.public_key())
+        assert parsed_data["owner"] == str(async_stubbed_sender.public_key)
 
 
 @pytest.mark.integration
@@ -317,7 +317,7 @@ async def test_approve(
     resp = await test_token.approve(
         source=async_stubbed_sender_token_account_pk,
         delegate=async_stubbed_receiver,
-        owner=async_stubbed_sender.public_key(),
+        owner=async_stubbed_sender.public_key,
         amount=expected_amount_delegated,
     )
     confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
@@ -344,7 +344,7 @@ async def test_revoke(
 
     revoke_resp = await test_token.revoke(
         account=async_stubbed_sender_token_account_pk,
-        owner=async_stubbed_sender.public_key(),
+        owner=async_stubbed_sender.public_key,
     )
     revoke_confirmed = await aconfirm_transaction(test_http_client_async, revoke_resp["result"])
     assert_valid_response(revoke_confirmed)
@@ -367,7 +367,7 @@ async def test_approve_checked(
     resp = await test_token.approve_checked(
         source=async_stubbed_sender_token_account_pk,
         delegate=async_stubbed_receiver,
-        owner=async_stubbed_sender.public_key(),
+        owner=async_stubbed_sender.public_key,
         amount=expected_amount_delegated,
         decimals=6,
     )
@@ -384,7 +384,7 @@ async def test_freeze_account(
     async_stubbed_sender_token_account_pk, freeze_authority, test_token, test_http_client_async
 ):  # pylint: disable=redefined-outer-name
     """Test freezing an account."""
-    resp = await test_http_client_async.request_airdrop(freeze_authority.public_key(), AIRDROP_AMOUNT)
+    resp = await test_http_client_async.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
     confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
     assert_valid_response(confirmed)
 
@@ -451,7 +451,7 @@ async def test_create_multisig(
     """Test creating a multisig account."""
     min_signers = 2
     multisig_pubkey = await test_token.create_multisig(
-        min_signers, [async_stubbed_sender.public_key(), async_stubbed_receiver]
+        min_signers, [async_stubbed_sender.public_key, async_stubbed_receiver]
     )
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
@@ -460,5 +460,5 @@ async def test_create_multisig(
     multisig_data = layouts.MULTISIG_LAYOUT.parse(decode_byte_string(resp["result"]["value"]["data"][0]))
     assert multisig_data.is_initialized
     assert multisig_data.m == min_signers
-    assert PublicKey(multisig_data.signer1) == async_stubbed_sender.public_key()
+    assert PublicKey(multisig_data.signer1) == async_stubbed_sender.public_key
     assert PublicKey(multisig_data.signer2) == async_stubbed_receiver

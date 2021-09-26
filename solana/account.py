@@ -1,7 +1,11 @@
-"""Account module to manage public-private key pair and signing messages."""
+"""(Deprecated, use ``solana.keypair`` instead).
+
+Account module to manage public-private key pair and signing messages.
+"""
 from __future__ import annotations
 
 from typing import List, Optional, Union
+from warnings import warn
 
 from base58 import b58encode
 from nacl import public, signing  # type: ignore
@@ -10,7 +14,7 @@ from solana.publickey import PublicKey
 
 
 class Account:
-    """An account key pair (public and secret keys).
+    """(Deprecated) An account key pair (public and secret keys).
 
     >>> # Import account from 64-byte keypair
     >>> keypair = [
@@ -28,6 +32,7 @@ class Account:
 
         :pararm secret_key: Secret key for the account.
         """
+        warn("solana.account.Account is deprecated, please use solana.keypair.KeyPair", category=DeprecationWarning)
         key: Optional[bytes] = None
         if isinstance(secret_key, int):
             key = bytes(PublicKey(secret_key))

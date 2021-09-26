@@ -9,8 +9,8 @@ from base58 import b58decode, b58encode
 from nacl.exceptions import BadSignatureError  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
-from solana.account import Account
 from solana.blockhash import Blockhash
+from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solana.publickey import PublicKey
 from solana.utils import shortvec_encoding as shortvec
@@ -146,7 +146,7 @@ class Transaction:
 
         # Cull duplicate accounts
         fee_payer_idx = maxsize
-        seen: Dict[str, int] = dict()
+        seen: Dict[str, int] = {}
         uniq_metas: List[AccountMeta] = []
         for sig in self.signatures:
             pubkey = str(sig.pubkey)
@@ -221,18 +221,18 @@ class Transaction:
         """Get raw transaction data that need to be covered by signatures."""
         return self.compile_message().serialize()
 
-    def sign_partial(self, *partial_signers: Union[PublicKey, Account]) -> None:
+    def sign_partial(self, *partial_signers: Union[PublicKey, Keypair]) -> None:
         """Partially sign a Transaction with the specified accounts.
 
-        The `Account` inputs will be used to sign the Transaction immediately, while any
+        The `Keypair` inputs will be used to sign the Transaction immediately, while any
         `PublicKey` inputs will be referenced in the signed Transaction but need to
-        be filled in later by calling `addSigner()` with the matching `Account`.
+        be filled in later by calling `addSigner()` with the matching `Keypair`.
 
         All the caveats from the `sign` method apply to `signPartial`
         """
 
-        def partial_signer_pubkey(account_or_pubkey: Union[PublicKey, Account]):
-            return account_or_pubkey.public_key() if isinstance(account_or_pubkey, Account) else account_or_pubkey
+        def partial_signer_pubkey(account_or_pubkey: Union[PublicKey, Keypair]):
+            return account_or_pubkey.public_key if isinstance(account_or_pubkey, Keypair) else account_or_pubkey
 
         signatures: List[SigPubkeyPair] = [
             SigPubkeyPair(pubkey=partial_signer_pubkey(partial_signer)) for partial_signer in partial_signers
@@ -241,13 +241,13 @@ class Transaction:
         sign_data = self.serialize_message()
 
         for idx, partial_signer in enumerate(partial_signers):
-            if isinstance(partial_signer, Account):
+            if isinstance(partial_signer, Keypair):
                 sig = partial_signer.sign(sign_data).signature
                 if len(sig) != SIG_LENGTH:
                     raise RuntimeError("signature has invalid length", sig)
                 self.signatures[idx].signature = sig
 
-    def sign(self, *signers: Account) -> None:
+    def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.
 
         Multiple signatures may be applied to a Transaction. The first signature
@@ -270,14 +270,14 @@ class Transaction:
             raise ValueError("unknown signer: ", str(pubkey))
         self.signatures[idx].signature = signature
 
-    def add_signer(self, signer: Account) -> None:
+    def add_signer(self, signer: Keypair) -> None:
         """Fill in a signature for a partially signed Transaction.
 
-        The `signer` must be the corresponding `Account` for a `PublicKey` that was
+        The `signer` must be the corresponding `Keypair` for a `PublicKey` that was
         previously provided to `signPartial`
         """
         signed_msg = signer.sign(self.serialize_message())
-        self.add_signature(signer.public_key(), signed_msg.signature)
+        self.add_signature(signer.public_key, signed_msg.signature)
 
     def verify_signatures(self) -> bool:
         """Verify signatures of a complete, signed Transaction."""
@@ -298,12 +298,13 @@ class Transaction:
 
         The Transaction must have a valid `signature` before invoking this method.
 
-        >>> from solana.account import Account
+        >>> from solana.keypair import Keypair
         >>> from solana.blockhash import Blockhash
         >>> from solana.publickey import PublicKey
         >>> from solana.system_program import transfer, TransferParams
-        >>> sender, reciever = Account(1), PublicKey(2)
-        >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.public_key(), to_pubkey=reciever, lamports=1000)))
+        >>> seed = bytes(PublicKey(1))
+        >>> sender, receiver = Keypair.from_seed(seed), PublicKey(2)
+        >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.public_key, to_pubkey=receiver, lamports=1000)))
         >>> transfer_tx.recent_blockhash = Blockhash(str(PublicKey(3)))
         >>> transfer_tx.sign(sender)
         >>> transfer_tx.serialize().hex()

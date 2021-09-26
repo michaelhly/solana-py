@@ -4,8 +4,8 @@ from typing import NamedTuple
 
 import pytest
 
-from solana.account import Account
 from solana.blockhash import Blockhash
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
@@ -35,86 +35,86 @@ def stubbed_blockhash() -> Blockhash:
 
 @pytest.fixture(scope="session")
 def stubbed_receiver() -> PublicKey:
-    """Arbitrary known public key to be used as reciever."""
+    """Arbitrary known public key to be used as receiver."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
 
 
 @pytest.fixture(scope="session")
 def stubbed_receiver_prefetched_blockhash() -> PublicKey:
-    """Arbitrary known public key to be used as reciever."""
+    """Arbitrary known public key to be used as receiver."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97")
 
 
 @pytest.fixture(scope="session")
 def stubbed_receiver_cached_blockhash() -> PublicKey:
-    """Arbitrary known public key to be used as reciever."""
+    """Arbitrary known public key to be used as receiver."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i95")
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_receiver() -> PublicKey:
-    """Arbitrary known public key to be used as reciever."""
+    """Arbitrary known public key to be used as receiver."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98")
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_receiver_prefetched_blockhash() -> PublicKey:
-    """Arbitrary known public key to be used as reciever."""
+    """Arbitrary known public key to be used as receiver."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96")
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_receiver_cached_blockhash() -> PublicKey:
-    """Arbitrary known public key to be used as reciever."""
+    """Arbitrary known public key to be used as receiver."""
     return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i94")
 
 
 @pytest.fixture(scope="session")
-def stubbed_sender() -> Account:
+def stubbed_sender() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Account(bytes([8] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([8] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
-def stubbed_sender_prefetched_blockhash() -> Account:
+def stubbed_sender_prefetched_blockhash() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Account(bytes([9] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([9] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
-def stubbed_sender_cached_blockhash() -> Account:
+def stubbed_sender_cached_blockhash() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Account(bytes([4] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([4] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
-def stubbed_sender_for_token() -> Account:
+def stubbed_sender_for_token() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Account(bytes([2] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([2] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
-def async_stubbed_sender() -> Account:
+def async_stubbed_sender() -> Keypair:
     """Another arbitrary known account to be used as sender."""
-    return Account(bytes([7] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([7] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
-def async_stubbed_sender_prefetched_blockhash() -> Account:
+def async_stubbed_sender_prefetched_blockhash() -> Keypair:
     """Another arbitrary known account to be used as sender."""
-    return Account(bytes([5] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([5] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
-def async_stubbed_sender_cached_blockhash() -> Account:
+def async_stubbed_sender_cached_blockhash() -> Keypair:
     """Another arbitrary known account to be used as sender."""
-    return Account(bytes([3] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([3] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")
-def freeze_authority() -> Account:
+def freeze_authority() -> Keypair:
     """Arbitrary known account to be used as freeze authority."""
-    return Account(bytes([6] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([6] * PublicKey.LENGTH))
 
 
 @pytest.mark.integration

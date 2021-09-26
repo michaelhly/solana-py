@@ -2,8 +2,8 @@
 import asyncio
 from typing import List, Optional, Union
 
-from solana.account import Account
 from solana.blockhash import Blockhash, BlockhashCache
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -268,7 +268,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(*args)
 
     async def get_confirmed_signature_for_address2(
-        self, account: Union[str, Account, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
+        self, account: Union[str, Keypair, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -293,7 +293,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(*args)
 
     async def get_signatures_for_address(
-        self, account: Union[str, Account, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
+        self, account: Union[str, Keypair, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -1018,7 +1018,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def send_transaction(
         self,
         txn: Transaction,
-        *signers: Account,
+        *signers: Keypair,
         opts: types.TxOpts = types.TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
@@ -1030,12 +1030,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         :param recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
             skip fetching the recent blockhash or relying on the cache.
 
-        >>> from solana.account import Account
+        >>> from solana.keypair import Keypair
         >>> from solana.system_program import TransferParams, transfer
         >>> from solana.transaction import Transaction
-        >>> sender, reciever = Account(1), Account(2)
+        >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
         >>> txn = Transaction().add(transfer(TransferParams(
-        ...     from_pubkey=sender.public_key(), to_pubkey=reciever.public_key(), lamports=1000)))
+        ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
         >>> solana_client = AsyncClient("http://localhost:8899")
         >>> asyncio.run(solana_client.send_transaction(txn, sender)) # doctest: +SKIP
         {'jsonrpc': '2.0',

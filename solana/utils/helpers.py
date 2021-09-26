@@ -1,6 +1,7 @@
 """Helper functions."""
 
 from base64 import b64decode
+
 from base58 import b58decode
 
 
