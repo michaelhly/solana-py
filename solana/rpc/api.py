@@ -5,8 +5,8 @@ from time import sleep
 from typing import List, Optional, Union
 from warnings import warn
 
-from solana.account import Account
-from solana.blockhash import Blockhash
+from solana.blockhash import Blockhash, BlockhashCache
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -32,11 +32,37 @@ def MemcmpOpt(*args, **kwargs) -> types.MemcmpOpts:  # pylint: disable=invalid-n
 
 
 class Client(_ClientCore):  # pylint: disable=too-many-public-methods
-    """Client class."""
+    """Client class.
 
-    def __init__(self, endpoint: Optional[str] = None, commitment: Optional[Commitment] = None):
+    :param endpoint: URL of the RPC endpoint.
+    :param commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
+    :param blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
+        ``send_transaction`` calls faster.
+        You can also pass your own BlockhashCache object to customize its parameters.
+
+        The cache works as follows:
+
+        1.  Retrieve the oldest unused cached blockhash that is younger than ``ttl`` seconds,
+            where ``ttl`` is defined in the BlockhashCache (we prefer unused blockhashes because
+            reusing blockhashes can cause errors in some edge cases, and we prefer slightly
+            older blockhashes because they're more likely to be accepted by every validator).
+        2.  If there are no unused blockhashes in the cache, take the oldest used
+            blockhash that is younger than ``ttl`` seconds.
+        3.  Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
+
+        If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
+        and pass that value in your ``.send_transaction`` calls.
+
+    """
+
+    def __init__(
+        self,
+        endpoint: Optional[str] = None,
+        commitment: Optional[Commitment] = None,
+        blockhash_cache: Union[BlockhashCache, bool] = False,
+    ):
         """Init API client."""
-        super().__init__(commitment)
+        super().__init__(commitment, blockhash_cache)
         self._provider = http.HTTPProvider(endpoint)
 
     @property
@@ -86,7 +112,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
             - "base58" is limited to Account data of less than 128 bytes.
             - "base64" will return base64 encoded data for Account data of any size.
-            - "jsonPrased" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+            - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
 
             If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
             detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
@@ -254,7 +280,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(*args)
 
     def get_confirmed_signature_for_address2(
-        self, account: Union[str, Account, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
+        self, account: Union[str, Keypair, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -279,7 +305,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(*args)
 
     def get_signatures_for_address(
-        self, account: Union[str, Account, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
+        self, account: Union[str, Keypair, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -624,60 +650,58 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(*args)
 
     def get_multiple_accounts(
-            self,
-            pubkey_list: List[Union[str, PublicKey]],
-            commitment: Optional[Commitment] = Finalized,
-            encoding: Optional[str] = None,
-            data_slice: Optional[types.DataSliceOpts] = None,
+        self,
+        pubkeys: List[Union[PublicKey, str]],
+        commitment: Optional[Commitment] = None,
+        encoding: str = "base64",
+        data_slice: Optional[types.DataSliceOpts] = None,
     ) -> types.RPCResponse:
-        """Returns the account information for a list of Pubkeys
+        """Returns all the account info for a list of public keys.
 
-        :param pubkey_list: An array of Pubkeys to query, as base-58 encoded strings.
-        :param commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
-        :param encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
-        :param data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
+        :param pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
+        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
+            "jsonParsed". Default is "base64".
+
+            - "base58" is limited to Account data of less than 128 bytes.
+            - "base64" will return base64 encoded data for Account data of any size.
+            - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+
+            If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
+            detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
+        :param data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
+
         >>> from solana.publickey import PublicKey
         >>> solana_client = Client("http://localhost:8899")
-        >>> data_slice = DataSliceOpt(offset=0, length=20)
-        >>> solana_client.get_multiple_accounts(["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"], data_slice=data_slice)   # doctest: +SKIP
+        >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+        >>> solana_client.get_multiple_accounts(pubkeys) # doctest: +SKIP
         {
-          "jsonrpc": "2.0",
-          "result": {
-            "context": {
-              "slot": 1
+            "jsonrpc": "2.0",
+            "result": {
+                "context": {"slot": 97531946},
+                "value": [
+                    {
+                        "data": ["", "base64"],
+                        "executable": False,
+                        "lamports": 1,
+                        "owner": "11111111111111111111111111111111",
+                        "rentEpoch": 225,
+                    },
+                    {
+                        "data": ["", "base64"],
+                        "executable": False,
+                        "lamports": 809441127,
+                        "owner": "11111111111111111111111111111111",
+                        "rentEpoch": 225,
+                    },
+                ],
             },
-            "value": [
-              {
-                "data": [
-                  "AAAAAAEAAAACtzNsyJrW0g==",
-                  "base64"
-                ],
-                "executable": false,
-                "lamports": 1000000000,
-                "owner": "11111111111111111111111111111111",
-                "rentEpoch": 2
-              },
-              {
-                "data": [
-                  "",
-                  "base64"
-                ],
-                "executable": false,
-                "lamports": 5000000000,
-                "owner": "11111111111111111111111111111111",
-                "rentEpoch": 2
-              }
-            ]
-          },
-          "id": 1
+            "id": 1,
         }
-        """
-        args = self._get_multiple_accounts(
-            pubkey_list=pubkey_list,
-            commitment=commitment,
-            encoding=encoding,
-            data_slice=data_slice
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_multiple_accounts_args(
+            pubkeys=pubkeys, commitment=commitment, encoding=encoding, data_slice=data_slice
         )
         return self._provider.make_request(*args)
 
@@ -751,9 +775,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     ) -> types.RPCResponse:
         """Returns the statuses of a list of signatures.
 
-        Unless the `searchTransactionHistory` configuration parameter is included, this method only
+        Unless the ``search_transaction_history`` configuration parameter is included, this method only
         searches the recent status cache of signatures, which retains statuses for all active slots plus
-        `MAX_RECENT_BLOCKHASHES` rooted slots.
+        ``MAX_RECENT_BLOCKHASHES`` rooted slots.
 
         :param signatures: An array of transaction signatures to confirm.
         :param search_transaction_history: If true, a Solana node will search its ledger cache for
@@ -901,13 +925,19 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_token_accounts_args(method, pubkey, opts, commitment)
         return self._provider.make_request(*args)
 
-    def get_token_largest_accounts(self, pubkey: Union[PublicKey, str]) -> types.RPCResponse:
-        """Returns the 20 largest accounts of a particular SPL Token type (UNSTABLE)."""
-        raise NotImplementedError("get_token_largbest_accounts not implemented")
+    def get_token_largest_accounts(
+        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
+        """Returns the 20 largest accounts of a particular SPL Token type."""
+        args = self._get_token_largest_account_args(pubkey, commitment)
+        return self._provider.make_request(*args)
 
-    def get_token_supply(self, pubkey: Union[PublicKey, str]) -> types.RPCResponse:
-        """Returns the total supply of an SPL Token type(UNSTABLE)."""
-        raise NotImplementedError("get_token_supply not implemented")
+    def get_token_supply(
+        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
+        """Returns the total supply of an SPL Token type."""
+        args = self._get_token_supply_args(pubkey, commitment)
+        return self._provider.make_request(*args)
 
     def get_transaction_count(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns the current Transaction count from the ledger.
@@ -1039,37 +1069,50 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self.__post_send_with_confirm(*post_send_args)
 
     def send_transaction(
-        self, txn: Transaction, *signers: Account, opts: types.TxOpts = types.TxOpts()
+        self,
+        txn: Transaction,
+        *signers: Keypair,
+        opts: types.TxOpts = types.TxOpts(),
+        recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
 
         :param txn: Transaction object.
         :param signers: Signers to sign the transaction.
         :param opts: (optional) Transaction options.
+        :param recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
+            skip fetching the recent blockhash or relying on the cache.
 
-        >>> from solana.account import Account
+        >>> from solana.keypair import Keypair
         >>> from solana.system_program import TransferParams, transfer
         >>> from solana.transaction import Transaction
-        >>> sender, reciever = Account(1), Account(2)
+        >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
         >>> txn = Transaction().add(transfer(TransferParams(
-        ...     from_pubkey=sender.public_key(), to_pubkey=reciever.public_key(), lamports=1000)))
+        ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.send_transaction(txn, sender) # doctest: +SKIP
         {'jsonrpc': '2.0',
          'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
          'id': 12}
         """
-        try:
-            # TODO: Cache recent blockhash
-            blockhash_resp = self.get_recent_blockhash()
-            if not blockhash_resp["result"]:
-                raise RuntimeError("failed to get recent blockhash")
-            txn.recent_blockhash = Blockhash(blockhash_resp["result"]["value"]["blockhash"])
-        except Exception as err:
-            raise RuntimeError("failed to get recent blockhash") from err
+        if recent_blockhash is None:
+            if self.blockhash_cache:
+                try:
+                    recent_blockhash = self.blockhash_cache.get()
+                except ValueError:
+                    blockhash_resp = self.get_recent_blockhash()
+                    recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
+            else:
+                blockhash_resp = self.get_recent_blockhash()
+                recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
+        txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
-        return self.send_raw_transaction(txn.serialize(), opts=opts)
+        txn_resp = self.send_raw_transaction(txn.serialize(), opts=opts)
+        if self.blockhash_cache:
+            blockhash_resp = self.get_recent_blockhash()
+            self._process_blockhash_resp(blockhash_resp, used_immediately=False)
+        return txn_resp
 
     def simulate_transaction(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Optional[Commitment] = None
@@ -1146,7 +1189,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             elapsed_time += sleep_time
 
         if not resp["result"]:
-            raise Exception("Unable to confirm transaction %s" % tx_sig)
+            raise Exception(f"Unable to confirm transaction {tx_sig}")
         err = resp.get("error") or resp["result"].get("meta").get("err")
         if err:
             self._provider.logger.error("Transaction error: %s", err)
