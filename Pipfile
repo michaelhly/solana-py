@@ -29,6 +29,8 @@ bump2version = "*"
 types-requests = "*"
 notebook = "*"
 pytest-asyncio = "*"
+pytest-cov = "*"
+sphinx-rtd-theme = "*"
 
 [packages]
 pynacl = "*"
@@ -37,6 +39,8 @@ requests = "*"
 construct = "*"
 typing-extensions = "*"
 httpx = "*"
+cachetools = "*"
+types-cachetools = "*"
 
 [requires]
 python_version = "3.7"

@@ -2,12 +2,18 @@
 """Helper code for api.py and async_api.py."""
 from base64 import b64encode
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+try:
+    from typing import Literal  # type: ignore
+except ImportError:
+    from typing_extensions import Literal
+
 from warnings import warn
 
 from base58 import b58decode, b58encode
 
-from solana.account import Account
-from solana.blockhash import Blockhash
+from solana.blockhash import Blockhash, BlockhashCache
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -33,8 +39,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _get_version = types.RPCMethod("getVersion")
     _validator_exit = types.RPCMethod("validatorExit")
 
-    def __init__(self, commitment: Optional[Commitment] = None):
+    def __init__(self, commitment: Optional[Commitment] = None, blockhash_cache: Union[BlockhashCache, bool] = False):
         self._commitment = commitment or Finalized
+        self.blockhash_cache: Union[BlockhashCache, Literal[False]] = (
+            BlockhashCache() if blockhash_cache is True else blockhash_cache
+        )
 
     def _get_balance_args(
         self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment]
@@ -73,7 +82,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _get_confirmed_signature_for_address2_args(
-        account: Union[str, Account, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         warn(
             "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
@@ -86,15 +95,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if limit:
             opts["limit"] = limit
 
-        if isinstance(account, Account):
-            account = str(account.public_key())
+        if isinstance(account, Keypair):
+            account = str(account.public_key)
         if isinstance(account, PublicKey):
             account = str(account)
         return types.RPCMethod("getConfirmedSignaturesForAddress2"), account, opts
 
     @staticmethod
     def _get_signatures_for_address_args(
-        account: Union[str, Account, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         opts: Dict[str, Union[int, str]] = {}
         if before:
@@ -102,8 +111,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if limit:
             opts["limit"] = limit
 
-        if isinstance(account, Account):
-            account = str(account.public_key())
+        if isinstance(account, Keypair):
+            account = str(account.public_key)
         if isinstance(account, PublicKey):
             account = str(account)
         return types.RPCMethod("getSignaturesForAddress"), account, opts
@@ -152,6 +161,18 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             usize,
             {self._comm_key: commitment or self._commitment},
         )
+
+    def _get_multiple_accounts_args(
+        self,
+        pubkeys: List[Union[PublicKey, str]],
+        commitment: Optional[Commitment],
+        encoding: str,
+        data_slice: Optional[types.DataSliceOpts],
+    ) -> Tuple[types.RPCMethod, List[str], Dict[str, Any]]:
+        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment or self._commitment}
+        if data_slice:
+            opts[self._data_slice_key] = dict(data_slice._asdict())
+        return types.RPCMethod("getMultipleAccounts"), [str(pubkey) for pubkey in pubkeys], opts
 
     def _get_program_accounts_args(
         self,
@@ -255,6 +276,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
         return method, pubkey, acc_opts, rpc_opts
 
+    def _get_token_largest_account_args(
+        self, pubkey: Union[str, PublicKey], commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
+        return types.RPCMethod("getTokenLargestAccounts"), str(pubkey), {self._comm_key: commitment or self._commitment}
+
+    def _get_token_supply_args(
+        self, pubkey: Union[str, PublicKey], commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
+        return types.RPCMethod("getTokenSupply"), str(pubkey), {self._comm_key: commitment or self._commitment}
+
     def _get_transaction_count_args(
         self, commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
@@ -332,3 +363,17 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if not resp.get("result"):
             raise Exception("Failed to send transaction")
         return resp
+
+    @staticmethod
+    def parse_recent_blockhash(blockhash_resp: types.RPCResponse) -> Blockhash:
+        """Extract blockhash from JSON RPC result."""
+        if not blockhash_resp["result"]:
+            raise RuntimeError("failed to get recent blockhash")
+        return Blockhash(blockhash_resp["result"]["value"]["blockhash"])
+
+    def _process_blockhash_resp(self, blockhash_resp: types.RPCResponse, used_immediately: bool) -> Blockhash:
+        recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
+        if self.blockhash_cache:
+            slot = blockhash_resp["result"]["context"]["slot"]
+            self.blockhash_cache.set(recent_blockhash, slot, used_immediately=used_immediately)
+        return recent_blockhash

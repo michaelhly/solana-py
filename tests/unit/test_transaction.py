@@ -6,34 +6,34 @@ from base58 import b58encode
 
 import solana.system_program as sp
 import solana.transaction as txlib
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solana.publickey import PublicKey
 
 
 def test_sign_partial(stubbed_blockhash):
     """Test paritally sigining a transaction."""
-    acc1, acc2 = Account(), Account()
-    transfer = sp.transfer(sp.TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123))
+    kp1, kp2 = Keypair(), Keypair()
+    transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
     partial_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
-    partial_txn.sign_partial(acc1, acc2.public_key())
+    partial_txn.sign_partial(kp1, kp2.public_key)
     assert len(partial_txn.signature()) == txlib.SIG_LENGTH
     assert len(partial_txn.signatures) == 2
     assert not partial_txn.signatures[1].signature
 
-    partial_txn.add_signer(acc2)
+    partial_txn.add_signer(kp2)
     expected_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
-    expected_txn.sign(acc1, acc2)
+    expected_txn.sign(kp1, kp2)
     assert partial_txn == expected_txn
 
 
 def test_transfer_signatures(stubbed_blockhash):
     """Test signing transfer transactions."""
-    acc1, acc2 = Account(), Account()
-    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123))
-    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=acc2.public_key(), to_pubkey=acc1.public_key(), lamports=123))
+    kp1, kp2 = Keypair(), Keypair()
+    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
+    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=kp2.public_key, to_pubkey=kp1.public_key, lamports=123))
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer1, transfer2)
-    txn.sign(acc1, acc2)
+    txn.sign(kp1, kp2)
 
     expected = txlib.Transaction(recent_blockhash=stubbed_blockhash, signatures=txn.signatures).add(
         transfer1, transfer2
@@ -43,17 +43,17 @@ def test_transfer_signatures(stubbed_blockhash):
 
 def test_dedup_signatures(stubbed_blockhash):
     """Test signature deduplication."""
-    acc1, acc2 = Account(), Account()
-    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123))
-    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=acc1.public_key(), to_pubkey=acc2.public_key(), lamports=123))
+    kp1, kp2 = Keypair(), Keypair()
+    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
+    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer1, transfer2)
-    txn.sign(acc1)
+    txn.sign(kp1)
 
 
 def test_wire_format_and_desrialize(stubbed_blockhash, stubbed_receiver, stubbed_sender):
     """Test serialize/derialize transaction to/from wire format."""
     transfer = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_receiver, lamports=49)
+        sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=49)
     )
     expected_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     expected_txn.sign(stubbed_sender)
@@ -90,7 +90,7 @@ def test_populate(stubbed_blockhash):
 def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stubbed_sender):
     """Test to serialize an unsigned transaction."""
     transfer = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key(), to_pubkey=stubbed_receiver, lamports=49)
+        sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=49)
     )
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     assert len(txn.signatures) == 0
@@ -100,7 +100,7 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stu
     assert len(txn.signatures) == 0
 
     # Set fee payer
-    txn.fee_payer = stubbed_sender.public_key()
+    txn.fee_payer = stubbed_sender.public_key
     # Serialize message
     assert b64encode(txn.serialize_message()) == (
         b"AQABAxOY9ixtGkV8UbpqS189vS9p/KkyFiGNyJl+QWvRfZPK/UOfzLZnJ/KJxcbeO8So/l3V13dwvI/xXD7u3LFK8/wAAAAAAAAA"
