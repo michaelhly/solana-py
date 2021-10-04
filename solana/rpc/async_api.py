@@ -1136,7 +1136,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             elapsed_time += sleep_time
 
         if not resp["result"]:
-            print(f"resp: {resp}")
             raise Exception(f"Unable to confirm transaction {tx_sig}")
         err = resp.get("error") or resp["result"].get("meta").get("err")
         if err:
