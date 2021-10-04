@@ -3,6 +3,8 @@ import pytest
 
 import solana.system_program as sp
 from solana.rpc.api import DataSliceOpt
+from solana.rpc.core import RPCException
+from solana.rpc.types import RPCError
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
@@ -49,6 +51,16 @@ async def test_request_air_drop_cached_blockhash(
     assert_valid_response(resp)
     expected_meta = generate_expected_meta_after_airdrop(resp)
     assert resp["result"]["meta"] == expected_meta
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_send_invalid_transaction_and_get_balance(test_http_client_async):
+    """Test sending an invalid transaction to localnet."""
+    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    with pytest.raises(RPCException) as exc_info:
+        await test_http_client_async.send_raw_transaction(b"foo")
+    assert exc_info.value.args[0].keys() == RPCError.__annotations__.keys()
 
 
 @pytest.mark.integration
