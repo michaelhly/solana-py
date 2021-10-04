@@ -55,7 +55,7 @@ async def test_request_air_drop_cached_blockhash(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_send_invalid_transaction_and_get_balance(test_http_client_async):
+async def test_send_invalid_transaction(test_http_client_async):
     """Test sending an invalid transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
     with pytest.raises(RPCException) as exc_info:
