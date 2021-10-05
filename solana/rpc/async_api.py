@@ -9,7 +9,7 @@ from solana.rpc import types
 from solana.transaction import Transaction
 
 from .commitment import Commitment, Finalized
-from .core import _ClientCore
+from .core import _ClientCore, RPCException
 from .providers import async_http
 
 
@@ -1135,10 +1135,13 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 break
             elapsed_time += sleep_time
 
+        maybe_rpc_error = resp.get("error")
+        if maybe_rpc_error is not None:
+            raise RPCException(maybe_rpc_error)
         if not resp["result"]:
             raise Exception(f"Unable to confirm transaction {tx_sig}")
-        err = resp.get("error") or resp["result"].get("meta").get("err")
-        if err:
-            self._provider.logger.error("Transaction error: %s", err)
+        meta_err = resp["result"].get("meta").get("err")
+        if meta_err:
+            self._provider.logger.error("Transaction error: %s", meta_err)
 
         return resp
