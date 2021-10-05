@@ -19,11 +19,10 @@ from solana.rpc import types
 from solana.transaction import Transaction
 
 from .commitment import Commitment, Finalized
-from .providers import async_http, http
 
 
 class RPCException(Exception):
-    """Raised when RPC method returns an error result"""
+    """Raised when RPC method returns an error result."""
 
 
 class _ClientCore:  # pylint: disable=too-few-public-methods
@@ -359,9 +358,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("setLogFilter"), log_filter
 
     @staticmethod
-    def _post_send(
-        resp: types.RPCResponse, provider: Union[http.HTTPProvider, async_http.AsyncHTTPProvider]
-    ) -> types.RPCResponse:
+    def _post_send(resp: types.RPCResponse) -> types.RPCResponse:
         maybe_error = resp.get("error")
         if maybe_error is not None:
             raise RPCException(maybe_error)

@@ -1013,7 +1013,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         resp = self._provider.make_request(*args)
         if opts.skip_confirmation:
-            return self._post_send(resp, self._provider)
+            return self._post_send(resp)
         post_send_args = self._send_raw_transaction_post_send_args(resp, opts)
         return self.__post_send_with_confirm(*post_send_args)
 
@@ -1114,7 +1114,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(self._validator_exit)
 
     def __post_send_with_confirm(self, resp: types.RPCResponse, conf_comm: Commitment) -> types.RPCResponse:
-        resp = self._post_send(resp, self._provider)
+        resp = self._post_send(resp)
         self._provider.logger.info(
             "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
         )
