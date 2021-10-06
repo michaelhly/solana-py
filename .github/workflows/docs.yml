@@ -30,7 +30,7 @@ jobs:
       - name: Sphinx Build
         uses: ammaraskar/sphinx-action@0.4
         with:
-          pre-build-command: pip install sphinx_rtd_theme
+          pre-build-command: apt-get update -y && apt-get install -y python3-dev build-essential && pip install sphinx_rtd_theme
           docs-folder: .
 
       - name: Deploy
