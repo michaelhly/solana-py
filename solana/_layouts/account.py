@@ -1,9 +1,8 @@
 """Byte layouts for account data."""
 from enum import IntEnum
 
-from construct import Int32ul, Pass
+from construct import Int32ul, Pass, Switch  # type: ignore
 from construct import Struct as cStruct
-from construct import Switch
 
 from .shared import FEE_CALCULATOR_LAYOUT, HASH_LAYOUT, PUBLIC_KEY_LAYOUT
 
