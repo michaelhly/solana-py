@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any, NamedTuple, Union
 
+from solana import sysvar
 from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
@@ -351,7 +352,7 @@ def create_account(params: CreateAccountParams) -> TransactionInstruction:
     return TransactionInstruction(
         keys=[
             AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-            AccountMeta(pubkey=params.new_account_pubkey, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.new_account_pubkey, is_signer=True, is_writable=True),
         ],
         program_id=SYS_PROGRAM_ID,
         data=data,
@@ -437,19 +438,81 @@ def create_account_with_seed(
     return TransactionInstruction(keys=keys, program_id=SYS_PROGRAM_ID, data=data)
 
 
-def create_nonce_account(params: Union[CreateNonceAccountParams, CreateAccountWithSeedParams]) -> Transaction:
+def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAccountWithSeedParams]) -> Transaction:
     """Generate a Transaction that creates a new Nonce account."""
-    raise NotImplementedError("create_nonce_account_params not implemented")
+    if isinstance(params, CreateNonceAccountParams):
+        create_account_instruction = create_account(
+            CreateAccountParams(
+                from_pubkey=params.from_pubkey,
+                new_account_pubkey=params.nonce_pubkey,
+                lamports=params.lamports,
+                space=80,  # derived from rust implementation
+                program_id=SYS_PROGRAM_ID,
+            )
+        )
+    else:
+        create_account_instruction = create_account_with_seed(
+            CreateAccountWithSeedParams(
+                from_pubkey=params.from_pubkey,
+                new_account_pubkey=params.nonce_pubkey,
+                base_pubkey=params.base_pubkey,
+                seed=params.seed,
+                lamports=params.lamports,
+                space=80,  # derived from rust implementation
+                program_id=SYS_PROGRAM_ID,
+            )
+        )
+
+    initialize_nonce_instruction = nonce_initialization(
+        InitializeNonceParams(
+            nonce_pubkey=params.nonce_pubkey,
+            authorized_pubkey=params.authorized_pubkey,
+        )
+    )
+
+    return Transaction(fee_payer=params.from_pubkey).add(create_account_instruction, initialize_nonce_instruction)
 
 
 def nonce_initialization(params: InitializeNonceParams) -> TransactionInstruction:
     """Generate an instruction to initialize a Nonce account."""
-    raise NotImplementedError("nonce_initialization not implemented")
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.INITIALIZE_NONCE_ACCOUNT,
+            args=dict(
+                authorized=bytes(params.authorized_pubkey),
+            ),
+        )
+    )
+
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.nonce_pubkey, is_signer=True, is_writable=True),
+            AccountMeta(pubkey=sysvar.SYSVAR_RECENT_BLOCKHASHES_PUBKEY, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=sysvar.SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        ],
+        program_id=SYS_PROGRAM_ID,
+        data=data,
+    )
 
 
 def nonce_advance(params: AdvanceNonceParams) -> TransactionInstruction:
     """Generate an instruction to advance the nonce in a Nonce account."""
-    raise NotImplementedError("nonce advance not implemented")
+    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
+        dict(
+            instruction_type=InstructionType.ADVANCE_NONCE_ACCOUNT,
+            args=dict(),
+        )
+    )
+
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.nonce_pubkey, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=sysvar.SYSVAR_RECENT_BLOCKHASHES_PUBKEY, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=params.authorized_pubkey, is_signer=True, is_writable=True),
+        ],
+        program_id=SYS_PROGRAM_ID,
+        data=data,
+    )
 
 
 def nonce_withdraw(params: WithdrawNonceParams) -> TransactionInstruction:
