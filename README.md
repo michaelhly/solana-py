@@ -105,9 +105,3 @@ pipenv run update-localnet
 # Start localnet instance
 pipenv run start-localnet
 ```
-
-### Using Jupyter Notebook
-
-```sh
-make notebook
-```
