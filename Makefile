@@ -11,9 +11,6 @@ lint:
 	pipenv run mypy solana spl
 	pipenv run pylint --rcfile=.pylintrc setup.py solana spl tests
 
-.PHONY: notebook
-notebook:
-	cd notebooks && PYTHONPATH=../ jupyter notebook
 
 publish:
 	make clean
