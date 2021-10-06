@@ -43,6 +43,8 @@ class Account:
         elif isinstance(secret_key, bytes):
             key = secret_key
 
+        self.key = secret_key
+
         self._secret = public.PrivateKey(key) if key else public.PrivateKey.generate()
 
     def public_key(self) -> PublicKey:

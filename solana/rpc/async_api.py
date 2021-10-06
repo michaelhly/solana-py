@@ -55,6 +55,14 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Exits the context manager."""
         await self.close()
 
+    @property
+    def request_raw(self):
+        return self._provider.content if getattr(self, '_provider') else None
+
+    @property
+    def response_headers(self):
+        return self._provider.response_headers if getattr(self, '_provider') else None
+
     async def close(self) -> None:
         """Use this when you are done with the client."""
         await self._provider.close()

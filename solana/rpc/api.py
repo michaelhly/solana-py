@@ -7,6 +7,7 @@ from warnings import warn
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
+from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -1071,7 +1072,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def send_transaction(
         self,
         txn: Transaction,
-        *signers: Keypair,
+        *signers: Union[Keypair, Account],
         opts: types.TxOpts = types.TxOpts(),
         recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
@@ -1106,6 +1107,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 blockhash_resp = self.get_recent_blockhash()
                 recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
         txn.recent_blockhash = recent_blockhash
+
+        if all([type(signer) is Account for signer in signers]):
+            signers = tuple([Keypair(signer.key) for signer in signers])
 
         txn.sign(*signers)
         txn_resp = self.send_raw_transaction(txn.serialize(), opts=opts)
