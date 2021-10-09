@@ -1,7 +1,7 @@
 version: '3'
 services:
   localnet:
-    image: "solanalabs/solana:stable"
+    image: "solanalabs/solana:v1.7.12"
     ports:
       - "8899:8899"
       - "8900:8900"
