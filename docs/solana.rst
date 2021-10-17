@@ -42,6 +42,11 @@ solana.sysvar
 .. automodule:: solana.sysvar
    :members:
 
+solana.system_program
+----------------------
+.. automodule:: solana.system_program
+   :members:
+
 
 solana.transaction
 ------------------
