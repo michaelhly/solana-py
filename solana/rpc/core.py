@@ -25,6 +25,10 @@ class RPCException(Exception):
     """Raised when RPC method returns an error result."""
 
 
+class UnconfirmedTxError(Exception):
+    """Raise when confirming a transaction times out."""
+
+
 class _ClientCore:  # pylint: disable=too-few-public-methods
     _comm_key = "commitment"
     _encoding_key = "encoding"

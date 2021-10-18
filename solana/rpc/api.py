@@ -1,7 +1,7 @@
 """API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
 from __future__ import annotations
 
-from time import sleep
+from time import sleep, time
 from typing import List, Optional, Union
 from warnings import warn
 
@@ -11,8 +11,8 @@ from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
-from .commitment import Commitment, Finalized
-from .core import _ClientCore, RPCException
+from .commitment import Commitment, Finalized, COMMITMENT_RANKS
+from .core import _ClientCore, RPCException, UnconfirmedTxError
 from .providers import http
 
 
@@ -1118,32 +1118,32 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self._provider.logger.info(
             "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
         )
-        return self.__confirm_transaction(resp["result"], conf_comm)
+        self.confirm_transaction(resp["result"], conf_comm)
+        return resp
 
-    def __confirm_transaction(self, tx_sig: str, commitment: Optional[Commitment] = None) -> types.RPCResponse:
-        # TODO: Use websockets and check confirmation with onSignature subscription.
-        TIMEOUT = 30  # 30 seconds  pylint: disable=invalid-name
-        elapsed_time = 0
-        while elapsed_time < TIMEOUT:
-            sleep_time = 3
-            if not elapsed_time:
-                sleep_time = 7 if (commitment or self._commitment) == Finalized else sleep_time
-                sleep(sleep_time)
-            else:
-                sleep(sleep_time)
+    def confirm_transaction(
+        self, tx_sig: str, commitment: Commitment = Finalized, sleep_seconds: int = 0.5
+    ) -> types.RPCResponse:
+        """Confirm the transaction identified by the specified signature.
 
-            resp = self.get_confirmed_transaction(tx_sig)
-            if resp["result"]:
-                break
-            elapsed_time += sleep_time
-
-        maybe_rpc_error = resp.get("error")
-        if maybe_rpc_error is not None:
-            raise RPCException(maybe_rpc_error)
-        if not resp["result"]:
-            raise Exception(f"Unable to confirm transaction {tx_sig}")
-        meta_err = resp["result"].get("meta").get("err")
-        if meta_err:
-            self._provider.logger.error("Transaction error: %s", meta_err)
-
+        :param tx_sig: the transaction signature to confirm.
+        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        :param sleep_seconds: The number of seconds to sleep when polling the signature status.
+        """
+        timeout = time() + 30
+        while time() < timeout:
+            resp = self.get_signature_statuses([tx_sig])
+            resp_value = resp["result"]["value"][0]
+            if resp_value is not None:
+                confirmation_status = resp_value["confirmationStatus"]
+                confirmation_rank = COMMITMENT_RANKS[confirmation_status]
+                commitment_rank = COMMITMENT_RANKS[commitment]
+                if confirmation_rank >= commitment_rank:
+                    break
+            sleep(sleep_seconds)
+        else:
+            maybe_rpc_error = resp.get("error")
+            if maybe_rpc_error is not None:
+                raise RPCException(maybe_rpc_error)
+            raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
         return resp

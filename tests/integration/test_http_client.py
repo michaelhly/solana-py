@@ -2,24 +2,24 @@
 import pytest
 
 import solana.system_program as sp
-from solana.rpc.api import DataSliceOpt
+from solana.rpc.api import DataSliceOpt, Client
+from solana.keypair import Keypair
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response, confirm_transaction, generate_expected_meta_after_airdrop
+from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
-def test_request_air_drop(stubbed_sender, test_http_client):
+def test_request_air_drop(stubbed_sender: Keypair, test_http_client: Client):
     """Test air drop to stubbed_sender."""
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
-    resp = confirm_transaction(test_http_client, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = generate_expected_meta_after_airdrop(resp)
-    assert resp["result"]["meta"] == expected_meta
+    test_http_client.confirm_transaction(resp["result"])
+    balance = test_http_client.get_balance(stubbed_sender.public_key)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -27,10 +27,9 @@ def test_request_air_drop_prefetched_blockhash(stubbed_sender_prefetched_blockha
     """Test air drop to stubbed_sender."""
     resp = test_http_client.request_airdrop(stubbed_sender_prefetched_blockhash.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
-    resp = confirm_transaction(test_http_client, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = generate_expected_meta_after_airdrop(resp)
-    assert resp["result"]["meta"] == expected_meta
+    test_http_client.confirm_transaction(resp["result"])
+    balance = test_http_client.get_balance(stubbed_sender_prefetched_blockhash.public_key)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -38,10 +37,10 @@ def test_request_air_drop_cached_blockhash(stubbed_sender_cached_blockhash, test
     """Test air drop to stubbed_sender."""
     resp = test_http_client.request_airdrop(stubbed_sender_cached_blockhash.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
-    resp = confirm_transaction(test_http_client, resp["result"])
+    test_http_client.confirm_transaction(resp["result"])
     assert_valid_response(resp)
-    expected_meta = generate_expected_meta_after_airdrop(resp)
-    assert resp["result"]["meta"] == expected_meta
+    balance = test_http_client.get_balance(stubbed_sender_cached_blockhash.public_key)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -63,32 +62,7 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
     # Confirm transaction
-    resp = confirm_transaction(test_http_client, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999994000, 954, 1],
-        "postTokenBalances": [],
-        "preBalances": [10000000000, 0, 1],
-        "preTokenBalances": [],
-        "rewards": [
-            {
-                "commission": None,
-                "lamports": -46,
-                "postBalance": 954,
-                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99",
-                "rewardType": "Rent",
-            }
-        ],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    test_http_client.confirm_transaction(resp["result"])
     # Check balances
     resp = test_http_client.get_balance(stubbed_sender.public_key)
     assert_valid_response(resp)
@@ -119,32 +93,7 @@ def test_send_transaction_prefetched_blockhash(
     )
     assert_valid_response(resp)
     # Confirm transaction
-    resp = confirm_transaction(test_http_client, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999994000, 954, 1],
-        "postTokenBalances": [],
-        "preBalances": [10000000000, 0, 1],
-        "preTokenBalances": [],
-        "rewards": [
-            {
-                "commission": None,
-                "lamports": -46,
-                "postBalance": 954,
-                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97",
-                "rewardType": "Rent",
-            }
-        ],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    test_http_client.confirm_transaction(resp["result"])
     # Check balances
     resp = test_http_client.get_balance(stubbed_sender_prefetched_blockhash.public_key)
     assert_valid_response(resp)
@@ -177,32 +126,7 @@ def test_send_transaction_cached_blockhash(
     assert len(test_http_client_cached_blockhash.blockhash_cache.used_blockhashes) == 1
     assert_valid_response(resp)
     # Confirm transaction
-    resp = confirm_transaction(test_http_client_cached_blockhash, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999994000, 954, 1],
-        "postTokenBalances": [],
-        "preBalances": [10000000000, 0, 1],
-        "preTokenBalances": [],
-        "rewards": [
-            {
-                "commission": None,
-                "lamports": -46,
-                "postBalance": 954,
-                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i95",
-                "rewardType": "Rent",
-            }
-        ],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    test_http_client_cached_blockhash.confirm_transaction(resp["result"])
     # Check balances
     resp = test_http_client_cached_blockhash.get_balance(stubbed_sender_cached_blockhash.public_key)
     assert_valid_response(resp)
@@ -227,24 +151,7 @@ def test_send_transaction_cached_blockhash(
     assert len(test_http_client_cached_blockhash.blockhash_cache.used_blockhashes) in (1, 2)
     assert_valid_response(resp)
     # Confirm transaction
-    resp = confirm_transaction(test_http_client_cached_blockhash, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999987000, 2954, 1],
-        "postTokenBalances": [],
-        "preBalances": [9999994000, 954, 1],
-        "preTokenBalances": [],
-        "rewards": [],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    test_http_client_cached_blockhash.confirm_transaction(resp["result"])
     # Check balances
     resp = test_http_client_cached_blockhash.get_balance(stubbed_sender_cached_blockhash.public_key)
     assert_valid_response(resp)
@@ -270,24 +177,7 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
     resp = test_http_client.send_raw_transaction(transfer_tx.serialize())
     assert_valid_response(resp)
     # Confirm transaction
-    resp = confirm_transaction(test_http_client, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999988000, 1954, 1],
-        "postTokenBalances": [],
-        "preBalances": [9999994000, 954, 1],
-        "preTokenBalances": [],
-        "rewards": [],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    test_http_client.confirm_transaction(resp["result"])
     # Check balances
     resp = test_http_client.get_balance(stubbed_sender.public_key)
     assert_valid_response(resp)
