@@ -9,7 +9,7 @@ from solana.utils.helpers import decode_byte_string
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response
+from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
@@ -18,8 +18,8 @@ from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response
 async def test_token(async_stubbed_sender, freeze_authority, test_http_client_async) -> AsyncToken:
     """Test create mint."""
     resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key, AIRDROP_AMOUNT)
-    confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(confirmed)
+    await test_http_client_async.confirm_transaction(resp["result"])
+    assert_valid_response(resp)
 
     expected_decimals = 6
     token_client = await AsyncToken.create_mint(
@@ -320,8 +320,8 @@ async def test_approve(
         owner=async_stubbed_sender.public_key,
         amount=expected_amount_delegated,
     )
-    confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(confirmed)
+    await test_http_client_async.confirm_transaction(resp["result"])
+    assert_valid_response(resp)
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.delegate == async_stubbed_receiver
     assert account_info.delegated_amount == expected_amount_delegated
@@ -346,8 +346,8 @@ async def test_revoke(
         account=async_stubbed_sender_token_account_pk,
         owner=async_stubbed_sender.public_key,
     )
-    revoke_confirmed = await aconfirm_transaction(test_http_client_async, revoke_resp["result"])
-    assert_valid_response(revoke_confirmed)
+    await test_http_client_async.confirm_transaction(revoke_resp["result"])
+    assert_valid_response(revoke_resp)
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.delegate is None
     assert account_info.delegated_amount == 0
@@ -371,8 +371,8 @@ async def test_approve_checked(
         amount=expected_amount_delegated,
         decimals=6,
     )
-    confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(confirmed)
+    await test_http_client_async.confirm_transaction(resp["result"])
+    assert_valid_response(resp)
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.delegate == async_stubbed_receiver
     assert account_info.delegated_amount == expected_amount_delegated
@@ -385,15 +385,15 @@ async def test_freeze_account(
 ):  # pylint: disable=redefined-outer-name
     """Test freezing an account."""
     resp = await test_http_client_async.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
-    confirmed = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(confirmed)
+    await test_http_client_async.confirm_transaction(resp["result"])
+    assert_valid_response(resp)
 
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
     freeze_resp = await test_token.freeze_account(async_stubbed_sender_token_account_pk, freeze_authority)
-    freeze_confirmed = await aconfirm_transaction(test_http_client_async, freeze_resp["result"])
-    assert_valid_response(freeze_confirmed)
+    await test_http_client_async.confirm_transaction(freeze_resp["result"])
+    assert_valid_response(freeze_resp)
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
 
@@ -404,13 +404,12 @@ async def test_thaw_account(
     async_stubbed_sender_token_account_pk, freeze_authority, test_token, test_http_client_async
 ):  # pylint: disable=redefined-outer-name
     """Test thawing an account."""
-
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
 
     thaw_resp = await test_token.thaw_account(async_stubbed_sender_token_account_pk, freeze_authority)
-    thaw_confirmed = await aconfirm_transaction(test_http_client_async, thaw_resp["result"])
-    assert_valid_response(thaw_confirmed)
+    await test_http_client_async.confirm_transaction(thaw_resp["result"])
+    assert_valid_response(thaw_resp)
     account_info = await test_token.get_account_info(async_stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
@@ -425,7 +424,6 @@ async def test_close_account(
     test_http_client_async,
 ):  # pylint: disable=redefined-outer-name
     """Test closing a token account."""
-
     create_resp = await test_http_client_async.get_account_info(async_stubbed_sender_token_account_pk)
     assert_valid_response(create_resp)
     assert create_resp["result"]["value"]["data"]
@@ -435,8 +433,8 @@ async def test_close_account(
         dest=async_stubbed_receiver_token_account_pk,
         authority=async_stubbed_sender,
     )
-    close_confirmed = await aconfirm_transaction(test_http_client_async, close_resp["result"])
-    assert_valid_response(close_confirmed)
+    await test_http_client_async.confirm_transaction(close_resp["result"])
+    assert_valid_response(close_resp)
 
     info_resp = await test_http_client_async.get_account_info(async_stubbed_sender_token_account_pk)
     assert_valid_response(info_resp)

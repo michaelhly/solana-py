@@ -9,7 +9,7 @@ from solana.utils.helpers import decode_byte_string
 from spl.token.client import Token
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response, confirm_transaction
+from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
@@ -17,7 +17,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response, confirm_transaction
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
+    test_http_client.confirm_transaction(resp["result"])
 
     expected_decimals = 6
     token_client = Token.create_mint(
@@ -294,7 +294,8 @@ def test_approve(
         owner=stubbed_sender.public_key,
         amount=expected_amount_delegated,
     )
-    assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
+    assert_valid_response(resp)
+    test_http_client.confirm_transaction(resp["result"])
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
     assert account_info.delegated_amount == expected_amount_delegated
@@ -314,7 +315,8 @@ def test_revoke(
         account=stubbed_sender_token_account_pk,
         owner=stubbed_sender.public_key,
     )
-    assert_valid_response(confirm_transaction(test_http_client, revoke_resp["result"]))
+    assert_valid_response(revoke_resp)
+    test_http_client.confirm_transaction(revoke_resp["result"])
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate is None
     assert account_info.delegated_amount == 0
@@ -333,7 +335,8 @@ def test_approve_checked(
         amount=expected_amount_delegated,
         decimals=6,
     )
-    assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
+    assert_valid_response(resp)
+    test_http_client.confirm_transaction(resp["result"])
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
     assert account_info.delegated_amount == expected_amount_delegated
@@ -345,13 +348,15 @@ def test_freeze_account(
 ):  # pylint: disable=redefined-outer-name
     """Test freezing an account."""
     resp = test_http_client.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
-    assert_valid_response(confirm_transaction(test_http_client, resp["result"]))
+    assert_valid_response(resp)
+    test_http_client.confirm_transaction(resp["result"])
 
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
     freeze_resp = test_token.freeze_account(stubbed_sender_token_account_pk, freeze_authority)
-    assert_valid_response(confirm_transaction(test_http_client, freeze_resp["result"]))
+    assert_valid_response(freeze_resp)
+    test_http_client.confirm_transaction(freeze_resp["result"])
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
 
@@ -365,7 +370,8 @@ def test_thaw_account(
     assert account_info.is_frozen is True
 
     thaw_resp = test_token.thaw_account(stubbed_sender_token_account_pk, freeze_authority)
-    assert_valid_response(confirm_transaction(test_http_client, thaw_resp["result"]))
+    assert_valid_response(thaw_resp)
+    test_http_client.confirm_transaction(thaw_resp["result"])
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
@@ -375,7 +381,6 @@ def test_close_account(
     stubbed_sender, stubbed_sender_token_account_pk, stubbed_receiver_token_account_pk, test_token, test_http_client
 ):  # pylint: disable=redefined-outer-name
     """Test closing a token account."""
-
     create_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(create_resp)
     assert create_resp["result"]["value"]["data"]
@@ -383,7 +388,8 @@ def test_close_account(
     close_resp = test_token.close_account(
         account=stubbed_sender_token_account_pk, dest=stubbed_receiver_token_account_pk, authority=stubbed_sender
     )
-    assert_valid_response(confirm_transaction(test_http_client, close_resp["result"]))
+    assert_valid_response(close_resp)
+    test_http_client.confirm_transaction(close_resp["result"])
 
     info_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(info_resp)

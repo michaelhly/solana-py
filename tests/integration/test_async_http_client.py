@@ -3,24 +3,25 @@ import pytest
 
 import solana.system_program as sp
 from solana.rpc.api import DataSliceOpt
+from solana.rpc.async_api import AsyncClient
+from solana.keypair import Keypair
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
-from .utils import AIRDROP_AMOUNT, aconfirm_transaction, assert_valid_response, generate_expected_meta_after_airdrop
+from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_request_air_drop(async_stubbed_sender, test_http_client_async):
+async def test_request_air_drop(async_stubbed_sender: Keypair, test_http_client_async: AsyncClient):
     """Test air drop to async_stubbed_sender."""
     resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
-    resp = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = generate_expected_meta_after_airdrop(resp)
-    assert resp["result"]["meta"] == expected_meta
+    await test_http_client_async.confirm_transaction(resp["result"])
+    balance = await test_http_client_async.get_balance(async_stubbed_sender.public_key)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -31,10 +32,9 @@ async def test_request_air_drop_prefetched_blockhash(async_stubbed_sender_prefet
         async_stubbed_sender_prefetched_blockhash.public_key, AIRDROP_AMOUNT
     )
     assert_valid_response(resp)
-    resp = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = generate_expected_meta_after_airdrop(resp)
-    assert resp["result"]["meta"] == expected_meta
+    await test_http_client_async.confirm_transaction(resp["result"])
+    balance = await test_http_client_async.get_balance(async_stubbed_sender_prefetched_blockhash.public_key)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -47,10 +47,11 @@ async def test_request_air_drop_cached_blockhash(
         async_stubbed_sender_cached_blockhash.public_key, AIRDROP_AMOUNT
     )
     assert_valid_response(resp)
-    resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = generate_expected_meta_after_airdrop(resp)
-    assert resp["result"]["meta"] == expected_meta
+    await test_http_client_async_cached_blockhash.confirm_transaction(resp["result"])
+    balance = await test_http_client_async_cached_blockhash.get_balance(
+        async_stubbed_sender_cached_blockhash.public_key
+    )
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -78,32 +79,7 @@ async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stub
     resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender)
     assert_valid_response(resp)
     # Confirm transaction
-    resp = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999994000, 954, 1],
-        "postTokenBalances": [],
-        "preBalances": [10000000000, 0, 1],
-        "preTokenBalances": [],
-        "rewards": [
-            {
-                "commission": None,
-                "lamports": -46,
-                "postBalance": 954,
-                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98",
-                "rewardType": "Rent",
-            }
-        ],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    await test_http_client_async.confirm_transaction(resp["result"])
     # Check balances
     resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key)
     assert_valid_response(resp)
@@ -132,32 +108,7 @@ async def test_send_transaction_prefetched_blockhash(
     resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender_prefetched_blockhash)
     assert_valid_response(resp)
     # Confirm transaction
-    resp = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999994000, 954, 1],
-        "postTokenBalances": [],
-        "preBalances": [10000000000, 0, 1],
-        "preTokenBalances": [],
-        "rewards": [
-            {
-                "commission": None,
-                "lamports": -46,
-                "postBalance": 954,
-                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96",
-                "rewardType": "Rent",
-            }
-        ],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    await test_http_client_async.confirm_transaction(resp["result"])
     # Check balances
     resp = await test_http_client_async.get_balance(async_stubbed_sender_prefetched_blockhash.public_key)
     assert_valid_response(resp)
@@ -195,32 +146,7 @@ async def test_send_transaction_cached_blockhash(
     assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) == 1
     assert_valid_response(resp)
     # Confirm transaction
-    resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999994000, 954, 1],
-        "postTokenBalances": [],
-        "preBalances": [10000000000, 0, 1],
-        "preTokenBalances": [],
-        "rewards": [
-            {
-                "commission": None,
-                "lamports": -46,
-                "postBalance": 954,
-                "pubkey": "J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i94",
-                "rewardType": "Rent",
-            }
-        ],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    await test_http_client_async_cached_blockhash.confirm_transaction(resp["result"])
     # Check balances
     resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.public_key)
     assert_valid_response(resp)
@@ -247,24 +173,7 @@ async def test_send_transaction_cached_blockhash(
     assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) in (1, 2)
     assert_valid_response(resp)
     # Confirm transaction
-    resp = await aconfirm_transaction(test_http_client_async_cached_blockhash, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999987000, 2954, 1],
-        "postTokenBalances": [],
-        "preBalances": [9999994000, 954, 1],
-        "preTokenBalances": [],
-        "rewards": [],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    resp = await test_http_client_async_cached_blockhash.confirm_transaction(resp["result"])
     # Check balances
     resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.public_key)
     assert_valid_response(resp)
@@ -295,24 +204,7 @@ async def test_send_raw_transaction_and_get_balance(
     resp = await test_http_client_async.send_raw_transaction(transfer_tx.serialize())
     assert_valid_response(resp)
     # Confirm transaction
-    resp = await aconfirm_transaction(test_http_client_async, resp["result"])
-    assert_valid_response(resp)
-    expected_meta = {
-        "err": None,
-        "fee": 5000,
-        "innerInstructions": [],
-        "logMessages": [
-            "Program 11111111111111111111111111111111 invoke [1]",
-            "Program 11111111111111111111111111111111 success",
-        ],
-        "postBalances": [9999988000, 1954, 1],
-        "postTokenBalances": [],
-        "preBalances": [9999994000, 954, 1],
-        "preTokenBalances": [],
-        "rewards": [],
-        "status": {"Ok": None},
-    }
-    assert resp["result"]["meta"] == expected_meta
+    resp = await test_http_client_async.confirm_transaction(resp["result"])
     # Check balances
     resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key)
     assert_valid_response(resp)
@@ -320,6 +212,16 @@ async def test_send_raw_transaction_and_get_balance(
     resp = await test_http_client_async.get_balance(async_stubbed_receiver)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 1954
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_confirm_bad_signature(test_http_client_async: AsyncClient) -> None:
+    """Test that RPCException is raised when trying to confirm an invalid signature."""
+    with pytest.raises(RPCException) as exc_info:
+        await test_http_client_async.confirm_transaction("foo")
+    err_object = exc_info.value.args[0]
+    assert err_object == {"code": -32602, "message": "Invalid param: WrongSize"}
 
 
 @pytest.mark.integration
