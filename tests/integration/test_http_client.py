@@ -188,6 +188,15 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
 
 
 @pytest.mark.integration
+def test_confirm_bad_signature(test_http_client: Client) -> None:
+    """Test that RPCException is raised when trying to confirm an invalid signature."""
+    with pytest.raises(RPCException) as exc_info:
+        test_http_client.confirm_transaction("foo")
+    err_object = exc_info.value.args[0]
+    assert err_object == {"code": -32602, "message": "Invalid param: WrongSize"}
+
+
+@pytest.mark.integration
 def test_get_block_commitment(test_http_client):
     """Test get block commitment."""
     resp = test_http_client.get_block_commitment(5)

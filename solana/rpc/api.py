@@ -1133,6 +1133,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         timeout = time() + 30
         while time() < timeout:
             resp = self.get_signature_statuses([tx_sig])
+            maybe_rpc_error = resp.get("error")
+            if maybe_rpc_error is not None:
+                raise RPCException(maybe_rpc_error)
             resp_value = resp["result"]["value"][0]
             if resp_value is not None:
                 confirmation_status = resp_value["confirmationStatus"]

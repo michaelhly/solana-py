@@ -216,6 +216,16 @@ async def test_send_raw_transaction_and_get_balance(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_confirm_bad_signature(test_http_client_async: AsyncClient) -> None:
+    """Test that RPCException is raised when trying to confirm an invalid signature."""
+    with pytest.raises(RPCException) as exc_info:
+        await test_http_client_async.confirm_transaction("foo")
+    err_object = exc_info.value.args[0]
+    assert err_object == {"code": -32602, "message": "Invalid param: WrongSize"}
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 async def test_get_block_commitment(test_http_client_async):
     """Test get block commitment."""
     resp = await test_http_client_async.get_block_commitment(5)
