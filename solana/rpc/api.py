@@ -1122,7 +1122,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return resp
 
     def confirm_transaction(
-        self, tx_sig: str, commitment: Commitment = Finalized, sleep_seconds: int = 0.5
+        self, tx_sig: str, commitment: Commitment = Finalized, sleep_seconds: float = 0.5
     ) -> types.RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
