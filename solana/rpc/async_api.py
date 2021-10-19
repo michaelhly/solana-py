@@ -1048,17 +1048,17 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 try:
                     recent_blockhash = self.blockhash_cache.get()
                 except ValueError:
-                    blockhash_resp = await self.get_recent_blockhash()
+                    blockhash_resp = await self.get_recent_blockhash(Finalized)
                     recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
             else:
-                blockhash_resp = await self.get_recent_blockhash()
+                blockhash_resp = await self.get_recent_blockhash(Finalized)
                 recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
         txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
         txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts)
         if self.blockhash_cache:
-            blockhash_resp = await self.get_recent_blockhash()
+            blockhash_resp = await self.get_recent_blockhash(Finalized)
             self._process_blockhash_resp(blockhash_resp, used_immediately=False)
         return txn_resp
 
