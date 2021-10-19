@@ -23,7 +23,7 @@ class _HTTPProviderCore(FriendlyJsonSerde):
         """Init."""
         self._request_counter = itertools.count()
         self.endpoint_uri = get_default_endpoint() if not endpoint else URI(endpoint)
-        self.health_uri = URI(f"{self.endpoint_uri}/health")
+        self.health_uri = URI(f"{self.endpoint_uri}/getHealth")
 
     def _build_request_kwargs(
         self, request_id: int, method: RPCMethod, params: Tuple[Any, ...], is_async: bool
