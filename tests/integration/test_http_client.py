@@ -7,6 +7,7 @@ from solana.keypair import Keypair
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
 from solana.transaction import Transaction
+from solana.rpc.commitment import Finalized
 from spl.token.constants import WRAPPED_SOL_MINT
 
 from .utils import AIRDROP_AMOUNT, assert_valid_response
@@ -87,7 +88,7 @@ def test_send_transaction_prefetched_blockhash(
             )
         )
     )
-    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_recent_blockhash())
+    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_recent_blockhash(Finalized))
     resp = test_http_client.send_transaction(
         transfer_tx, stubbed_sender_prefetched_blockhash, recent_blockhash=recent_blockhash
     )
@@ -164,7 +165,7 @@ def test_send_transaction_cached_blockhash(
 def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client):
     """Test sending a raw transaction to localnet."""
     # Get a recent blockhash
-    resp = test_http_client.get_recent_blockhash()
+    resp = test_http_client.get_recent_blockhash(Finalized)
     assert_valid_response(resp)
     recent_blockhash = resp["result"]["value"]["blockhash"]
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
@@ -270,7 +271,7 @@ def test_get_epoch_schedule(test_http_client):
 @pytest.mark.integration
 def test_get_fee_calculator_for_blockhash(test_http_client):
     """Test get fee calculator for blockhash."""
-    resp = test_http_client.get_recent_blockhash()
+    resp = test_http_client.get_recent_blockhash(Finalized)
     assert_valid_response(resp)
     resp = test_http_client.get_fee_calculator_for_blockhash(resp["result"]["value"]["blockhash"])
     assert_valid_response(resp)
