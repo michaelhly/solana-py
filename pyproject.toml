@@ -1,9 +1,21 @@
 [tool.poetry]
 name = "solana"
-version = "0.18.0"
+version = "0.18.1"
 description = "Solana Python API"
 authors = ["Michael Huang <michaelhly@gmail.com>", "Kevin Heavey <heaveykevin2@gmail.com>"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/michaelhly/solanapy"
+documentation = "https://michaelhly.github.io/solana-py/"
+keywords = ["solana", "blockchain", "web3"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
 packages = [
     { include = "solana", from = "src" },
     { include = "spl", from = "src" },
