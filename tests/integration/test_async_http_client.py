@@ -62,7 +62,7 @@ async def test_send_invalid_transaction(test_http_client_async):
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
     with pytest.raises(RPCException) as exc_info:
         await test_http_client_async.send_raw_transaction(b"foo")
-    assert exc_info.value.args[0].keys() == RPCError.__annotations__.keys()
+    assert exc_info.value.args[0].keys() == RPCError.__annotations__.keys()  # pylint: disable=no-member
 
 
 @pytest.mark.integration
