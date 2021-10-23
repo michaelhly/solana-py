@@ -21,16 +21,25 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
+          python-version: 3.9
+
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.1.7
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Install dependencies
+        run: poetry install
 
       - name: Doc dependencies
-        run: pipenv lock -r > requirements.txt
+        run: poetry export -f requirements.txt --output requirements.txt
 
       - name: Sphinx Build
         uses: ammaraskar/sphinx-action@0.4
         with:
-          pre-build-command: apt-get update -y && apt-get install -y python3-dev build-essential libffi-dev && pip install sphinx_rtd_theme
           docs-folder: .
 
       - name: Deploy
