@@ -111,7 +111,7 @@ class Transaction:
 
         return self
 
-    def compile_message(self) -> Message:
+    def compile_message(self) -> Message:  # pylint: disable=too-many-locals
         """Compile transaction data."""
         if self.nonce_info and self.instructions[0] != self.nonce_info.nonce_instruction:
             self.recent_blockhash = self.nonce_info.nonce

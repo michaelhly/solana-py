@@ -8,8 +8,8 @@ from solana.keypair import Keypair
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
 from solana.transaction import Transaction
-from spl.token.constants import WRAPPED_SOL_MINT
 from solana.rpc.commitment import Finalized
+from spl.token.constants import WRAPPED_SOL_MINT
 
 from .utils import AIRDROP_AMOUNT, assert_valid_response
 

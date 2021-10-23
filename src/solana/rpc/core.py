@@ -1,7 +1,7 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
 from base64 import b64encode
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 try:
     from typing import Literal  # type: ignore
@@ -49,7 +49,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def __init__(self, commitment: Optional[Commitment] = None, blockhash_cache: Union[BlockhashCache, bool] = False):
         self._commitment = commitment or Finalized
         self.blockhash_cache: Union[BlockhashCache, Literal[False]] = (
-            BlockhashCache() if blockhash_cache is True else blockhash_cache
+            BlockhashCache()
+            if blockhash_cache is True
+            else cast(Union[BlockhashCache, Literal[False]], blockhash_cache)
         )
 
     def _get_balance_args(
