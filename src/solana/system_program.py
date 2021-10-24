@@ -500,7 +500,7 @@ def nonce_advance(params: AdvanceNonceParams) -> TransactionInstruction:
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
         dict(
             instruction_type=InstructionType.ADVANCE_NONCE_ACCOUNT,
-            args=dict(),
+            args={},
         )
     )
 

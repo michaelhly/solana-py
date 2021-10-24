@@ -146,7 +146,7 @@ class Message:
         return bytes(message_buffer)
 
     @staticmethod
-    def deserialize(raw_message: bytes) -> Message:
+    def deserialize(raw_message: bytes) -> Message:  # pylint: disable=too-many-locals
         """Deserialize raw message bytes.
 
         >>> raw_message = bytes.fromhex(

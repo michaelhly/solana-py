@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "solana"
+version = "0.18.2"
+description = "Solana Python API"
+authors = ["Michael Huang <michaelhly@gmail.com>", "Kevin Heavey <heaveykevin2@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/michaelhly/solanapy"
+documentation = "https://michaelhly.github.io/solana-py/"
+keywords = ["solana", "blockchain", "web3"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
+packages = [
+    { include = "solana", from = "src" },
+    { include = "spl", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+construct-typing = "^0.5.2"
+base58 = "^2.0.1"
+httpx = "^0.18.2"
+PyNaCl = "^1.4.0"
+requests = "^2.24"
+typing-extensions = "^3.10.0"
+cachetools = "^4.2.2"
+types-cachetools = "^4.2.4"
+
+[tool.poetry.dev-dependencies]
+black = "^21.9b0"
+pytest = "^6.2.5"
+pylint = "^2.11.1"
+mypy = "^0.910"
+pydocstyle = "^6.1.1"
+flake8 = "^4.0.1"
+isort = "^5.9.3"
+pytest-docker = "^0.10.3"
+Sphinx = "^4.2.0"
+bump2version = "^1.0.1"
+types-requests = "^2.25.11"
+pytest-asyncio = "^0.16.0"
+pytest-cov = "^3.0.0"
+sphinx-rtd-theme = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -385,7 +385,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             close_authority = PublicKey(decoded_data.owner)
 
         if mint != self.pubkey:
-            raise AttributeError("Invalid account mint: {} != {}".format(decoded_data.mint, self.pubkey))
+            raise AttributeError(f"Invalid account mint: {decoded_data.mint} != {self.pubkey}")
 
         return AccountInfo(
             mint,
