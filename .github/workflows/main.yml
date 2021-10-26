@@ -59,17 +59,18 @@ jobs:
         run: |
           make lint
 
-  integration_tests:
+  test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test_file:
+        test_path:
           [
-            'async_http_client',
-            'async_token_client',
-            'http_client',
-            'token_client',
+            'integration/test_async_http_client.py',
+            'integration/test_async_token_client.py',
+            'integration/test_http_client.py',
+            'integration/test_token_client.py',
+            'unit'
           ]
 
     steps:
@@ -111,71 +112,24 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
 
-      - name: Run integration tests
+      - name: Run tests
         run: |
-          poetry run pytest tests/integration/test_${{ matrix.test_file }}.py  --cov
+          poetry run pytest tests/${{ matrix.test_path }}  --cov
+
+      - name: Get uuid
+        id: uuid
+        run: |
+            echo "::set-output name=uuid::$(uuidgen)"
 
       - name: Upload partial coverage
         uses: actions/upload-artifact@v2
         with:
-          name: coverage${{ matrix.test_file }}
+          name: coverage${{ steps.uuid.outputs.uuid }}
           path: .coverage
 
-  unit_tests:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.9
-
-      #----------------------------------------------
-      #  -----  install & configure poetry  -----
-      #----------------------------------------------
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.1.10
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      #----------------------------------------------
-      #       load cached venv if cache exists
-      #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      #----------------------------------------------
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
-      #----------------------------------------------
-      # install your root project
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
-
-      - name: Run unit tests
-        run: |
-          poetry run pytest tests/unit/  --cov
-
-      - name: Upload partial coverage
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverageunit
-          path: .coverage
 
   coverage:
-    needs: [integration_tests, unit_tests]
+    needs: test
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
