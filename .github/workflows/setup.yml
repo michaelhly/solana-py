@@ -1,8 +1,11 @@
 name: 'Setup'
-description: 'Setup'
-runs:
-  using: "composite"
+on: workflow_call
+jobs:
+  name: "setup"
+  runs-on: ubuntu-latest
   steps:
+    - name: checkout repo
+      uses: actions/checkout@v2
     - name: Set up Python 3.9
       uses: actions/setup-python@v1
       with:

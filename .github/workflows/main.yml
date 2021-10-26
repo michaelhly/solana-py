@@ -16,14 +16,9 @@ jobs:
   lint:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    uses: michaelhly/solana-py/.github/workflows/setup.yml@7088188296
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: Setup
-        uses: ./.github/actions/setup
-
       - name: Run linters
         run: |
           make lint
@@ -31,6 +26,7 @@ jobs:
   integration_tests:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    uses: michaelhly/solana-py/.github/workflows/setup.yml@7088188296
     strategy:
       matrix:
         test_file:
@@ -62,6 +58,7 @@ jobs:
   unit_tests:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    uses: michaelhly/solana-py/.github/workflows/setup.yml@7088188296
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -84,6 +81,7 @@ jobs:
     needs: [integration_tests, unit_tests]
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    uses: michaelhly/solana-py/.github/workflows/setup.yml@7088188296
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
