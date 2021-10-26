@@ -12,71 +12,95 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  test:
+
+  lint:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run linters
+        run: |
+          make lint
+
+  integration_tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test_file:
+          [
+            'async_http_client',
+            'async_token_client',
+            'http_client',
+            'token_client',
+          ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.9
-
-      - name: Run image
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: 1.1.7
-
-      - name: Install test dependencies
-        run: |
-          poetry install
-
-      - name: Run linters
-        run: |
-          poetry run black --check --diff --line-length=120 src tests
-          poetry run pydocstyle src tests
-          poetry run flake8 src tests
-          poetry run mypy src
-          poetry run pylint --rcfile=.pylintrc src tests
-
-      - name: Run unit tests
-        run: |
-          poetry run pytest -m "not integration"
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: Run integration tests
         run: |
-          poetry run pytest -m integration
+          poetry run pytest tests/integration/test_{{ matrix.test_file }}.py  --cov
+
+      - name: Upload partial coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage${{ matrix.test_file }}
+          path: .coverage
+
+  unit_tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run unit tests
+        run: |
+          poetry run pytest unit/  --cov
+
+      - name: Upload partial coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverageunit
+          path: .coverage
 
   coverage:
+    needs: test
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.9
+      - name: Setup
+        uses: ./.github/actions/setup
 
-      - name: Run image
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: 1.1.7
+      - name: Download all coverage artifacts
+        # Downloads coverage1, coverage2, etc.
+        uses: actions/download-artifact@v2
 
-      - name: Install test dependencies
+      - name: Run coverage
         run: |
-          poetry install
+          coverage combine coverage*/.coverage*
+          coverage xml
 
-      - name: Generate coverage report
-        run: |
-          poetry run pytest --cov=./ --cov-report=xml
-
-      - name: Upload coverage to Codecovv
+      - name: Upload coverage to Codecov
         # You may pin to the exact commit or the version.
         # uses: codecov/codecov-action@6004246f47ab62d32be025ce173b241cd84ac58e
         uses: codecov/codecov-action@v1.0.13
