@@ -19,20 +19,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: 3.9
-
-      - name: Run image
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: 1.1.7
-
-      - name: Install dependencies
-        run: poetry install
-
-      - name: Install dependencies
-        run: poetry install
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: Doc dependencies
         run: poetry export --dev -f requirements.txt --output requirements.txt
