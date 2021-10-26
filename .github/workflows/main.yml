@@ -113,7 +113,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          poetry run pytest tests/integration/test_{{ matrix.test_file }}.py  --cov
+          poetry run pytest tests/integration/test_${{ matrix.test_file }}.py  --cov
 
       - name: Upload partial coverage
         uses: actions/upload-artifact@v2
@@ -166,7 +166,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          poetry run pytest unit/  --cov
+          poetry run pytest tests/unit/  --cov
 
       - name: Upload partial coverage
         uses: actions/upload-artifact@v2
