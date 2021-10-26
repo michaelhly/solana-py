@@ -224,7 +224,7 @@ jobs:
       - name: Run coverage
         run: |
           poetry run coverage combine coverage*/.coverage*
-          poetry coverage xml
+          poetry run coverage xml
 
       - name: Upload coverage to Codecov
         # You may pin to the exact commit or the version.
