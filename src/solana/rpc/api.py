@@ -1033,6 +1033,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             skip fetching the recent blockhash or relying on the cache.
 
         >>> from solana.keypair import Keypair
+        >>> from solana.publickey import PublicKey
+        >>> from solana.rpc.api import Client
         >>> from solana.system_program import TransferParams, transfer
         >>> from solana.transaction import Transaction
         >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
