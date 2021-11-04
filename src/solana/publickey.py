@@ -12,6 +12,7 @@ from solana.utils import ed25519_base, helpers
 class OnCurveException(Exception):
     """Raise when generated address is on the curve."""
 
+
 class PublicKey:
     """The public key of a keypair.
 
