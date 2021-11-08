@@ -199,8 +199,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         data_slice: Optional[types.DataSliceOpts],
         data_size: Optional[int],
         memcmp_opts: Optional[List[types.MemcmpOpts]],
+        allow_error: bool,
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:  # pylint: disable=too-many-arguments
-        opts: Dict[str, Any] = {"filters": []}
+        opts: Dict[str, Any] = {"filters": []} if not allow_error else {}
         for opt in [] if not memcmp_opts else memcmp_opts:
             opts["filters"].append({"memcmp": dict(opt._asdict())})
         if data_size:
@@ -209,7 +210,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             opts[self._data_slice_key] = dict(data_slice._asdict())
         if encoding:
             opts[self._encoding_key] = encoding
-        opts[self._comm_key] = commitment
+        if commitment:
+            opts[self._comm_key] = commitment
 
         return types.RPCMethod("getProgramAccounts"), str(pubkey), opts
 

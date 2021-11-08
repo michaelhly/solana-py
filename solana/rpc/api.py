@@ -714,9 +714,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         data_slice: Optional[types.DataSliceOpts] = None,
         data_size: Optional[int] = None,
         memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
+        allow_error: bool = False
     ) -> types.RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
-
+ 
         :param pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
         :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         :param encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
@@ -725,6 +726,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
         :param data_size: (optional) Option to compare the program account data length with the provided data size.
         :param memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
+        :param allow_error: (optional) Allow wrong aruments for method, like no section 'filter' in json.
 
         >>> solana_client = Client("http://localhost:8899")
         >>> memcmp_opts = [
@@ -744,11 +746,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_program_accounts_args(
             pubkey=pubkey,
-            commitment=commitment,
+            commitment=commitment if not allow_error else None,
             encoding=encoding,
             data_slice=data_slice,
             data_size=data_size,
             memcmp_opts=memcmp_opts,
+            allow_error=allow_error,
         )
         return self._provider.make_request(*args)
 
@@ -889,7 +892,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_token_accounts_by_delegate(
         self,
         delegate: PublicKey,
-        opts: types.TokenAccountOpts,
+        opts: Optional[types.TokenAccountOpts] = None,
         commitment: Optional[Commitment] = None,
     ) -> types.RPCResponse:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
