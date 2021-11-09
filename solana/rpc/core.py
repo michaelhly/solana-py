@@ -202,9 +202,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:  # pylint: disable=too-many-arguments
         opts: Dict[str, Any] = {}
         for opt in [] if not memcmp_opts else memcmp_opts:
-            opts.setdefault('filter', []).append({"memcmp": dict(opt._asdict())})
+            opts.setdefault('filters', []).append({"memcmp": dict(opt._asdict())})
         if data_size:
-            opts.setdefault('filter', []).append({"dataSize": data_size})
+            opts.setdefault('filters', []).append({"dataSize": data_size})
         if data_slice:
             opts[self._data_slice_key] = dict(data_slice._asdict())
         if encoding:
