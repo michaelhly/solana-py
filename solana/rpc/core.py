@@ -198,14 +198,13 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         encoding: Optional[str],
         data_slice: Optional[types.DataSliceOpts],
         data_size: Optional[int],
-        memcmp_opts: Optional[List[types.MemcmpOpts]],
-        allow_error: bool,
+        memcmp_opts: Optional[List[types.MemcmpOpts]]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:  # pylint: disable=too-many-arguments
-        opts: Dict[str, Any] = {"filters": []} if not allow_error else {}
+        opts: Dict[str, Any] = {}
         for opt in [] if not memcmp_opts else memcmp_opts:
-            opts["filters"].append({"memcmp": dict(opt._asdict())})
+            opts.setdefault('filter', []).append({"memcmp": dict(opt._asdict())})
         if data_size:
-            opts["filters"].append({"dataSize": data_size})
+            opts.setdefault('filter', []).append({"dataSize": data_size})
         if data_slice:
             opts[self._data_slice_key] = dict(data_slice._asdict())
         if encoding:
@@ -213,7 +212,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if commitment:
             opts[self._comm_key] = commitment
 
-        return types.RPCMethod("getProgramAccounts"), str(pubkey), opts
+        if not opts:
+            return types.RPCMethod("getProgramAccounts"), str(pubkey)
+        else:
+            return types.RPCMethod("getProgramAccounts"), str(pubkey), opts
 
     def _get_recent_blockhash_args(
         self, commitment: Optional[Commitment]
@@ -264,7 +266,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getTokenAccountBalance"), str(pubkey), {self._comm_key: commitment or self._commitment}
 
     def _get_token_accounts_by_delegate_args(
-        self, delegate: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+        self, delegate: PublicKey, opts: Optional[types.TokenAccountOpts], commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, str, types.TokenAccountOpts, Commitment]:
         return types.RPCMethod("getTokenAccountsByDelegate"), str(delegate), opts, commitment or self._commitment
 
@@ -277,9 +279,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         method: types.RPCMethod,
         pubkey: str,
-        opts: types.TokenAccountOpts,
+        opts: Optional[types.TokenAccountOpts],
         commitment: Commitment,
     ) -> Tuple[types.RPCMethod, str, Dict[str, str], Dict[str, Any]]:
+        if not opts:
+            return method, pubkey
         if not opts.mint and not opts.program_id:
             raise ValueError("Please provide one of mint or program_id")
 

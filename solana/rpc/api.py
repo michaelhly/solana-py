@@ -713,8 +713,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         encoding: Optional[str] = None,
         data_slice: Optional[types.DataSliceOpts] = None,
         data_size: Optional[int] = None,
-        memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
-        allow_error: bool = False
+        memcmp_opts: Optional[List[types.MemcmpOpts]] = None
     ) -> types.RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
  
@@ -746,12 +745,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_program_accounts_args(
             pubkey=pubkey,
-            commitment=commitment if not allow_error else None,
+            commitment=commitment,
             encoding=encoding,
             data_slice=data_slice,
             data_size=data_size,
-            memcmp_opts=memcmp_opts,
-            allow_error=allow_error,
+            memcmp_opts=memcmp_opts
         )
         return self._provider.make_request(*args)
 
@@ -893,7 +891,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         delegate: PublicKey,
         opts: Optional[types.TokenAccountOpts] = None,
-        commitment: Optional[Commitment] = None,
+        commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
 
