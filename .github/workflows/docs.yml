@@ -61,7 +61,7 @@ jobs:
 
 
       - name: Doc dependencies
-        run: poetry export --dev -f requirements.txt --output requirements.txt
+        run: poetry export --dev --without-hashes -f requirements.txt --output requirements.txt
 
       - name: Sphinx Build
         uses: ammaraskar/sphinx-action@0.4
