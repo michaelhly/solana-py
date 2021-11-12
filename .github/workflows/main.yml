@@ -12,64 +12,190 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  test:
+
+  lint:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.9
 
-      - name: Install pipenv
-        uses: dschep/install-pipenv-action@v1
-
-      - name: Install test dependencies
-        run: |
-          pipenv run install-ci-deps
+      #----------------------------------------------
+      #  -----  install & configure poetry  -----
+      #----------------------------------------------
+      - name: Load cached Poetry installation
+        uses: actions/cache@v2
+        with:
+          path: ~/.local  # the path depends on the OS
+          key: poetry-0  # increment to reset cache
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.1.10
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      #----------------------------------------------
+      #       load cached venv if cache exists
+      #----------------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      #----------------------------------------------
+      # install dependencies if cache does not exist
+      #----------------------------------------------
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+      #----------------------------------------------
+      # install your root project
+      #----------------------------------------------
+      - name: Install library
+        run: poetry install --no-interaction
 
       - name: Run linters
         run: |
-          pipenv run black --check --diff --line-length=120 setup.py solana spl tests
-          pipenv run pydocstyle setup.py solana spl/**/*.py tests
-          pipenv run flake8 setup.py solana spl tests
-          pipenv run mypy solana spl
-          pipenv run pylint --rcfile=.pylintrc setup.py solana spl tests
+          make lint
 
-      - name: Run unit tests
-        run: |
-          pipenv run pytest -m "not integration"
+  tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test_path:
+          [
+            'integration/test_async_http_client.py',
+            'integration/test_async_token_client.py',
+            'integration/test_http_client.py',
+            'integration/test_token_client.py',
+            'unit'
+          ]
 
-      - name: Run integration tests
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      #----------------------------------------------
+      #  -----  install & configure poetry  -----
+      #----------------------------------------------
+      - name: Load cached Poetry installation
+        uses: actions/cache@v2
+        with:
+          path: ~/.local  # the path depends on the OS
+          key: poetry-0  # increment to reset cache
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.1.10
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      #----------------------------------------------
+      #       load cached venv if cache exists
+      #----------------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      #----------------------------------------------
+      # install dependencies if cache does not exist
+      #----------------------------------------------
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+      #----------------------------------------------
+      # install your root project
+      #----------------------------------------------
+      - name: Install library
+        run: poetry install --no-interaction
+
+      - name: Run tests
         run: |
-          pipenv run pytest -m integration
+          poetry run pytest tests/${{ matrix.test_path }}  --cov
+
+      - name: Get uuid
+        id: uuid
+        run: |
+            echo "::set-output name=uuid::$(uuidgen)"
+
+      - name: Upload partial coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage${{ steps.uuid.outputs.uuid }}
+          path: .coverage
+
 
   coverage:
+    needs: tests
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.9
 
-      - name: Install pipenv
-        uses: dschep/install-pipenv-action@v1
+      #----------------------------------------------
+      #  -----  install & configure poetry  -----
+      #----------------------------------------------
+      - name: Load cached Poetry installation
+        uses: actions/cache@v2
+        with:
+          path: ~/.local  # the path depends on the OS
+          key: poetry-0  # increment to reset cache
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.1.10
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      #----------------------------------------------
+      #       load cached venv if cache exists
+      #----------------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      #----------------------------------------------
+      # install dependencies if cache does not exist
+      #----------------------------------------------
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+      #----------------------------------------------
+      # install your root project
+      #----------------------------------------------
+      - name: Install library
+        run: poetry install --no-interaction
 
-      - name: Generate coverage report
+      - name: Download all coverage artifacts
+        # Downloads coverage1, coverage2, etc.
+        uses: actions/download-artifact@v2
+
+      - name: Run coverage
         run: |
-          pipenv install --dev --skip-lock pytest pytest-cov pytest-docker
-          pipenv run pytest --cov=./ --cov-report=xml
+          poetry run coverage combine coverage*/.coverage*
+          poetry run coverage xml
 
-      - name: Upload coverage to Codecovv
+      - name: Upload coverage to Codecov
         # You may pin to the exact commit or the version.
         # uses: codecov/codecov-action@6004246f47ab62d32be025ce173b241cd84ac58e
         uses: codecov/codecov-action@v1.0.13
@@ -80,3 +206,11 @@ jobs:
           env_vars: OS,PYTHON
           # Specify whether or not CI build should fail if Codecov runs into an error during upload
           fail_ci_if_error: true
+
+  test:
+    # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+    - name: note that all tests succeeded
+      run: echo "🎉"

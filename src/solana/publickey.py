@@ -9,6 +9,10 @@ import base58
 from solana.utils import ed25519_base, helpers
 
 
+class OnCurveException(Exception):
+    """Raise when generated address is on the curve."""
+
+
 class PublicKey:
     """The public key of a keypair.
 
@@ -76,7 +80,7 @@ class PublicKey:
         hashbytes: bytes = sha256(buffer).digest()
         if not PublicKey._is_on_curve(hashbytes):
             return PublicKey(hashbytes)
-        raise Exception("Invalid seeds, address must fall off the curve")
+        raise OnCurveException("Invalid seeds, address must fall off the curve")
 
     @staticmethod
     def find_program_address(seeds: List[bytes], program_id: PublicKey) -> Tuple[PublicKey, int]:
@@ -91,7 +95,7 @@ class PublicKey:
             try:
                 buffer = seeds + [helpers.to_uint8_bytes(nonce)]
                 address = PublicKey.create_program_address(buffer, program_id)
-            except Exception:
+            except OnCurveException:
                 nonce -= 1
                 continue
             return address, nonce

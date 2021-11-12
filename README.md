@@ -60,22 +60,17 @@ asyncio.run(main())
 
 ### Setup
 
-1. Install pipenv.
-
+1. Install [poetry](https://python-poetry.org/docs/#installation)
+2. Install dev dependencies:
 ```sh
-brew install pipenv
+poetry install
+
 ```
 
-2. Install dev dependencies.
+3. Activate the poetry shell.
 
 ```sh
-pipenv install --dev
-```
-
-3. Activate the pipenv shell.
-
-```sh
-pipenv shell
+poetry shell
 ```
 
 ### Lint
@@ -101,7 +96,7 @@ Install [docker](https://docs.docker.com/get-started/).
 
 ```sh
 # Update/pull latest docker image
-pipenv run update-localnet
+make update-localnet
 # Start localnet instance
-pipenv run start-localnet
+make start-localnet
 ```
