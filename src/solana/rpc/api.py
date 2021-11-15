@@ -11,8 +11,8 @@ from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
-from .commitment import Commitment, Finalized, COMMITMENT_RANKS
-from .core import _ClientCore, RPCException, UnconfirmedTxError
+from .commitment import COMMITMENT_RANKS, Commitment, Finalized
+from .core import RPCException, UnconfirmedTxError, _ClientCore
 from .providers import http
 
 
@@ -272,7 +272,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(*args)
 
     def get_confirmed_signature_for_address2(
-        self, account: Union[str, Keypair, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
+        self,
+        account: Union[str, Keypair, PublicKey],
+        before: Optional[str] = None,
+        until: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -282,6 +286,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         :param account: Account to be queried.
         :param before: (optional) Start searching backwards from this transaction signature.
             If not provided the search starts from the top of the highest max confirmed block.
+        :param until: (optional) Search until this transaction signature, if found before limit reached.
         :param limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
 
         >>> solana_client = Client("http://localhost:8899")
@@ -293,11 +298,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
            'slot': 4290}],
          'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_confirmed_signature_for_address2_args(account, before, limit)
+        args = self._get_confirmed_signature_for_address2_args(account, before, until, limit)
         return self._provider.make_request(*args)
 
     def get_signatures_for_address(
-        self, account: Union[str, Keypair, PublicKey], before: Optional[str] = None, limit: Optional[int] = None
+        self,
+        account: Union[str, Keypair, PublicKey],
+        before: Optional[str] = None,
+        until: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -307,6 +316,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         :param account: Account to be queried.
         :param before: (optional) Start searching backwards from this transaction signature.
             If not provided the search starts from the top of the highest max confirmed block.
+        :param until: (optional) Search until this transaction signature, if found before limit reached.
         :param limit: (optional) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
 
         >>> solana_client = Client("http://localhost:8899")
@@ -318,7 +328,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
            'slot': 4290}],
          'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_signatures_for_address_args(account, before, limit)
+        args = self._get_signatures_for_address_args(account, before, until, limit)
         return self._provider.make_request(*args)
 
     def get_confirmed_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:

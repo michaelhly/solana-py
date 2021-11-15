@@ -91,7 +91,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _get_confirmed_signature_for_address2_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         warn(
             "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
@@ -101,6 +101,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         opts: Dict[str, Union[int, str]] = {}
         if before:
             opts["before"] = before
+        if until:
+            opts["until"] = until
         if limit:
             opts["limit"] = limit
 
@@ -112,11 +114,13 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _get_signatures_for_address_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         opts: Dict[str, Union[int, str]] = {}
         if before:
             opts["before"] = before
+        if until:
+            opts["until"] = until
         if limit:
             opts["limit"] = limit
 
