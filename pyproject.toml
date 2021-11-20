@@ -31,6 +31,8 @@ requests = "^2.24"
 typing-extensions = "^3.10.0"
 cachetools = "^4.2.2"
 types-cachetools = "^4.2.4"
+jsonrpcclient = "^4.0.1"
+websockets = "^10.1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
