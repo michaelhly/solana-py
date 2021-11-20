@@ -979,7 +979,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Requests an airdrop of lamports to a Pubkey.
 
         :param pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
-        :param lamports: Amout of lamports.
+        :param lamports: Amount of lamports.
         :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         >>> from solana.publickey import PublicKey
