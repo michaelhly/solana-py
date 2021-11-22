@@ -432,6 +432,40 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_transaction_args(tx_sig, encoding)
         return await self._provider.make_request(*args)
 
+    async def get_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
+        """Returns transaction details for a confirmed transaction.
+
+        :param tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
+            instruction parsers to return more human-readable and explicit data in the
+            `transaction.message.instructions` list.
+        :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+
+        >>> solana_client = AsyncClient("http://localhost:8899")
+        >>> asyncio.run(solana_client.get_transaction("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy")) # doctest: +SKIP
+        {'jsonrpc': '2.0',
+         'result': {'meta': {'err': None,
+           'fee': 5000, 'rewards': [],
+           'postBalances': [498449233720610510, 1000001001987940, 1],
+           'preBalances': [498449233721615510, 1000001000987940, 1],
+           'status': {'Ok': None}},
+          'slot': 1659335,
+          'transaction': {'message': {'accountKeys': ['9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g',
+             '2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1',
+             '11111111111111111111111111111111'],
+            'header': {'numReadonlySignedAccounts': 0,
+             'numReadonlyUnsignedAccounts': 1,
+             'numRequiredSignatures': 1},
+            'instructions': [{'accounts': [0, 1],
+              'data': '3Bxs4Bc3VYuGVB19',
+              'programIdIndex': 2}],
+            'recentBlockhash': 'FwcsKNptGtMLccXAA9YgnivVFK95mKzECLT1DNPi3SDr'},
+           'signatures': ['3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy']}},
+         'id': 4}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_transaction_args(tx_sig, encoding)
+        return await self._provider.make_request(*args)
+
     async def get_epoch_info(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns information about the current epoch.
 
