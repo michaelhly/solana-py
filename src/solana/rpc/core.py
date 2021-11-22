@@ -94,6 +94,12 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getConfirmedBlocks"), start_slot
 
     @staticmethod
+    def _get_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
+        if end_slot:
+            return types.RPCMethod("getBlocks"), start_slot, end_slot
+        return types.RPCMethod("getBlocks"), start_slot
+
+    @staticmethod
     def _get_confirmed_signature_for_address2_args(
         account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:

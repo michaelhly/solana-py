@@ -254,6 +254,13 @@ def test_get_confirmed_blocks(test_http_client):
 
 
 @pytest.mark.integration
+def test_get_blocks(test_http_client):
+    """Test get blocks."""
+    resp = test_http_client.get_blocks(5, 10)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
 def test_get_confirmed_signature_for_address2(test_http_client):
     """Test get confirmed signature for address2."""
     resp = test_http_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1)

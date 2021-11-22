@@ -291,6 +291,14 @@ async def test_get_confirmed_blocks(test_http_client_async):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_get_blocks(test_http_client_async):
+    """Test get blocks."""
+    resp = await test_http_client_async.get_blocks(5, 10)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 async def test_get_confirmed_signature_for_address2(test_http_client_async):
     """Test get confirmed signature for address2."""
     resp = await test_http_client_async.get_confirmed_signature_for_address2(

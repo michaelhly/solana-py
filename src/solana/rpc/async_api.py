@@ -325,6 +325,19 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_blocks_args(start_slot, end_slot)
         return await self._provider.make_request(*args)
 
+    async def get_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> types.RPCResponse:
+        """Returns a list of confirmed blocks.
+
+        :param start_slot: Start slot, as u64 integer.
+        :param end_slot: (optional) End slot, as u64 integer.
+
+        >>> solana_client = AsyncClient("http://localhost:8899")
+        >>> asyncio.run(solana_client.get_blocks(5, 10)) # doctest: +SKIP
+        {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
+        """
+        args = self._get_blocks_args(start_slot, end_slot)
+        return await self._provider.make_request(*args)
+
     async def get_confirmed_signature_for_address2(
         self,
         account: Union[str, Keypair, PublicKey],
