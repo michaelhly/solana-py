@@ -267,6 +267,22 @@ async def test_get_confirmed_block_with_encoding(test_http_client_async):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_get_block(test_http_client_async):
+    """Test get block."""
+    resp = await test_http_client_async.get_block(1)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_get_block_with_encoding(test_http_client_async):
+    """Test get block with encoding."""
+    resp = await test_http_client_async.get_block(1, encoding="base64")
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 async def test_get_confirmed_blocks(test_http_client_async):
     """Test get confirmed blocks."""
     resp = await test_http_client_async.get_confirmed_blocks(5, 10)

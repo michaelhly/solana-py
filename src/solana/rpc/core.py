@@ -84,6 +84,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getConfirmedBlock"), slot, encoding
 
     @staticmethod
+    def _get_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
+        return types.RPCMethod("getBlock"), slot, encoding
+
+    @staticmethod
     def _get_confirmed_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
         if end_slot:
             return types.RPCMethod("getConfirmedBlocks"), start_slot, end_slot

@@ -258,6 +258,63 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_block_args(slot, encoding)
         return self._provider.make_request(*args)
 
+    def get_block(
+        self,
+        slot: int,
+        encoding: str = "json",
+    ) -> types.RPCResponse:
+        """Returns identity and transaction information about a confirmed block in the ledger.
+
+        :param slot: Slot, as u64 integer.
+        :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
+            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+
+        >>> solana_client = Client("http://localhost:8899")
+        >>> solana_client.get_block(1) # doctest: +SKIP
+        {'jsonrpc': '2.0',
+         'result': {'blockTime': None, 'blockHeight': 0,
+          'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
+          'parentSlot': 0,
+          'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
+          'rewards': [],
+          'transactions': [{'meta': {'err': None,
+             'fee': 0,
+             'postBalances': [500000000000, 26858640, 1, 1, 1],
+             'preBalances': [500000000000, 26858640, 1, 1, 1],
+             'status': {'Ok': None}},
+            'transaction': {'message': {'accountKeys': ['LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
+               'EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po',
+               'SysvarS1otHashes111111111111111111111111111',
+               'SysvarC1ock11111111111111111111111111111111',
+               'Vote111111111111111111111111111111111111111'],
+              'header': {'numReadonlySignedAccounts': 0,
+               'numReadonlyUnsignedAccounts': 3,
+               'numRequiredSignatures': 1},
+              'instructions': [{'accounts': [1, 2, 3, 0],
+                'data': '37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q',
+                'programIdIndex': 4}],
+              'recentBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2'},
+             'signatures': ['63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE']}}]},
+         'id': 9}
+        >>> solana_client.get_block(1, encoding="base64") # doctest: +SKIP
+        {'jsonrpc': '2.0',
+         'result': {'blockTime': None, 'blockHeight': 0,
+          'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
+          'parentSlot': 0,
+          'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
+          'rewards': [],
+          'transactions': [{'meta': {'err': None,
+             'fee': 0,
+             'postBalances': [500000000000, 26858640, 1, 1, 1],
+             'preBalances': [500000000000, 26858640, 1, 1, 1],
+             'status': {'Ok': None}},
+            'transaction': ['AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==',
+             'base64']}]},
+         'id': 10}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_block_args(slot, encoding)
+        return self._provider.make_request(*args)
+
     def get_confirmed_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> types.RPCResponse:
         """Returns a list of confirmed blocks.
 
