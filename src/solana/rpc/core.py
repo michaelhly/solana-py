@@ -84,10 +84,20 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getConfirmedBlock"), slot, encoding
 
     @staticmethod
+    def _get_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
+        return types.RPCMethod("getBlock"), slot, encoding
+
+    @staticmethod
     def _get_confirmed_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
         if end_slot:
             return types.RPCMethod("getConfirmedBlocks"), start_slot, end_slot
         return types.RPCMethod("getConfirmedBlocks"), start_slot
+
+    @staticmethod
+    def _get_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
+        if end_slot:
+            return types.RPCMethod("getBlocks"), start_slot, end_slot
+        return types.RPCMethod("getBlocks"), start_slot
 
     @staticmethod
     def _get_confirmed_signature_for_address2_args(
@@ -133,6 +143,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _get_confirmed_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
         return types.RPCMethod("getConfirmedTransaction"), tx_sig, encoding
+
+    @staticmethod
+    def _get_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
+        return types.RPCMethod("getTransaction"), tx_sig, encoding
 
     def _get_epoch_info_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getEpochInfo"), {self._comm_key: commitment or self._commitment}

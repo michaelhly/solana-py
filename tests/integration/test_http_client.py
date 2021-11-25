@@ -233,9 +233,30 @@ def test_get_confirmed_block_with_encoding(test_http_client):
 
 
 @pytest.mark.integration
+def test_get_block(test_http_client):
+    """Test get block."""
+    resp = test_http_client.get_block(1)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_block_with_encoding(test_http_client):
+    """Test get block with encoding."""
+    resp = test_http_client.get_block(1, encoding="base64")
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
 def test_get_confirmed_blocks(test_http_client):
     """Test get confirmed blocks."""
     resp = test_http_client.get_confirmed_blocks(5, 10)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_blocks(test_http_client):
+    """Test get blocks."""
+    resp = test_http_client.get_blocks(5, 10)
     assert_valid_response(resp)
 
 
@@ -246,12 +267,11 @@ def test_get_confirmed_signature_for_address2(test_http_client):
     assert_valid_response(resp)
 
 
-# TODO(michael): This RPC call is only available in solana-core v1.7 or newer.
-# @pytest.mark.integration
-# def test_get_signatures_for_address(test_http_client):
-#     """Test get signatures for addresses."""
-#     resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
-#     assert_valid_response(resp)
+@pytest.mark.integration
+def test_get_signatures_for_address(test_http_client):
+    """Test get signatures for addresses."""
+    resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
+    assert_valid_response(resp)
 
 
 @pytest.mark.integration

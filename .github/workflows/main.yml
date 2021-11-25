@@ -27,11 +27,6 @@ jobs:
       #----------------------------------------------
       #  -----  install & configure poetry  -----
       #----------------------------------------------
-      - name: Load cached Poetry installation
-        uses: actions/cache@v2
-        with:
-          path: ~/.local  # the path depends on the OS
-          key: poetry-1  # increment to reset cache
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
@@ -89,11 +84,6 @@ jobs:
       #----------------------------------------------
       #  -----  install & configure poetry  -----
       #----------------------------------------------
-      - name: Load cached Poetry installation
-        uses: actions/cache@v2
-        with:
-          path: ~/.local  # the path depends on the OS
-          key: poetry-1  # increment to reset cache
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
@@ -153,11 +143,6 @@ jobs:
       #----------------------------------------------
       #  -----  install & configure poetry  -----
       #----------------------------------------------
-      - name: Load cached Poetry installation
-        uses: actions/cache@v2
-        with:
-          path: ~/.local  # the path depends on the OS
-          key: poetry-1  # increment to reset cache
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
