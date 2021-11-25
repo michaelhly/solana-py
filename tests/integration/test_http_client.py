@@ -267,12 +267,11 @@ def test_get_confirmed_signature_for_address2(test_http_client):
     assert_valid_response(resp)
 
 
-# TODO(michael): This RPC call is only available in solana-core v1.7 or newer.
-# @pytest.mark.integration
-# def test_get_signatures_for_address(test_http_client):
-#     """Test get signatures for addresses."""
-#     resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
-#     assert_valid_response(resp)
+@pytest.mark.integration
+def test_get_signatures_for_address(test_http_client):
+    """Test get signatures for addresses."""
+    resp = test_http_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)
+    assert_valid_response(resp)
 
 
 @pytest.mark.integration
