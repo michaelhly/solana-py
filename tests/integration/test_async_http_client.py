@@ -309,9 +309,9 @@ async def test_get_confirmed_signature_for_address2(test_http_client_async):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_get_signatures_for_address(test_http_client_async_async):
+async def test_get_signatures_for_address(test_http_client_async):
     """Test get signatures for addresses."""
-    resp = await test_http_client_async_async.get_signatures_for_address(
+    resp = await test_http_client_async.get_signatures_for_address(
         "Vote111111111111111111111111111111111111111", limit=1
     )
     assert_valid_response(resp)
