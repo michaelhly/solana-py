@@ -10,8 +10,40 @@ from solana.transaction import TransactionSignature
 MentionsFilter = dict[Literal["mentions"], str]
 
 
-@dataclass
-class AccountSubscribe:
+class HasDictParams:
+    def __init__(self, name: str, dict_params: Optional[dict[str, str]] = None) -> None:
+        self.name = name
+        self.dict_params: dict[str, str] = {} if dict_params is None else dict_params
+
+    def to_request(self) -> dict[str, Any]:
+        return request(self.name, params=self.dict_params)
+
+
+class HasEncoding(HasDictParams):
+    def __init__(self, name: str, encoding: Optional[str] = None) -> None:
+        dict_params: Optional[dict[str, str]] = None if encoding is None else {"encoding": encoding}
+        super().__init__(name, dict_params)
+
+
+class HasCommitment(HasDictParams):
+    def __init__(self, name: str, commitment: Optional[Commitment] = None) -> None:
+        dict_params: Optional[dict[str, str]] = None if commitment is None else {"commitment": commitment}
+        super().__init__(name, dict_params)
+
+
+class HasCommitmentAndEncoding(HasCommitment):
+    def __init__(self, name: str, commitment: Optional[Commitment] = None, encoding: Optional[str] = None) -> None:
+        super().__init__(name, commitment)
+        if encoding is not None:
+            self.dict_params["encoding"] = encoding
+
+class HasListParamAndDictParams(HasCommitmentAndEncoding):
+    def __init__(self, name: str, list_param: list, commitment: Optional[Commitment] = None, encoding: Optional[str] = None) -> None:
+        super
+class AccountSubscribe(HasCommitmentAndEncoding):
+    def __init__(self, name: str, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None) -> None:
+
+
     pubkey: PublicKey
     encoding: Optional[str] = None
     commitment: Optional[Commitment] = None
