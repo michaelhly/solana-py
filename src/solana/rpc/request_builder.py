@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Any, Optional, Union, Literal
 from jsonrpcclient import request
 
@@ -10,9 +9,17 @@ from solana.transaction import TransactionSignature
 MentionsFilter = dict[Literal["mentions"], str]
 
 
-class HasDictParams:
-    def __init__(self, name: str, dict_params: Optional[dict[str, str]] = None) -> None:
+class RequestBody:
+    def __init__(self, name: str) -> None:
         self.name = name
+
+    def to_request(self) -> dict[str, Any]:
+        return request(self.name)
+
+
+class HasDictParams(RequestBody):
+    def __init__(self, name: str, dict_params: Optional[dict[str, str]] = None) -> None:
+        super().__init__(name)
         self.dict_params: dict[str, str] = {} if dict_params is None else dict_params
 
     def to_request(self) -> dict[str, Any]:
@@ -37,27 +44,25 @@ class HasCommitmentAndEncoding(HasCommitment):
         if encoding is not None:
             self.dict_params["encoding"] = encoding
 
-class HasListParamAndDictParams(HasCommitmentAndEncoding):
-    def __init__(self, name: str, list_param: list, commitment: Optional[Commitment] = None, encoding: Optional[str] = None) -> None:
-        super
-class AccountSubscribe(HasCommitmentAndEncoding):
-    def __init__(self, name: str, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None) -> None:
 
-
-    pubkey: PublicKey
-    encoding: Optional[str] = None
-    commitment: Optional[Commitment] = None
+class HasPositionalParamAndCommitmentAndEncoding(HasCommitmentAndEncoding):
+    def __init__(
+        self, name: str, positional_param: Any, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
+    ) -> None:
+        super().__init__(name, commitment, encoding)
+        self.positional_param = positional_param
 
     def to_request(self) -> dict[str, Any]:
-        dict_params = {}
-        if self.encoding is not None:
-            dict_params["encoding"] = self.encoding
-        if self.commitment is not None:
-            dict_params["commitment"] = self.commitment
-        params = [str(self.pubkey)]
-        if dict_params:
-            params.append(dict_params)
-        return request("accountSubscribe", params=params)
+        return request(self.name, params=[self.positional_param, self.dict_params])
+
+
+class AccountSubscribe(HasPositionalParamAndCommitmentAndEncoding):
+    def __init__(
+        self, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
+    ) -> None:
+        super().__init__(
+            name="accountSubscribe", positional_param=str(pubkey), commitment=commitment, encoding=encoding
+        )
 
 
 class LogsSubsrcibeFilter:
@@ -69,84 +74,65 @@ class LogsSubsrcibeFilter:
         return {"mentions": [str(p) for p in pubkeys]}
 
 
-@dataclass
-class LogsSubscribe:
-    filter_: Union[str, MentionsFilter]
-    commitment: Optional[Commitment] = None
-
-    def to_request(self) -> dict[str, Any]:
-        dict_params = {}
-        if self.commitment is not None:
-            dict_params["commitment"] = self.commitment
-        params = [self.filter_]
-        if dict_params:
-            params.append(dict_params)
-        return request("logsSubscribe", params=params)
+class LogsSubscribe(HasPositionalParamAndCommitmentAndEncoding):
+    def __init__(
+        self,
+        filter_: Union[str, MentionsFilter],
+        commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
+    ) -> None:
+        super().__init__(name="logsSubscribe", positional_param=filter_, commitment=commitment, encoding=encoding)
 
 
-@dataclass
-class ProgramSubscribe:
-    program_id: PublicKey
-    encoding: Optional[str] = None
-    commitment: Optional[Commitment] = None
-    data_size: Optional[int] = None
-    memcmp_opts: Optional[list[types.MemcmpOpts]] = None
-
-    def to_request(self) -> dict[str, Any]:
-        dict_params = {}
-        if self.commitment is not None:
-            dict_params["commitment"] = self.commitment
+class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
+    def __init__(
+        self,
+        program_id: PublicKey,
+        encoding: Optional[str] = None,
+        commitment: Optional[Commitment] = None,
+        data_size: Optional[int] = None,
+        memcmp_opts: Optional[list[types.MemcmpOpts]] = None,
+    ) -> None:
+        super().__init__(
+            name="programSubscribe", positional_param=str(program_id), encoding=encoding, commitment=commitment
+        )
         filters = []
-        for opt in [] if not self.memcmp_opts else self.memcmp_opts:
+        for opt in [] if not memcmp_opts else memcmp_opts:
             filters.append({"memcmp": dict(opt._asdict())})
-        if self.data_size:
-            filters.append({"dataSize": self.data_size})
+        if data_size:
+            filters.append({"dataSize": data_size})
         if filters:
-            dict_params["filters"] = filters
-        params = [str(self.program_id)]
-        if dict_params:
-            params.append(dict_params)
-        return request("programSubscribe", params=params)
+            self.dict_params["filters"] = filters
 
 
-@dataclass
-class SignatureSubscribe:
-    signature: TransactionSignature
-    commitment: Optional[Commitment] = None
-
-    def to_request(self) -> dict[str, Any]:
-        dict_params = {}
-        if self.commitment is not None:
-            dict_params["commitment"] = self.commitment
-        params = [self.signature]
-        if dict_params:
-            params.append(dict_params)
-        return request("signatureSubscribe", params=params)
+class SignatureSubscribe(HasPositionalParamAndCommitmentAndEncoding):
+    def __init__(
+        self,
+        name: str,
+        signature: TransactionSignature,
+        commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
+    ) -> None:
+        super().__init__(
+            name="signatureSubscribe", positional_param=signature, commitment=commitment, encoding=encoding
+        )
 
 
-@dataclass
-class SlotSubscribe:
-    @staticmethod
-    def to_request() -> dict[str, Any]:
-        return request("slotSubscribe")
+class SlotSubscribe(RequestBody):
+    def __init__(self) -> None:
+        super().__init__("slotSubscribe")
 
 
-@dataclass
-class SlotsUpdatesSubscribe:
-    @staticmethod
-    def to_request() -> dict[str, Any]:
-        return request("slotsUpdatesSubscribe")
+class SlotsUpdatesSubscribe(RequestBody):
+    def __init__(self) -> None:
+        super().__init__("slotsUpdatesSubscribe")
 
 
-@dataclass
-class RootSubscribe:
-    @staticmethod
-    def to_request() -> dict[str, Any]:
-        return request("rootSubscribe")
+class RootSubscribe(RequestBody):
+    def __init__(self) -> None:
+        super().__init__("rootSubscribe")
 
 
-@dataclass
-class VoteSubscribe:
-    @staticmethod
-    def to_request() -> dict[str, Any]:
-        return request("voteSubscribe")
+class VoteSubscribe(RequestBody):
+    def __init__(self) -> None:
+        super().__init__("voteSubscribe")
