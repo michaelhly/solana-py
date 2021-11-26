@@ -27,7 +27,7 @@ class PublicKey:
     LENGTH = 32
     """Constant for standard length of a public key."""
 
-    def __init__(self, value: Union[bytearray, bytes, int, str, List[int]]) -> None:
+    def __init__(self, value: Union[bytearray, bytes, int, str, List[int]]):
         """Init PublicKey object."""
         self._key: Optional[bytes] = None
         if isinstance(value, str):
