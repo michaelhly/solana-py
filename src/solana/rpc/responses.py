@@ -60,3 +60,19 @@ class LogItemAndContext(WithContext):
 @dataclass
 class LogsNotification(SubscriptionNotification):
     result: LogItemAndContext
+
+
+@dataclass
+class ProgramAccount:
+    pubkey: PublicKey
+    account: AccountInfo
+
+
+@dataclass
+class ProgramAccountAndContext(WithContext):
+    value: ProgramAccount
+
+
+@dataclass
+class ProgramNotification(SubscriptionNotification):
+    result: ProgramAccountAndContext
