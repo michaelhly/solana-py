@@ -10,6 +10,13 @@ from solana.transaction import TransactionSignature
 
 as_str(PublicKey)
 
+TransactionErrorResult = Optional[dict]
+
+
+@dataclass
+class TransactionErr:
+    err: TransactionErrorResult
+
 
 @dataclass
 class Context:
@@ -46,9 +53,8 @@ class AccountNotification(SubscriptionNotification):
 
 
 @dataclass
-class LogItem:
+class LogItem(TransactionErr):
     signature: TransactionSignature
-    err: Optional[dict]
     logs: Optional[List[str]]
 
 
@@ -76,3 +82,30 @@ class ProgramAccountAndContext(WithContext):
 @dataclass
 class ProgramNotification(SubscriptionNotification):
     result: ProgramAccountAndContext
+
+
+@dataclass
+class SignatureErrAndContext(WithContext):
+    value: TransactionErr
+
+
+@dataclass
+class SignatureNotification(SubscriptionNotification):
+    result: SignatureErrAndContext
+
+
+@dataclass
+class SlotItem:
+    parent: int
+    root: int
+    slot: int
+
+
+@dataclass
+class SlotNotification(SubscriptionNotification):
+    result: SlotItem
+
+
+@dataclass
+class RootNotification(SubscriptionNotification):
+    result: int

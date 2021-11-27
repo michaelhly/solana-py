@@ -5,9 +5,24 @@ from jsonrpcserver.dispatcher import create_request
 from jsonrpcclient import parse, Error, Ok
 from apischema import deserialize
 
-from solana.rpc.responses import AccountNotification, LogsNotification, SubscriptionNotification
+from solana.rpc.responses import (
+    AccountNotification,
+    LogsNotification,
+    SubscriptionNotification,
+    ProgramNotification,
+    SignatureNotification,
+    SlotNotification,
+    RootNotification,
+)
 
-_NOTIFICATION_MAP = {"accountNotification": AccountNotification, "logsNotification": LogsNotification}
+_NOTIFICATION_MAP = {
+    "accountNotification": AccountNotification,
+    "logsNotification": LogsNotification,
+    "programNotification": ProgramNotification,
+    "signatureNotification": SignatureNotification,
+    "slotNotification": SlotNotification,
+    "rootNotification": RootNotification,
+}
 
 
 class SolanaWsClientProtocol(WebSocketClientProtocol):
