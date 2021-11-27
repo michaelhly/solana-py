@@ -33,6 +33,8 @@ cachetools = "^4.2.2"
 types-cachetools = "^4.2.4"
 jsonrpcclient = "^4.0.1"
 websockets = "^10.1"
+jsonrpcserver = "^5.0.4"
+apischema = "^0.16.1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"

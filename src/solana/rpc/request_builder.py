@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union, Literal
+from typing import Any, Optional, Union, Literal, List, Dict
 from jsonrpcclient import request
 
 from solana.publickey import PublicKey
@@ -6,35 +6,35 @@ from solana.rpc.commitment import Commitment
 from solana.rpc import types
 from solana.transaction import TransactionSignature
 
-MentionsFilter = dict[Literal["mentions"], str]
+MentionsFilter = Dict[Literal["mentions"], str]
 
 
 class RequestBody:
     def __init__(self, name: str) -> None:
         self.name = name
 
-    def to_request(self) -> dict[str, Any]:
+    def to_request(self) -> Dict[str, Any]:
         return request(self.name)
 
 
 class HasDictParams(RequestBody):
-    def __init__(self, name: str, dict_params: Optional[dict[str, str]] = None) -> None:
+    def __init__(self, name: str, dict_params: Optional[Dict[str, str]] = None) -> None:
         super().__init__(name)
-        self.dict_params: dict[str, str] = {} if dict_params is None else dict_params
+        self.dict_params: Dict[str, str] = {} if dict_params is None else dict_params
 
-    def to_request(self) -> dict[str, Any]:
+    def to_request(self) -> Dict[str, Any]:
         return request(self.name, params=self.dict_params)
 
 
 class HasEncoding(HasDictParams):
     def __init__(self, name: str, encoding: Optional[str] = None) -> None:
-        dict_params: Optional[dict[str, str]] = None if encoding is None else {"encoding": encoding}
+        dict_params: Optional[Dict[str, str]] = None if encoding is None else {"encoding": encoding}
         super().__init__(name, dict_params)
 
 
 class HasCommitment(HasDictParams):
     def __init__(self, name: str, commitment: Optional[Commitment] = None) -> None:
-        dict_params: Optional[dict[str, str]] = None if commitment is None else {"commitment": commitment}
+        dict_params: Optional[Dict[str, str]] = None if commitment is None else {"commitment": commitment}
         super().__init__(name, dict_params)
 
 
@@ -52,7 +52,7 @@ class HasPositionalParamAndCommitmentAndEncoding(HasCommitmentAndEncoding):
         super().__init__(name, commitment, encoding)
         self.positional_param = positional_param
 
-    def to_request(self) -> dict[str, Any]:
+    def to_request(self) -> Dict[str, Any]:
         return request(self.name, params=[self.positional_param, self.dict_params])
 
 
@@ -70,7 +70,7 @@ class LogsSubsrcibeFilter:
     ALL_WITH_VOTES = "allWithVotes"
 
     @staticmethod
-    def mentions(pubkeys: list[PublicKey]) -> MentionsFilter:
+    def mentions(pubkeys: List[PublicKey]) -> MentionsFilter:
         return {"mentions": [str(p) for p in pubkeys]}
 
 
@@ -91,7 +91,7 @@ class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
         encoding: Optional[str] = None,
         commitment: Optional[Commitment] = None,
         data_size: Optional[int] = None,
-        memcmp_opts: Optional[list[types.MemcmpOpts]] = None,
+        memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
     ) -> None:
         super().__init__(
             name="programSubscribe", positional_param=str(program_id), encoding=encoding, commitment=commitment
