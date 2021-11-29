@@ -262,11 +262,11 @@ async def test_root_subscribe(
     assert main_resp.result >= 0
 
 
-# @pytest.mark.asyncio
-# @pytest.mark.integration
-# async def test_vote_subscribe(
-#     websocket: SolanaWsClientProtocol,
-#     vote_subscribed: None,
-# ):
-#     main_resp = await websocket.recv()
-#     print(main_resp)
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_vote_subscribe(
+    websocket: SolanaWsClientProtocol,
+    vote_subscribed: None,
+):
+    main_resp = await websocket.recv()
+    assert main_resp.result.slots

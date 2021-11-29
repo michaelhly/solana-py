@@ -231,3 +231,18 @@ class SlotsUpdatesNotification(SubscriptionNotification):
     """Slots updates notification."""
 
     result: SlotsUpdatesItem
+
+
+@dataclass
+class VoteItem:
+    """Vote data."""
+
+    hash: str
+    slots: List[int]
+    timestamp: Optional[int]
+
+
+@dataclass
+class VoteNotification(SubscriptionNotification):
+    "Vote update notification."
+    result: VoteItem

@@ -20,6 +20,7 @@ from solana.rpc.responses import (
     SlotNotification,
     RootNotification,
     SlotsUpdatesNotification,
+    VoteNotification,
 )
 from solana.rpc.request_builder import (
     AccountSubscribe,
@@ -50,6 +51,7 @@ _NOTIFICATION_MAP = {
     "slotNotification": SlotNotification,
     "rootNotification": RootNotification,
     "slotsUpdatesNotification": SlotsUpdatesNotification,
+    "voteNotification": VoteNotification,
 }
 
 
