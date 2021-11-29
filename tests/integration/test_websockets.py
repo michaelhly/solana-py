@@ -138,6 +138,7 @@ async def test_multiple_subscriptions(
     """Test subscribing to multiple feeds."""
     await test_http_client_async.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
     async for idx, message in asyncstdlib.enumerate(websocket):
+        assert message.result is not None
         if idx == len(multiple_subscriptions) - 1:
             break
     balance = await test_http_client_async.get_balance(
@@ -214,7 +215,7 @@ async def test_slot_subscribe(
     slot_subscribed: None,
 ):
     main_resp = await websocket.recv()
-    assert main_resp.result.root == 0
+    assert main_resp.result.root >= 0
 
 
 @pytest.mark.asyncio
@@ -223,8 +224,10 @@ async def test_slots_updates_subscribe(
     websocket: SolanaWsClientProtocol,
     slots_updates_subscribed: None,
 ):
-    main_resp = await websocket.recv()
-    assert main_resp.result.slot > 0
+    for idx, resp in asyncstdlib.enumerate(websocket):
+        assert resp.result.slot > 0
+        if idx == 10:
+            break
 
 
 @pytest.mark.asyncio
@@ -234,7 +237,7 @@ async def test_root_subscribe(
     root_subscribed: None,
 ):
     main_resp = await websocket.recv()
-    assert main_resp.result == 0
+    assert main_resp.result >= 0
 
 
 # @pytest.mark.asyncio

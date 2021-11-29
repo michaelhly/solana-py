@@ -112,11 +112,62 @@ class RootNotification(SubscriptionNotification):
 
 
 @dataclass
-class SlotsUpdatesItem:
+class SlotBase:
     slot: int
+
+
+@dataclass
+class SlotAndTimestampBase(SlotBase):
     timestamp: int
-    type: Literal["firstShredReceived", "completed", "createdBank", "frozen", "dead", "optimisticConfirmation", "root"]
-    parent: Optional[int] = None
+
+
+@dataclass
+class FirstShredReceived(SlotAndTimestampBase):
+    type: Literal["firstShredReceived"]
+
+
+@dataclass
+class Completed(SlotAndTimestampBase):
+    type: Literal["completed"]
+
+
+@dataclass
+class CreatedBank(SlotAndTimestampBase):
+    parent: int
+    type: Literal["createdBank"]
+
+
+@dataclass
+class SlotTransactionStats:
+    num_transaction_entries: int
+    num_successful_transactions: int
+    num_failed_transactions: int
+    max_transactions_per_entry: int
+
+
+@dataclass
+class Frozen(SlotAndTimestampBase):
+    stats: SlotTransactionStats
+    type: Literal["frozen"]
+
+
+@dataclass
+class Dead(SlotAndTimestampBase):
+    err: str
+    type: Literal["dead"]
+
+
+@dataclass
+class OptimisticConfirmation(SlotAndTimestampBase):
+    type: Literal["optimisticConfirmation"]
+
+
+@dataclass
+class Root(SlotAndTimestampBase):
+    type: Literal["root"]
+
+
+SlotsUpdatesItem = Union[FirstShredReceived, Completed, CreatedBank, Frozen, Dead, OptimisticConfirmation, Root]
 
 
 @dataclass
