@@ -107,8 +107,8 @@ class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
     def __init__(
         self,
         program_id: PublicKey,
-        encoding: Optional[str] = None,
         commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
         data_size: Optional[int] = None,
         memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
     ) -> None:
@@ -132,14 +132,10 @@ class ProgramUnsubscribe(Unsubscribe):
 class SignatureSubscribe(HasPositionalParamAndCommitmentAndEncoding):
     def __init__(
         self,
-        name: str,
         signature: TransactionSignature,
         commitment: Optional[Commitment] = None,
-        encoding: Optional[str] = None,
     ) -> None:
-        super().__init__(
-            name="signatureSubscribe", positional_param=signature, commitment=commitment, encoding=encoding
-        )
+        super().__init__(name="signatureSubscribe", positional_param=signature, commitment=commitment)
 
 
 class SignatureUnsubscribe(Unsubscribe):

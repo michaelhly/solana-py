@@ -7,7 +7,9 @@ from apischema import deserialize
 
 from solana.rpc.request_builder import RequestBody
 from solana.publickey import PublicKey
+from solana.transaction import TransactionSignature
 from solana.rpc.commitment import Commitment
+from solana.rpc import types
 from solana.rpc.responses import (
     AccountNotification,
     LogsNotification,
@@ -17,7 +19,20 @@ from solana.rpc.responses import (
     SlotNotification,
     RootNotification,
 )
-from solana.rpc.request_builder import AccountSubscribe, AccountUnsubscribe
+from solana.rpc.request_builder import (
+    AccountSubscribe,
+    AccountUnsubscribe,
+    LogsSubscribe,
+    LogsUnsubscribe,
+    LogsSubsrcibeFilter,
+    MentionsFilter,
+    ProgramSubscribe,
+    ProgramUnsubscribe,
+    SignatureSubscribe,
+    SignatureUnsubscribe,
+    SlotSubscribe,
+    SlotUnsubscribe,
+)
 
 _NOTIFICATION_MAP = {
     "accountNotification": AccountNotification,
@@ -72,7 +87,9 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
             to_send = [d.to_request() for d in data]
         await self._send(to_send)
 
-    async def recv(self) -> Union[SubscriptionNotification, Error, Ok]:
+    async def recv(
+        self,
+    ) -> Union[List[Union[SubscriptionNotification, Error, Ok]], SubscriptionNotification, Error, Ok]:
         data = await super().recv()
         as_json = loads(data)
         if isinstance(as_json, list):
@@ -81,15 +98,79 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
 
     async def account_subscribe(
         self, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
-    ):
+    ) -> None:
         req = AccountSubscribe(pubkey, commitment, encoding)
         await self.send(req)
 
     async def account_unsubscribe(
         self,
         subscription: int,
-    ):
+    ) -> None:
         req = AccountUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
+    async def logs_subscribe(
+        self,
+        filter_: Union[str, MentionsFilter] = LogsSubsrcibeFilter.ALL,
+        commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
+    ) -> None:
+        req = LogsSubscribe(filter_, commitment, encoding)
+        await self.send(req)
+
+    async def logs_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        req = LogsUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
+    async def program_subscribe(
+        self,
+        program_id: PublicKey,
+        commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
+        data_size: Optional[int] = None,
+        memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
+    ) -> None:
+        req = ProgramSubscribe(program_id, commitment, encoding, data_size, memcmp_opts)
+        await self.send(req)
+
+    async def program_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        req = ProgramUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
+    async def signature_subscribe(
+        self,
+        signature: TransactionSignature,
+        commitment: Optional[Commitment] = None,
+    ) -> None:
+        req = SignatureSubscribe(signature, commitment)
+        await self.send(req)
+
+    async def signature_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        req = SignatureUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
+    async def slot_subscribe(self) -> None:
+        req = SlotSubscribe()
+        await self.send(req)
+
+    async def slot_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        req = SlotUnsubscribe(subscription)
         await self.send(req)
         del self.subscriptions[subscription]
 
