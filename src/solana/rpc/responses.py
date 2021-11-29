@@ -109,3 +109,16 @@ class SlotNotification(SubscriptionNotification):
 @dataclass
 class RootNotification(SubscriptionNotification):
     result: int
+
+
+@dataclass
+class SlotsUpdatesItem:
+    slot: int
+    timestamp: int
+    type: Literal["firstShredReceived", "completed", "createdBank", "frozen", "dead", "optimisticConfirmation", "root"]
+    parent: Optional[int] = None
+
+
+@dataclass
+class SlotsUpdatesNotification(SubscriptionNotification):
+    result: SlotsUpdatesItem

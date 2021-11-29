@@ -92,20 +92,39 @@ async def signature_subscribed(
 
 
 @pytest.fixture
-async def signature_subscribed_bad_tx(
-    websocket: SolanaWsClientProtocol, test_http_client_async: AsyncClient
-) -> Tuple[Keypair, Keypair]:
-    program = Keypair()
-    owned = Keypair()
-    ix = sp.assign(sp.AssignParams(account_pubkey=owned.public_key, program_id=program.public_key))
-    tx = Transaction()
-    tx.add(ix)
-    tx_resp = await test_http_client_async.send_transaction(tx, owned, opts=TxOpts(skip_preflight=True))
-    await websocket.signature_subscribe(tx_resp["result"])
+async def slot_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    await websocket.slot_subscribe()
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
     yield
-    await websocket.signature_unsubscribe(subscription_id)
+    await websocket.slot_unsubscribe(subscription_id)
+
+
+@pytest.fixture
+async def slots_updates_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    await websocket.slots_updates_subscribe()
+    first_resp = await websocket.recv()
+    subscription_id = first_resp.result
+    yield
+    await websocket.slots_updates_unsubscribe(subscription_id)
+
+
+@pytest.fixture
+async def root_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    await websocket.root_subscribe()
+    first_resp = await websocket.recv()
+    subscription_id = first_resp.result
+    yield
+    await websocket.root_unsubscribe(subscription_id)
+
+
+@pytest.fixture
+async def vote_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    await websocket.vote_subscribe()
+    first_resp = await websocket.recv()
+    subscription_id = first_resp.result
+    yield
+    await websocket.vote_unsubscribe(subscription_id)
 
 
 @pytest.mark.asyncio
@@ -181,7 +200,6 @@ async def test_program_subscribe(
 @pytest.mark.asyncio
 @pytest.mark.integration
 async def test_signature_subscribe(
-    test_http_client_async: AsyncClient,
     websocket: SolanaWsClientProtocol,
     signature_subscribed: None,
 ):
@@ -191,11 +209,39 @@ async def test_signature_subscribe(
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_signature_subscribe_bad_tx(
-    test_http_client_async: AsyncClient,
+async def test_slot_subscribe(
     websocket: SolanaWsClientProtocol,
-    signature_subscribed_bad_tx: None,
+    slot_subscribed: None,
 ):
     main_resp = await websocket.recv()
-    print(main_resp)
-    assert main_resp.result.value.err is None
+    assert main_resp.result.root == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_slots_updates_subscribe(
+    websocket: SolanaWsClientProtocol,
+    slots_updates_subscribed: None,
+):
+    main_resp = await websocket.recv()
+    assert main_resp.result.slot > 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_root_subscribe(
+    websocket: SolanaWsClientProtocol,
+    root_subscribed: None,
+):
+    main_resp = await websocket.recv()
+    assert main_resp.result == 0
+
+
+# @pytest.mark.asyncio
+# @pytest.mark.integration
+# async def test_vote_subscribe(
+#     websocket: SolanaWsClientProtocol,
+#     vote_subscribed: None,
+# ):
+#     main_resp = await websocket.recv()
+#     print(main_resp)

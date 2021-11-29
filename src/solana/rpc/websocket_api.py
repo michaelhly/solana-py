@@ -18,6 +18,7 @@ from solana.rpc.responses import (
     SignatureNotification,
     SlotNotification,
     RootNotification,
+    SlotsUpdatesNotification,
 )
 from solana.rpc.request_builder import (
     AccountSubscribe,
@@ -32,6 +33,12 @@ from solana.rpc.request_builder import (
     SignatureUnsubscribe,
     SlotSubscribe,
     SlotUnsubscribe,
+    SlotsUpdatesSubscribe,
+    SlotsUpdatesUnsubscribe,
+    RootSubscribe,
+    RootUnsubscribe,
+    VoteSubscribe,
+    VoteUnsubscribe,
 )
 
 _NOTIFICATION_MAP = {
@@ -41,6 +48,7 @@ _NOTIFICATION_MAP = {
     "signatureNotification": SignatureNotification,
     "slotNotification": SlotNotification,
     "rootNotification": RootNotification,
+    "slotsUpdatesNotification": SlotsUpdatesNotification,
 }
 
 
@@ -170,6 +178,42 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         await self.send(req)
         del self.subscriptions[subscription]
 
+    async def slots_updates_subscribe(self) -> None:
+        req = SlotsUpdatesSubscribe()
+        await self.send(req)
+
+    async def slots_updates_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        req = SlotsUpdatesUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
+    async def root_subscribe(self) -> None:
+        req = RootSubscribe()
+        await self.send(req)
+
+    async def root_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        req = RootUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
+    async def vote_subscribe(self) -> None:
+        req = VoteSubscribe()
+        await self.send(req)
+
+    async def vote_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        req = VoteUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
     def _process_rpc_response(self, data: dict) -> Union[SubscriptionNotification, Error, Ok]:
         parsed = _parse_rpc_response(data)
         if isinstance(parsed, Error):
@@ -177,7 +221,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
             self.failed_subscriptions[parsed.id] = subscription
             raise SubscriptionError(parsed, subscription)
         parsed_result = parsed.result
-        if type(parsed_result) is int:
+        if type(parsed_result) is int and type(parsed) is Ok:
             self.subscriptions[parsed_result] = self.sent_subscriptions[parsed.id]
         return parsed
 
