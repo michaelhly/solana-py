@@ -139,10 +139,10 @@ class CreatedBank(SlotAndTimestampBase):
 
 @dataclass
 class SlotTransactionStats:
-    num_transaction_entries: int
-    num_successful_transactions: int
-    num_failed_transactions: int
-    max_transactions_per_entry: int
+    num_transaction_entries: int = field(metadata=alias("numTransactionEntries"))
+    num_successful_transactions: int = field(metadata=alias("numSuccessfulTransactions"))
+    num_failed_transactions: int = field(metadata=alias("numFailedTransactions"))
+    max_transactions_per_entry: int = field(metadata=alias("maxTransactionsPerEntry"))
 
 
 @dataclass

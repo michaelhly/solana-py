@@ -224,9 +224,9 @@ async def test_slots_updates_subscribe(
     websocket: SolanaWsClientProtocol,
     slots_updates_subscribed: None,
 ):
-    for idx, resp in asyncstdlib.enumerate(websocket):
+    async for idx, resp in asyncstdlib.enumerate(websocket):
         assert resp.result.slot > 0
-        if idx == 10:
+        if idx == 40:
             break
 
 
