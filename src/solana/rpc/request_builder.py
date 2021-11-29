@@ -26,6 +26,15 @@ class HasDictParams(RequestBody):
         return request(self.name, params=self.dict_params)
 
 
+class Unsubscribe(RequestBody):
+    def __init__(self, name: str, subscription: int) -> None:
+        super().__init__(name)
+        self.subscription = subscription
+
+    def to_request(self) -> Dict[str, Any]:
+        return request(self.name, params=[self.subscription])
+
+
 class HasEncoding(HasDictParams):
     def __init__(self, name: str, encoding: Optional[str] = None) -> None:
         dict_params: Optional[Dict[str, str]] = None if encoding is None else {"encoding": encoding}
@@ -65,6 +74,11 @@ class AccountSubscribe(HasPositionalParamAndCommitmentAndEncoding):
         )
 
 
+class AccountUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("accountUnsubscribe", subscription)
+
+
 class LogsSubsrcibeFilter:
     ALL = "all"
     ALL_WITH_VOTES = "allWithVotes"
@@ -82,6 +96,11 @@ class LogsSubscribe(HasPositionalParamAndCommitmentAndEncoding):
         encoding: Optional[str] = None,
     ) -> None:
         super().__init__(name="logsSubscribe", positional_param=filter_, commitment=commitment, encoding=encoding)
+
+
+class LogsUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("logsUnsubscribe", subscription)
 
 
 class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
@@ -105,6 +124,11 @@ class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
             self.dict_params["filters"] = filters
 
 
+class ProgramUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("programUnsubscribe", subscription)
+
+
 class SignatureSubscribe(HasPositionalParamAndCommitmentAndEncoding):
     def __init__(
         self,
@@ -118,9 +142,19 @@ class SignatureSubscribe(HasPositionalParamAndCommitmentAndEncoding):
         )
 
 
+class SignatureUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("signatureUnsubscribe", subscription)
+
+
 class SlotSubscribe(RequestBody):
     def __init__(self) -> None:
         super().__init__("slotSubscribe")
+
+
+class SlotUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("slotUnsubscribe", subscription)
 
 
 class SlotsUpdatesSubscribe(RequestBody):
@@ -128,11 +162,26 @@ class SlotsUpdatesSubscribe(RequestBody):
         super().__init__("slotsUpdatesSubscribe")
 
 
+class SlotsUpdatesUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("slotsUpdatesUnsubscribe", subscription)
+
+
 class RootSubscribe(RequestBody):
     def __init__(self) -> None:
         super().__init__("rootSubscribe")
 
 
+class RootUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("rootUnsubscribe", subscription)
+
+
 class VoteSubscribe(RequestBody):
     def __init__(self) -> None:
         super().__init__("voteSubscribe")
+
+
+class VoteUnsubscribe(Unsubscribe):
+    def __init__(self, subscription: int) -> None:
+        super().__init__("VoteUnsubscribe", subscription)

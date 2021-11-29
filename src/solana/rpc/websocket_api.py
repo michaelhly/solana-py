@@ -1,10 +1,13 @@
-from typing import Union
-from json import loads
+from typing import Union, Dict, Any, List, Optional
+from json import loads, dumps
 from websockets import connect, WebSocketClientProtocol
 from jsonrpcserver.dispatcher import create_request
 from jsonrpcclient import parse, Error, Ok
 from apischema import deserialize
 
+from solana.rpc.request_builder import RequestBody
+from solana.publickey import PublicKey
+from solana.rpc.commitment import Commitment
 from solana.rpc.responses import (
     AccountNotification,
     LogsNotification,
@@ -14,6 +17,7 @@ from solana.rpc.responses import (
     SlotNotification,
     RootNotification,
 )
+from solana.rpc.request_builder import AccountSubscribe, AccountUnsubscribe
 
 _NOTIFICATION_MAP = {
     "accountNotification": AccountNotification,
@@ -25,13 +29,80 @@ _NOTIFICATION_MAP = {
 }
 
 
+class SubscriptionError(Exception):
+    """Raise when subscribing to an RPC feed fails."""
+
+
+class SubscriptionError(Exception):
+    """Raise when subscribing to an RPC feed fails."""
+
+    def __init__(self, err: Error, subscription: dict) -> None:
+        """Init.
+
+        Args:
+            err: The RPC error object.
+            subscription: The subscription message that caused the error.
+        """
+        self.code = err.code
+        self.msg = err.message
+        self.subscription = subscription
+        super().__init__(f"{self.code}: {self.msg}\n Caused by subscription: {subscription}")
+
+
 class SolanaWsClientProtocol(WebSocketClientProtocol):
-    async def recv(self) -> Union[dict, list]:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.subscriptions = {}
+        self.sent_subscriptions = {}
+        self.failed_subscriptions = {}
+
+    async def _send(self, data: Union[Dict[str, Any], list]) -> None:
+        as_json_str = dumps(data)
+        await super().send(as_json_str)
+        if isinstance(data, dict):
+            self.sent_subscriptions[data["id"]] = data
+        else:
+            for req in data:
+                self.sent_subscriptions[req["id"]] = req
+
+    async def send(self, data: Union[RequestBody, List[RequestBody]]) -> None:
+        if isinstance(data, RequestBody):
+            to_send = data.to_request()
+        else:
+            to_send = [d.to_request() for d in data]
+        await self._send(to_send)
+
+    async def recv(self) -> Union[SubscriptionNotification, Error, Ok]:
         data = await super().recv()
-        asjson = loads(data)
-        if isinstance(asjson, list):
-            return [_parse_rpc_response(item) for item in asjson]
-        return _parse_rpc_response(asjson)
+        as_json = loads(data)
+        if isinstance(as_json, list):
+            return [self._process_rpc_response(item) for item in as_json]
+        return self._process_rpc_response(as_json)
+
+    async def account_subscribe(
+        self, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
+    ):
+        req = AccountSubscribe(pubkey, commitment, encoding)
+        await self.send(req)
+
+    async def account_unsubscribe(
+        self,
+        subscription: int,
+    ):
+        req = AccountUnsubscribe(subscription)
+        await self.send(req)
+        del self.subscriptions[subscription]
+
+    def _process_rpc_response(self, data: dict) -> Union[SubscriptionNotification, Error, Ok]:
+        parsed = _parse_rpc_response(data)
+        if isinstance(parsed, Error):
+            subscription = self.sent_subscriptions[parsed.id]
+            self.failed_subscriptions[parsed.id] = subscription
+            raise SubscriptionError(parsed, subscription)
+        parsed_result = parsed.result
+        if type(parsed_result) is int:
+            self.subscriptions[parsed_result] = self.sent_subscriptions[parsed.id]
+        return parsed
 
 
 def _parse_rpc_response(data: dict) -> Union[SubscriptionNotification, Error, Ok]:
@@ -43,26 +114,5 @@ def _parse_rpc_response(data: dict) -> Union[SubscriptionNotification, Error, Ok
 
 
 class WebsocketClient(connect):
-    def __init__(self, uri: str) -> None:
+    def __init__(self, uri: str = "ws://127.0.0.1:8900") -> None:
         super().__init__(uri, create_protocol=SolanaWsClientProtocol)
-
-    # async def __aenter__(self) -> "WebsocketClient":
-    #     """Use as a context manager."""
-    #     await self._ws.__aenter__()
-    #     return self
-
-    # async def __aexit__(self, _exc_type, _exc, _tb):
-    #     """Exits the context manager."""
-    #     await self.close()
-
-    # async def close(self) -> None:
-    #     """Use this when you are done with the client."""
-    #     await self._ws.protocol.close()
-
-    # async def recv(self) -> Data:
-    #     data = await super().recv()
-    #     return data
-
-    # async def send(self, message: Union[Data, Iterable[Data], AsyncIterable[Data]]) -> None:
-    #     msg = message
-    #     await super().send(msg)
