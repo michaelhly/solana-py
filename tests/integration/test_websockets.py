@@ -1,3 +1,4 @@
+# pylint: disable=unused-argument
 """Tests for the Websocket Client."""
 from typing import List, Tuple
 import pytest
@@ -9,11 +10,10 @@ from solana.rpc.request_builder import (
     AccountSubscribe,
     AccountUnsubscribe,
     LogsSubscribe,
-    LogsSubsrcibeFilter,
+    LogsSubscribeFilter,
     LogsUnsubscribe,
     RequestBody,
 )
-from solana.rpc.types import TxOpts
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana import system_program as sp
@@ -33,7 +33,7 @@ async def websocket(test_http_client_async: AsyncClient) -> SolanaWsClientProtoc
 @pytest.fixture
 async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> List[RequestBody]:
     reqs = [
-        LogsSubscribe(filter_=LogsSubsrcibeFilter.ALL),
+        LogsSubscribe(filter_=LogsSubscribeFilter.ALL),
         AccountSubscribe(stubbed_sender.public_key),
     ]
     await websocket.send(reqs)  # None
@@ -57,6 +57,15 @@ async def account_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientP
 @pytest.fixture
 async def logs_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> None:
     await websocket.logs_subscribe()
+    first_resp = await websocket.recv()
+    subscription_id = first_resp.result
+    yield
+    await websocket.logs_unsubscribe(subscription_id)
+
+
+@pytest.fixture
+async def logs_subscribed_mentions_filter(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> None:
+    await websocket.logs_subscribe(LogsSubscribeFilter.mentions(sp.SYS_PROGRAM_ID))
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
     yield
@@ -175,6 +184,19 @@ async def test_logs_subscribe(
     test_http_client_async: AsyncClient,
     websocket: SolanaWsClientProtocol,
     logs_subscribed: None,
+):
+    recipient = Keypair().public_key
+    await test_http_client_async.request_airdrop(recipient, AIRDROP_AMOUNT)
+    main_resp = await websocket.recv()
+    assert main_resp.result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_logs_subscribe_mentions_filter(
+    test_http_client_async: AsyncClient,
+    websocket: SolanaWsClientProtocol,
+    logs_subscribed_mentions_filter: None,
 ):
     recipient = Keypair().public_key
     await test_http_client_async.request_airdrop(recipient, AIRDROP_AMOUNT)

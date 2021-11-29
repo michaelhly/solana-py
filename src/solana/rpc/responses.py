@@ -1,3 +1,4 @@
+"""This module contains code for parsing RPC responses."""
 from dataclasses import dataclass, field
 from typing import Union, Tuple, Any, Dict, List, Optional, Literal
 
@@ -15,21 +16,29 @@ TransactionErrorResult = Optional[dict]
 
 @dataclass
 class TransactionErr:
+    """Container for possible transaction errors."""
+
     err: TransactionErrorResult
 
 
 @dataclass
 class Context:
+    """RPC result context."""
+
     slot: int
 
 
 @dataclass
 class WithContext:
+    """Base class for RPC result including context."""
+
     context: Context
 
 
 @dataclass
 class AccountInfo:
+    """Account information."""
+
     lamports: int
     owner: PublicKey
     data: Union[Literal[""], Tuple[str, str], Dict[str, Any]]
@@ -39,106 +48,145 @@ class AccountInfo:
 
 @dataclass
 class AccountInfoAndContext(WithContext):
+    """Account info and RPC result context."""
+
     value: AccountInfo
 
 
 @dataclass
 class SubscriptionNotification:
+    """Base class for RPC subscription notifications."""
+
     subscription: int
 
 
 @dataclass
 class AccountNotification(SubscriptionNotification):
+    """Account subscription notification."""
+
     result: AccountInfoAndContext
 
 
 @dataclass
 class LogItem(TransactionErr):
+    """Container for logs from logSubscribe."""
+
     signature: TransactionSignature
     logs: Optional[List[str]]
 
 
 @dataclass
 class LogItemAndContext(WithContext):
+    """Log item with RPC result context."""
+
     value: LogItem
 
 
 @dataclass
 class LogsNotification(SubscriptionNotification):
+    """Logs subscription notification."""
+
     result: LogItemAndContext
 
 
 @dataclass
 class ProgramAccount:
+    """Program account pubkey and account info."""
+
     pubkey: PublicKey
     account: AccountInfo
 
 
 @dataclass
 class ProgramAccountAndContext(WithContext):
+    """Program subscription data with RPC result context."""
+
     value: ProgramAccount
 
 
 @dataclass
 class ProgramNotification(SubscriptionNotification):
+    """Program subscription notification."""
+
     result: ProgramAccountAndContext
 
 
 @dataclass
 class SignatureErrAndContext(WithContext):
+    """Signature subscription error info with RPC result context."""
+
     value: TransactionErr
 
 
 @dataclass
 class SignatureNotification(SubscriptionNotification):
+    """Signature subscription notification."""
+
     result: SignatureErrAndContext
 
 
 @dataclass
-class SlotItem:
+class SlotBase:
+    """Base class for slot container."""
+
+    slot: int
+
+
+@dataclass
+class SlotInfo(SlotBase):
+    """Slot info."""
+
     parent: int
     root: int
-    slot: int
 
 
 @dataclass
 class SlotNotification(SubscriptionNotification):
-    result: SlotItem
+    """Slot subscription notification."""
+
+    result: SlotInfo
 
 
 @dataclass
 class RootNotification(SubscriptionNotification):
+    """Root subscription notification."""
+
     result: int
 
 
 @dataclass
-class SlotBase:
-    slot: int
-
-
-@dataclass
 class SlotAndTimestampBase(SlotBase):
+    """Base class for a slot with timestamp."""
+
     timestamp: int
 
 
 @dataclass
 class FirstShredReceived(SlotAndTimestampBase):
+    """First shread received update."""
+
     type: Literal["firstShredReceived"]
 
 
 @dataclass
 class Completed(SlotAndTimestampBase):
+    """Slot completed update."""
+
     type: Literal["completed"]
 
 
 @dataclass
 class CreatedBank(SlotAndTimestampBase):
+    """Created bank update."""
+
     parent: int
     type: Literal["createdBank"]
 
 
 @dataclass
 class SlotTransactionStats:
+    """Slot transaction stats."""
+
     num_transaction_entries: int = field(metadata=alias("numTransactionEntries"))
     num_successful_transactions: int = field(metadata=alias("numSuccessfulTransactions"))
     num_failed_transactions: int = field(metadata=alias("numFailedTransactions"))
@@ -147,23 +195,31 @@ class SlotTransactionStats:
 
 @dataclass
 class Frozen(SlotAndTimestampBase):
+    """Slot frozen update."""
+
     stats: SlotTransactionStats
     type: Literal["frozen"]
 
 
 @dataclass
 class Dead(SlotAndTimestampBase):
+    """Dead slot update."""
+
     err: str
     type: Literal["dead"]
 
 
 @dataclass
 class OptimisticConfirmation(SlotAndTimestampBase):
+    """Optimistic confirmation update."""
+
     type: Literal["optimisticConfirmation"]
 
 
 @dataclass
 class Root(SlotAndTimestampBase):
+    """Root update."""
+
     type: Literal["root"]
 
 
@@ -172,4 +228,6 @@ SlotsUpdatesItem = Union[FirstShredReceived, Completed, CreatedBank, Frozen, Dea
 
 @dataclass
 class SlotsUpdatesNotification(SubscriptionNotification):
+    """Slots updates notification."""
+
     result: SlotsUpdatesItem
