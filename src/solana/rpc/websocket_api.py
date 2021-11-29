@@ -47,10 +47,6 @@ _NOTIFICATION_MAP = {
 class SubscriptionError(Exception):
     """Raise when subscribing to an RPC feed fails."""
 
-
-class SubscriptionError(Exception):
-    """Raise when subscribing to an RPC feed fails."""
-
     def __init__(self, err: Error, subscription: dict) -> None:
         """Init.
 
