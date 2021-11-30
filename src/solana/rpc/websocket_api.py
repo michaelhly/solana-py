@@ -164,7 +164,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         await self.send_data(req)
         del self.subscriptions[subscription]
 
-    async def program_subscribe(
+    async def program_subscribe(  # pylint: disable=too-many-arguments
         self,
         program_id: PublicKey,
         commitment: Optional[Commitment] = None,
@@ -309,7 +309,7 @@ def _parse_rpc_response(data: dict) -> Union[SubscriptionNotification, Error, Ok
     return cast(Union[Ok, Error], parse(data))
 
 
-class connect(ws_connect):  # pylint: disable=invalid-name
+class connect(ws_connect):  # pylint: disable=invalid-name,too-few-public-methods
     """Solana RPC websocket connector."""
 
     def __init__(self, uri: str = "ws://localhost:8900", **kwargs: Any) -> None:

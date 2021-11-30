@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods
 """This module contains code for building RPC requests."""
 from typing import Any, Optional, Union, Literal, List, Dict
 from jsonrpcclient import request
@@ -147,7 +148,7 @@ class LogsUnsubscribe(Unsubscribe):
 class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
     """Request body for programSubscribe."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         program_id: PublicKey,
         commitment: Optional[Commitment] = None,
