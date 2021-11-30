@@ -48,6 +48,7 @@ Async API Client:
 
     asyncio.run(main())
 
+
 Websockets Client:
 
 .. note::
@@ -81,6 +82,12 @@ Websockets Client:
             await websocket.logs_unsubscribe(subscription_id)
 
     asyncio.run(main())
+
+Additional Resources:
+
+Check out `anchorpy <https://kevinheavey.github.io/anchorpy/>`_, a Python client for `Anchor
+<https://project-serum.github.io/anchor/getting-started/introduction.html>`_ based programs on Solana.
+
 
 """  # pylint: disable=line-too-long # noqa: E501
 import sys
