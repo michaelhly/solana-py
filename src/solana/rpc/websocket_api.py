@@ -72,10 +72,10 @@ class SubscriptionError(Exception):
 
 
 class SolanaWsClientProtocol(WebSocketClientProtocol):
-    """Subclass of `websockets.WebSocketClientProtocol` tailored for Solana RPC websockets."""
+    """Subclass of ``websockets.WebSocketClientProtocol`` tailored for Solana RPC websockets."""
 
     def __init__(self, *args, **kwargs):
-        """Init. Args and kwargs are passed to `websockets.WebSocketClientProtocol`."""
+        """Init. Args and kwargs are passed to ``websockets.WebSocketClientProtocol``."""
         super().__init__(*args, **kwargs)
         self.subscriptions = {}
         self.sent_subscriptions = {}
@@ -93,7 +93,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
     async def send_data(self, message: Union[RequestBody, List[RequestBody]]) -> None:
         """Send a subscribe/unsubscribe request or list of requests.
 
-        Basically `.send` from `websockets` with extra parsing.
+        Basically ``.send`` from ``websockets`` with extra parsing.
 
         : param message: The request(s) to send.
         """
@@ -105,7 +105,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
     ) -> Union[List[Union[SubscriptionNotification, Error, Ok]], SubscriptionNotification, Error, Ok]:
         """Receive the next message.
 
-        Basically `.recv` from `websockets` with extra parsing.
+        Basically ``.recv`` from ``websockets`` with extra parsing.
         """
         data = await super().recv()
         as_json = loads(data)
@@ -312,8 +312,8 @@ def _parse_rpc_response(data: dict) -> Union[SubscriptionNotification, Error, Ok
 class connect(ws_connect):  # pylint: disable=invalid-name
     """Solana RPC websocket connector."""
 
-    def __init__(self, uri: str = "ws://127.0.0.1:8900", **kwargs: Any) -> None:
-        """Init. Kwargs are passed to `websockets.connect`.
+    def __init__(self, uri: str = "ws://localhost:8900", **kwargs: Any) -> None:
+        """Init. Kwargs are passed to ``websockets.connect``.
 
         :param uri: The websocket endpoint.
         """

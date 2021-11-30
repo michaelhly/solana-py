@@ -56,6 +56,36 @@ async def main():
 asyncio.run(main())
 ```
 
+### Websockets Client
+
+```py
+    import asyncio
+    from asyncstdlib import enumerate
+    from solana.rpc.websocket_api import connect
+
+    async def main():
+        async with connect("ws://api.devnet.solana.com") as websocket:
+            await websocket.logs_subscribe()
+            first_resp = await websocket.recv()
+            subscription_id = first_resp.result
+            next_resp = await websocket.recv()
+            print(next_resp)
+            await websocket.logs_unsubscribe(subscription_id)
+
+        # Alternatively, use the client as an infinite asynchronous iterator:
+        async with connect("ws://api.devnet.solana.com") as websocket:
+            await websocket.logs_subscribe()
+            first_resp = await websocket.recv()
+            subscription_id = first_resp.result
+            async for idx, msg in enumerate(websocket):
+                if idx == 3:
+                    break
+                print(msg)
+            await websocket.logs_unsubscribe(subscription_id)
+
+    asyncio.run(main())
+```
+
 ## Development
 
 ### Setup

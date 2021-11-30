@@ -18,7 +18,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana import system_program as sp
 from solana.transaction import Transaction
-from solana.rpc.websocket_api import WebsocketClient, SubscriptionError, SolanaWsClientProtocol
+from solana.rpc.websocket_api import connect, SubscriptionError, SolanaWsClientProtocol
 
 from .utils import AIRDROP_AMOUNT
 
@@ -26,7 +26,7 @@ from .utils import AIRDROP_AMOUNT
 @pytest.fixture
 async def websocket(test_http_client_async: AsyncClient) -> SolanaWsClientProtocol:
     """Websocket connection."""
-    async with WebsocketClient() as client:
+    async with connect() as client:
         yield client
 
 
@@ -37,12 +37,12 @@ async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsCli
         LogsSubscribe(filter_=LogsSubscribeFilter.ALL),
         AccountSubscribe(stubbed_sender.public_key),
     ]
-    await websocket.send(reqs)  # None
+    await websocket.send_data(reqs)  # None
     first_resp = await websocket.recv()
     logs_subscription_id, account_subscription_id = [resp.result for resp in first_resp]
     yield reqs
     unsubscribe_reqs = [LogsUnsubscribe(logs_subscription_id), AccountUnsubscribe(account_subscription_id)]
-    await websocket.send(unsubscribe_reqs)
+    await websocket.send_data(unsubscribe_reqs)
 
 
 @pytest.fixture
