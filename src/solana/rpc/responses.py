@@ -54,14 +54,15 @@ class AccountInfoAndContext(WithContext):
 
 
 @dataclass
-class SubscriptionNotification:
+class SubscriptionNotificationBase:
     """Base class for RPC subscription notifications."""
 
     subscription: int
+    result: Any
 
 
 @dataclass
-class AccountNotification(SubscriptionNotification):
+class AccountNotification(SubscriptionNotificationBase):
     """Account subscription notification."""
 
     result: AccountInfoAndContext
@@ -83,7 +84,7 @@ class LogItemAndContext(WithContext):
 
 
 @dataclass
-class LogsNotification(SubscriptionNotification):
+class LogsNotification(SubscriptionNotificationBase):
     """Logs subscription notification."""
 
     result: LogItemAndContext
@@ -105,7 +106,7 @@ class ProgramAccountAndContext(WithContext):
 
 
 @dataclass
-class ProgramNotification(SubscriptionNotification):
+class ProgramNotification(SubscriptionNotificationBase):
     """Program subscription notification."""
 
     result: ProgramAccountAndContext
@@ -119,7 +120,7 @@ class SignatureErrAndContext(WithContext):
 
 
 @dataclass
-class SignatureNotification(SubscriptionNotification):
+class SignatureNotification(SubscriptionNotificationBase):
     """Signature subscription notification."""
 
     result: SignatureErrAndContext
@@ -141,14 +142,14 @@ class SlotInfo(SlotBase):
 
 
 @dataclass
-class SlotNotification(SubscriptionNotification):
+class SlotNotification(SubscriptionNotificationBase):
     """Slot subscription notification."""
 
     result: SlotInfo
 
 
 @dataclass
-class RootNotification(SubscriptionNotification):
+class RootNotification(SubscriptionNotificationBase):
     """Root subscription notification."""
 
     result: int
@@ -227,7 +228,7 @@ SlotsUpdatesItem = Union[FirstShredReceived, Completed, CreatedBank, Frozen, Dea
 
 
 @dataclass
-class SlotsUpdatesNotification(SubscriptionNotification):
+class SlotsUpdatesNotification(SubscriptionNotificationBase):
     """Slots updates notification."""
 
     result: SlotsUpdatesItem
@@ -243,7 +244,19 @@ class VoteItem:
 
 
 @dataclass
-class VoteNotification(SubscriptionNotification):
+class VoteNotification(SubscriptionNotificationBase):
     """Vote update notification."""
 
     result: VoteItem
+
+
+SubscriptionNotification = Union[
+    AccountNotification,
+    LogsNotification,
+    ProgramNotification,
+    SignatureNotification,
+    SlotNotification,
+    RootNotification,
+    SlotsUpdatesNotification,
+    VoteNotification,
+]

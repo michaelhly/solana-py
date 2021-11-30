@@ -7,7 +7,7 @@ from solana.rpc.commitment import Commitment
 from solana.rpc import types
 from solana.transaction import TransactionSignature
 
-MentionsFilter = Dict[Literal["mentions"], str]
+MentionsFilter = Dict[Literal["mentions"], List[str]]
 
 
 class RequestBody:
@@ -28,7 +28,7 @@ class HasDictParams(RequestBody):
     def __init__(self, name: str, dict_params: Optional[Dict[str, str]] = None) -> None:
         """Init."""
         super().__init__(name)
-        self.dict_params: Dict[str, str] = {} if dict_params is None else dict_params
+        self.dict_params: Dict[str, Any] = {} if dict_params is None else dict_params
 
     def to_request(self) -> Dict[str, Any]:
         """Convert to a request dict."""
@@ -170,7 +170,7 @@ class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
         for opt in [] if not memcmp_opts else memcmp_opts:
             filters.append({"memcmp": dict(opt._asdict())})
         if data_size:
-            filters.append({"dataSize": data_size})
+            filters.append({"dataSize": data_size})  # type: ignore
         if filters:
             self.dict_params["filters"] = filters
 

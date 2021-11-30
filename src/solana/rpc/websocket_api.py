@@ -1,7 +1,7 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
-from typing import Union, Dict, Any, List, Optional
+from typing import Union, Dict, Any, List, Optional, cast
 from json import loads, dumps
-from websockets.legacy.client import connect, WebSocketClientProtocol
+from websockets.legacy.client import connect as ws_connect, WebSocketClientProtocol
 from jsonrpcserver.dispatcher import create_request
 from jsonrpcclient import parse, Error, Ok
 from apischema import deserialize
@@ -90,20 +90,17 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
             for req in data:
                 self.sent_subscriptions[req["id"]] = req
 
-    async def send(self, message: Union[RequestBody, List[RequestBody]]) -> None:
+    async def send_data(self, message: Union[RequestBody, List[RequestBody]]) -> None:
         """Send a subscribe/unsubscribe request or list of requests.
 
         Basically `.send` from `websockets` with extra parsing.
 
         : param message: The request(s) to send.
         """
-        if isinstance(message, RequestBody):
-            to_send = message.to_request()
-        else:
-            to_send = [msg.to_request() for msg in message]
-        await self._send(to_send)
+        to_send = message.to_request() if isinstance(message, RequestBody) else [msg.to_request() for msg in message]
+        await self._send(to_send)  # type: ignore
 
-    async def recv(
+    async def recv(  # type: ignore
         self,
     ) -> Union[List[Union[SubscriptionNotification, Error, Ok]], SubscriptionNotification, Error, Ok]:
         """Receive the next message.
@@ -126,7 +123,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param encoding: Encoding to use.
         """
         req = AccountSubscribe(pubkey, commitment, encoding)
-        await self.send(req)
+        await self.send_data(req)
 
     async def account_unsubscribe(
         self,
@@ -137,7 +134,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = AccountUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     async def logs_subscribe(
@@ -153,7 +150,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param encoding: The encoding to use.
         """
         req = LogsSubscribe(filter_, commitment, encoding)
-        await self.send(req)
+        await self.send_data(req)
 
     async def logs_unsubscribe(
         self,
@@ -164,7 +161,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = LogsUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     async def program_subscribe(
@@ -184,7 +181,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param memcmp_opts: memcmp options.
         """  # noqa: E501
         req = ProgramSubscribe(program_id, commitment, encoding, data_size, memcmp_opts)
-        await self.send(req)
+        await self.send_data(req)
 
     async def program_unsubscribe(
         self,
@@ -195,7 +192,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = ProgramUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     async def signature_subscribe(
@@ -209,7 +206,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param commitment: Commitment level.
         """
         req = SignatureSubscribe(signature, commitment)
-        await self.send(req)
+        await self.send_data(req)
 
     async def signature_unsubscribe(
         self,
@@ -220,13 +217,13 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = SignatureUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     async def slot_subscribe(self) -> None:
         """Subscribe to receive notification anytime a slot is processed by the validator."""
         req = SlotSubscribe()
-        await self.send(req)
+        await self.send_data(req)
 
     async def slot_unsubscribe(
         self,
@@ -237,13 +234,13 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = SlotUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     async def slots_updates_subscribe(self) -> None:
         """Subscribe to receive a notification from the validator on a variety of updates on every slot."""
         req = SlotsUpdatesSubscribe()
-        await self.send(req)
+        await self.send_data(req)
 
     async def slots_updates_unsubscribe(
         self,
@@ -254,13 +251,13 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = SlotsUpdatesUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     async def root_subscribe(self) -> None:
         """Subscribe to receive notification anytime a new root is set by the validator."""
         req = RootSubscribe()
-        await self.send(req)
+        await self.send_data(req)
 
     async def root_unsubscribe(
         self,
@@ -271,13 +268,13 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = RootUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     async def vote_subscribe(self) -> None:
         """Subscribe to receive notification anytime a new vote is observed in gossip."""
         req = VoteSubscribe()
-        await self.send(req)
+        await self.send_data(req)
 
     async def vote_unsubscribe(
         self,
@@ -288,7 +285,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         :param subscription: ID of subscription to cancel.
         """
         req = VoteUnsubscribe(subscription)
-        await self.send(req)
+        await self.send_data(req)
         del self.subscriptions[subscription]
 
     def _process_rpc_response(self, data: dict) -> Union[SubscriptionNotification, Error, Ok]:
@@ -307,16 +304,17 @@ def _parse_rpc_response(data: dict) -> Union[SubscriptionNotification, Error, Ok
     if "params" in data:
         req = create_request(data)
         dtype = _NOTIFICATION_MAP[req.method]
-        return deserialize(dtype, req.params)
-    return parse(data)
+        res: SubscriptionNotification = deserialize(dtype, req.params)
+        return res
+    return cast(Union[Ok, Error], parse(data))
 
 
-class WebsocketClient(connect):
+class connect(ws_connect):  # pylint: disable=invalid-name
     """Solana RPC websocket connector."""
 
-    def __init__(self, uri: str = "ws://127.0.0.1:8900") -> None:
-        """Init.
+    def __init__(self, uri: str = "ws://127.0.0.1:8900", **kwargs: Any) -> None:
+        """Init. Kwargs are passed to `websockets.connect`.
 
         :param uri: The websocket endpoint.
         """
-        super().__init__(uri, create_protocol=SolanaWsClientProtocol)
+        super().__init__(uri, **kwargs, create_protocol=SolanaWsClientProtocol)
