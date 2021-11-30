@@ -244,5 +244,6 @@ class VoteItem:
 
 @dataclass
 class VoteNotification(SubscriptionNotification):
-    "Vote update notification."
+    """Vote update notification."""
+
     result: VoteItem

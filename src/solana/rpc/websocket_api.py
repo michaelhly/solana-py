@@ -175,7 +175,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         data_size: Optional[int] = None,
         memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
     ) -> None:
-        """Subscribe to a program to receive notifications when the lamports or data for a given account owned by the program changes.
+        """Receive notifications when the lamports or data for a given account owned by the program changes.
 
         :param program_id: The program ID.
         :param commitment: Commitment level to use.
@@ -298,7 +298,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
             self.failed_subscriptions[parsed.id] = subscription
             raise SubscriptionError(parsed, subscription)
         parsed_result = parsed.result
-        if type(parsed_result) is int and type(parsed) is Ok:
+        if type(parsed_result) is int and type(parsed) is Ok:  # pylint: disable=unidiomatic-typecheck
             self.subscriptions[parsed_result] = self.sent_subscriptions[parsed.id]
         return parsed
 

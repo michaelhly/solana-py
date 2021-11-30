@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument,redefined-outer-name
 """Tests for the Websocket Client."""
 from typing import List, Tuple
 import pytest
@@ -32,6 +32,7 @@ async def websocket(test_http_client_async: AsyncClient) -> SolanaWsClientProtoc
 
 @pytest.fixture
 async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> List[RequestBody]:
+    """Setup multiple subscriptions."""
     reqs = [
         LogsSubscribe(filter_=LogsSubscribeFilter.ALL),
         AccountSubscribe(stubbed_sender.public_key),
@@ -46,6 +47,7 @@ async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsCli
 
 @pytest.fixture
 async def account_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> PublicKey:
+    """Setup account subscription."""
     recipient = Keypair()
     await websocket.account_subscribe(recipient.public_key)
     first_resp = await websocket.recv()
@@ -56,6 +58,7 @@ async def account_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientP
 
 @pytest.fixture
 async def logs_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> None:
+    """Setup logs subscription."""
     await websocket.logs_subscribe()
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -65,6 +68,7 @@ async def logs_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProt
 
 @pytest.fixture
 async def logs_subscribed_mentions_filter(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> None:
+    """Setup logs subscription with a mentions filter."""
     await websocket.logs_subscribe(LogsSubscribeFilter.mentions(sp.SYS_PROGRAM_ID))
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -76,6 +80,7 @@ async def logs_subscribed_mentions_filter(stubbed_sender: Keypair, websocket: So
 async def program_subscribed(
     websocket: SolanaWsClientProtocol, test_http_client_async: AsyncClient
 ) -> Tuple[Keypair, Keypair]:
+    """Setup program subscription."""
     program = Keypair()
     owned = Keypair()
     airdrop_resp = await test_http_client_async.request_airdrop(owned.public_key, AIRDROP_AMOUNT)
@@ -91,6 +96,7 @@ async def program_subscribed(
 async def signature_subscribed(
     websocket: SolanaWsClientProtocol, test_http_client_async: AsyncClient
 ) -> Tuple[Keypair, Keypair]:
+    """Setup signature subscription."""
     recipient = Keypair()
     airdrop_resp = await test_http_client_async.request_airdrop(recipient.public_key, AIRDROP_AMOUNT)
     await websocket.signature_subscribe(airdrop_resp["result"])
@@ -102,6 +108,7 @@ async def signature_subscribed(
 
 @pytest.fixture
 async def slot_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    """Setup slot subscription."""
     await websocket.slot_subscribe()
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -111,6 +118,7 @@ async def slot_subscribed(websocket: SolanaWsClientProtocol) -> None:
 
 @pytest.fixture
 async def slots_updates_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    """Setup slots updates subscription."""
     await websocket.slots_updates_subscribe()
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -120,6 +128,7 @@ async def slots_updates_subscribed(websocket: SolanaWsClientProtocol) -> None:
 
 @pytest.fixture
 async def root_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    """Setup root subscription."""
     await websocket.root_subscribe()
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -129,6 +138,7 @@ async def root_subscribed(websocket: SolanaWsClientProtocol) -> None:
 
 @pytest.fixture
 async def vote_subscribed(websocket: SolanaWsClientProtocol) -> None:
+    """Setup vote subscription."""
     await websocket.vote_subscribe()
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -161,7 +171,7 @@ async def test_multiple_subscriptions(
 async def test_bad_request(websocket: SolanaWsClientProtocol):
     """Test sending a malformed subscription request."""
     bad_req = request("logsSubscribe", params=["foo"])
-    await websocket._send(bad_req)  # None
+    await websocket._send(bad_req)  # pylint: disable=protected-access
     with pytest.raises(SubscriptionError) as exc_info:
         _ = await websocket.recv()
     assert exc_info.value.code == -32602
@@ -173,6 +183,7 @@ async def test_bad_request(websocket: SolanaWsClientProtocol):
 async def test_account_subscribe(
     test_http_client_async: AsyncClient, websocket: SolanaWsClientProtocol, account_subscribed: PublicKey
 ):
+    """Test account subscription."""
     await test_http_client_async.request_airdrop(account_subscribed, AIRDROP_AMOUNT)
     main_resp = await websocket.recv()
     assert main_resp.result.value.lamports == AIRDROP_AMOUNT
@@ -185,6 +196,7 @@ async def test_logs_subscribe(
     websocket: SolanaWsClientProtocol,
     logs_subscribed: None,
 ):
+    """Test logs subscription."""
     recipient = Keypair().public_key
     await test_http_client_async.request_airdrop(recipient, AIRDROP_AMOUNT)
     main_resp = await websocket.recv()
@@ -198,6 +210,7 @@ async def test_logs_subscribe_mentions_filter(
     websocket: SolanaWsClientProtocol,
     logs_subscribed_mentions_filter: None,
 ):
+    """Test logs subscription with a mentions filter."""
     recipient = Keypair().public_key
     await test_http_client_async.request_airdrop(recipient, AIRDROP_AMOUNT)
     main_resp = await websocket.recv()
@@ -211,11 +224,12 @@ async def test_program_subscribe(
     websocket: SolanaWsClientProtocol,
     program_subscribed: Tuple[PublicKey, PublicKey],
 ):
+    """Test program subscription."""
     program, owned = program_subscribed
-    ix = sp.assign(sp.AssignParams(account_pubkey=owned.public_key, program_id=program.public_key))
-    tx = Transaction()
-    tx.add(ix)
-    await test_http_client_async.send_transaction(tx, owned)
+    instruction = sp.assign(sp.AssignParams(account_pubkey=owned.public_key, program_id=program.public_key))
+    transaction = Transaction()
+    transaction.add(instruction)
+    await test_http_client_async.send_transaction(transaction, owned)
     main_resp = await websocket.recv()
     assert main_resp.result.value.pubkey == owned.public_key
 
@@ -226,6 +240,7 @@ async def test_signature_subscribe(
     websocket: SolanaWsClientProtocol,
     signature_subscribed: None,
 ):
+    """Test signature subscription."""
     main_resp = await websocket.recv()
     assert main_resp.result.value.err is None
 
@@ -236,6 +251,7 @@ async def test_slot_subscribe(
     websocket: SolanaWsClientProtocol,
     slot_subscribed: None,
 ):
+    """Test slot subscription."""
     main_resp = await websocket.recv()
     assert main_resp.result.root >= 0
 
@@ -246,6 +262,7 @@ async def test_slots_updates_subscribe(
     websocket: SolanaWsClientProtocol,
     slots_updates_subscribed: None,
 ):
+    """Test slots updates subscription."""
     async for idx, resp in asyncstdlib.enumerate(websocket):
         assert resp.result.slot > 0
         if idx == 40:
@@ -258,6 +275,7 @@ async def test_root_subscribe(
     websocket: SolanaWsClientProtocol,
     root_subscribed: None,
 ):
+    """Test root subscription."""
     main_resp = await websocket.recv()
     assert main_resp.result >= 0
 
@@ -268,5 +286,6 @@ async def test_vote_subscribe(
     websocket: SolanaWsClientProtocol,
     vote_subscribed: None,
 ):
+    """Test vote subscription."""
     main_resp = await websocket.recv()
     assert main_resp.result.slots
