@@ -48,10 +48,46 @@ Async API Client:
 
     asyncio.run(main())
 
+
+Websockets Client:
+
+.. note::
+    The websockets code in solana-py is mostly just wrapping around the `websockets <https://websockets.readthedocs.io/en/stable/index.html>`_ library.
+
+.. highlight:: py
+.. code-block:: py
+
+    import asyncio
+    from asyncstdlib import enumerate
+    from solana.rpc.websocket_api import connect
+
+    async def main():
+        async with connect("ws://api.devnet.solana.com") as websocket:
+            await websocket.logs_subscribe()
+            first_resp = await websocket.recv()
+            subscription_id = first_resp.result
+            next_resp = await websocket.recv()
+            print(next_resp)
+            await websocket.logs_unsubscribe(subscription_id)
+
+        # Alternatively, use the client as an infinite asynchronous iterator:
+        async with connect("ws://api.devnet.solana.com") as websocket:
+            await websocket.logs_subscribe()
+            first_resp = await websocket.recv()
+            subscription_id = first_resp.result
+            async for idx, msg in enumerate(websocket):
+                if idx == 3:
+                    break
+                print(msg)
+            await websocket.logs_unsubscribe(subscription_id)
+
+    asyncio.run(main())
+
 Additional Resources:
 
 Check out `anchorpy <https://kevinheavey.github.io/anchorpy/>`_, a Python client for `Anchor
 <https://project-serum.github.io/anchor/getting-started/introduction.html>`_ based programs on Solana.
+
 
 """  # pylint: disable=line-too-long # noqa: E501
 import sys

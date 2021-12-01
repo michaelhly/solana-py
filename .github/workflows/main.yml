@@ -70,6 +70,7 @@ jobs:
             'integration/test_async_token_client.py',
             'integration/test_http_client.py',
             'integration/test_token_client.py',
+            'integration/test_websockets.py',
             'unit'
           ]
 

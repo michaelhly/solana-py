@@ -16,4 +16,5 @@
   "python.linting.pydocstyleEnabled": true,
   "editor.formatOnSave": true,
   "python.languageServer": "Jedi",
+  "autoDocstring.docstringFormat": "sphinx",
 }

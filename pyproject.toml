@@ -31,6 +31,10 @@ requests = "^2.24"
 typing-extensions = "^3.10.0"
 cachetools = "^4.2.2"
 types-cachetools = "^4.2.4"
+jsonrpcclient = "^4.0.1"
+websockets = "^10.1"
+jsonrpcserver = "^5.0.4"
+apischema = "^0.16.1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
@@ -47,6 +51,7 @@ types-requests = "^2.25.11"
 pytest-asyncio = "^0.16.0"
 pytest-cov = "^3.0.0"
 sphinx-rtd-theme = "^1.0.0"
+asyncstdlib = "^3.10.2"
 
 
 [build-system]
