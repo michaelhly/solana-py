@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0] - 2021-12-02
+
+## Added
+
+- Websockets support ([#144](https://github.com/michaelhly/solana-py/pull/144))
+- New client functions ([#139](https://github.com/michaelhly/solana-py/pull/139))
+- A timeout param for `Client` and `AsyncClient` ([#146](https://github.com/michaelhly/solana-py/pull/146))
 
 ## [0.18.3] - 2021-11-20
 
