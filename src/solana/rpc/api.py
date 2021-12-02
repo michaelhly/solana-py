@@ -52,6 +52,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
         and pass that value in your ``.send_transaction`` calls.
+    :param timeout: HTTP request timeout in seconds.
 
     """
 
@@ -60,10 +61,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
         blockhash_cache: Union[BlockhashCache, bool] = False,
+        timeout: float = 10,
     ):
         """Init API client."""
         super().__init__(commitment, blockhash_cache)
-        self._provider = http.HTTPProvider(endpoint)
+        self._provider = http.HTTPProvider(endpoint, timeout=timeout)
 
     def is_connected(self) -> bool:
         """Health check.

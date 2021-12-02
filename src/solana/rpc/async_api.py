@@ -35,6 +35,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
         and pass that value in your ``.send_transaction`` calls.
+    :param timeout: HTTP request timeout in seconds.
     """
 
     def __init__(
@@ -42,10 +43,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
         blockhash_cache: Union[BlockhashCache, bool] = False,
+        timeout: float = 10,
     ) -> None:
         """Init API client."""
         super().__init__(commitment, blockhash_cache)
-        self._provider = async_http.AsyncHTTPProvider(endpoint)
+        self._provider = async_http.AsyncHTTPProvider(endpoint, timeout=timeout)
 
     async def __aenter__(self) -> "AsyncClient":
         """Use as a context manager."""

@@ -10,6 +10,8 @@ import requests
 from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI, RPCMethod, RPCResponse
 
+DEFAULT_TIMEOUT = 10
+
 
 def get_default_endpoint() -> URI:
     """Get the default http rpc endpoint."""
@@ -19,11 +21,12 @@ def get_default_endpoint() -> URI:
 class _HTTPProviderCore(FriendlyJsonSerde):
     logger = logging.getLogger("solanaweb3.rpc.httprpc.HTTPClient")
 
-    def __init__(self, endpoint: Optional[str] = None):
+    def __init__(self, endpoint: Optional[str] = None, timeout: float = DEFAULT_TIMEOUT):
         """Init."""
         self._request_counter = itertools.count()
         self.endpoint_uri = get_default_endpoint() if not endpoint else URI(endpoint)
         self.health_uri = URI(f"{self.endpoint_uri}/health")
+        self.timeout = timeout
 
     def _build_request_kwargs(
         self, request_id: int, method: RPCMethod, params: Tuple[Any, ...], is_async: bool
