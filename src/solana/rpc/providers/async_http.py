@@ -11,10 +11,10 @@ from .core import _HTTPProviderCore
 class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     """Async HTTP provider to interact with the http rpc endpoint."""
 
-    def __init__(self, endpoint: Optional[str] = None):
+    def __init__(self, endpoint: Optional[str] = None, timeout: float = 10):
         """Init AsyncHTTPProvider."""
         super().__init__(endpoint)
-        self.session = httpx.AsyncClient()
+        self.session = httpx.AsyncClient(timeout=timeout)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
