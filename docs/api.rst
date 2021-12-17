@@ -15,6 +15,12 @@ Async API Client
    .. autoclass:: solana.rpc.async_api.AsyncClient
         :members:
 
+Websockets Client
+=================
+
+.. automodule:: solana.rpc.websocket_api
+    :members:
+
 Commitment
 ==========
 

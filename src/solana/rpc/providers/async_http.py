@@ -5,16 +5,16 @@ import httpx
 
 from ..types import RPCMethod, RPCResponse
 from .async_base import AsyncBaseProvider
-from .core import _HTTPProviderCore
+from .core import _HTTPProviderCore, DEFAULT_TIMEOUT
 
 
 class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     """Async HTTP provider to interact with the http rpc endpoint."""
 
-    def __init__(self, endpoint: Optional[str] = None):
+    def __init__(self, endpoint: Optional[str] = None, timeout: float = DEFAULT_TIMEOUT):
         """Init AsyncHTTPProvider."""
         super().__init__(endpoint)
-        self.session = httpx.AsyncClient()
+        self.session = httpx.AsyncClient(timeout=timeout)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""

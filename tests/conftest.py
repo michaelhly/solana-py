@@ -9,6 +9,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
+from solana.rpc.commitment import Processed
 
 
 class Clients(NamedTuple):
@@ -121,7 +122,7 @@ def freeze_authority() -> Keypair:
 @pytest.fixture(scope="session")
 def test_http_client(docker_services) -> Client:
     """Test http_client.is_connected."""
-    http_client = Client()
+    http_client = Client(commitment=Processed)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
@@ -130,7 +131,7 @@ def test_http_client(docker_services) -> Client:
 @pytest.fixture(scope="session")
 def test_http_client_cached_blockhash(docker_services) -> Client:
     """Test http_client.is_connected."""
-    http_client = Client(blockhash_cache=True)
+    http_client = Client(commitment=Processed, blockhash_cache=True)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
@@ -139,7 +140,7 @@ def test_http_client_cached_blockhash(docker_services) -> Client:
 @pytest.fixture(scope="session")
 def test_http_client_async(docker_services, event_loop) -> AsyncClient:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
-    http_client = AsyncClient()
+    http_client = AsyncClient(commitment=Processed)
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())
@@ -155,7 +156,7 @@ def test_http_client_async_cached_blockhash(
     docker_services, event_loop  # pylint: disable=redefined-outer-name
 ) -> AsyncClient:
     """Test http_client.is_connected."""
-    http_client = AsyncClient(blockhash_cache=True)
+    http_client = AsyncClient(commitment=Processed, blockhash_cache=True)
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())

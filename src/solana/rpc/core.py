@@ -1,12 +1,12 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
 from base64 import b64encode
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 try:
     from typing import Literal  # type: ignore
 except ImportError:
-    from typing_extensions import Literal
+    from typing_extensions import Literal  # type: ignore
 
 from warnings import warn
 
@@ -19,7 +19,14 @@ from solana.rpc import types
 from solana.transaction import Transaction
 
 from .commitment import Commitment, Finalized
-from .providers import async_http, http
+
+
+class RPCException(Exception):
+    """Raised when RPC method returns an error result."""
+
+
+class UnconfirmedTxError(Exception):
+    """Raise when confirming a transaction times out."""
 
 
 class _ClientCore:  # pylint: disable=too-few-public-methods
@@ -43,7 +50,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def __init__(self, commitment: Optional[Commitment] = None, blockhash_cache: Union[BlockhashCache, bool] = False):
         self._commitment = commitment or Finalized
         self.blockhash_cache: Union[BlockhashCache, Literal[False]] = (
-            BlockhashCache() if blockhash_cache is True else blockhash_cache
+            BlockhashCache()
+            if blockhash_cache is True
+            else cast(Union[BlockhashCache, Literal[False]], blockhash_cache)
         )
 
     def _get_balance_args(
@@ -76,14 +85,24 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getConfirmedBlock"), slot, encoding
 
     @staticmethod
+    def _get_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
+        return types.RPCMethod("getBlock"), slot, encoding
+
+    @staticmethod
     def _get_confirmed_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
         if end_slot:
             return types.RPCMethod("getConfirmedBlocks"), start_slot, end_slot
         return types.RPCMethod("getConfirmedBlocks"), start_slot
 
     @staticmethod
+    def _get_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
+        if end_slot:
+            return types.RPCMethod("getBlocks"), start_slot, end_slot
+        return types.RPCMethod("getBlocks"), start_slot
+
+    @staticmethod
     def _get_confirmed_signature_for_address2_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         warn(
             "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
@@ -93,6 +112,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         opts: Dict[str, Union[int, str]] = {}
         if before:
             opts["before"] = before
+        if until:
+            opts["until"] = until
         if limit:
             opts["limit"] = limit
 
@@ -104,11 +125,13 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _get_signatures_for_address_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], limit: Optional[int]
+        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
         opts: Dict[str, Union[int, str]] = {}
         if before:
             opts["before"] = before
+        if until:
+            opts["until"] = until
         if limit:
             opts["limit"] = limit
 
@@ -121,6 +144,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _get_confirmed_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
         return types.RPCMethod("getConfirmedTransaction"), tx_sig, encoding
+
+    @staticmethod
+    def _get_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
+        return types.RPCMethod("getTransaction"), tx_sig, encoding
 
     def _get_epoch_info_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getEpochInfo"), {self._comm_key: commitment or self._commitment}
@@ -378,11 +405,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("setLogFilter"), log_filter
 
     @staticmethod
-    def _post_send(
-        resp: types.RPCResponse, provider: Union[http.HTTPProvider, async_http.AsyncHTTPProvider]
-    ) -> types.RPCResponse:
-        if resp.get("error"):
-            provider.logger.error(resp.get("error"))
+    def _post_send(resp: types.RPCResponse) -> types.RPCResponse:
+        maybe_error = resp.get("error")
+        if maybe_error is not None:
+            raise RPCException(maybe_error)
         if not resp.get("result"):
             raise Exception("Failed to send transaction")
         return resp

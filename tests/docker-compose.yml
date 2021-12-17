@@ -1,8 +1,12 @@
 version: '3'
 services:
   localnet:
-    image: "solanalabs/solana:stable"
+    image: "solanalabs/solana:v1.8.3"
     ports:
       - "8899:8899"
       - "8900:8900"
       - "9900:9900"
+    environment:
+      [
+        SOLANA_RUN_SH_VALIDATOR_ARGS=--rpc-pubsub-enable-vote-subscription
+      ]

@@ -1,8 +1,11 @@
 """Unit tests for solana.account."""
+from base64 import b64decode
+
 from base58 import b58decode
 from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
+from solana._layouts.account import VERSIONS_LAYOUT
 from solana.account import Account
 
 
@@ -70,3 +73,17 @@ def test_account_keypair():
     actual_account = Account(decoded_keypair[:32])
     assert expected_account.public_key() == actual_account.public_key()
     assert expected_account.secret_key() == actual_account.secret_key()
+
+
+def test_decode_nonce_account_data():
+    b64_data = (
+        "AAAAAAEAAADbpRzeSWD3B/Ei2SfSmwM6qTDlK5pCxRlx3Vsnr3+v14Bbu3aJmuW0cG"
+        "J2BVvh7C9g5qNUM+I200HP5eSQ8MHBiBMAAAAAAAA="
+    )
+
+    raw_data = b64decode(b64_data)
+    parsed = VERSIONS_LAYOUT.parse(raw_data)
+
+    assert parsed.state.data.authority == b58decode("FnQK7qe8rkD3x2GrA8ERptTd7bp7KwqouvaQYtr1uuaE")
+    assert parsed.state.data.blockhash == b58decode("9e4KCe4NTbA87aUVugjo6Yb1EVittdxy1RQu6AELCTL4")
+    assert parsed.state.data.fee_calculator.lamports_per_signature == 5000

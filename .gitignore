@@ -27,3 +27,6 @@ build
 dist
 *.egg
 *.egg-info
+
+# solana validator logs
+test-ledger/
