@@ -6,6 +6,7 @@ import requests
 from ..types import RPCMethod, RPCResponse
 from .base import BaseProvider
 from .core import _HTTPProviderCore
+from ...exceptions import handle_exceptions, SolanaRpcException
 
 
 class HTTPProvider(BaseProvider, _HTTPProviderCore):
@@ -15,6 +16,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         """String definition for HTTPProvider."""
         return f"HTTP RPC connection {self.endpoint_uri}"
 
+    @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
     def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
         """Make an HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(method=method, params=params, is_async=False)

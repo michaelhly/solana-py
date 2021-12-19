@@ -6,6 +6,7 @@ import httpx
 from ..types import RPCMethod, RPCResponse
 from .async_base import AsyncBaseProvider
 from .core import _HTTPProviderCore, DEFAULT_TIMEOUT
+from ...exceptions import handle_async_exceptions, SolanaRpcException
 
 
 class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
@@ -20,6 +21,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         """String definition for HTTPProvider."""
         return f"Async HTTP RPC connection {self.endpoint_uri}"
 
+    @handle_async_exceptions(SolanaRpcException, Exception)
     async def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(method=method, params=params, is_async=True)
