@@ -118,6 +118,20 @@ def freeze_authority() -> Keypair:
     return Keypair.from_seed(bytes([6] * PublicKey.LENGTH))
 
 
+@pytest.fixture(scope="session")
+def unit_test_http_client() -> Client:
+    """Client to be used in unit tests."""
+    client = Client(commitment=Processed)
+    return client
+
+
+@pytest.fixture(scope="session")
+def unit_test_http_client_async() -> AsyncClient:
+    """Async client to be used in unit tests."""
+    client = AsyncClient(commitment=Processed)
+    return client
+
+
 @pytest.mark.integration
 @pytest.fixture(scope="session")
 def test_http_client(docker_services) -> Client:
