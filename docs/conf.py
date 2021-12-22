@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path.cwd().parent / "src"))
 project = "solana.py"
 copyright = "2020, Michael Huang"
 # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.4
-version = "0.19.0"
+version = "0.19.1"
 author = "Michael Huang"
 
 
