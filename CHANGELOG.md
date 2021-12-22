@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.19.1] - 2021-12-21
+
+## Added
+
+- Custom solana-py RPC error handling ([#152](https://github.com/michaelhly/solana-py/pull/152))
+
 ## [0.19.0] - 2021-12-02
 
 ## Added
