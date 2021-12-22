@@ -35,6 +35,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _data_slice_key = "dataSlice"
     _skip_preflight_key = "skipPreflight"
     _preflight_comm_key = "preflightCommitment"
+    _before_rpc_config_key = "before"
+    _limit_rpc_config_key = "limit"
+    _until_rpc_config_key = "until"
     _get_cluster_nodes = types.RPCMethod("getClusterNodes")
     _get_epoch_schedule = types.RPCMethod("getEpochSchedule")
     _get_fee_rate_governor = types.RPCMethod("getFeeRateGovernor")
@@ -99,46 +102,60 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             return types.RPCMethod("getBlocks"), start_slot, end_slot
         return types.RPCMethod("getBlocks"), start_slot
 
-    @staticmethod
     def _get_confirmed_signature_for_address2_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
+        self,
+        account: Union[str, Keypair, PublicKey],
+        before: Optional[str],
+        until: Optional[str],
+        limit: Optional[int],
+        commitment: Optional[Commitment],
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
         warn(
             "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
             "please use solana.rpc.api.getSignaturesForAddress",
             category=DeprecationWarning,
         )
-        opts: Dict[str, Union[int, str]] = {}
-        if before:
-            opts["before"] = before
-        if until:
-            opts["until"] = until
-        if limit:
-            opts["limit"] = limit
-
-        if isinstance(account, Keypair):
-            account = str(account.public_key)
-        if isinstance(account, PublicKey):
-            account = str(account)
+        opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
+        account = self._get_signature_for_address_account_arg(account)
         return types.RPCMethod("getConfirmedSignaturesForAddress2"), account, opts
 
-    @staticmethod
     def _get_signatures_for_address_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
-        opts: Dict[str, Union[int, str]] = {}
-        if before:
-            opts["before"] = before
-        if until:
-            opts["until"] = until
-        if limit:
-            opts["limit"] = limit
+        self,
+        account: Union[str, Keypair, PublicKey],
+        before: Optional[str],
+        until: Optional[str],
+        limit: Optional[int],
+        commitment: Optional[Commitment],
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
+        opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
+        account = self._get_signature_for_address_account_arg(account)
+        return types.RPCMethod("getSignaturesForAddress"), account, opts
 
+    @staticmethod
+    def _get_signature_for_address_account_arg(account: Union[str, Keypair, PublicKey]) -> str:
         if isinstance(account, Keypair):
             account = str(account.public_key)
         if isinstance(account, PublicKey):
             account = str(account)
-        return types.RPCMethod("getSignaturesForAddress"), account, opts
+        return account
+
+    def _get_signature_for_address_config_arg(
+        self,
+        before: Optional[str],
+        until: Optional[str],
+        limit: Optional[int],
+        commitment: Optional[Commitment],
+    ) -> Dict[str, Union[int, str, Commitment]]:
+        opts: Dict[str, Union[int, str, Commitment]] = {}
+        if before:
+            opts[self._before_rpc_config_key] = before
+        if until:
+            opts[self._until_rpc_config_key] = until
+        if limit:
+            opts[self._limit_rpc_config_key] = limit
+        if commitment:
+            opts[self._comm_key] = commitment
+        return opts
 
     @staticmethod
     def _get_confirmed_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
