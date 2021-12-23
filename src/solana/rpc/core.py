@@ -225,7 +225,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         encoding: Optional[str],
         data_slice: Optional[types.DataSliceOpts],
         data_size: Optional[int],
-        memcmp_opts: Optional[List[types.MemcmpOpts]]
+        memcmp_opts: Optional[List[types.MemcmpOpts]],
+        with_context: Optional[bool]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:  # pylint: disable=too-many-arguments
         opts: Dict[str, Any] = {}
         for opt in [] if not memcmp_opts else memcmp_opts:
@@ -238,6 +239,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             opts[self._encoding_key] = encoding
         if commitment:
             opts[self._comm_key] = commitment
+        if with_context is not None:
+            opts['withContext'] = with_context
 
         if not opts:
             return types.RPCMethod("getProgramAccounts"), str(pubkey)

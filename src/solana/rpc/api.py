@@ -829,7 +829,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         encoding: Optional[str] = None,
         data_slice: Optional[types.DataSliceOpts] = None,
         data_size: Optional[int] = None,
-        memcmp_opts: Optional[List[types.MemcmpOpts]] = None
+        memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
+        with_context: Optional[bool] = None
     ) -> types.RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
  
@@ -841,7 +842,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             `length`: <usize> fields; only available for "base58" or "base64" encoding.
         :param data_size: (optional) Option to compare the program account data length with the provided data size.
         :param memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
-        :param allow_error: (optional) Allow wrong aruments for method, like no section 'filter' in json.
+        :param with_context: (optional ) Option to wrap the result in an RpcResponse JSON object.
+
 
         >>> solana_client = Client("http://localhost:8899")
         >>> memcmp_opts = [
@@ -865,7 +867,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             encoding=encoding,
             data_slice=data_slice,
             data_size=data_size,
-            memcmp_opts=memcmp_opts
+            memcmp_opts=memcmp_opts,
+            with_context=with_context
         )
         return self._provider.make_request(*args)
 
