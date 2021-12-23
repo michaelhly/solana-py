@@ -25,8 +25,10 @@ class Keypair:
     """
 
     def __init__(self, keypair: Optional[nacl.public.PrivateKey] = None) -> None:
-        """Create a new keypair instance. Generate random keypair if no keypair is provided.
-        Initialize class variables."""
+        """Create a new keypair instance.
+
+        Generate random keypair if no keypair is provided. Initialize class variables.
+        """
         if keypair is None:
             # the PrivateKey object comes with a public key too
             self._keypair = nacl.public.PrivateKey.generate()
