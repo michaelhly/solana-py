@@ -18,8 +18,8 @@ SYSVAR_STAKE_HISTORY_PUBKEY: PublicKey = PublicKey("SysvarStakeHistory1111111111
 
 SYSVAR_EPOCH_SCHEDULE_PUBKEY: PublicKey = PublicKey("SysvarEpochSchedu1e111111111111111111111111")
 """The EpochSchedule sysvar contains epoch scheduling constants that are set in genesis, and enables calculating the
-number of slots in a given epoch, the epoch for a given slot, etc. (Note: the epoch schedule is distinct from the `leader
-schedule <https://docs.solana.com/terminology#leader-schedule>`_).
+number of slots in a given epoch, the epoch for a given slot, etc. (Note: the epoch schedule is distinct from the
+`leader schedule <https://docs.solana.com/terminology#leader-schedule>`_).
 """
 
 SYSVAR_INSTRUCTIONS_PUBKEY: PublicKey = PublicKey("Sysvar1nstructions1111111111111111111111111")
