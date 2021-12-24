@@ -25,12 +25,19 @@ class Keypair:
     """
 
     def __init__(self, keypair: Optional[nacl.public.PrivateKey] = None) -> None:
-        """Create a new keypair instance. Generate random keypair if no keypair is provided."""
+        """Create a new keypair instance.
+
+        Generate random keypair if no keypair is provided. Initialize class variables.
+        """
         if keypair is None:
             # the PrivateKey object comes with a public key too
             self._keypair = nacl.public.PrivateKey.generate()
         else:
             self._keypair = keypair
+
+        verify_key = signing.SigningKey(bytes(self._keypair)).verify_key
+
+        self._public_key = solana.publickey.PublicKey(verify_key)
 
     @classmethod
     def generate(cls) -> Keypair:
@@ -88,8 +95,7 @@ class Keypair:
     @property
     def public_key(self) -> solana.publickey.PublicKey:
         """The public key for this keypair."""
-        verify_key = signing.SigningKey(self.seed).verify_key
-        return solana.publickey.PublicKey(verify_key)
+        return self._public_key
 
     @property
     def secret_key(self) -> bytes:
@@ -105,3 +111,7 @@ class Keypair:
     def __ne__(self, other) -> bool:
         """Implemented by negating __eq__."""
         return not (self == other)  # pylint: disable=superfluous-parens
+
+    def __hash__(self):
+        """Returns a unique hash for set operations."""
+        return hash(self._keypair)

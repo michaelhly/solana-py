@@ -34,3 +34,14 @@ def test_create_from_seed() -> None:
     keypair = Keypair.from_seed(seed)
     assert str(keypair.public_key) == "2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1"
     assert keypair.seed == seed
+
+
+def test_set_operations() -> None:
+    """Tests that a keypair is now hashable with the appropriate set operations."""
+    keypair_primary = Keypair.generate()
+    keypair_secondary = Keypair.generate()
+    keypair_duplicate = keypair_secondary
+    keypair_set = {keypair_primary, keypair_secondary, keypair_duplicate}
+    assert keypair_primary.__hash__() != keypair_secondary.__hash__()
+    assert keypair_secondary.__hash__() == keypair_duplicate.__hash__()
+    assert len(keypair_set) == 2
