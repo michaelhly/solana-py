@@ -5,7 +5,7 @@ from hashlib import sha256
 from typing import Any, List, Optional, Tuple, Union
 
 import base58
-from nacl.bindings import crypto_core_ed25519_is_valid_point
+from nacl.bindings import crypto_core_ed25519_is_valid_point  # type: ignore
 
 from solana.utils import helpers
 
