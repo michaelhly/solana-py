@@ -5,8 +5,9 @@ from hashlib import sha256
 from typing import Any, List, Optional, Tuple, Union
 
 import base58
+from nacl.bindings import crypto_core_ed25519_is_valid_point
 
-from solana.utils import ed25519_base, helpers
+from solana.utils import helpers
 
 
 class OnCurveException(Exception):
@@ -104,4 +105,4 @@ class PublicKey:
     @staticmethod
     def _is_on_curve(pubkey_bytes: bytes) -> bool:
         """Verify the point is on curve or not."""
-        return ed25519_base.is_on_curve(pubkey_bytes)
+        return crypto_core_ed25519_is_valid_point(pubkey_bytes)
