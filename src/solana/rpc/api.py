@@ -349,6 +349,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         before: Optional[str] = None,
         until: Optional[str] = None,
         limit: Optional[int] = None,
+        commitment: Optional[Commitment] = None,
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -360,6 +361,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             If not provided the search starts from the top of the highest max confirmed block.
         :param until: (optional) Search until this transaction signature, if found before limit reached.
         :param limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
+        :param commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
@@ -370,7 +372,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
            'slot': 4290}],
          'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_confirmed_signature_for_address2_args(account, before, until, limit)
+        args = self._get_confirmed_signature_for_address2_args(account, before, until, limit, commitment)
         return self._provider.make_request(*args)
 
     def get_signatures_for_address(
@@ -379,6 +381,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         before: Optional[str] = None,
         until: Optional[str] = None,
         limit: Optional[int] = None,
+        commitment: Optional[Commitment] = None,
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -390,6 +393,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             If not provided the search starts from the top of the highest max confirmed block.
         :param until: (optional) Search until this transaction signature, if found before limit reached.
         :param limit: (optional) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
+        :param commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
@@ -400,7 +404,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
            'slot': 4290}],
          'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_signatures_for_address_args(account, before, until, limit)
+        args = self._get_signatures_for_address_args(account, before, until, limit, commitment)
         return self._provider.make_request(*args)
 
     def get_confirmed_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
