@@ -35,6 +35,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _data_slice_key = "dataSlice"
     _skip_preflight_key = "skipPreflight"
     _preflight_comm_key = "preflightCommitment"
+    _max_retries = "maxRetries"
     _before_rpc_config_key = "before"
     _limit_rpc_config_key = "limit"
     _until_rpc_config_key = "until"
@@ -356,15 +357,17 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
         if isinstance(txn, bytes):
             txn = b64encode(txn).decode("utf-8")
-
+        params = {
+                self._skip_preflight_key: opts.skip_preflight,
+                self._preflight_comm_key: opts.preflight_commitment,
+                self._encoding_key: "base64",  
+            }
+        if opts.max_retries is not None:
+            params[self._max_retries] = opts.max_retries        
         return (
             types.RPCMethod("sendTransaction"),
             txn,
-            {
-                self._skip_preflight_key: opts.skip_preflight,
-                self._preflight_comm_key: opts.preflight_commitment,
-                self._encoding_key: "base64",
-            },
+            params,
         )
 
     @staticmethod
