@@ -130,12 +130,13 @@ class Transaction:
         if not fee_payer:
             raise AttributeError("transaction feePayer required")
 
-        account_metas, program_ids = [], set()
+        account_metas, program_ids = [], []
         for instr in self.instructions:
             if not instr.program_id:
                 raise AttributeError("invalid instruction:", instr)
             account_metas.extend(instr.keys)
-            program_ids.add(str(instr.program_id))
+            if str(instr.program_id) not in program_ids:
+                program_ids.append(str(instr.program_id))
 
         # Append programID account metas.
         for pg_id in program_ids:
