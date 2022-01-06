@@ -25,6 +25,10 @@ class RPCException(Exception):
     """Raised when RPC method returns an error result."""
 
 
+class RPCNoResultException(Exception):
+    """Raised when an RPC method returns no result."""
+
+
 class UnconfirmedTxError(Exception):
     """Raise when confirming a transaction times out."""
 
@@ -400,17 +404,17 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _post_send(resp: types.RPCResponse) -> types.RPCResponse:
-        maybe_error = resp.get("error")
-        if maybe_error is not None:
-            raise RPCException(maybe_error)
+        error = resp.get("error")
+        if error:
+            raise RPCException(error)
         if not resp.get("result"):
-            raise Exception("Failed to send transaction")
+            raise RPCNoResultException("Failed to send transaction")
         return resp
 
     @staticmethod
     def parse_recent_blockhash(blockhash_resp: types.RPCResponse) -> Blockhash:
         """Extract blockhash from JSON RPC result."""
-        if not blockhash_resp["result"]:
+        if not blockhash_resp.get("result"):
             raise RuntimeError("failed to get recent blockhash")
         return Blockhash(blockhash_resp["result"]["value"]["blockhash"])
 
