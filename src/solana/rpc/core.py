@@ -162,9 +162,13 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_confirmed_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
         return types.RPCMethod("getConfirmedTransaction"), tx_sig, encoding
 
-    @staticmethod
-    def _get_transaction_args(tx_sig: str, encoding: str = "json", commitment: Commitment = Finalized) -> Tuple[types.RPCMethod, str, str, str]:
-        return types.RPCMethod("getTransaction"), tx_sig, encoding, commitment
+    def _get_transaction_args(self, tx_sig: str, encoding: str = "json", commitment: Commitment = None) -> Tuple[types.RPCMethod, str, Dict[str, Union[str, Commitment]]]:
+
+        return (
+            types.RPCMethod("getTransaction"), 
+            tx_sig, 
+            {self._encoding_key: encoding, self._comm_key: commitment or self._commitment}
+        )
 
     def _get_epoch_info_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getEpochInfo"), {self._comm_key: commitment or self._commitment}
