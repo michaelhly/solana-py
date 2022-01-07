@@ -164,7 +164,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_transaction_args(
         self, tx_sig: str, encoding: str = "json", commitment: Commitment = None
-        ) -> Tuple[types.RPCMethod, str, Dict[str, Union[str, Commitment]]]:
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[str, Commitment]]]:
 
         return (
             types.RPCMethod("getTransaction"),
@@ -369,7 +369,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             self._encoding_key: "base64",
         }
         if opts.max_retries is not None:
-            params[self._max_retries] = opts.max_retries        
+            params[self._max_retries] = opts.max_retries
         return (
             types.RPCMethod("sendTransaction"),
             txn,
