@@ -90,7 +90,7 @@ class TxOpts(NamedTuple):
     preflight_commitment: Commitment = Finalized
     """Commitment level to use for preflight."""
     max_retries: int = None
-    """Maximum number of times for the RPC node to retry sending the transaction to the leader. 
-    If this parameter not provided, the RPC node will retry the transaction until it is finalized or until the blockhash expires
+    """Maximum number of times for the RPC node to retry sending the transaction to the leader.
+    If this parameter not provided, the RPC node will retry the transaction until it is finalized
+    or until the blockhash expires
     """
-

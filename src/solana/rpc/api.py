@@ -441,7 +441,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_transaction_args(tx_sig, encoding)
         return self._provider.make_request(*args)
 
-    def get_transaction(self, tx_sig: str, encoding: str = "json", commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_transaction(
+        self, tx_sig: str, encoding: str = "json", commitment: Optional[Commitment] = None
+        ) -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
 
         :param tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
