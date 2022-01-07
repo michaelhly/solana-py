@@ -359,11 +359,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _send_raw_transaction_args(
         self, txn: Union[bytes, str], opts: types.TxOpts
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[bool, Commitment, str]]]:
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[bool, Commitment, str, int]]]:
 
         if isinstance(txn, bytes):
             txn = b64encode(txn).decode("utf-8")
-        params = {
+        params: Dict[str, Union[bool, Commitment, str, int]] = {
             self._skip_preflight_key: opts.skip_preflight,
             self._preflight_comm_key: opts.preflight_commitment,
             self._encoding_key: "base64",
