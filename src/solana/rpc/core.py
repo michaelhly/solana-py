@@ -39,6 +39,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _data_slice_key = "dataSlice"
     _skip_preflight_key = "skipPreflight"
     _preflight_comm_key = "preflightCommitment"
+    _max_retries = "maxRetries"
     _before_rpc_config_key = "before"
     _limit_rpc_config_key = "limit"
     _until_rpc_config_key = "until"
@@ -165,9 +166,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_confirmed_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
         return types.RPCMethod("getConfirmedTransaction"), tx_sig, encoding
 
-    @staticmethod
-    def _get_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
-        return types.RPCMethod("getTransaction"), tx_sig, encoding
+    def _get_transaction_args(
+        self, tx_sig: str, encoding: str = "json", commitment: Commitment = None
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[str, Commitment]]]:
+
+        return (
+            types.RPCMethod("getTransaction"),
+            tx_sig,
+            {self._encoding_key: encoding, self._comm_key: commitment or self._commitment},
+        )
 
     def _get_epoch_info_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getEpochInfo"), {self._comm_key: commitment or self._commitment}
@@ -356,19 +363,21 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _send_raw_transaction_args(
         self, txn: Union[bytes, str], opts: types.TxOpts
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[bool, Commitment, str]]]:
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[bool, Commitment, str, int]]]:
 
         if isinstance(txn, bytes):
             txn = b64encode(txn).decode("utf-8")
-
+        params: Dict[str, Union[bool, Commitment, str, int]] = {
+            self._skip_preflight_key: opts.skip_preflight,
+            self._preflight_comm_key: opts.preflight_commitment,
+            self._encoding_key: "base64",
+        }
+        if opts.max_retries is not None:
+            params[self._max_retries] = opts.max_retries
         return (
             types.RPCMethod("sendTransaction"),
             txn,
-            {
-                self._skip_preflight_key: opts.skip_preflight,
-                self._preflight_comm_key: opts.preflight_commitment,
-                self._encoding_key: "base64",
-            },
+            params,
         )
 
     @staticmethod

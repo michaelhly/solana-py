@@ -441,7 +441,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_transaction_args(tx_sig, encoding)
         return self._provider.make_request(*args)
 
-    def get_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
+    def get_transaction(
+        self, tx_sig: str, encoding: str = "json", commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
 
         :param tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
@@ -449,6 +451,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             `transaction.message.instructions` list.
         :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
             "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         >>> solana_client = Client("http://localhost:8899")
         >>> solana_client.get_transaction("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy") # doctest: +SKIP
@@ -472,7 +475,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
            'signatures': ['3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy']}},
          'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_transaction_args(tx_sig, encoding)
+        args = self._get_transaction_args(tx_sig, encoding, commitment)
         return self._provider.make_request(*args)
 
     def get_epoch_info(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
