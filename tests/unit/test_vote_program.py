@@ -82,15 +82,15 @@ def test_withdraw_from_vote_account():
     vote_account_pubkey = PublicKey("CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk")
     receiver_account_pubkey = PublicKey("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
 
+    # solana withdraw-from-vote-account --dump-transaction-message \
+    #   CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK \
+    # --authorized-withdrawer withdrawer.json \
+    # 2 \
+    # --blockhash Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH \
+    # --sign-only -k withdrawer.json
     wire_msg = base64.b64decode(
         b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1wqxUGDtH5ah3TqEKWjcTmfHkpZC1h57NJL8Sx7Q6Olm2F2O70oOvzt1HgIVu+nySaSrWtJiK1eDacPPDWRxCwFgdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMBAgAMAwAAAACUNXcAAAAA"
     )
-
-    # wire_msg = base64.b64decode(
-    #     b"AgEBBcaUWaMv01yl0qeT4Dkw0FHdbvzYEdTlyXqXUPuOYBZ3OoXlJ9RH/kj2LaCcgccSvTWPYki2akUdJpF3vg1pnXCrFQYO0flqHdOoQpaNxOZ8eSlkLWHns0kvxLHtDo6WbYXY7vSg6/O3UeAhW76fJJpKta0mIrV4Npw88NZHELAWB2FIHTV0dLt8TXYk69O9s9g1XnPREEP8DaNTgAAAAACPGtBoxLsWOZpH76a8WvdcTpdvMxRMwlQikhOtRYHMbAEEAwIDAQwDAAAAAJQ1dwAAAAA="
-    # )
-
-    expected_txn = msglib.Message.deserialize(wire_msg)
 
     txn = txlib.Transaction(fee_payer=withdrawer_keypair.public_key)
     txn.recent_blockhash = "Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH"
