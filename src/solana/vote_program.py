@@ -31,16 +31,16 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Transac
     >>> from solana.publickey import PublicKey
     >>> from solana.keypair import Keypair
     >>> vote = PublicKey(1)
-    >>> withdrawer = Keypair.from_seed([0]*32)
-    >>> tx = vote_program.withdraw_from_vote_account(
-    ...    vote_program.WithdrawFromVoteAccountParams(
+    >>> withdrawer = Keypair.from_seed(bytes([0]*32))
+    >>> instruction = withdraw_from_vote_account(
+    ...    WithdrawFromVoteAccountParams(
     ...        vote_account_from_pubkey=vote,
     ...        to_pubkey=withdrawer,
     ...        withdrawer=withdrawer,
     ...        lamports=3_000_000_000,
     ...    )
     ... )
-    >>> type(instrection)
+    >>> type(instruction)
     <class 'solana.transaction.TransactionInstruction'>
     """
     data = VOTE_INSTRUCTIONS_LAYOUT.build(
