@@ -104,9 +104,9 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         freeze_authority: Optional[PublicKey],
         skip_confirmation: bool,
         balance_needed: int,
+        mint_keypair: Keypair,
         cls: Union[Type[Token], Type[AsyncToken]],
     ) -> Tuple[Union[Token, AsyncToken], Transaction, Keypair, Keypair, TxOpts]:
-        mint_keypair = Keypair()
         token = cls(conn, mint_keypair.public_key, program_id, payer)  # type: ignore
         # Construct transaction
         txn = Transaction()
