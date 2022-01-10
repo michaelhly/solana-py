@@ -96,6 +96,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         decimals: int,
         program_id: PublicKey,
         freeze_authority: Optional[PublicKey] = None,
+        mint_keypair: Optional[Keypair] = Keypair(),
         skip_confirmation: bool = False,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> Token:
@@ -117,7 +118,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         balance_needed = Token.get_min_balance_rent_for_exempt_for_mint(conn)
         # Construct transaction
         token, txn, payer, mint_account, opts = _TokenCore._create_mint_args(
-            conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed, cls
+            conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed, mint_keypair, cls
         )
         # Send the two instructions
         conn.send_transaction(txn, payer, mint_account, opts=opts, recent_blockhash=recent_blockhash)
