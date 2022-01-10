@@ -108,6 +108,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         :param decimals: Location of the decimal place.
         :param program_id: SPL Token program account.
         :param freeze_authority: (optional) Account or multisig that can freeze token accounts.
+        :param mint_keypair: (optional) Keypair of the token.
         :param skip_confirmation: (optional) Option to skip transaction confirmation.
         :return: Token object for the newly minted token.
 
