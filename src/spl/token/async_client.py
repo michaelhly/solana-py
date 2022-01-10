@@ -96,6 +96,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         decimals: int,
         program_id: PublicKey,
         freeze_authority: Optional[PublicKey] = None,
+        mint_keypair: Optional[Keypair] = Keypair(),
         skip_confirmation: bool = False,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> AsyncToken:
@@ -107,6 +108,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         :param decimals: Location of the decimal place.
         :param program_id: SPL Token program account.
         :param freeze_authority: (optional) Account or multisig that can freeze token accounts.
+        :param mint_keypair: (optional) Keypair of the token.
         :param skip_confirmation: (optional) Option to skip transaction confirmation.
         :return: Token object for the newly minted token.
 
@@ -117,7 +119,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_mint(conn)
         # Construct transaction
         token, txn, payer, mint_account, opts = _TokenCore._create_mint_args(
-            conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed, cls
+            conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed, mint_keypair, cls
         )
         # Send the two instructions
         await conn.send_transaction(txn, payer, mint_account, opts=opts, recent_blockhash=recent_blockhash)
