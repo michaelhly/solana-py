@@ -2,7 +2,7 @@
 from enum import IntEnum
 
 from construct import Switch  # type: ignore
-from construct import Int8ul, Int32ul, Int64ul, Pass  # type: ignore
+from construct import Int8ul, Int32ul, Int64ul, VarInt, Pass  # type: ignore
 from construct import Struct as cStruct
 
 from solana._layouts.shared import PUBLIC_KEY_LAYOUT
@@ -38,13 +38,13 @@ _INITIALIZE_MINT_LAYOUT = cStruct(
 
 _INITIALIZE_MULTISIG_LAYOUT = cStruct("m" / Int8ul)
 
-_AMOUNT_LAYOUT = cStruct("amount" / Int64ul)
+_AMOUNT_LAYOUT = cStruct("amount" / VarInt)
 
 _SET_AUTHORITY_LAYOUT = cStruct(
     "authority_type" / Int8ul, "new_authority_option" / Int8ul, "new_authority" / PUBLIC_KEY_LAYOUT
 )
 
-_AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimals" / Int8ul)
+_AMOUNT2_LAYOUT = cStruct("amount" / VarInt, "decimals" / Int8ul)
 
 INSTRUCTIONS_LAYOUT = cStruct(
     "instruction_type" / Int8ul,
