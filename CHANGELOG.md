@@ -12,9 +12,6 @@
 - Add max_retries option to sendTransaction and commitment option to get_transaction ([#165](https://github.com/michaelhly/solana-py/pull/165))
 - Add a partial support for vote program ([#167](https://github.com/michaelhly/solana-py/pull/167))
 
-## Added
-
-
 ## [0.20.0] - 2021-12-30
 
 ### Changed
