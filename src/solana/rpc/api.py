@@ -1307,7 +1307,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         :param sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
-        timeout = time() + 30
+        timeout = time() + 90
         while time() < timeout:
             resp = self.get_signature_statuses([tx_sig])
             maybe_rpc_error = resp.get("error")
