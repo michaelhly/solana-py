@@ -10,7 +10,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Commitment, Confirmed
+from solana.rpc.commitment import Commitment
 from solana.rpc.types import RPCResponse, TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
 from solana.utils.helpers import decode_byte_string
@@ -89,10 +89,12 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     def _get_accounts_args(
         self,
         owner: PublicKey,
-        commitment: Commitment = Confirmed,
-        encoding: str = "jsonParsed",
+        commitment: Optional[Commitment],
+        encoding,
+        default_commitment: Commitment,
     ) -> Tuple[PublicKey, TokenAccountOpts, Commitment]:
-        return owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment
+        commitment_to_use = default_commitment if commitment is None else commitment
+        return owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment_to_use
 
     @staticmethod
     def _create_mint_args(
