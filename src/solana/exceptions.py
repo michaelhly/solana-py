@@ -11,7 +11,9 @@ class SolanaExceptionBase(Exception):
         self.error_msg = self._build_error_message(exc, func, *args, **kwargs)
 
     @staticmethod
-    def _build_error_message(exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> str:
+    def _build_error_message(
+        exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any  # pylint: disable=unused-argument
+    ) -> str:
         return f"{type(exc)} raised in {func} invokation"
 
 
@@ -32,7 +34,7 @@ def handle_exceptions(internal_exception_cls, *exception_types_caught):
             try:
                 return func(*args, **kwargs)
             except exception_types_caught as exc:
-                raise internal_exception_cls(exc, func, *args, **kwargs)
+                raise internal_exception_cls(exc, func, *args, **kwargs) from exc
 
         return argument_decorator
 
@@ -47,7 +49,7 @@ def handle_async_exceptions(internal_exception_cls, *exception_types_caught):
             try:
                 return await func(*args, **kwargs)
             except exception_types_caught as exc:
-                raise internal_exception_cls(exc, func, *args, **kwargs)
+                raise internal_exception_cls(exc, func, *args, **kwargs) from exc
 
         return argument_decorator
 
