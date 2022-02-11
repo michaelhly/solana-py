@@ -9,7 +9,7 @@ from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
-from solana.rpc.commitment import Commitment, Confirmed
+from solana.rpc.commitment import Commitment
 from solana.rpc.types import RPCResponse, TxOpts
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
 from spl.token.core import AccountInfo, MintInfo, _TokenCore
@@ -57,7 +57,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         self,
         owner: PublicKey,
         is_delegate: bool = False,
-        commitment: Commitment = Confirmed,
+        commitment: Optional[Commitment] = None,
         encoding: str = "jsonParsed",
     ) -> RPCResponse:
         """Get token accounts of the provided owner by the token's mint.
@@ -72,14 +72,16 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         valid mint cannot be found for a particular account, that account will be filtered out
         from results. jsonParsed encoding is UNSTABLE.
         """
-        args = self._get_accounts_args(owner, commitment, encoding)
+        args = self._get_accounts_args(
+            owner, commitment, encoding, self._conn._commitment  # pylint: disable=protected-access
+        )
         return (
             self._conn.get_token_accounts_by_delegate(*args)
             if is_delegate
             else self._conn.get_token_accounts_by_owner(*args)
         )
 
-    def get_balance(self, pubkey: PublicKey, commitment: Commitment = Confirmed) -> RPCResponse:
+    def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> RPCResponse:
         """Get the balance of the provided token account.
 
         :param pubkey: Public Key of the token account.
