@@ -1,11 +1,6 @@
-Solana
-======
+Core API
+========
 
-solana.account (deprecated)
----------------------------
-
-.. automodule:: solana.account
-   :members:
 
 solana.blockhash
 ----------------
