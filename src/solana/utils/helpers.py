@@ -16,7 +16,7 @@ def to_uint8_bytes(val: int) -> bytes:
 
 
 def decode_byte_string(byte_string: str, encoding: str = "base64") -> bytes:
-    """Decode a encoded string from an RPC Response."""
+    """Decode an encoded string from an RPC Response."""
     b_str = str.encode(byte_string)
     if encoding == "base64":
         return b64decode(b_str)
