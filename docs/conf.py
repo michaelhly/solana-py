@@ -19,10 +19,10 @@ sys.path.insert(0, str(Path.cwd().parent / "src"))
 # -- Project information -----------------------------------------------------
 
 project = "solana.py"
-copyright = "2020, Michael Huang"
+copyright = "2020, Michael Huang & Kevin Heavey"
 # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.4
 version = "0.21.0"
-author = "Michael Huang"
+author = ["Michael Huang", "Kevin Heavey"]
 
 
 # -- General configuration ---------------------------------------------------
