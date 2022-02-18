@@ -322,7 +322,7 @@ class Transaction:
 
     def __serialize(self, signed_data: bytes) -> bytes:
         if len(self.signatures) >= SIG_LENGTH * 4:
-            raise AttributeError("too many singatures to encode")
+            raise AttributeError("too many signatures to encode")
         wire_transaction = bytearray()
         # Encode signature count
         signature_count = shortvec.encode_length(len(self.signatures))
