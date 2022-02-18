@@ -41,6 +41,10 @@ start-localnet:
 stop-localnet:
 	sh bin/localnet.sh down
 
+serve:
+	python -m http.server -d _build/html
+
+
 # Minimal makefile for Sphinx documentation
 #
 

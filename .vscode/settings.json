@@ -10,5 +10,6 @@
   "editor.formatOnSave": true,
   "python.languageServer": "Jedi",
   "autoDocstring.docstringFormat": "sphinx",
-  "python.pythonPath": ".venv/bin/python"
+  "python.pythonPath": ".venv/bin/python",
+  "restructuredtext.confPath": "${workspaceFolder}/docs"
 }

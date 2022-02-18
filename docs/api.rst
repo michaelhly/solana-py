@@ -1,5 +1,8 @@
+RPC API
+-------
+
 API Client
-==========
+^^^^^^^^^^
 
 .. automodule:: solana.rpc.api
 
@@ -8,7 +11,7 @@ API Client
 
 
 Async API Client
-================
+^^^^^^^^^^^^^^^^
 
 .. automodule:: solana.rpc.async_api
 
@@ -16,26 +19,26 @@ Async API Client
         :members:
 
 Websockets Client
-=================
+^^^^^^^^^^^^^^^^^
 
 .. automodule:: solana.rpc.websocket_api
     :members:
 
 Commitment
-==========
+^^^^^^^^^^
 
 .. automodule:: solana.rpc.commitment
    :members:
    :member-order: bysource
 
 RPC Types
-=========
+^^^^^^^^^
 
 .. automodule:: solana.rpc.types
    :members:
 
 RPC Providers
-=============
+^^^^^^^^^^^^^
 
 .. automodule:: solana.rpc.providers.base
     :members:
