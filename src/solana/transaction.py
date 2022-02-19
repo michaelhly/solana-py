@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from sys import maxsize
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
-from base58 import b58decode, b58encode
+from based58 import b58decode, b58encode
 from nacl.exceptions import BadSignatureError  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 
@@ -384,7 +384,7 @@ class Transaction:
         ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
         ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
         ... )
-        >>> from base58 import b58encode
+        >>> from based58 import b58encode
         >>> from solana.message import Message
         >>> msg = Message.deserialize(raw_message)
         >>> signatures = [b58encode(bytes([1] * SIG_LENGTH)), b58encode(bytes([2] * SIG_LENGTH))]

@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import List, Optional, Union
 from warnings import warn
 
-from base58 import b58encode
+from based58 import b58encode
 from nacl import public, signing  # type: ignore
 
 from solana.publickey import PublicKey
