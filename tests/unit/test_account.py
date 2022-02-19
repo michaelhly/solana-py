@@ -84,6 +84,6 @@ def test_decode_nonce_account_data():
     raw_data = b64decode(b64_data)
     parsed = VERSIONS_LAYOUT.parse(raw_data)
 
-    assert parsed.state.data.authority == b58decode("FnQK7qe8rkD3x2GrA8ERptTd7bp7KwqouvaQYtr1uuaE")
-    assert parsed.state.data.blockhash == b58decode("9e4KCe4NTbA87aUVugjo6Yb1EVittdxy1RQu6AELCTL4")
+    assert parsed.state.data.authority == b58decode(b"FnQK7qe8rkD3x2GrA8ERptTd7bp7KwqouvaQYtr1uuaE")
+    assert parsed.state.data.blockhash == b58decode(b"9e4KCe4NTbA87aUVugjo6Yb1EVittdxy1RQu6AELCTL4")
     assert parsed.state.data.fee_calculator.lamports_per_signature == 5000
