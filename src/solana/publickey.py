@@ -4,7 +4,7 @@ from __future__ import annotations
 from hashlib import sha256
 from typing import Any, List, Optional, Tuple, Union
 
-import base58
+from based58 import b58decode, b58encode
 
 from solana.utils import ed25519_base, helpers
 
@@ -32,7 +32,7 @@ class PublicKey:
         self._key: Optional[bytes] = None
         if isinstance(value, str):
             try:
-                self._key = base58.b58decode(value)
+                self._key = b58decode(value.encode("ascii"))
             except ValueError as err:
                 raise ValueError("invalid public key input:", value) from err
             if len(self._key) != self.LENGTH:
@@ -65,7 +65,7 @@ class PublicKey:
 
     def to_base58(self) -> bytes:
         """Public key in base58."""
-        return base58.b58encode(bytes(self))
+        return b58encode(bytes(self))
 
     @staticmethod
     def create_with_seed(from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:

@@ -2,7 +2,7 @@
 
 from base64 import b64decode
 
-from base58 import b58decode
+from based58 import b58decode
 
 
 def from_uint8_bytes(uint8: bytes) -> int:

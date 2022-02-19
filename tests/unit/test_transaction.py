@@ -2,7 +2,7 @@
 from base64 import b64decode, b64encode
 
 import pytest
-from base58 import b58encode
+from based58 import b58encode
 
 import solana.system_program as sp
 import solana.transaction as txlib

@@ -1,7 +1,7 @@
 """Unit tests for solana.account."""
 from base64 import b64decode
 
-from base58 import b58decode
+from based58 import b58decode
 from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
 from nacl.signing import VerifyKey  # type: ignore
 

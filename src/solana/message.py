@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import List, NamedTuple, Union
 
-from base58 import b58decode, b58encode
+from based58 import b58decode, b58encode
 
 from solana.blockhash import Blockhash
 from solana.publickey import PublicKey
@@ -79,7 +79,7 @@ class Message:
                 num_readonly_unsigned_accounts=helpers.to_uint8_bytes(self.header.num_readonly_unsigned_accounts),
                 pubkeys_length=shortvec.encode_length(len(self.account_keys)),
                 pubkeys=b"".join([bytes(pubkey) for pubkey in self.account_keys]),
-                recent_blockhash=b58decode(self.recent_blockhash),
+                recent_blockhash=b58decode(self.recent_blockhash.encode("ascii")),
             )
         )
 
