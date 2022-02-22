@@ -34,25 +34,26 @@ def MemcmpOpt(*args, **kwargs) -> types.MemcmpOpts:  # pylint: disable=invalid-n
 class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     """Client class.
 
-    :param endpoint: URL of the RPC endpoint.
-    :param commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
-    :param blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
-        ``send_transaction`` calls faster.
-        You can also pass your own BlockhashCache object to customize its parameters.
+    Args:
+        endpoint: URL of the RPC endpoint.
+        commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
+        blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
+            `send_transaction` calls faster.
+            You can also pass your own BlockhashCache object to customize its parameters.
 
-        The cache works as follows:
+            The cache works as follows:
 
-        1.  Retrieve the oldest unused cached blockhash that is younger than ``ttl`` seconds,
-            where ``ttl`` is defined in the BlockhashCache (we prefer unused blockhashes because
-            reusing blockhashes can cause errors in some edge cases, and we prefer slightly
-            older blockhashes because they're more likely to be accepted by every validator).
-        2.  If there are no unused blockhashes in the cache, take the oldest used
-            blockhash that is younger than ``ttl`` seconds.
-        3.  Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
+            1.  Retrieve the oldest unused cached blockhash that is younger than ``ttl`` seconds,
+                where ``ttl`` is defined in the BlockhashCache (we prefer unused blockhashes because
+                reusing blockhashes can cause errors in some edge cases, and we prefer slightly
+                older blockhashes because they're more likely to be accepted by every validator).
+            2.  If there are no unused blockhashes in the cache, take the oldest used
+                blockhash that is younger than ``ttl`` seconds.
+            3.  Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
 
-        If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
-        and pass that value in your ``.send_transaction`` calls.
-    :param timeout: HTTP request timeout in seconds.
+            If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
+            and pass that value in your `.send_transaction` calls.
+        timeout: HTTP request timeout in seconds.
 
     """
 
@@ -70,22 +71,27 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def is_connected(self) -> bool:
         """Health check.
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.is_connected() # doctest: +SKIP
-        True
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.is_connected() # doctest: +SKIP
+            True
         """
         return self._provider.is_connected()
 
     def get_balance(self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns the balance of the account of provided Pubkey.
 
-        :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
-        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        Args:
+            pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
-        >>> from solana.publickey import PublicKey
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_balance(PublicKey(1)) # doctest: +SKIP
-        {'jsonrpc': '2.0', 'result': {'context': {'slot': 228}, 'value': 0}, 'id': 1}
+        Example:
+
+            >>> from solana.publickey import PublicKey
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_balance(PublicKey(1)) # doctest: +SKIP
+            {'jsonrpc': '2.0', 'result': {'context': {'slot': 228}, 'value': 0}, 'id': 1}
         """
         args = self._get_balance_args(pubkey, commitment)
         return self._provider.make_request(*args)
@@ -99,31 +105,35 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     ) -> types.RPCResponse:
         """Returns all the account info for the specified public key.
 
-        :param pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
-        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
-            "jsonParsed". Default is "base64".
+        Args:
 
-            - "base58" is limited to Account data of less than 128 bytes.
-            - "base64" will return base64 encoded data for Account data of any size.
-            - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
+            pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
+                "jsonParsed". Default is "base64".
 
-            If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
-            detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
-        :param data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
-            `length`: <usize> fields; only available for "base58" or "base64" encoding.
+                - "base58" is limited to Account data of less than 128 bytes.
+                - "base64" will return base64 encoded data for Account data of any size.
+                - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
 
-        >>> from solana.publickey import PublicKey
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_account_info(PublicKey(1)) # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': {'context': {'slot': 33265073},
-          'value': {'data': '',
-           'executable': False,
-           'lamports': 4459816188034584,
-           'owner': '11111111111111111111111111111111',
-           'rentEpoch': 90}},
-         'id': 1}
+                If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
+                detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
+            data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
+                `length`: <usize> fields; only available for "base58" or "base64" encoding.
+
+        Example:
+
+            >>> from solana.publickey import PublicKey
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_account_info(PublicKey(1)) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': {'context': {'slot': 33265073},
+            'value': {'data': '',
+            'executable': False,
+            'lamports': 4459816188034584,
+            'owner': '11111111111111111111111111111111',
+            'rentEpoch': 90}},
+            'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_account_info_args(
             pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
@@ -133,45 +143,49 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_block_commitment(self, slot: int) -> types.RPCResponse:
         """Fetch the commitment for particular block.
 
-        :param slot: Block, identified by Slot.
+        Args:
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_block_commitment(0) # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': {'commitment': [0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           0,
-           497717120],
-          'totalStake': 497717120},
-          'id': 1}}
+            slot: Block, identified by Slot.
+
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_block_commitment(0) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': {'commitment': [0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            497717120],
+            'totalStake': 497717120},
+            'id': 1}}
         """
         args = self._get_block_commitment_args(slot)
         return self._provider.make_request(*args)
@@ -179,11 +193,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_block_time(self, slot: int) -> types.RPCResponse:
         """Fetch the estimated production time of a block.
 
-        :param slot: Block, identified by Slot.
+        Args:
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_block_time(5) # doctest: +SKIP
-        {'jsonrpc': '2.0', 'result': 1598400007, 'id': 1}
+            slot: Block, identified by Slot.
+
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_block_time(5) # doctest: +SKIP
+            {'jsonrpc': '2.0', 'result': 1598400007, 'id': 1}
         """
         args = self._get_block_time_args(slot)
         return self._provider.make_request(*args)
@@ -191,15 +209,17 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_cluster_nodes(self) -> types.RPCResponse:
         """Returns information about all the nodes participating in the cluster.
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_cluster_nodes() # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': [{'gossip': '127.0.0.1:8001',
-           'pubkey': 'LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
-           'rpc': '127.0.0.1:8899',
-           'tpu': '127.0.0.1:8003',
-           'version': '1.4.0 5332fcad'}],
-         'id': 1}
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_cluster_nodes() # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': [{'gossip': '127.0.0.1:8001',
+            'pubkey': 'LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
+            'rpc': '127.0.0.1:8899',
+            'tpu': '127.0.0.1:8003',
+            'version': '1.4.0 5332fcad'}],
+            'id': 1}
         """
         return self._provider.make_request(self._get_cluster_nodes)
 
@@ -210,52 +230,56 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     ) -> types.RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
-        :param slot: Slot, as u64 integer.
-        :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
-            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+        Args:
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_confirmed_block(1) # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': {'blockTime': None,
-          'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-          'parentSlot': 0,
-          'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-          'rewards': [],
-          'transactions': [{'meta': {'err': None,
-             'fee': 0,
-             'postBalances': [500000000000, 26858640, 1, 1, 1],
-             'preBalances': [500000000000, 26858640, 1, 1, 1],
-             'status': {'Ok': None}},
-            'transaction': {'message': {'accountKeys': ['LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
-               'EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po',
-               'SysvarS1otHashes111111111111111111111111111',
-               'SysvarC1ock11111111111111111111111111111111',
-               'Vote111111111111111111111111111111111111111'],
-              'header': {'numReadonlySignedAccounts': 0,
-               'numReadonlyUnsignedAccounts': 3,
-               'numRequiredSignatures': 1},
-              'instructions': [{'accounts': [1, 2, 3, 0],
-                'data': '37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q',
-                'programIdIndex': 4}],
-              'recentBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2'},
-             'signatures': ['63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE']}}]},
-         'id': 9}
-        >>> solana_client.get_confirmed_block(1, encoding="base64") # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': {'blockTime': None,
-          'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-          'parentSlot': 0,
-          'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-          'rewards': [],
-          'transactions': [{'meta': {'err': None,
-             'fee': 0,
-             'postBalances': [500000000000, 26858640, 1, 1, 1],
-             'preBalances': [500000000000, 26858640, 1, 1, 1],
-             'status': {'Ok': None}},
-            'transaction': ['AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==',
-             'base64']}]},
-         'id': 10}
+            slot: Slot, as u64 integer.
+            encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
+                "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_confirmed_block(1) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': {'blockTime': None,
+            'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
+            'parentSlot': 0,
+            'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
+            'rewards': [],
+            'transactions': [{'meta': {'err': None,
+                'fee': 0,
+                'postBalances': [500000000000, 26858640, 1, 1, 1],
+                'preBalances': [500000000000, 26858640, 1, 1, 1],
+                'status': {'Ok': None}},
+                'transaction': {'message': {'accountKeys': ['LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
+                'EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po',
+                'SysvarS1otHashes111111111111111111111111111',
+                'SysvarC1ock11111111111111111111111111111111',
+                'Vote111111111111111111111111111111111111111'],
+                'header': {'numReadonlySignedAccounts': 0,
+                'numReadonlyUnsignedAccounts': 3,
+                'numRequiredSignatures': 1},
+                'instructions': [{'accounts': [1, 2, 3, 0],
+                    'data': '37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q',
+                    'programIdIndex': 4}],
+                'recentBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2'},
+                'signatures': ['63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE']}}]},
+            'id': 9}
+            >>> solana_client.get_confirmed_block(1, encoding="base64") # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': {'blockTime': None,
+            'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
+            'parentSlot': 0,
+            'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
+            'rewards': [],
+            'transactions': [{'meta': {'err': None,
+                'fee': 0,
+                'postBalances': [500000000000, 26858640, 1, 1, 1],
+                'preBalances': [500000000000, 26858640, 1, 1, 1],
+                'status': {'Ok': None}},
+                'transaction': ['AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==',
+                'base64']}]},
+            'id': 10}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_confirmed_block_args(slot, encoding)
         return self._provider.make_request(*args)
@@ -267,52 +291,56 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     ) -> types.RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
-        :param slot: Slot, as u64 integer.
-        :param encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
-            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+        Args:
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_block(1) # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': {'blockTime': None, 'blockHeight': 0,
-          'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-          'parentSlot': 0,
-          'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-          'rewards': [],
-          'transactions': [{'meta': {'err': None,
-             'fee': 0,
-             'postBalances': [500000000000, 26858640, 1, 1, 1],
-             'preBalances': [500000000000, 26858640, 1, 1, 1],
-             'status': {'Ok': None}},
-            'transaction': {'message': {'accountKeys': ['LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
-               'EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po',
-               'SysvarS1otHashes111111111111111111111111111',
-               'SysvarC1ock11111111111111111111111111111111',
-               'Vote111111111111111111111111111111111111111'],
-              'header': {'numReadonlySignedAccounts': 0,
-               'numReadonlyUnsignedAccounts': 3,
-               'numRequiredSignatures': 1},
-              'instructions': [{'accounts': [1, 2, 3, 0],
-                'data': '37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q',
-                'programIdIndex': 4}],
-              'recentBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2'},
-             'signatures': ['63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE']}}]},
-         'id': 9}
-        >>> solana_client.get_block(1, encoding="base64") # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': {'blockTime': None, 'blockHeight': 0,
-          'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-          'parentSlot': 0,
-          'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-          'rewards': [],
-          'transactions': [{'meta': {'err': None,
-             'fee': 0,
-             'postBalances': [500000000000, 26858640, 1, 1, 1],
-             'preBalances': [500000000000, 26858640, 1, 1, 1],
-             'status': {'Ok': None}},
-            'transaction': ['AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==',
-             'base64']}]},
-         'id': 10}
+            slot: Slot, as u64 integer.
+            encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
+                "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_block(1) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': {'blockTime': None, 'blockHeight': 0,
+            'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
+            'parentSlot': 0,
+            'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
+            'rewards': [],
+            'transactions': [{'meta': {'err': None,
+                'fee': 0,
+                'postBalances': [500000000000, 26858640, 1, 1, 1],
+                'preBalances': [500000000000, 26858640, 1, 1, 1],
+                'status': {'Ok': None}},
+                'transaction': {'message': {'accountKeys': ['LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
+                'EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po',
+                'SysvarS1otHashes111111111111111111111111111',
+                'SysvarC1ock11111111111111111111111111111111',
+                'Vote111111111111111111111111111111111111111'],
+                'header': {'numReadonlySignedAccounts': 0,
+                'numReadonlyUnsignedAccounts': 3,
+                'numRequiredSignatures': 1},
+                'instructions': [{'accounts': [1, 2, 3, 0],
+                    'data': '37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q',
+                    'programIdIndex': 4}],
+                'recentBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2'},
+                'signatures': ['63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE']}}]},
+            'id': 9}
+            >>> solana_client.get_block(1, encoding="base64") # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': {'blockTime': None, 'blockHeight': 0,
+            'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
+            'parentSlot': 0,
+            'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
+            'rewards': [],
+            'transactions': [{'meta': {'err': None,
+                'fee': 0,
+                'postBalances': [500000000000, 26858640, 1, 1, 1],
+                'preBalances': [500000000000, 26858640, 1, 1, 1],
+                'status': {'Ok': None}},
+                'transaction': ['AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==',
+                'base64']}]},
+            'id': 10}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_block_args(slot, encoding)
         return self._provider.make_request(*args)
@@ -320,12 +348,16 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_confirmed_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> types.RPCResponse:
         """Returns a list of confirmed blocks.
 
-        :param start_slot: Start slot, as u64 integer.
-        :param end_slot: (optional) End slot, as u64 integer.
+        Args:
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_confirmed_blocks(5, 10) # doctest: +SKIP
-        {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
+            start_slot: Start slot, as u64 integer.
+            end_slot: (optional) End slot, as u64 integer.
+
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_confirmed_blocks(5, 10) # doctest: +SKIP
+            {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
         """
         args = self._get_confirmed_blocks_args(start_slot, end_slot)
         return self._provider.make_request(*args)
@@ -333,12 +365,16 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> types.RPCResponse:
         """Returns a list of confirmed blocks.
 
-        :param start_slot: Start slot, as u64 integer.
-        :param end_slot: (optional) End slot, as u64 integer.
+        Args:
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_blocks(5, 10) # doctest: +SKIP
-        {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
+            start_slot: Start slot, as u64 integer.
+            end_slot: (optional) End slot, as u64 integer.
+
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_blocks(5, 10) # doctest: +SKIP
+            {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
         """
         args = self._get_blocks_args(start_slot, end_slot)
         return self._provider.make_request(*args)
@@ -356,21 +392,25 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Signatures are returned backwards in time from the provided signature or
         most recent confirmed block.
 
-        :param account: Account to be queried.
-        :param before: (optional) Start searching backwards from this transaction signature.
-            If not provided the search starts from the top of the highest max confirmed block.
-        :param until: (optional) Search until this transaction signature, if found before limit reached.
-        :param limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
-        :param commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        Args:
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> solana_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
-        {'jsonrpc': '2.0',
-         'result': [{'err': None,
-           'memo': None,
-           'signature': 'v1BK8XcaPBzAGd7TB1K53pMdi6TBGe5CLCgx8cmZ4Bj63ZNvA6ca2QaxFpBFdvmpoFQ51VorBjifkBGLTDhwpqN',
-           'slot': 4290}],
-         'id': 2}
+            account: Account to be queried.
+            before: (optional) Start searching backwards from this transaction signature.
+                If not provided the search starts from the top of the highest max confirmed block.
+            until: (optional) Search until this transaction signature, if found before limit reached.
+            limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
+            commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': [{'err': None,
+            'memo': None,
+            'signature': 'v1BK8XcaPBzAGd7TB1K53pMdi6TBGe5CLCgx8cmZ4Bj63ZNvA6ca2QaxFpBFdvmpoFQ51VorBjifkBGLTDhwpqN',
+            'slot': 4290}],
+            'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_confirmed_signature_for_address2_args(account, before, until, limit, commitment)
         return self._provider.make_request(*args)
@@ -1251,9 +1291,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     ) -> types.RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
-        :param tx_sig: the transaction signature to confirm.
-        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-        :param sleep_seconds: The number of seconds to sleep when polling the signature status.
+        Args:
+
+            tx_sig: the transaction signature to confirm.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
         timeout = time() + 30
         while time() < timeout:

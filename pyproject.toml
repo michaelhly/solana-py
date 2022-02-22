@@ -53,6 +53,7 @@ pytest-cov = "^3.0.0"
 sphinx-rtd-theme = "^1.0.0"
 asyncstdlib = "^3.10.2"
 mkdocstrings = "^0.18.0"
+mkdocs-material = "^8.2.1"
 
 
 [build-system]
