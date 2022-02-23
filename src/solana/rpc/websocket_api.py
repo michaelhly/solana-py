@@ -73,10 +73,10 @@ class SubscriptionError(Exception):
 
 
 class SolanaWsClientProtocol(WebSocketClientProtocol):
-    """Subclass of ``websockets.WebSocketClientProtocol`` tailored for Solana RPC websockets."""
+    """Subclass of `websockets.WebSocketClientProtocol` tailored for Solana RPC websockets."""
 
     def __init__(self, *args, **kwargs):
-        """Init. Args and kwargs are passed to ``websockets.WebSocketClientProtocol``."""
+        """Init. Args and kwargs are passed to `websockets.WebSocketClientProtocol`."""
         super().__init__(*args, **kwargs)
         self.subscriptions = {}
         self.sent_subscriptions = {}

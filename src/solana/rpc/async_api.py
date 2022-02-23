@@ -22,21 +22,21 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         endpoint: URL of the RPC endpoint.
         commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
         blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
-            ``send_transaction`` calls faster.
+            `send_transaction` calls faster.
             You can also pass your own BlockhashCache object to customize its parameters.
 
             The cache works as follows:
 
-            1.  Retrieve the oldest unused cached blockhash that is younger than ``ttl`` seconds,
-                where ``ttl`` is defined in the BlockhashCache (we prefer unused blockhashes because
+            1.  Retrieve the oldest unused cached blockhash that is younger than `ttl` seconds,
+                where `ttl` is defined in the BlockhashCache (we prefer unused blockhashes because
                 reusing blockhashes can cause errors in some edge cases, and we prefer slightly
                 older blockhashes because they're more likely to be accepted by every validator).
             2.  If there are no unused blockhashes in the cache, take the oldest used
-                blockhash that is younger than ``ttl`` seconds.
+                blockhash that is younger than `ttl` seconds.
             3.  Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
 
             If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
-            and pass that value in your ``.send_transaction`` calls.
+            and pass that value in your `.send_transaction` calls.
         timeout: HTTP request timeout in seconds.
     """
 
@@ -945,9 +945,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     ) -> types.RPCResponse:
         """Returns the statuses of a list of signatures.
 
-        Unless the ``search_transaction_history`` configuration parameter is included, this method only
+        Unless the `search_transaction_history` configuration parameter is included, this method only
         searches the recent status cache of signatures, which retains statuses for all active slots plus
-        ``MAX_RECENT_BLOCKHASHES`` rooted slots.
+        `MAX_RECENT_BLOCKHASHES` rooted slots.
 
         Args:
 
