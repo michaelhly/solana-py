@@ -6,6 +6,7 @@ theme:
   # favicon: img/anchor.svg
   features:
     - navigation.tabs
+    - navigation.top
   palette:
     - scheme: default
       primary: deep purple
