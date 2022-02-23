@@ -28,20 +28,22 @@ class WithdrawFromVoteAccountParams(NamedTuple):
 def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> TransactionInstruction:
     """Generate an instruction that transfers lamports from a vote account to any other.
 
-    >>> from solana.publickey import PublicKey
-    >>> from solana.keypair import Keypair
-    >>> vote = PublicKey(1)
-    >>> withdrawer = Keypair.from_seed(bytes([0]*32))
-    >>> instruction = withdraw_from_vote_account(
-    ...    WithdrawFromVoteAccountParams(
-    ...        vote_account_from_pubkey=vote,
-    ...        to_pubkey=withdrawer,
-    ...        withdrawer=withdrawer,
-    ...        lamports=3_000_000_000,
-    ...    )
-    ... )
-    >>> type(instruction)
-    <class 'solana.transaction.TransactionInstruction'>
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> from solana.keypair import Keypair
+        >>> vote = PublicKey(1)
+        >>> withdrawer = Keypair.from_seed(bytes([0]*32))
+        >>> instruction = withdraw_from_vote_account(
+        ...    WithdrawFromVoteAccountParams(
+        ...        vote_account_from_pubkey=vote,
+        ...        to_pubkey=withdrawer,
+        ...        withdrawer=withdrawer,
+        ...        lamports=3_000_000_000,
+        ...    )
+        ... )
+        >>> type(instruction)
+        <class 'solana.transaction.TransactionInstruction'>
     """
     data = VOTE_INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT, args=dict(lamports=params.lamports))

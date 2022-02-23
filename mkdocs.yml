@@ -43,11 +43,22 @@ plugins:
 nav:
   - index.md
   - RPC API:
-      - rpc_api/api.md
-      - rpc_api/async_api.md
-      - rpc_api/websocket.md
-      - rpc_api/commitment.md
-      - rpc_api/types.md
-      - rpc_api/providers.md
+      - rpc/api.md
+      - rpc/async_api.md
+      - rpc/websocket.md
+      - rpc/commitment.md
+      - rpc/types.md
+      - rpc/providers.md
+  - Core API:
+      - core/blockhash.md
+      - core/instruction.md
+      - core/keypair.md
+      - core/message.md
+      - core/publickey.md
+      - core/system_program.md
+      - core/sysvar.md
+      - core/transaction.md
+      - core/utils.md
+      - core/vote_program.md
 extra_css:
   - css/mkdocstrings.css
