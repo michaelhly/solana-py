@@ -236,8 +236,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
         Args:
 
-        m: Number of required signatures.
-        signers: Full set of signers.
+            m: Number of required signatures.
+            signers: Full set of signers.
 
         Returns: Public key of the new multisig account.
         """
