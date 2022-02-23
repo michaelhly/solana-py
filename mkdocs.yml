@@ -1,9 +1,9 @@
 site_name: Solana.py
 theme:
   name: material
-  # icon:
-  #   logo: material/anchor
-  # favicon: img/anchor.svg
+  icon:
+    logo: material/snake
+  favicon: img/favicon.ico
   features:
     - navigation.tabs
     - navigation.top
