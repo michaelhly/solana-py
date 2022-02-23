@@ -47,6 +47,9 @@ class Keypair:
         This method exists to provide familiarity for web3.js users.
         There isn't much reason to use it instead of just instantiating
         `Keypair()`.
+
+        Returns:
+            The generated keypair.
         """
         return cls()
 
@@ -61,6 +64,9 @@ class Keypair:
         Args:
 
             secret_key: secret key in bytes.
+
+        Returns:
+            The generated keypair.
         """
         seed = secret_key[:32]
         return cls.from_seed(seed)
@@ -72,6 +78,9 @@ class Keypair:
         Args:
 
             seed: 32-byte seed.
+
+        Returns:
+            The generated keypair.
         """
         return cls(nacl.public.PrivateKey(seed))
 
@@ -123,6 +132,6 @@ class Keypair:
         """Implemented by negating __eq__."""
         return not (self == other)  # pylint: disable=superfluous-parens
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Returns a unique hash for set operations."""
         return hash(self._keypair)

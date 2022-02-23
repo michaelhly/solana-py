@@ -66,18 +66,30 @@ class PublicKey:
         return self.to_base58().decode("utf-8")
 
     def to_base58(self) -> bytes:
-        """Public key in base58."""
+        """Public key in base58.
+
+        Returns:
+            The base58-encoded public key.
+        """
         return b58encode(bytes(self))
 
     @staticmethod
     def create_with_seed(from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:
-        """Derive a public key from another key, a seed, and a program ID."""
+        """Derive a public key from another key, a seed, and a program ID.
+
+        Returns:
+            The derived public key.
+        """
         buf = bytes(from_public_key) + seed.encode("utf-8") + bytes(program_id)
         return PublicKey(sha256(buf).digest())
 
     @staticmethod
     def create_program_address(seeds: List[bytes], program_id: PublicKey) -> PublicKey:
-        """Derive a program address from seeds and a program ID."""
+        """Derive a program address from seeds and a program ID.
+
+        Returns:
+            The derived program address.
+        """
         buffer = b"".join(seeds + [bytes(program_id), b"ProgramDerivedAddress"])
         hashbytes: bytes = sha256(buffer).digest()
         if not PublicKey._is_on_curve(hashbytes):
@@ -91,6 +103,9 @@ class PublicKey:
         Valid program addresses must fall off the ed25519 curve.  This function
         iterates a nonce until it finds one that when combined with the seeds
         results in a valid program address.
+
+        Returns:
+            The program address and nonce used.
         """
         nonce = 255
         while nonce != 0:

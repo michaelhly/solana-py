@@ -105,11 +105,23 @@ class Transaction:
         )
 
     def signature(self) -> Optional[bytes]:
-        """The first (payer) Transaction signature."""
+        """The first (payer) Transaction signature.
+
+        Returns:
+            The payer signature.
+        """
         return None if not self.signatures else self.signatures[0].signature
 
     def add(self, *args: Union[Transaction, TransactionInstruction]) -> Transaction:
-        """Add one or more instructions to this Transaction."""
+        """Add one or more instructions to this Transaction.
+
+        Args:
+            *args: The instructions to add to this Transaction.
+                If a `Transaction` is passsed, the instructions will be extracted from it.
+
+        Returns:
+            The transaction with the added instructions.
+        """
         for arg in args:
             if isinstance(arg, Transaction):
                 self.instructions.extend(arg.instructions)
@@ -121,7 +133,11 @@ class Transaction:
         return self
 
     def compile_message(self) -> Message:  # pylint: disable=too-many-locals
-        """Compile transaction data."""
+        """Compile transaction data.
+
+        Returns:
+            The compiled message.
+        """
         if self.nonce_info and self.instructions[0] != self.nonce_info.nonce_instruction:
             self.recent_blockhash = self.nonce_info.nonce
             self.instructions = [self.nonce_info.nonce_instruction] + self.instructions
@@ -228,7 +244,11 @@ class Transaction:
         )
 
     def serialize_message(self) -> bytes:
-        """Get raw transaction data that need to be covered by signatures."""
+        """Get raw transaction data that need to be covered by signatures.
+
+        Returns:
+            The serialized message.
+        """
         return self.compile_message().serialize()
 
     def sign_partial(self, *partial_signers: Union[PublicKey, Keypair]) -> None:
@@ -290,7 +310,11 @@ class Transaction:
         self.add_signature(signer.public_key, signed_msg.signature)
 
     def verify_signatures(self) -> bool:
-        """Verify signatures of a complete, signed Transaction."""
+        """Verify signatures of a complete, signed Transaction.
+
+        Returns:
+            a bool indicating if the signatures are correct or not.
+        """
         return self.__verify_signatures(self.serialize_message())
 
     def __verify_signatures(self, signed_data: bytes) -> bool:
@@ -321,6 +345,9 @@ class Transaction:
             >>> transfer_tx.sign(sender)
             >>> transfer_tx.serialize().hex()
             '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000'
+
+        Returns:
+            The serialized transaction.
         """  # noqa: E501 pylint: disable=line-too-long
         if not self.signatures:
             raise AttributeError("transaction has not been signed")
@@ -375,6 +402,9 @@ class Transaction:
             ... )
             >>> type(Transaction.deserialize(raw_transaction))
             <class 'solana.transaction.Transaction'>
+
+        Returns:
+            The deserialized transaction.
         """
         signatures = []
         signature_count, offset = shortvec.decode_length(raw_transaction)
@@ -405,6 +435,9 @@ class Transaction:
             >>> signatures = [b58encode(bytes([1] * SIG_LENGTH)), b58encode(bytes([2] * SIG_LENGTH))]
             >>> type(Transaction.populate(msg, signatures))
             <class 'solana.transaction.Transaction'>
+
+        Returns:
+            The populated transaction.
         """
         transaction = Transaction(recent_blockhash=message.recent_blockhash)
 

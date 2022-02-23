@@ -136,6 +136,9 @@ class Message:
             ... )
             >>> msg.serialize().hex()
             '0200030500000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000005c49ae77603782054f17a9decea43b444eba0edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
+
+        Returns:
+            The seriallized message.
         """  # pylint: disable=line-too-long
         message_buffer = bytearray()
         # Message body
@@ -165,6 +168,9 @@ class Message:
             ... )
             >>> type(Message.deserialize(raw_message))
             <class 'solana.message.Message'>
+
+        Returns:
+            The deserialized message.
         """
         HEADER_OFFSET = 3  # pylint: disable=invalid-name
         if len(raw_message) < HEADER_OFFSET:

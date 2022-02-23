@@ -70,6 +70,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         >>> solana_client = AsyncClient("http://localhost:8899")
         >>> asyncio.run(solana_client.is_connected()) # doctest: +SKIP
         True
+
+        Returns:
+            True if the client is connected.
         """
         return await self._provider.is_connected()
 

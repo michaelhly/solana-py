@@ -66,7 +66,7 @@ class Account:
             msg: message to sign.
 
         Returns:
-            A signed messeged object.
+            A signed message object.
 
         >>> secret_key = bytes([1] * 32)
         >>> acc = Account(secret_key)

@@ -44,6 +44,9 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Transac
         ... )
         >>> type(instruction)
         <class 'solana.transaction.TransactionInstruction'>
+
+    Returns:
+        The generated instruction.
     """
     data = VOTE_INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT, args=dict(lamports=params.lamports))

@@ -58,7 +58,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         Args:
 
             conn: RPC connection to a solana cluster.
-        Returns
+
+        Returns:
              Number of lamports required.
         """
         resp = await conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())

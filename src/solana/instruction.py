@@ -25,6 +25,9 @@ def encode_data(layout: InstructionLayout, *params: Any) -> bytes:
         >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
         >>> encode_data(transfer_layout, 123).hex()
         '020000007b00000000000000'
+
+    Returns:
+        The encoded bytes.
     """
     return Struct(f"<I{layout.fmt}").pack(layout.idx, *params)
 
