@@ -1,3 +1,7 @@
+<div align="center">
+    <img src="https://raw.githubusercontent.com/michaelhly/solana-py/master/docs/img/solana-py-logo.jpeg" width="25%" height="25%">
+</div>
+
 [![Actions
 Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://github.com/michaelhly/solanapy/actions?query=workflow%3ACI)
 [![PyPI version](https://badge.fury.io/py/solana.svg)](https://badge.fury.io/py/solana)
@@ -10,16 +14,22 @@ Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://
 
 **🐍 The Solana Python SDK 🐍**
 
-Solana.py is the Python counterpart to
-[solana-web3.js](https://github.com/solana-labs/solana-web3.js/).
-You can use it to interact with the [Solana JSON RPC API](https://docs.solana.com/apps/jsonrpc-api).
+Solana.py is the base Python library for interacting with Solana.
+You can use it to build transactions and interact
+with the
+[Solana JSON RPC API](https://docs.solana.com/apps/jsonrpc-api),
+much like you would do with
+[solana-web3.js](https://github.com/solana-labs/solana-web3.js/)
 
-Read the [Documentation](https://michaelhly.github.io/solana-py/).
+It also covers the
+[SPL Token Program](https://spl.solana.com/token).
 
-Also check out [AnchorPy](https://kevinheavey.github.io/anchorpy/),
+[Latest Documentation](https://michaelhly.github.io/solana-py/).
+
+** ⚓︎ See also: [AnchorPy](https://github.com/kevinheavey/anchorpy),
 a Python client for
 [Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html)-based
-programs on Solana.
+programs on Solana. ⚓︎**
 
 ## ⚡ Quickstart
 

@@ -5,6 +5,7 @@ from hashlib import sha256
 from typing import Any, List, Optional, Tuple, Union
 
 from based58 import b58decode, b58encode
+from nacl.signing import VerifyKey
 
 from solana.utils import ed25519_base, helpers
 
@@ -28,7 +29,7 @@ class PublicKey:
     LENGTH = 32
     """Constant for standard length of a public key."""
 
-    def __init__(self, value: Union[bytearray, bytes, int, str, List[int]]):
+    def __init__(self, value: Union[bytearray, bytes, int, str, List[int], VerifyKey]):
         """Init PublicKey object."""
         self._key: Optional[bytes] = None
         if isinstance(value, str):
