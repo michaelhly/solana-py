@@ -27,7 +27,7 @@ tests:
 	poetry run pytest -vv
 
 unit-tests:
-	poetry run pytest -vv -m "not integration"
+	poetry run pytest -vv -m "not integration" --doctest-modules
 
 int-tests:
 	poetry run pytest -vv -m integration
