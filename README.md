@@ -28,10 +28,10 @@ It also covers the
 
 [Latest Documentation](https://michaelhly.github.io/solana-py/).
 
-** ⚓︎ See also: [AnchorPy](https://github.com/kevinheavey/anchorpy),
-a Python client for
-[Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html)-based
-programs on Solana. ⚓︎**
+**⚓︎ See also: [AnchorPy](https://github.com/kevinheavey/anchorpy),**
+**a Python client for**
+**[Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html)-based**
+**programs on Solana. ⚓︎**
 
 ## ⚡ Quickstart
 
