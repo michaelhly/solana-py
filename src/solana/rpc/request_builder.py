@@ -158,11 +158,13 @@ class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
     ) -> None:
         """Init.
 
-        :param program_id: The program ID.
-        :param commitment: Commitment level to use.
-        :param encoding: Encoding to use.
-        :param data_size: Data size filter.
-        :param memcmp_opts: memcmp options.
+        Args:
+
+            program_id: The program ID.
+            commitment: Commitment level to use.
+            encoding: Encoding to use.
+            data_size: Data size filter.
+            memcmp_opts: memcmp options.
         """
         super().__init__(
             name="programSubscribe", positional_param=str(program_id), encoding=encoding, commitment=commitment
@@ -194,8 +196,10 @@ class SignatureSubscribe(HasPositionalParamAndCommitmentAndEncoding):
     ) -> None:
         """Init.
 
-        :param signature: Transaction signature to subscribe to.
-        :param commitment: Commitment level to use.
+        Args:
+
+            signature: Transaction signature to subscribe to.
+            commitment: Commitment level to use.
         """
         super().__init__(name="signatureSubscribe", positional_param=signature, commitment=commitment)
 

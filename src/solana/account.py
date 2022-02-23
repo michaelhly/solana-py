@@ -61,8 +61,11 @@ class Account:
     def sign(self, msg: bytes) -> signing.SignedMessage:
         """Sign a message with this account.
 
-        :param msg: message to sign.
-        :returns: A signed messeged object.
+        Args:
+
+            msg: message to sign.
+
+        Returns: A signed messeged object.
 
         >>> secret_key = bytes([1] * 32)
         >>> acc = Account(secret_key)
