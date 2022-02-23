@@ -7,6 +7,7 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
+    - navigation.instant
   palette:
     - scheme: default
       primary: deep purple
@@ -40,7 +41,6 @@ plugins:
           rendering:
             show_root_heading: true
             show_bases: false
-            show_root_full_path: false
   - search
 nav:
   - index.md
@@ -64,6 +64,11 @@ nav:
       - core/vote_program.md
   - Solana Program Library (SPL):
       - spl/intro.md
-      - spl/token.md
+      - Token:
+          - spl/token/client.md
+          - spl/token/async_client.md
+          - spl/token/constants.md
+          - spl/token/instructions.md
+          - spl/token/core.md
 extra_css:
   - css/mkdocstrings.css
