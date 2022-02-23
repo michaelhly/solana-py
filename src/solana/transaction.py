@@ -66,7 +66,16 @@ class SigPubkeyPair:
 
 
 class Transaction:
-    """Transaction class to represent an atomic transaction."""
+    """Transaction class to represent an atomic transaction.
+
+    Args:
+        recent_blockhash: A recent transaction id.
+        nonce_info: Nonce information.
+            If populated, transaction will use a durable Nonce hash instead of a `recent_blockhash`.
+        signatuees: Signatures for the transaction.
+            Typically created by invoking the `sign()` method.
+        fee_payer: The transaction fee payer.
+    """
 
     # Default (empty) signature
     __DEFAULT_SIG = bytes(64)
@@ -299,17 +308,19 @@ class Transaction:
 
         The Transaction must have a valid `signature` before invoking this method.
 
-        >>> from solana.keypair import Keypair
-        >>> from solana.blockhash import Blockhash
-        >>> from solana.publickey import PublicKey
-        >>> from solana.system_program import transfer, TransferParams
-        >>> seed = bytes(PublicKey(1))
-        >>> sender, receiver = Keypair.from_seed(seed), PublicKey(2)
-        >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.public_key, to_pubkey=receiver, lamports=1000)))
-        >>> transfer_tx.recent_blockhash = Blockhash(str(PublicKey(3)))
-        >>> transfer_tx.sign(sender)
-        >>> transfer_tx.serialize().hex()
-        '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000'
+        Example:
+
+            >>> from solana.keypair import Keypair
+            >>> from solana.blockhash import Blockhash
+            >>> from solana.publickey import PublicKey
+            >>> from solana.system_program import transfer, TransferParams
+            >>> seed = bytes(PublicKey(1))
+            >>> sender, receiver = Keypair.from_seed(seed), PublicKey(2)
+            >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.public_key, to_pubkey=receiver, lamports=1000)))
+            >>> transfer_tx.recent_blockhash = Blockhash(str(PublicKey(3)))
+            >>> transfer_tx.sign(sender)
+            >>> transfer_tx.serialize().hex()
+            '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000'
         """  # noqa: E501 pylint: disable=line-too-long
         if not self.signatures:
             raise AttributeError("transaction has not been signed")
@@ -348,20 +359,22 @@ class Transaction:
     def deserialize(raw_transaction: bytes) -> Transaction:
         """Parse a wire transaction into a Transaction object.
 
-        >>> raw_transaction = bytes.fromhex(
-        ...     '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2'
-        ...     '75a23ba504674c8fbbb724827b23b42dc8e08019e23'
-        ...     '120f1b6f40f9799355ce54185b4415be37ca2cee6e0'
-        ...     'e010001034cb5abf6ad79fbf5abbccafcc269d85cd2'
-        ...     '651ed4b885b5869f241aedf0a5ba290000000000000'
-        ...     '0000000000000000000000000000000000000000000'
-        ...     '0000000200000000000000000000000000000000000'
-        ...     '0000000000000000000000000000000000000000000'
-        ...     '0000000000000000000000000000000000000000000'
-        ...     '000000301020200010c02000000e803000000000000'
-        ... )
-        >>> type(Transaction.deserialize(raw_transaction))
-        <class 'solana.transaction.Transaction'>
+        Example:
+
+            >>> raw_transaction = bytes.fromhex(
+            ...     '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2'
+            ...     '75a23ba504674c8fbbb724827b23b42dc8e08019e23'
+            ...     '120f1b6f40f9799355ce54185b4415be37ca2cee6e0'
+            ...     'e010001034cb5abf6ad79fbf5abbccafcc269d85cd2'
+            ...     '651ed4b885b5869f241aedf0a5ba290000000000000'
+            ...     '0000000000000000000000000000000000000000000'
+            ...     '0000000200000000000000000000000000000000000'
+            ...     '0000000000000000000000000000000000000000000'
+            ...     '0000000000000000000000000000000000000000000'
+            ...     '000000301020200010c02000000e803000000000000'
+            ... )
+            >>> type(Transaction.deserialize(raw_transaction))
+            <class 'solana.transaction.Transaction'>
         """
         signatures = []
         signature_count, offset = shortvec.decode_length(raw_transaction)
@@ -374,22 +387,24 @@ class Transaction:
     def populate(message: Message, signatures: List[bytes]) -> Transaction:
         """Populate Transaction object from message and signatures.
 
-        >>> raw_message = bytes.fromhex(
-        ...     '0200030500000000000000000000000000000000000000000000'
-        ...     '0000000000000000000100000000000000000000000000000000'
-        ...     '0000000000000000000000000000000200000000000000000000'
-        ...     '0000000000000000000000000000000000000000000300000000'
-        ...     '0000000000000000000000000000000000000000000000000000'
-        ...     '0004000000000000000000000000000000000000000000000000'
-        ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
-        ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
-        ... )
-        >>> from based58 import b58encode
-        >>> from solana.message import Message
-        >>> msg = Message.deserialize(raw_message)
-        >>> signatures = [b58encode(bytes([1] * SIG_LENGTH)), b58encode(bytes([2] * SIG_LENGTH))]
-        >>> type(Transaction.populate(msg, signatures))
-        <class 'solana.transaction.Transaction'>
+        Example:
+
+            >>> raw_message = bytes.fromhex(
+            ...     '0200030500000000000000000000000000000000000000000000'
+            ...     '0000000000000000000100000000000000000000000000000000'
+            ...     '0000000000000000000000000000000200000000000000000000'
+            ...     '0000000000000000000000000000000000000000000300000000'
+            ...     '0000000000000000000000000000000000000000000000000000'
+            ...     '0004000000000000000000000000000000000000000000000000'
+            ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
+            ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
+            ... )
+            >>> from based58 import b58encode
+            >>> from solana.message import Message
+            >>> msg = Message.deserialize(raw_message)
+            >>> signatures = [b58encode(bytes([1] * SIG_LENGTH)), b58encode(bytes([2] * SIG_LENGTH))]
+            >>> type(Transaction.populate(msg, signatures))
+            <class 'solana.transaction.Transaction'>
         """
         transaction = Transaction(recent_blockhash=message.recent_blockhash)
 

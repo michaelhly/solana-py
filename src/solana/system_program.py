@@ -196,15 +196,17 @@ def __parse_and_validate_instruction(
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
     """Decode a create account system instruction and retrieve the instruction params.
 
-    >>> from solana.publickey import PublicKey
-    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> instruction = create_account(
-    ...     CreateAccountParams(
-    ...         from_pubkey=from_account, new_account_pubkey=new_account,
-    ...         lamports=1, space=1, program_id=program_id)
-    ... )
-    >>> decode_create_account(instruction)
-    CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
+        >>> instruction = create_account(
+        ...     CreateAccountParams(
+        ...         from_pubkey=from_account, new_account_pubkey=new_account,
+        ...         lamports=1, space=1, program_id=program_id)
+        ... )
+        >>> decode_create_account(instruction)
+        CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
     """  # noqa: E501 # pylint: disable=line-too-long
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.CREATE_ACCOUNT)
     return CreateAccountParams(
@@ -219,13 +221,15 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     """Decode a transfer system instruction and retrieve the instruction params.
 
-    >>> from solana.publickey import PublicKey
-    >>> sender, receiver = PublicKey(1), PublicKey(2)
-    >>> instruction = transfer(
-    ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
-    ... )
-    >>> decode_transfer(instruction)
-    TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> sender, receiver = PublicKey(1), PublicKey(2)
+        >>> instruction = transfer(
+        ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
+        ... )
+        >>> decode_transfer(instruction)
+        TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
     """  # pylint: disable=line-too-long # noqa: E501
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.TRANSFER)
     return TransferParams(
@@ -236,13 +240,15 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
 def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
     """Decode an allocate system instruction and retrieve the instruction params.
 
-    >>> from solana.publickey import PublicKey
-    >>> allocator = PublicKey(1)
-    >>> instruction = allocate(
-    ...     AllocateParams(account_pubkey=allocator,space=65537)
-    ... )
-    >>> decode_allocate(instruction)
-    AllocateParams(account_pubkey=11111111111111111111111111111112, space=65537)
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> allocator = PublicKey(1)
+        >>> instruction = allocate(
+        ...     AllocateParams(account_pubkey=allocator,space=65537)
+        ... )
+        >>> decode_allocate(instruction)
+        AllocateParams(account_pubkey=11111111111111111111111111111112, space=65537)
     """  # pylint: disable=line-too-long # noqa: E501
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ALLOCATE)
     return AllocateParams(account_pubkey=instruction.keys[0].pubkey, space=parsed_data.args.space)
@@ -251,19 +257,21 @@ def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
 def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWithSeedParams:
     """Decode an allocate with seed system instruction and retrieve the instruction params.
 
-    >>> from solana.publickey import PublicKey
-    >>> allocator, base, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> instruction = allocate(
-    ...     AllocateWithSeedParams(
-    ...         account_pubkey=allocator,
-    ...         base_pubkey=base,
-    ...         seed={"length": 4, "chars": "gqln"},
-    ...         space=65537,
-    ...         program_id=program_id
-    ...     )
-    ... )
-    >>> decode_allocate_with_seed(instruction)
-    AllocateWithSeedParams(account_pubkey=11111111111111111111111111111112, base_pubkey=11111111111111111111111111111113, seed=Container(length=4, chars=u'gqln'), space=65537, program_id=11111111111111111111111111111114)
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> allocator, base, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
+        >>> instruction = allocate(
+        ...     AllocateWithSeedParams(
+        ...         account_pubkey=allocator,
+        ...         base_pubkey=base,
+        ...         seed={"length": 4, "chars": "gqln"},
+        ...         space=65537,
+        ...         program_id=program_id
+        ...     )
+        ... )
+        >>> decode_allocate_with_seed(instruction)
+        AllocateWithSeedParams(account_pubkey=11111111111111111111111111111112, base_pubkey=11111111111111111111111111111113, seed=Container(length=4, chars=u'gqln'), space=65537, program_id=11111111111111111111111111111114)
     """  # pylint: disable=line-too-long # noqa: E501
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ALLOCATE_WITH_SEED)
     return AllocateWithSeedParams(
@@ -278,13 +286,15 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
 def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     """Decode an assign system instruction and retrieve the instruction params.
 
-    >>> from solana.publickey import PublicKey
-    >>> account, program_id = PublicKey(1), PublicKey(2)
-    >>> instruction = assign(
-    ...     AssignParams(account_pubkey=account, program_id=program_id)
-    ... )
-    >>> decode_assign(instruction)
-    AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> account, program_id = PublicKey(1), PublicKey(2)
+        >>> instruction = assign(
+        ...     AssignParams(account_pubkey=account, program_id=program_id)
+        ... )
+        >>> decode_assign(instruction)
+        AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
     """
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ASSIGN)
     return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
@@ -332,15 +342,17 @@ def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonc
 def create_account(params: CreateAccountParams) -> TransactionInstruction:
     """Generate an instruction that creates a new account.
 
-    >>> from solana.publickey import PublicKey
-    >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
-    >>> instruction = create_account(
-    ...     CreateAccountParams(
-    ...         from_pubkey=from_account, new_account_pubkey=new_account,
-    ...         lamports=1, space=1, program_id=program_id)
-    ... )
-    >>> type(instruction)
-    <class 'solana.transaction.TransactionInstruction'>
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
+        >>> instruction = create_account(
+        ...     CreateAccountParams(
+        ...         from_pubkey=from_account, new_account_pubkey=new_account,
+        ...         lamports=1, space=1, program_id=program_id)
+        ... )
+        >>> type(instruction)
+        <class 'solana.transaction.TransactionInstruction'>
     """
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
         dict(
@@ -362,13 +374,15 @@ def create_account(params: CreateAccountParams) -> TransactionInstruction:
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInstruction:
     """Generate an instruction that assigns an account to a program.
 
-    >>> from solana.publickey import PublicKey
-    >>> account, program_id = PublicKey(1), PublicKey(2)
-    >>> instruction = assign(
-    ...     AssignParams(account_pubkey=account, program_id=program_id)
-    ... )
-    >>> type(instruction)
-    <class 'solana.transaction.TransactionInstruction'>
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> account, program_id = PublicKey(1), PublicKey(2)
+        >>> instruction = assign(
+        ...     AssignParams(account_pubkey=account, program_id=program_id)
+        ... )
+        >>> type(instruction)
+        <class 'solana.transaction.TransactionInstruction'>
     """
     if isinstance(params, AssignWithSeedParams):
         raise NotImplementedError("assign with key is not implemented")
@@ -388,13 +402,15 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInst
 def transfer(params: TransferParams) -> TransactionInstruction:
     """Generate an instruction that transfers lamports from one account to another.
 
-    >>> from solana.publickey import PublicKey
-    >>> sender, receiver = PublicKey(1), PublicKey(2)
-    >>> instruction = transfer(
-    ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
-    ... )
-    >>> type(instruction)
-    <class 'solana.transaction.TransactionInstruction'>
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> sender, receiver = PublicKey(1), PublicKey(2)
+        >>> instruction = transfer(
+        ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
+        ... )
+        >>> type(instruction)
+        <class 'solana.transaction.TransactionInstruction'>
     """
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
         dict(instruction_type=InstructionType.TRANSFER, args=dict(lamports=params.lamports))
@@ -528,13 +544,15 @@ def nonce_authorize(params: AuthorizeNonceParams) -> TransactionInstruction:
 def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> TransactionInstruction:
     """Generate an instruction that allocates space in an account without funding.
 
-    >>> from solana.publickey import PublicKey
-    >>> allocator = PublicKey(1)
-    >>> instruction = allocate(
-    ...     AllocateParams(account_pubkey=allocator, space=65537)
-    ... )
-    >>> type(instruction)
-    <class 'solana.transaction.TransactionInstruction'>
+    Example:
+
+        >>> from solana.publickey import PublicKey
+        >>> allocator = PublicKey(1)
+        >>> instruction = allocate(
+        ...     AllocateParams(account_pubkey=allocator, space=65537)
+        ... )
+        >>> type(instruction)
+        <class 'solana.transaction.TransactionInstruction'>
     """
     if isinstance(params, AllocateWithSeedParams):
         data = SYSTEM_INSTRUCTIONS_LAYOUT.build(

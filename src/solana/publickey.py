@@ -16,12 +16,14 @@ class OnCurveException(Exception):
 class PublicKey:
     """The public key of a keypair.
 
-    >>> # An arbitary public key:
-    >>> pubkey = PublicKey(1)
-    >>> str(pubkey) # String representation in base58 form.
-    '11111111111111111111111111111112'
-    >>> bytes(pubkey).hex()
-    '0000000000000000000000000000000000000000000000000000000000000001'
+    Example:
+
+        >>> # An arbitary public key:
+        >>> pubkey = PublicKey(1)
+        >>> str(pubkey) # String representation in base58 form.
+        '11111111111111111111111111111112'
+        >>> bytes(pubkey).hex()
+        '0000000000000000000000000000000000000000000000000000000000000001'
     """
 
     LENGTH = 32
