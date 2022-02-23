@@ -1,4 +1,4 @@
-"""(Deprecated, use ``solana.keypair`` instead).
+"""(Deprecated, use `solana.keypair` instead).
 
 Account module to manage public-private key pair and signing messages.
 """
@@ -61,8 +61,12 @@ class Account:
     def sign(self, msg: bytes) -> signing.SignedMessage:
         """Sign a message with this account.
 
-        :param msg: message to sign.
-        :returns: A signed messeged object.
+        Args:
+
+            msg: message to sign.
+
+        Returns:
+            A signed message object.
 
         >>> secret_key = bytes([1] * 32)
         >>> acc = Account(secret_key)

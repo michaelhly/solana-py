@@ -33,3 +33,6 @@ test-ledger/
 
 #IDE Files
 .idea/
+
+# pytest coverage
+.coverage

@@ -119,22 +119,27 @@ class Message:
     def serialize(self) -> bytes:
         """Serialize message to bytes.
 
-        >>> from solana.blockhash import Blockhash
-        >>> account_keys = [str(PublicKey(i + 1)) for i in range(5)]
-        >>> msg = Message(
-        ...     MessageArgs(
-        ...         account_keys=account_keys,
-        ...         header=MessageHeader(
-        ...             num_readonly_signed_accounts=0, num_readonly_unsigned_accounts=3, num_required_signatures=2
-        ...         ),
-        ...         instructions=[
-        ...             CompiledInstruction(accounts=[1, 2, 3], data=b58encode(bytes([9] * 5)), program_id_index=4)],
-        ...         recent_blockhash=Blockhash("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k"),
-        ...     )
-        ... )
-        >>> msg.serialize().hex()
-        '0200030500000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000005c49ae77603782054f17a9decea43b444eba0edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
-        """  # pylint: disable=line-too-long
+        Example:
+
+            >>> from solana.blockhash import Blockhash
+            >>> account_keys = [str(PublicKey(i + 1)) for i in range(5)]
+            >>> msg = Message(
+            ...     MessageArgs(
+            ...         account_keys=account_keys,
+            ...         header=MessageHeader(
+            ...             num_readonly_signed_accounts=0, num_readonly_unsigned_accounts=3, num_required_signatures=2
+            ...         ),
+            ...         instructions=[
+            ...             CompiledInstruction(accounts=[1, 2, 3], data=b58encode(bytes([9] * 5)), program_id_index=4)],
+            ...         recent_blockhash=Blockhash("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k"),
+            ...     )
+            ... )
+            >>> msg.serialize().hex()
+            '0200030500000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000005c49ae77603782054f17a9decea43b444eba0edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
+
+        Returns:
+            The seriallized message.
+        """  # pylint: disable=line-too-long # noqa: E501
         message_buffer = bytearray()
         # Message body
         message_buffer.extend(self.__encode_message())
@@ -149,18 +154,23 @@ class Message:
     def deserialize(raw_message: bytes) -> Message:  # pylint: disable=too-many-locals
         """Deserialize raw message bytes.
 
-        >>> raw_message = bytes.fromhex(
-        ...     '0200030500000000000000000000000000000000000000000000'
-        ...     '0000000000000000000100000000000000000000000000000000'
-        ...     '0000000000000000000000000000000200000000000000000000'
-        ...     '0000000000000000000000000000000000000000000300000000'
-        ...     '0000000000000000000000000000000000000000000000000000'
-        ...     '0004000000000000000000000000000000000000000000000000'
-        ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
-        ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
-        ... )
-        >>> type(Message.deserialize(raw_message))
-        <class 'solana.message.Message'>
+        Example:
+
+            >>> raw_message = bytes.fromhex(
+            ...     '0200030500000000000000000000000000000000000000000000'
+            ...     '0000000000000000000100000000000000000000000000000000'
+            ...     '0000000000000000000000000000000200000000000000000000'
+            ...     '0000000000000000000000000000000000000000000300000000'
+            ...     '0000000000000000000000000000000000000000000000000000'
+            ...     '0004000000000000000000000000000000000000000000000000'
+            ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
+            ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
+            ... )
+            >>> type(Message.deserialize(raw_message))
+            <class 'solana.message.Message'>
+
+        Returns:
+            The deserialized message.
         """
         HEADER_OFFSET = 3  # pylint: disable=invalid-name
         if len(raw_message) < HEADER_OFFSET:

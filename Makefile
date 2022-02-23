@@ -1,5 +1,5 @@
 clean:
-	rm -rf dist build _build __pycache__ *.egg-info
+	rm -rf dist build __pycache__ *.egg-info
 
 format:
 	poetry run isort src tests
@@ -27,7 +27,7 @@ tests:
 	poetry run pytest -vv
 
 unit-tests:
-	poetry run pytest -vv -m "not integration"
+	poetry run pytest -vv -m "not integration" --doctest-modules
 
 int-tests:
 	poetry run pytest -vv -m integration
@@ -42,26 +42,5 @@ stop-localnet:
 	sh bin/localnet.sh down
 
 serve:
-	python -m http.server -d _build/html
+	mkdocs serve
 
-
-# Minimal makefile for Sphinx documentation
-#
-
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = docs
-BUILDDIR      = _build
-
-# Put it first so that "make" without argument is like "make help".
-help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-.PHONY: help Makefile
-
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

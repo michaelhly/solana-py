@@ -27,8 +27,11 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     def get_min_balance_rent_for_exempt_for_account(conn: Client) -> int:
         """Get the minimum balance for the account to be rent exempt.
 
-        :param conn: RPC connection to a solana cluster.
-        :return: Number of lamports required.
+        Args:
+            conn: RPC connection to a solana cluster.
+
+        Returns:
+            Number of lamports required.
         """
         resp = conn.get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
         return resp["result"]
@@ -37,8 +40,11 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     def get_min_balance_rent_for_exempt_for_mint(conn: Client) -> int:
         """Get the minimum balance for the mint to be rent exempt.
 
-        :param conn: RPC connection to a solana cluster.
-        :return: Number of lamports required.
+        Args:
+            conn: RPC connection to a solana cluster.
+
+        Returns:
+            Number of lamports required.
         """
         resp = conn.get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
         return resp["result"]
@@ -47,8 +53,10 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     def get_min_balance_rent_for_exempt_for_multisig(conn: Client) -> int:
         """Get the minimum balance for the multisig to be rent exempt.
 
-        :param conn: RPC connection to a solana cluster.
-        :return: Number of lamports required.
+        Args:
+            conn: RPC connection to a solana cluster.
+
+        Return: Number of lamports required.
         """
         resp = conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
@@ -62,10 +70,12 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Get token accounts of the provided owner by the token's mint.
 
-        :param owner: Public Key of the token account owner.
-        :param is_delegate: (optional) Flag specifying if the `owner` public key is a delegate.
-        :param encoding: (optional) Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
-        :param commitment: (optional) Bank state to query.
+        Args:
+            owner: Public Key of the token account owner.
+            is_delegate: (optional) Flag specifying if the `owner` public key is a delegate.
+            commitment: (optional) Bank state to query.
+            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
+
 
         Parsed-JSON encoding attempts to use program-specific state parsers to return more
         human-readable and explicit account state data. If parsed-JSON is requested but a
@@ -84,8 +94,9 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> RPCResponse:
         """Get the balance of the provided token account.
 
-        :param pubkey: Public Key of the token account.
-        :param commitment: (optional) Bank state to query.
+        Args:
+            pubkey: Public Key of the token account.
+            commitment: (optional) Bank state to query.
         """
         return self._conn.get_token_account_balance(pubkey, commitment)
 
@@ -103,14 +114,18 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> Token:
         """Create and initialize a token.
 
-        :param conn: RPC connection to a solana cluster.
-        :param payer: Fee payer for transaction.
-        :param mint_authority: Account or multisig that will control minting.
-        :param decimals: Location of the decimal place.
-        :param program_id: SPL Token program account.
-        :param freeze_authority: (optional) Account or multisig that can freeze token accounts.
-        :param skip_confirmation: (optional) Option to skip transaction confirmation.
-        :return: Token object for the newly minted token.
+        Args:
+            conn: RPC connection to a solana cluster.
+            payer: Fee payer for transaction.
+            mint_authority: Account or multisig that will control minting.
+            decimals: Location of the decimal place.
+            program_id: SPL Token program account.
+            freeze_authority: (optional) Account or multisig that can freeze token accounts.
+            skip_confirmation: (optional) Option to skip transaction confirmation.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
+
+        Returns:
+            Token object for the newly minted token.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -135,9 +150,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
 
         This account may then be used as a `transfer()` or `approve()` destination.
 
-        :param owner: User account that will own the new account.
-        :param skip_confirmation: (optional) Option to skip transaction confirmation.
-        :return: Public key of the new empty account.
+        Args:
+
+            owner: User account that will own the new account.
+            skip_confirmation: (optional) Option to skip transaction confirmation.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
+
+        Returns:
+            Public key of the new empty account.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -158,9 +178,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> PublicKey:
         """Create an associated token account.
 
-        :param owner: User account that will own the associated token account.
-        :param skip_confirmation: (optional) Option to skip transaction confirmation.
-        :return: Public key of the new associated account.
+        Args:
+
+            owner: User account that will own the associated token account.
+            skip_confirmation: (optional) Option to skip transaction confirmation.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
+
+        Returns:
+            Public key of the new associated account.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -182,13 +207,18 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> PublicKey:
         """Create and initialize a new account on the special native token mint.
 
-        :param conn: RPC connection to a solana cluster.
-        :param program_id: SPL Token program account.
-        :param owner: The owner of the new token account.
-        :param payer: The source of the lamports to initialize, and payer of the initialization fees.
-        :param amount: The amount of lamports to wrap.
-        :param skip_confirmation: (optional) Option to skip transaction confirmation.
-        :return: The new token account.
+        Args:
+
+            conn: RPC connection to a solana cluster.
+            program_id: SPL Token program account.
+            owner: The owner of the new token account.
+            payer: The source of the lamports to initialize, and payer of the initialization fees.
+            amount: The amount of lamports to wrap.
+            skip_confirmation: (optional) Option to skip transaction confirmation.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
+
+        Returns:
+            The new token account.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -210,9 +240,13 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> PublicKey:  # pylint: disable=invalid-name
         """Create and initialize a new multisig.
 
-        :param m: Number of required signatures.
-        :param multi_signers: Full set of signers.
-        :return: Public key of the new multisig account.
+        Args:
+            m: Number of required signatures.
+            multi_signers: Full set of signers.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
+
+        Returns:
+            Public key of the new multisig account.
         """
         balance_needed = Token.get_min_balance_rent_for_exempt_for_multisig(self._conn)
         txn, payer, multisig = self._create_multisig_args(m, multi_signers, balance_needed)
@@ -241,12 +275,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Transfer tokens to another account.
 
-        :param source: Public key of account to transfer tokens from.
-        :param dest: Public key of account to transfer tokens to.
-        :param owner: Owner of the source account.
-        :param amount: Number of tokens to transfer.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            source: Public key of account to transfer tokens from.
+            dest: Public key of account to transfer tokens to.
+            owner: Owner of the source account.
+            amount: Number of tokens to transfer.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._transfer_args(source, dest, owner, amount, multi_signers, opts)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -263,12 +299,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
-        :param source: Public key of the source account.
-        :param delegate: Account authorized to perform a transfer tokens from the source account.
-        :param owner: Owner of the source account.
-        :param amount: Maximum number of tokens the delegate may transfer.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            source: Public key of the source account.
+            delegate: Account authorized to perform a transfer tokens from the source account.
+            owner: Owner of the source account.
+            amount: Maximum number of tokens the delegate may transfer.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, payer, signers, opts = self._approve_args(source, delegate, owner, amount, multi_signers, opts)
         return self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -283,10 +321,12 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Revoke transfer authority for a given account.
 
-        :param account: Source account for which transfer authority is being revoked.
-        :param owner: Owner of the source account.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            account: Source account for which transfer authority is being revoked.
+            owner: Owner of the source account.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, payer, signers, opts = self._revoke_args(account, owner, multi_signers, opts)
         return self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -303,12 +343,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Assign a new authority to the account.
 
-        :param account: Public key of the token account.
-        :param current_authority: Current authority of the account.
-        :param authority_type: Type of authority to set.
-        :param new_authority: (optional) New authority of the account.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            account: Public key of the token account.
+            current_authority: Current authority of the account.
+            authority_type: Type of authority to set.
+            new_authority: (optional) New authority of the account.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, payer, signers, opts = self._set_authority_args(
             account, current_authority, authority_type, new_authority, multi_signers, opts
@@ -326,11 +368,13 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Mint new tokens.
 
-        :param dest: Public key of the account to mint to.
-        :param mint_authority: Public key of the minting authority.
-        :param amount: Amount to mint.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            dest: Public key of the account to mint to.
+            mint_authority: Public key of the minting authority.
+            amount: Amount to mint.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -349,11 +393,13 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Burn tokens.
 
-        :param account: Account to burn tokens from.
-        :param owner: Owner of the account.
-        :param amount: Amount to burn.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            account: Account to burn tokens from.
+            owner: Owner of the account.
+            amount: Amount to burn.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._burn_args(account, owner, amount, multi_signers, opts)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -369,11 +415,13 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Remove approval for the transfer of any remaining tokens.
 
-        :param account: Account to close.
-        :param dest: Account to receive the remaining balance of the closed account.
-        :param authority: Authority which is allowed to close the account.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            account: Account to close.
+            dest: Account to receive the remaining balance of the closed account.
+            authority: Authority which is allowed to close the account.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._close_account_args(account, dest, authority, multi_signers)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -388,10 +436,12 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Freeze account.
 
-        :param account: Account to freeze.
-        :param authority: The mint freeze authority.
-        :param multi_signers: (optional) Signing accounts if `authority` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            account: Account to freeze.
+            authority: The mint freeze authority.
+            multi_signers: (optional) Signing accounts if `authority` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._freeze_account_args(account, authority, multi_signers)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -406,10 +456,12 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Thaw account.
 
-        :param account: Account to thaw.
-        :param authority: The mint freeze authority.
-        :param multi_signers: (optional) Signing accounts if `authority` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            account: Account to thaw.
+            authority: The mint freeze authority.
+            multi_signers: (optional) Signing accounts if `authority` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._thaw_account_args(account, authority, multi_signers)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -427,13 +479,15 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Transfer tokens to another account, asserting the token mint and decimals.
 
-        :param source: Public key of account to transfer tokens from.
-        :param dest: Public key of account to transfer tokens to.
-        :param owner: Owner of the source account.
-        :param amount: Number of tokens to transfer.
-        :param decimals: Number of decimals in transfer amount.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            source: Public key of account to transfer tokens from.
+            dest: Public key of account to transfer tokens to.
+            owner: Owner of the source account.
+            amount: Number of tokens to transfer.
+            decimals: Number of decimals in transfer amount.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._transfer_checked_args(source, dest, owner, amount, decimals, multi_signers, opts)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -453,13 +507,15 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
 
         This method also asserts the token mint and decimals.
 
-        :param source: Public key of the source account.
-        :param delegate: Account authorized to perform a transfer tokens from the source account.
-        :param owner: Owner of the source account.
-        :param amount: Maximum number of tokens the delegate may transfer.
-        :param decimals: Number of decimals in approve amount.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            source: Public key of the source account.
+            delegate: Account authorized to perform a transfer tokens from the source account.
+            owner: Owner of the source account.
+            amount: Maximum number of tokens the delegate may transfer.
+            decimals: Number of decimals in approve amount.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, payer, signers, opts = self._approve_checked_args(
             source, delegate, owner, amount, decimals, multi_signers, opts
@@ -478,12 +534,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Mint new tokens, asserting the token mint and decimals.
 
-        :param dest: Public key of the account to mint to.
-        :param mint_authority: Public key of the minting authority.
-        :param amount: Amount to mint.
-        :param decimals: Number of decimals in amount to mint.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            dest: Public key of the account to mint to.
+            mint_authority: Public key of the minting authority.
+            amount: Amount to mint.
+            decimals: Number of decimals in amount to mint.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._mint_to_checked_args(dest, mint_authority, amount, decimals, multi_signers, opts)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
@@ -500,12 +558,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
     ) -> RPCResponse:
         """Burn tokens, asserting the token mint and decimals.
 
-        :param account: Account to burn tokens from.
-        :param owner: Owner of the account.
-        :param amount: Amount to burn.
-        :param decimals: Number of decimals in amount to burn.
-        :param multi_signers: (optional) Signing accounts if `owner` is a multiSig.
-        :param opts: (optional) Transaction options.
+        Args:
+            account: Account to burn tokens from.
+            owner: Owner of the account.
+            amount: Amount to burn.
+            decimals: Number of decimals in amount to burn.
+            multi_signers: (optional) Signing accounts if `owner` is a multiSig.
+            opts: (optional) Transaction options.
+            recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         txn, signers, opts = self._burn_checked_args(account, owner, amount, decimals, multi_signers, opts)
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)

@@ -8,16 +8,20 @@ Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://
 
 # Solana.py
 
-Solana Python API built on the [JSON RPC API](https://docs.solana.com/apps/jsonrpc-api).
+**🐍 The Solana Python SDK 🐍**
 
-Python version of [solana-web3.js](https://github.com/solana-labs/solana-web3.js/) for interacting with Solana.
+Solana.py is the Python counterpart to
+[solana-web3.js](https://github.com/solana-labs/solana-web3.js/).
+You can use it to interact with the [Solana JSON RPC API](https://docs.solana.com/apps/jsonrpc-api).
 
 Read the [Documentation](https://michaelhly.github.io/solana-py/).
 
-Also check out [anchorpy](https://kevinheavey.github.io/anchorpy/), a Python client for
-[Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html) based programs on Solana.
+Also check out [AnchorPy](https://kevinheavey.github.io/anchorpy/),
+a Python client for
+[Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html)-based
+programs on Solana.
 
-## Quickstart
+## ⚡ Quickstart
 
 ### Installation
 
@@ -26,6 +30,10 @@ pip install solana
 ```
 
 ### General Usage
+
+Note: check out the
+[Solana Cookbook](https://solanacookbook.com/)
+for more detailed examples!
 
 ```py
 import solana
@@ -89,12 +97,13 @@ async def main():
 asyncio.run(main())
 ```
 
-## Development
+## 🔨 Development
 
 ### Setup
 
 1. Install [poetry](https://python-poetry.org/docs/#installation)
 2. Install dev dependencies:
+
 ```sh
 poetry install
 
@@ -121,15 +130,4 @@ make tests
 make unit-tests
 # Integration tests only
 make int-tests
-```
-
-### Start a Solana Localnet
-
-Install [docker](https://docs.docker.com/get-started/).
-
-```sh
-# Update/pull latest docker image
-make update-localnet
-# Start localnet instance
-make start-localnet
 ```

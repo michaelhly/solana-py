@@ -12,16 +12,15 @@ import solana.publickey
 class Keypair:
     """An account keypair used for signing transactions.
 
-    :param keypair: an nacl.public.PrivateKey instance.
+    Args:
+        keypair: an `nacl.public.PrivateKey` instance.
 
-    Init with random keypair:
-
-    >>> keypair = Keypair()
-
-    Init with existing keypair:
-
-    >>> keys = nacl.public.PrivateKey.generate()
-    >>> keypair = Keypair(keys)
+    Example:
+        >>> # Init with random keypair:
+        >>> keypair = Keypair()
+        >>> # Init with existing keypair:
+        >>> keys = nacl.public.PrivateKey.generate()
+        >>> keypair = Keypair(keys)
     """
 
     def __init__(self, keypair: Optional[nacl.public.PrivateKey] = None) -> None:
@@ -45,7 +44,10 @@ class Keypair:
 
         This method exists to provide familiarity for web3.js users.
         There isn't much reason to use it instead of just instantiating
-        ``Keypair()``.
+        `Keypair()`.
+
+        Returns:
+            The generated keypair.
         """
         return cls()
 
@@ -55,9 +57,14 @@ class Keypair:
 
         This method should only be used to recreate a keypair from a previously
         generated secret key. Generating keypairs from a random seed should be done
-        with the ``.from_seed`` method.
+        with the `.from_seed` method.
 
-        :param secret_key: secret key in bytes.
+        Args:
+
+            secret_key: secret key in bytes.
+
+        Returns:
+            The generated keypair.
         """
         seed = secret_key[:32]
         return cls.from_seed(seed)
@@ -66,24 +73,35 @@ class Keypair:
     def from_seed(cls, seed: bytes) -> Keypair:
         """Generate a keypair from a 32 byte seed.
 
-        :param seed: 32-byte seed.
+        Args:
+
+            seed: 32-byte seed.
+
+        Returns:
+            The generated keypair.
         """
         return cls(nacl.public.PrivateKey(seed))
 
     def sign(self, msg: bytes) -> signing.SignedMessage:
         """Sign a message with this keypair.
 
-        :param msg: message to sign.
-        :returns: A signed messeged object.
+        Args:
 
-        >>> seed = bytes([1] * 32)
-        >>> keypair = Keypair.from_seed(seed)
-        >>> msg = b"hello"
-        >>> signed_msg = keypair.sign(msg)
-        >>> signed_msg.signature.hex()
-        'e1430c6ebd0d53573b5c803452174f8991ef5955e0906a09e8fdc7310459e9c82a402526748c3431fe7f0e5faafbf7e703234789734063ee42be17af16438d08'
-        >>> signed_msg.message.decode('utf-8')
-        'hello'
+            msg: message to sign.
+
+        Returns:
+            A signed messeged object.
+
+        Example:
+
+            >>> seed = bytes([1] * 32)
+            >>> keypair = Keypair.from_seed(seed)
+            >>> msg = b"hello"
+            >>> signed_msg = keypair.sign(msg)
+            >>> signed_msg.signature.hex()
+            'e1430c6ebd0d53573b5c803452174f8991ef5955e0906a09e8fdc7310459e9c82a402526748c3431fe7f0e5faafbf7e703234789734063ee42be17af16438d08'
+            >>> signed_msg.message.decode('utf-8')
+            'hello'
         """  # pylint: disable=line-too-long
         return signing.SigningKey(self.seed).sign(msg)
 
@@ -112,6 +130,6 @@ class Keypair:
         """Implemented by negating __eq__."""
         return not (self == other)  # pylint: disable=superfluous-parens
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Returns a unique hash for set operations."""
         return hash(self._keypair)
