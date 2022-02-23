@@ -31,7 +31,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
             conn: RPC connection to a solana cluster.
 
-        Returns: Number of lamports required.
+        Returns:
+            Number of lamports required.
         """
         resp = await conn.get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
         return resp["result"]
@@ -44,7 +45,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
             conn: RPC connection to a solana cluster.
 
-        Returns: Number of lamports required.
+        Returns:
+            Number of lamports required.
         """
         resp = await conn.get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
         return resp["result"]
@@ -56,7 +58,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         Args:
 
             conn: RPC connection to a solana cluster.
-        Returns: Number of lamports required.
+        Returns
+             Number of lamports required.
         """
         resp = await conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
         return resp["result"]
@@ -125,7 +128,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             freeze_authority: (optional) Account or multisig that can freeze token accounts.
             skip_confirmation: (optional) Option to skip transaction confirmation.
 
-        Returns: Token object for the newly minted token.
+        Returns:
+            Token object for the newly minted token.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -155,7 +159,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             owner: User account that will own the new account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
 
-        Returns: Public key of the new empty account.
+        Returns:
+            Public key of the new empty account.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -181,7 +186,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             owner: User account that will own the associated token account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
 
-        Returns: Public key of the new associated account.
+        Returns:
+            Public key of the new associated account.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -212,7 +218,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             amount: The amount of lamports to wrap.
             skip_confirmation: (optional) Option to skip transaction confirmation.
 
-        Returns: The new token account.
+        Returns:
+            The new token account.
 
         If skip confirmation is set to `False`, this method will block for at most 30 seconds
         or until the transaction is confirmed.
@@ -239,7 +246,8 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             m: Number of required signatures.
             signers: Full set of signers.
 
-        Returns: Public key of the new multisig account.
+        Returns:
+            Public key of the new multisig account.
         """
         balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_multisig(self._conn)
         txn, payer, multisig = self._create_multisig_args(m, multi_signers, balance_needed)

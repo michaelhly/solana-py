@@ -82,7 +82,8 @@ class Keypair:
 
             msg: message to sign.
 
-        Returns: A signed messeged object.
+        Returns:
+            A signed messeged object.
 
         Example:
 

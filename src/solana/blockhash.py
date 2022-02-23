@@ -48,7 +48,8 @@ class BlockhashCache:
     def get(self) -> Blockhash:
         """Get the cached Blockhash. Raises KeyError if cache has expired.
 
-        Returns: cached Blockhash.
+        Returns:
+            cached Blockhash.
 
         """
         try:
