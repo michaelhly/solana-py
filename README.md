@@ -16,7 +16,7 @@ You can use it to interact with the [Solana JSON RPC API](https://docs.solana.co
 
 Read the [Documentation](https://michaelhly.github.io/solana-py/).
 
-Also check out [anchorpy](https://kevinheavey.github.io/anchorpy/),
+Also check out [AnchorPy](https://kevinheavey.github.io/anchorpy/),
 a Python client for
 [Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html)-based
 programs on Solana.
