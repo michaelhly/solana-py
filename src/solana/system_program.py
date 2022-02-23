@@ -447,7 +447,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
     """Generate an instruction that transfers lamports from one account to another.
 
     Args:
-        The transfer params.
+        params: The transfer params.
 
     Example:
 
