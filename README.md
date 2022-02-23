@@ -8,15 +8,18 @@ Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://
 
 # Solana.py
 
-Solana Python API built on the [JSON RPC API](https://docs.solana.com/apps/jsonrpc-api).
+**🐍 The Solana Python SDK 🐍**
 
-This library is the Python counterpart to
+Solana.py is the Python counterpart to
 [solana-web3.js](https://github.com/solana-labs/solana-web3.js/).
+You can use it to interact with the [Solana JSON RPC API](https://docs.solana.com/apps/jsonrpc-api).
 
 Read the [Documentation](https://michaelhly.github.io/solana-py/).
 
-Also check out [anchorpy](https://kevinheavey.github.io/anchorpy/), a Python client for
-[Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html) based programs on Solana.
+Also check out [anchorpy](https://kevinheavey.github.io/anchorpy/),
+a Python client for
+[Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html)-based
+programs on Solana.
 
 ## ⚡ Quickstart
 
@@ -27,6 +30,10 @@ pip install solana
 ```
 
 ### General Usage
+
+Note: check out the
+[Solana Cookbook](https://solanacookbook.com/)
+for more detailed examples!
 
 ```py
 import solana
