@@ -36,7 +36,6 @@ def decode_data(layout: InstructionLayout, raw_data: bytes) -> Tuple:
     """Decode instruction from raw bytes.
 
     Example:
-
         >>> # Decoding a transfer instruction:
         >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
         >>> raw_data = bytes.fromhex('020000007b00000000000000')

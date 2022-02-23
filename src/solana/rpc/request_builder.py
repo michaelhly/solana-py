@@ -159,7 +159,6 @@ class ProgramSubscribe(HasPositionalParamAndCommitmentAndEncoding):
         """Init.
 
         Args:
-
             program_id: The program ID.
             commitment: Commitment level to use.
             encoding: Encoding to use.
@@ -197,7 +196,6 @@ class SignatureSubscribe(HasPositionalParamAndCommitmentAndEncoding):
         """Init.
 
         Args:
-
             signature: Transaction signature to subscribe to.
             commitment: Commitment level to use.
         """

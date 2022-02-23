@@ -18,7 +18,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     """Async client class.
 
     Args:
-
         endpoint: URL of the RPC endpoint.
         commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
         blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
@@ -82,12 +81,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the balance of the account of provided Pubkey.
 
         Args:
-
             pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_balance(PublicKey(1))) # doctest: +SKIP
@@ -106,7 +103,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all the account info for the specified public key.
 
         Args:
-
             pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
@@ -122,7 +118,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         Example:
-
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_account_info(PublicKey(1))) # doctest: +SKIP
@@ -144,11 +139,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Fetch the commitment for particular block.
 
         Args:
-
             slot: Block, identified by Slot.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_block_commitment(0)) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -194,11 +187,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Fetch the estimated production time of a block.
 
         Args:
-
             slot: Block, identified by Slot.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_block_time(5)) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 1598400007, 'id': 1}
@@ -210,7 +201,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns information about all the nodes participating in the cluster.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_cluster_nodes()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -231,13 +221,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns identity and transaction information about a confirmed block in the ledger.
 
         Args:
-
             slot: Slot, as u64 integer.
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                     "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_confirmed_block(1)O # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -292,13 +280,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns identity and transaction information about a confirmed block in the ledger.
 
         Args:
-
             slot: Slot, as u64 integer.
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_block(1)O # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -349,12 +335,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns a list of confirmed blocks.
 
         Args:
-
             start_slot: Start slot, as u64 integer.
             end_slot: (optional) End slot, as u64 integer.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_confirmed_blocks(5, 10)) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
@@ -366,12 +350,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns a list of confirmed blocks.
 
         Args:
-
             start_slot: Start slot, as u64 integer.
             end_slot: (optional) End slot, as u64 integer.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_blocks(5, 10)) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
@@ -393,7 +375,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         most recent confirmed block.
 
         Args:
-
             account: Account to be queried.
             before: (optional) Start searching backwards from this transaction signature.
                 If not provided the search starts from the top of the highest max confirmed block.
@@ -402,7 +383,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1)) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -429,7 +409,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         most recent confirmed block.
 
         Args:
-
             account: Account to be queried.
             before: (optional) Start searching backwards from this transaction signature.
                 If not provided the search starts from the top of the highest max confirmed block.
@@ -438,7 +417,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1)) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -455,7 +433,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns transaction details for a confirmed transaction.
 
         Args:
-
             tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
                 instruction parsers to return more human-readable and explicit data in the
                 `transaction.message.instructions` list.
@@ -463,7 +440,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_confirmed_transaction("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy")) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -493,7 +469,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns transaction details for a confirmed transaction.
 
         Args:
-
             tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
                 instruction parsers to return more human-readable and explicit data in the
                 `transaction.message.instructions` list.
@@ -501,7 +476,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_transaction("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy")) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -531,11 +505,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns information about the current epoch.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_epoch_info()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -553,7 +525,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns epoch schedule information from this cluster's genesis config.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_epoch_schedule()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -572,12 +543,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the fee calculator associated with the query blockhash, or null if the blockhash has expired.
 
         Args:
-
             blockhash: Blockhash to query as a Base58 encoded string.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_fee_calculator_for_blockhash("BaQSR194dC4dZaRxATtxYyEwDkk7VgqUY8NVNkub8HFZ")) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -589,10 +558,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(*args)
 
     async def get_fee_rate_governor(self) -> types.RPCResponse:
-        """Returns the fee rate governor information from the root bank.
+        """Return the fee rate governor information from the root bank.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_fee_rate_governor()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -610,11 +578,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns a recent block hash from the ledger, a fee schedule and the last slot the blockhash will be valid.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_fees()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -631,7 +597,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the slot of the lowest confirmed block that has not been purged from the ledger.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_fees()) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 1, 'id': 2}
@@ -642,7 +607,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the genesis hash.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_genesis_hash()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -655,7 +619,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the identity pubkey for the current node.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_identity()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -668,11 +631,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the current inflation governor.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_inflation_governor()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -690,7 +651,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the specific inflation values for the current epoch.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_inflation_rate()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -708,12 +668,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the 20 largest accounts, by lamport balance.
 
         Args:
-
             filter_opt: Filter results by account type; currently supported: circulating|nonCirculating.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_largest_accounts()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -769,13 +727,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the leader schedule for an epoch.
 
         Args:
-
             epoch: Fetch the leader schedule for the epoch that corresponds to the provided slot.
                 If unspecified, the leader schedule for the current epoch is fetched.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_leader_schedule()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -797,12 +753,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns minimum balance required to make account rent exempt.
 
         Args:
-
             usize: Account data length.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_minimum_balance_for_rent_exemption(50)) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 1238880, 'id': 7}
@@ -820,7 +774,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all the account info for a list of public keys.
 
         Args:
-
             pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
@@ -836,7 +789,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         Example:
-
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
@@ -882,7 +834,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all accounts owned by the provided program Pubkey.
 
         Args:
-
             pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
@@ -893,7 +844,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> memcmp_opts = [
             ...     types.MemcmpOpts(offset=4, bytes="3Mc6vR"),
@@ -927,11 +877,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         of submitting a transaction using it.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_recent_blockhash()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -953,13 +901,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         `MAX_RECENT_BLOCKHASHES` rooted slots.
 
         Args:
-
             signatures: An array of transaction signatures to confirm.
             search_transaction_history: If true, a Solana node will search its ledger cache for
                 any signatures not found in the recent status cache.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> signatures = [
             ...     "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
@@ -982,11 +928,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the current slot the node is processing.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_slot()) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 7515, 'id': 1}
@@ -998,11 +942,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the current slot leader.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_slot_leader()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -1018,14 +960,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns epoch activation information for a stake account.
 
         Args:
-
             pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object.
             epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
                 defaults to current epoch.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_stake_activation()) # doctest: +SKIP
             {'jsonrpc': '2.0','result': {'active': 124429280, 'inactive': 73287840, 'state': 'activating'}, 'id': 1}}
@@ -1037,11 +977,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns information about the current supply.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_supply()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -1063,12 +1001,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
         Args:
-
             pubkey: Pubkey of Token account to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_token_account_balance("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7"))  # noqa: E501 # pylint: disable=line-too-long # doctest: +SKIP
             {'jsonrpc': '2.0','result': {
@@ -1091,7 +1027,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
 
         Args:
-
             delegate: Public key of the delegate owner to query.
             opts: Token account option specifying at least one of `mint` or `program_id`.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
@@ -1108,7 +1043,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all SPL Token accounts by token owner (UNSTABLE).
 
         Args:
-
             owner: Public key of the account owner to query.
             opts: Token account option specifying at least one of `mint` or `program_id`.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
@@ -1144,11 +1078,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the current Transaction count from the ledger.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_transaction_count()) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 4554, 'id': 1}
@@ -1162,7 +1094,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         This value may increase over time if the node is configured to purge older ledger data.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_minimum_ledger_slot()) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 1234, 'id': 1}
@@ -1172,9 +1103,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_version(self) -> types.RPCResponse:
         """Returns the current solana versions running on the node.
 
-        >>> solana_client = AsyncClient("http://localhost:8899")
-        >>> asyncio.run(solana_client.get_version()) # doctest: +SKIP
-        {'jsonrpc': '2.0', 'result': {'solana-core': '1.4.0 5332fcad'}, 'id': 1}
+        Example:
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> asyncio.run(solana_client.get_version()) # doctest: +SKIP
+            {'jsonrpc': '2.0', 'result': {'solana-core': '1.4.0 5332fcad'}, 'id': 1}
         """
         return await self._provider.make_request(self._get_version)
 
@@ -1182,11 +1114,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the account info and associated stake for all the voting accounts in the current bank.
 
         Args:
-
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_vote_accounts()) # doctest: +SKIP
             {'jsonrpc': '2.0',
@@ -1234,13 +1164,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Requests an airdrop of lamports to a Pubkey.
 
         Args:
-
             pubkey: Pubkey of account to receive lamports, as base-58 encoded string or public key object.
             lamports: Amount of lamports.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.request_airdrop(PublicKey(1), 10000)) # doctest: +SKIP
@@ -1257,7 +1185,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
-
             txn: Fully-signed Transaction object, a fully sign transaction in wire format,
                 or a fully transaction as base-64 encoded string.
             opts: (optional) Transaction options.
@@ -1271,7 +1198,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> full_signed_tx_str = (
             ...     "AbN5XM+qw+7oOLsFw7goQSLBis7c1kXJFP6OF4w7YmQNhhbQYcyBiybKuOzzhV7McvoRP3Mey9AhXojtwDCdbwoBAAEDE5j2"
@@ -1300,7 +1226,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Send a transaction.
 
         Args:
-
             txn: Transaction object.
             signers: Signers to sign the transaction.
             opts: (optional) Transaction options.
@@ -1308,7 +1233,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 skip fetching the recent blockhash or relying on the cache.
 
         Example:
-
             >>> from solana.keypair import Keypair
             >>> from solana.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
@@ -1346,14 +1270,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Simulate sending a transaction.
 
         Args:
-
             txn: A Transaction object, a transaction in wire format, or a transaction as base-64 encoded string
                 The transaction must have a valid blockhash, but is not required to be signed.
             sig_verify: If true the transaction signatures will be verified (default: false).
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> tx_str = (
             ...     "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BF"
@@ -1375,11 +1297,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Sets the log filter on the validator.
 
         Args:
-
             log_filter: The new log filter to use.
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.set_log_filter("solana_core=debug")) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': None, 'id': 1}
@@ -1393,7 +1313,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Validator must have booted with RPC exit enabled (`--enable-rpc-exit` parameter).
 
         Example:
-
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> solana_client.validator_exit() # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': true, 'id': 1}
@@ -1414,7 +1333,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Confirm the transaction identified by the specified signature.
 
         Args:
-
             tx_sig: the transaction signature to confirm.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             sleep_seconds: The number of seconds to sleep when polling the signature status.

@@ -13,11 +13,9 @@ class Keypair:
     """An account keypair used for signing transactions.
 
     Args:
-
         keypair: an `nacl.public.PrivateKey` instance.
 
     Example:
-
         >>> # Init with random keypair:
         >>> keypair = Keypair()
         >>> # Init with existing keypair:

@@ -121,7 +121,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Subscribe to an account to receive notifications when the lamports or data change.
 
         Args:
-
             pubkey: Account pubkey.
             commitment: Commitment level.
             encoding: Encoding to use.
@@ -136,7 +135,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from account notifications.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = AccountUnsubscribe(subscription)
@@ -152,7 +150,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Subscribe to transaction logging.
 
         Args:
-
             filter_: filter criteria for the logs. Use `LogsSubscribeFilter` to build the filter.
             commitment: The commitment level to use.
             encoding: The encoding to use.
@@ -167,7 +164,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from transaction logging.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = LogsUnsubscribe(subscription)
@@ -185,7 +181,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Receive notifications when the lamports or data for a given account owned by the program changes.
 
         Args:
-
             program_id: The program ID.
             commitment: Commitment level to use.
             encoding: Encoding to use.
@@ -202,7 +197,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from program account notifications.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = ProgramUnsubscribe(subscription)
@@ -217,7 +211,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Subscribe to a transaction signature to receive notification when the transaction is confirmed.
 
         Args:
-
             signature: The transaction signature to subscribe to.
             commitment: Commitment level.
         """
@@ -231,7 +224,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from signature notifications.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = SignatureUnsubscribe(subscription)
@@ -250,7 +242,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from slot notifications.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = SlotUnsubscribe(subscription)
@@ -269,7 +260,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from slot update notifications.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = SlotsUpdatesUnsubscribe(subscription)
@@ -288,7 +278,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from root notifications.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = RootUnsubscribe(subscription)
@@ -307,7 +296,6 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """Unsubscribe from vote notifications.
 
         Args:
-
             subscription: ID of subscription to cancel.
         """
         req = VoteUnsubscribe(subscription)
@@ -342,7 +330,6 @@ class connect(ws_connect):  # pylint: disable=invalid-name,too-few-public-method
         """Init. Kwargs are passed to `websockets.connect`.
 
         Args:
-
             uri: The websocket endpoint.
         """
         super().__init__(uri, **kwargs, create_protocol=SolanaWsClientProtocol)

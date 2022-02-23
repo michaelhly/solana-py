@@ -1,4 +1,4 @@
-"""SPL token instructions."""
+"""SPL token instructions."""  # pylint: disable=too-many-lines
 
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
@@ -367,7 +367,8 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.TRANSFER)
     return TransferParams(
         program_id=instruction.program_id,
@@ -386,7 +387,8 @@ def decode_approve(instruction: TransactionInstruction) -> ApproveParams:
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.APPROVE)
     return ApproveParams(
         program_id=instruction.program_id,
@@ -405,7 +407,8 @@ def decode_revoke(instruction: TransactionInstruction) -> RevokeParams:
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     _ = __parse_and_validate_instruction(instruction, 2, InstructionType.REVOKE)
     return RevokeParams(
         program_id=instruction.program_id,
@@ -422,7 +425,8 @@ def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityPar
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.SET_AUTHORITY)
     return SetAuthorityParams(
         program_id=instruction.program_id,
@@ -441,7 +445,8 @@ def decode_mint_to(instruction: TransactionInstruction) -> MintToParams:
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MINT_TO)
     return MintToParams(
         program_id=instruction.program_id,
@@ -460,7 +465,8 @@ def decode_burn(instruction: TransactionInstruction) -> BurnParams:
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.BURN)
     return BurnParams(
         program_id=instruction.program_id,
@@ -479,7 +485,8 @@ def decode_close_account(instruction: TransactionInstruction) -> CloseAccountPar
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     _ = __parse_and_validate_instruction(instruction, 3, InstructionType.CLOSE_ACCOUNT)
     return CloseAccountParams(
         program_id=instruction.program_id,
@@ -497,7 +504,8 @@ def decode_freeze_account(instruction: TransactionInstruction) -> FreezeAccountP
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     _ = __parse_and_validate_instruction(instruction, 3, InstructionType.FREEZE_ACCOUNT)
     return FreezeAccountParams(
         program_id=instruction.program_id,
@@ -515,7 +523,8 @@ def decode_thaw_account(instruction: TransactionInstruction) -> ThawAccountParam
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     _ = __parse_and_validate_instruction(instruction, 3, InstructionType.THAW_ACCOUNT)
     return ThawAccountParams(
         program_id=instruction.program_id,
@@ -533,7 +542,8 @@ def decode_transfer_checked(instruction: TransactionInstruction) -> TransferChec
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.TRANSFER2)
     return TransferCheckedParams(
         program_id=instruction.program_id,
@@ -554,7 +564,8 @@ def decode_approve_checked(instruction: TransactionInstruction) -> ApproveChecke
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.APPROVE2)
     return ApproveCheckedParams(
         program_id=instruction.program_id,
@@ -575,7 +586,8 @@ def decode_mint_to_checked(instruction: TransactionInstruction) -> MintToChecked
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MINT_TO2)
     return MintToCheckedParams(
         program_id=instruction.program_id,
@@ -595,7 +607,8 @@ def decode_burn_checked(instruction: TransactionInstruction) -> BurnCheckedParam
         instruction: The instruction to decode.
 
     Returns:
-        The decoded instruction."""
+        The decoded instruction.
+    """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.BURN2)
     return BurnCheckedParams(
         program_id=instruction.program_id,
@@ -673,7 +686,7 @@ def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
 
     Returns:
         The instruction to initialize the mint.
-    """
+    """  # noqa: E501 # pylint: disable=line-too-long
     freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (PublicKey(0), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         dict(

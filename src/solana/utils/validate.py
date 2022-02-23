@@ -11,7 +11,6 @@ def validate_instruction_keys(instruction: TransactionInstruction, expected: int
     """Verify length of AccountMeta list of a transaction instruction is at least the expected length.
 
     Args:
-
         instruction: A TransactionInstruction object.
         expected: The expected length.
     """
@@ -23,7 +22,6 @@ def validate_instruction_type(parsed_data: Any, expected_type: IntEnum) -> None:
     """Check that the instruction type of the parsed data matches the expected instruction type.
 
     Args:
-
         parsed_data: Parsed instruction data object with `instruction_type` field.
         expected_type: The expected instruction type.
     """

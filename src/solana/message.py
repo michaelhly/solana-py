@@ -139,7 +139,7 @@ class Message:
 
         Returns:
             The seriallized message.
-        """  # pylint: disable=line-too-long
+        """  # pylint: disable=line-too-long # noqa: E501
         message_buffer = bytearray()
         # Message body
         message_buffer.extend(self.__encode_message())

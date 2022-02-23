@@ -1,7 +1,6 @@
 """Blockhash.
 
 Example:
-
     >>> # An arbitrary base58 encoded blockhash:
     >>> Blockhash("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k")
     'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k'
@@ -31,7 +30,6 @@ class BlockhashCache:
         """Update the cache.
 
         Args:
-
             blockhash: new Blockhash value.
             slot: the slot which the blockhash came from.
             used_immediately: whether the client used the blockhash immediately after fetching it.

@@ -17,7 +17,6 @@ class PublicKey:
     """The public key of a keypair.
 
     Example:
-
         >>> # An arbitary public key:
         >>> pubkey = PublicKey(1)
         >>> str(pubkey) # String representation in base58 form.

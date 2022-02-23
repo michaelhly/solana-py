@@ -383,7 +383,6 @@ def create_account(params: CreateAccountParams) -> TransactionInstruction:
         params: The create account params.
 
     Example:
-
         >>> from solana.publickey import PublicKey
         >>> from_account, new_account, program_id = PublicKey(1), PublicKey(2), PublicKey(3)
         >>> instruction = create_account(
@@ -421,7 +420,6 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInst
         params: The assign params.
 
     Example:
-
         >>> from solana.publickey import PublicKey
         >>> account, program_id = PublicKey(1), PublicKey(2)
         >>> instruction = assign(
