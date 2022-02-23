@@ -72,7 +72,7 @@ class Transaction:
         recent_blockhash: A recent transaction id.
         nonce_info: Nonce information.
             If populated, transaction will use a durable Nonce hash instead of a `recent_blockhash`.
-        signatuees: Signatures for the transaction.
+        signatures: Signatures for the transaction.
             Typically created by invoking the `sign()` method.
         fee_payer: The transaction fee payer.
     """
