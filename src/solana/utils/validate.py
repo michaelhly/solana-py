@@ -24,7 +24,7 @@ def validate_instruction_type(parsed_data: Any, expected_type: IntEnum) -> None:
 
     Args:
 
-        instruction: Parsed instruction data object with `instruction_type` field.
+        parsed_data: Parsed instruction data object with `instruction_type` field.
         expected_type: The expected instruction type.
     """
     if parsed_data.instruction_type != expected_type:

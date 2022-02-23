@@ -60,5 +60,8 @@ nav:
       - core/transaction.md
       - core/utils.md
       - core/vote_program.md
+  - Solana Program Library (SPL):
+      - spl/intro.md
+      - spl/token.md
 extra_css:
   - css/mkdocstrings.css
