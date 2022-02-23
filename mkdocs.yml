@@ -3,7 +3,9 @@ theme:
   name: material
   # icon:
   #   logo: material/anchor
-  favicon: img/anchor.svg
+  # favicon: img/anchor.svg
+  features:
+    - navigation.tabs
   palette:
     - scheme: default
       primary: lime
@@ -40,6 +42,12 @@ plugins:
   - search
 nav:
   - index.md
-  - api_reference.md
+  - RPC API:
+      - rpc_api/api.md
+      - rpc_api/async_api.md
+      - rpc_api/websocket.md
+      - rpc_api/commitment.md
+      - rpc_api/types.md
+      - rpc_api/providers.md
 extra_css:
   - css/mkdocstrings.css

@@ -1,3 +1,3 @@
-# API Reference
+# API Client
 
 :::solana.rpc.api
