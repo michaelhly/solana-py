@@ -331,6 +331,20 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_block_args(slot, encoding)
         return await self._provider.make_request(*args)
 
+    async def get_block_height(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+        """Returns the current block height of the node.
+
+        Args:
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> asyncio.run(solana_client.get_block_height()) # doctest: +SKIP
+            {'jsonrpc': '2.0', 'result': 1233, 'id': 1}
+        """
+        args = self._get_block_height_args(commitment)
+        return await self._provider.make_request(*args)
+
     async def get_confirmed_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> types.RPCResponse:
         """Returns a list of confirmed blocks.
 
