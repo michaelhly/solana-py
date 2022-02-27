@@ -95,6 +95,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
         return types.RPCMethod("getBlock"), slot, encoding
 
+    def _get_block_height_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        return types.RPCMethod("getBlockHeight"), {self._comm_key: commitment or self._commitment}
+
     @staticmethod
     def _get_confirmed_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
         if end_slot:

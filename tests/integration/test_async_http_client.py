@@ -275,6 +275,14 @@ async def test_get_block(test_http_client_async):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_get_block_height(test_http_client_async):
+    """Test get height."""
+    resp = await test_http_client_async.get_block_height()
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 async def test_get_block_with_encoding(test_http_client_async):
     """Test get block with encoding."""
     resp = await test_http_client_async.get_block(1, encoding="base64")
