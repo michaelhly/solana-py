@@ -9,7 +9,6 @@
 
 ### Changed
 - Replace base58 library with based58 [#192]
-- 
 
 ## [0.21.0] - 2022-01-13
 
