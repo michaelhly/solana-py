@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.22.0] - 2022-03-03
+
+## Added
+- Add default RPC client commitment to token client [#187]
+- Add cluster_api_url function [#193]
+- Add getBlockHeight RPC method [#200]
+
+### Changed
+- Replace base58 library with based58 [#192]
+- 
+
 ## [0.21.0] - 2022-01-13
 
 ### Fixed
