@@ -57,6 +57,10 @@ class PublicKey:
         """Equality definition for PublicKeys."""
         return False if not isinstance(other, PublicKey) else bytes(self) == bytes(other)
 
+    def __hash__(self) -> int:
+        """Returns a unique hash for set operations."""
+        return hash(self.__bytes__())
+
     def __repr__(self) -> str:
         """Representation of a PublicKey."""
         return str(self)
