@@ -259,3 +259,14 @@ def test_create_with_seed():
     default_public_key = PublicKey("11111111111111111111111111111111")
     derived_key = PublicKey.create_with_seed(default_public_key, "limber chicken: 4/45", default_public_key)
     assert derived_key == PublicKey("9h1HyLCW5dZnBVap8C5egQ9Z6pHyjsh5MNy83iPqqRuq")
+
+
+def test_set_operations() -> None:
+    """Tests that a publickey is now hashable with the appropriate set operations."""
+    public_key_primary = PublicKey("11111111111111111111111111111111")
+    public_key_secondary = PublicKey("CiDwVBFgWV9E5MvXWoLgnEgn2hK7rJikbvfWavzAQz3")
+    public_key_duplicate = PublicKey("CiDwVBFgWV9E5MvXWoLgnEgn2hK7rJikbvfWavzAQz3")
+    public_key_set = {public_key_primary, public_key_secondary, public_key_duplicate}
+    assert public_key_primary.__hash__() != public_key_secondary.__hash__()
+    assert public_key_secondary.__hash__() == public_key_duplicate.__hash__()
+    assert len(public_key_set) == 2
