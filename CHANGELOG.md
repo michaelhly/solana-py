@@ -3,7 +3,7 @@
 ## [0.23.0] - 2022-03-06
 
 ## Added
-- Implement `__hash__` for PublicKey  ([#187](https://github.com/michaelhly/solana-py/pull/202))
+- Implement `__hash__` for PublicKey  ([#202](https://github.com/michaelhly/solana-py/pull/202))
 
 ## [0.22.0] - 2022-03-03
 
