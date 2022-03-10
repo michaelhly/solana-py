@@ -32,7 +32,7 @@ cachetools = "^4.2.2"
 types-cachetools = "^4.2.4"
 jsonrpcclient = "^4.0.1"
 websockets = "^10.1"
-jsonrpcserver = "^5.0.4"
+jsonrpcserver = "^5.0.7"
 apischema = "^0.16.1"
 based58 = "^0.1.0"
 
