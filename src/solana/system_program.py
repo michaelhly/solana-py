@@ -178,8 +178,7 @@ class AssignWithSeedParams(NamedTuple):
 
 
 def __check_program_id(program_id: PublicKey) -> None:
-    if program_id !
-    YS_PROGRAM_ID:
+    if program_id ! SYS_PROGRAM_ID:
         raise ValueError("invalid instruction: programId is not SystemProgram")
 
 
