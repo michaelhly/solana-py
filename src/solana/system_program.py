@@ -178,7 +178,8 @@ class AssignWithSeedParams(NamedTuple):
 
 
 def __check_program_id(program_id: PublicKey) -> None:
-    if program_id != SYS_PROGRAM_ID:
+    if program_id !
+    YS_PROGRAM_ID:
         raise ValueError("invalid instruction: programId is not SystemProgram")
 
 
@@ -488,7 +489,7 @@ def create_account_with_seed(
     Returns:
         The instruction to create the account.
     """
-    seed = {"length": len(s), "chars": s} if isinstance(params.seed, str) else params.seed
+    seed = {"length": len(params.seed), "chars": params.seed} if isinstance(params.seed, str) else params.seed
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
         dict(
             instruction_type=InstructionType.CREATE_ACCOUNT_WITH_SEED,
