@@ -488,12 +488,13 @@ def create_account_with_seed(
     Returns:
         The instruction to create the account.
     """
+    seed = {"length": len(params.seed), "chars": params.seed} if isinstance(params.seed, str) else params.seed
     data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
         dict(
             instruction_type=InstructionType.CREATE_ACCOUNT_WITH_SEED,
             args=dict(
                 base=bytes(params.base_pubkey),
-                seed=params.seed,
+                seed=seed,
                 lamports=params.lamports,
                 space=params.space,
                 program_id=bytes(params.program_id),
