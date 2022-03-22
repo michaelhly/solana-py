@@ -10,7 +10,7 @@ import requests
 from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI, RPCMethod, RPCResponse
 
-DEFAULT_TIMEOUT = 10
+DEFAULT_TIMEOUT = 30
 
 
 def get_default_endpoint() -> URI:
