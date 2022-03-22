@@ -54,18 +54,5 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
 
-
-      - name: Doc dependencies
-        run: poetry export --dev --without-hashes -f requirements.txt --output requirements.txt
-
-      - name: Sphinx Build
-        uses: ammaraskar/sphinx-action@0.4
-        with:
-          docs-folder: .
-
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_build/html
-          force_orphan: true
+      - name: Deploy docs
+        run: poetry run mkdocs gh-deploy --force

@@ -6,8 +6,8 @@ from typing import Any, NamedTuple, Tuple
 class InstructionLayout(NamedTuple):
     """Data layout for the instruction to be encoded.
 
-    Instruction formats follow the format conventions `here
-    <https://docs.python.org/3/library/struct.html#struct-format-strings/>`_.
+    Instruction formats follow the format conventions
+    [here](https://docs.python.org/3/library/struct.html#struct-format-strings/).
     """
 
     idx: int
@@ -19,10 +19,15 @@ class InstructionLayout(NamedTuple):
 def encode_data(layout: InstructionLayout, *params: Any) -> bytes:
     """Encode instruction data to raw bytes.
 
-    >>> # Encoding a transfer instruction:
-    >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
-    >>> encode_data(transfer_layout, 123).hex()
-    '020000007b00000000000000'
+    Example:
+
+        >>> # Encoding a transfer instruction:
+        >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
+        >>> encode_data(transfer_layout, 123).hex()
+        '020000007b00000000000000'
+
+    Returns:
+        The encoded bytes.
     """
     return Struct(f"<I{layout.fmt}").pack(layout.idx, *params)
 
@@ -30,11 +35,12 @@ def encode_data(layout: InstructionLayout, *params: Any) -> bytes:
 def decode_data(layout: InstructionLayout, raw_data: bytes) -> Tuple:
     """Decode instruction from raw bytes.
 
-    >>> # Decoding a transfer instruction:
-    >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
-    >>> raw_data = bytes.fromhex('020000007b00000000000000')
-    >>> decode_data(transfer_layout, raw_data)
-    (2, 123)
+    Example:
+        >>> # Decoding a transfer instruction:
+        >>> transfer_layout = InstructionLayout(idx=2, fmt="Q")
+        >>> raw_data = bytes.fromhex('020000007b00000000000000')
+        >>> decode_data(transfer_layout, raw_data)
+        (2, 123)
     """
     data = None
     try:

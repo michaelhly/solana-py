@@ -30,3 +30,9 @@ dist
 
 # solana validator logs
 test-ledger/
+
+#IDE Files
+.idea/
+
+# pytest coverage
+.coverage

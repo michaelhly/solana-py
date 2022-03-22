@@ -62,7 +62,7 @@ _ASSIGN_WITH_SEED_LAYOUT = cStruct(
 _TRANSFER_WITH_SEED_LAYOUT = cStruct(
     "lamports" / Int64ul,
     "from_seed" / RUST_STRING_LAYOUT,
-    "from_ower" / PUBLIC_KEY_LAYOUT,
+    "from_owner" / PUBLIC_KEY_LAYOUT,
 )
 
 SYSTEM_INSTRUCTIONS_LAYOUT = cStruct(
