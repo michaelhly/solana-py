@@ -10,7 +10,7 @@ except ImportError:
 
 from warnings import warn
 
-from base58 import b58decode, b58encode
+from based58 import b58decode, b58encode
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
@@ -25,6 +25,10 @@ class RPCException(Exception):
     """Raised when RPC method returns an error result."""
 
 
+class RPCNoResultException(Exception):
+    """Raised when an RPC method returns no result."""
+
+
 class UnconfirmedTxError(Exception):
     """Raise when confirming a transaction times out."""
 
@@ -35,6 +39,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _data_slice_key = "dataSlice"
     _skip_preflight_key = "skipPreflight"
     _preflight_comm_key = "preflightCommitment"
+    _max_retries = "maxRetries"
+    _before_rpc_config_key = "before"
+    _limit_rpc_config_key = "limit"
+    _until_rpc_config_key = "until"
     _get_cluster_nodes = types.RPCMethod("getClusterNodes")
     _get_epoch_schedule = types.RPCMethod("getEpochSchedule")
     _get_fee_rate_governor = types.RPCMethod("getFeeRateGovernor")
@@ -88,6 +96,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
         return types.RPCMethod("getBlock"), slot, encoding
 
+    def _get_block_height_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        return types.RPCMethod("getBlockHeight"), {self._comm_key: commitment or self._commitment}
+
     @staticmethod
     def _get_confirmed_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:
         if end_slot:
@@ -100,54 +111,74 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             return types.RPCMethod("getBlocks"), start_slot, end_slot
         return types.RPCMethod("getBlocks"), start_slot
 
-    @staticmethod
     def _get_confirmed_signature_for_address2_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
+        self,
+        account: Union[str, Keypair, PublicKey],
+        before: Optional[str],
+        until: Optional[str],
+        limit: Optional[int],
+        commitment: Optional[Commitment],
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
         warn(
             "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
             "please use solana.rpc.api.getSignaturesForAddress",
             category=DeprecationWarning,
         )
-        opts: Dict[str, Union[int, str]] = {}
-        if before:
-            opts["before"] = before
-        if until:
-            opts["until"] = until
-        if limit:
-            opts["limit"] = limit
-
-        if isinstance(account, Keypair):
-            account = str(account.public_key)
-        if isinstance(account, PublicKey):
-            account = str(account)
+        opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
+        account = self._get_signature_for_address_account_arg(account)
         return types.RPCMethod("getConfirmedSignaturesForAddress2"), account, opts
 
-    @staticmethod
     def _get_signatures_for_address_args(
-        account: Union[str, Keypair, PublicKey], before: Optional[str], until: Optional[str], limit: Optional[int]
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str]]]:
-        opts: Dict[str, Union[int, str]] = {}
-        if before:
-            opts["before"] = before
-        if until:
-            opts["until"] = until
-        if limit:
-            opts["limit"] = limit
+        self,
+        account: Union[str, Keypair, PublicKey],
+        before: Optional[str],
+        until: Optional[str],
+        limit: Optional[int],
+        commitment: Optional[Commitment],
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
+        opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
+        account = self._get_signature_for_address_account_arg(account)
+        return types.RPCMethod("getSignaturesForAddress"), account, opts
 
+    @staticmethod
+    def _get_signature_for_address_account_arg(account: Union[str, Keypair, PublicKey]) -> str:
         if isinstance(account, Keypair):
             account = str(account.public_key)
         if isinstance(account, PublicKey):
             account = str(account)
-        return types.RPCMethod("getSignaturesForAddress"), account, opts
+        return account
+
+    def _get_signature_for_address_config_arg(
+        self,
+        before: Optional[str],
+        until: Optional[str],
+        limit: Optional[int],
+        commitment: Optional[Commitment],
+    ) -> Dict[str, Union[int, str, Commitment]]:
+        opts: Dict[str, Union[int, str, Commitment]] = {}
+        if before:
+            opts[self._before_rpc_config_key] = before
+        if until:
+            opts[self._until_rpc_config_key] = until
+        if limit:
+            opts[self._limit_rpc_config_key] = limit
+        if commitment:
+            opts[self._comm_key] = commitment
+        return opts
 
     @staticmethod
     def _get_confirmed_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
         return types.RPCMethod("getConfirmedTransaction"), tx_sig, encoding
 
-    @staticmethod
-    def _get_transaction_args(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
-        return types.RPCMethod("getTransaction"), tx_sig, encoding
+    def _get_transaction_args(
+        self, tx_sig: str, encoding: str = "json", commitment: Commitment = None
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[str, Commitment]]]:
+
+        return (
+            types.RPCMethod("getTransaction"),
+            tx_sig,
+            {self._encoding_key: encoding, self._comm_key: commitment or self._commitment},
+        )
 
     def _get_epoch_info_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getEpochInfo"), {self._comm_key: commitment or self._commitment}
@@ -259,7 +290,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         base58_sigs: List[str] = []
         for sig in signatures:
             if isinstance(sig, str):
-                base58_sigs.append(b58encode(b58decode(sig)).decode("utf-8"))
+                base58_sigs.append(b58encode(b58decode(sig.encode("ascii"))).decode("utf-8"))
             else:
                 base58_sigs.append(b58encode(sig).decode("utf-8"))
 
@@ -361,19 +392,21 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _send_raw_transaction_args(
         self, txn: Union[bytes, str], opts: types.TxOpts
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[bool, Commitment, str]]]:
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[bool, Commitment, str, int]]]:
 
         if isinstance(txn, bytes):
             txn = b64encode(txn).decode("utf-8")
-
+        params: Dict[str, Union[bool, Commitment, str, int]] = {
+            self._skip_preflight_key: opts.skip_preflight,
+            self._preflight_comm_key: opts.preflight_commitment,
+            self._encoding_key: "base64",
+        }
+        if opts.max_retries is not None:
+            params[self._max_retries] = opts.max_retries
         return (
             types.RPCMethod("sendTransaction"),
             txn,
-            {
-                self._skip_preflight_key: opts.skip_preflight,
-                self._preflight_comm_key: opts.preflight_commitment,
-                self._encoding_key: "base64",
-            },
+            params,
         )
 
     @staticmethod
@@ -386,11 +419,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self, txn: Union[bytes, str, Transaction], sig_verify: bool, commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[Commitment, bool, str]]]:
         if isinstance(txn, Transaction):
-            try:
-                b58decode(str(txn.recent_blockhash))
-            except Exception as err:
-                raise ValueError("transaction must have a valid blockhash") from err
-
+            if txn.recent_blockhash is None:
+                raise ValueError("transaction must have a valid blockhash")
             wire_format = b64encode(txn.serialize()).decode("utf-8")
         elif isinstance(txn, bytes):
             wire_format = txn.decode("utf-8")
@@ -409,17 +439,17 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _post_send(resp: types.RPCResponse) -> types.RPCResponse:
-        maybe_error = resp.get("error")
-        if maybe_error is not None:
-            raise RPCException(maybe_error)
+        error = resp.get("error")
+        if error:
+            raise RPCException(error)
         if not resp.get("result"):
-            raise Exception("Failed to send transaction")
+            raise RPCNoResultException("Failed to send transaction")
         return resp
 
     @staticmethod
     def parse_recent_blockhash(blockhash_resp: types.RPCResponse) -> Blockhash:
         """Extract blockhash from JSON RPC result."""
-        if not blockhash_resp["result"]:
+        if not blockhash_resp.get("result"):
             raise RuntimeError("failed to get recent blockhash")
         return Blockhash(blockhash_resp["result"]["value"]["blockhash"])
 

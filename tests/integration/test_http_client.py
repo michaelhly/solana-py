@@ -247,6 +247,13 @@ def test_get_block_with_encoding(test_http_client):
 
 
 @pytest.mark.integration
+def test_get_block_height(test_http_client):
+    """Test get height."""
+    resp = test_http_client.get_block_height()
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
 def test_get_confirmed_blocks(test_http_client):
     """Test get confirmed blocks."""
     resp = test_http_client.get_confirmed_blocks(5, 10)

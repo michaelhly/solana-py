@@ -1,0 +1,74 @@
+site_name: Solana.py
+theme:
+  name: material
+  icon:
+    logo: material/snake
+  favicon: img/favicon.ico
+  features:
+    - navigation.tabs
+    - navigation.top
+    - navigation.instant
+  palette:
+    - scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.snippets
+  - meta
+  - pymdownx.tabbed:
+      alternate_style: true
+repo_url: https://github.com/michaelhly/solana-py
+repo_name: michaelhly/solana-py
+site_url: https://michaelhly.github.io/solana-py/
+site_author: Kevin Heavey & Michael Huang
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            filters:
+              - "!^_" # exlude all members starting with _
+              - "^__init__$" # but always include __init__ modules and methods
+          rendering:
+            show_root_heading: true
+            show_bases: false
+  - search
+nav:
+  - index.md
+  - RPC API:
+      - rpc/api.md
+      - rpc/async_api.md
+      - rpc/websocket.md
+      - rpc/commitment.md
+      - rpc/types.md
+      - rpc/providers.md
+  - Core API:
+      - core/blockhash.md
+      - core/instruction.md
+      - core/keypair.md
+      - core/message.md
+      - core/publickey.md
+      - core/system_program.md
+      - core/sysvar.md
+      - core/transaction.md
+      - core/utils.md
+      - core/vote_program.md
+  - Solana Program Library (SPL):
+      - spl/intro.md
+      - Token:
+          - spl/token/client.md
+          - spl/token/async_client.md
+          - spl/token/constants.md
+          - spl/token/instructions.md
+          - spl/token/core.md
+extra_css:
+  - css/mkdocstrings.css
