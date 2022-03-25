@@ -278,10 +278,82 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         else:
             return types.RPCMethod("getProgramAccounts"), str(pubkey), opts
 
+    @staticmethod
+    def _get_recent_performance_samples_args(
+        limit: Optional[int],
+    ) -> Tuple[types.RPCMethod, Optional[int]]:
+        return types.RPCMethod("getRecentPerformanceSamples"), limit
+
+    def _get_blocks_with_limit_args(
+        self,
+        start_slot: int, limit: int, commitment: Optional[Commitment] = None,
+    ) -> Tuple[types.RPCMethod, int, int, Dict[str, Commitment]]:
+        return (
+            types.RPCMethod("getBlocksWithLimit"),
+            start_slot,
+            limit,
+            {self._comm_key: commitment or self._commitment}
+        )
+
     def _get_recent_blockhash_args(
         self, commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getRecentBlockhash"), {self._comm_key: commitment or self._commitment}
+
+    def _get_latest_blockhash_args(
+        self, commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        return types.RPCMethod("getLatestBlockhash"), {self._comm_key: commitment or self._commitment}
+
+    def _get_fee_for_message_args(
+        self, message: str, commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
+        return (
+            types.RPCMethod("getFeeForMessage"),
+            message,
+            {self._comm_key: commitment or self._commitment},
+        )
+
+    def _get_is_blockhash_valid_args(
+        self, blockhash: str, commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
+        return (
+            types.RPCMethod("isBlockhashValid"),
+            blockhash,
+            {self._comm_key: commitment or self._commitment},
+        )
+
+    @staticmethod
+    def _get_slot_leaders_args(
+        start_slot: int, limit: int,
+    ) -> Tuple[types.RPCMethod, int, int]:
+        return (
+            types.RPCMethod("getSlotLeaders"), start_slot, limit,
+        )
+
+    def _get_block_production_args(
+        self,
+        commitment: Optional[Commitment] = None,
+        first_slot: Optional[int] = None,
+        last_slot: Optional[int] = None,
+        identity: Optional[str] = None,
+    ) -> Tuple[types.RPCMethod, Dict[str, Any]]:
+        opts: Dict[str, Union[int, str, Commitment]] = {
+            self._comm_key: commitment or self._commitment
+        }
+        if first_slot is not None:
+            slot_range = {'firstSlot': first_slot}
+            if last_slot is not None:
+                slot_range['lastSlot'] = last_slot
+
+            opts['range'] = slot_range
+
+        if identity is not None:
+            opts['identity'] = identity
+
+        return (
+            types.RPCMethod("getBlockProduction"), opts,
+        )
 
     @staticmethod
     def _get_signature_statuses_args(
