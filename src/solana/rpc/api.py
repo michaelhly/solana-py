@@ -945,6 +945,57 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         )
         return self._provider.make_request(*args)
 
+    def get_recent_performance_samples(
+        self, limit: Optional[int] = None,
+    ) -> types.RPCResponse:
+        """
+        Returns a list of recent performance samples, in reverse slot order.
+        Performance samples are taken every 60 seconds and include
+        the number of transactions and slots that occur in a given time window.
+
+        Parameters:
+            limit: <usize> - (optional) number of samples to return (maximum 720)
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.get_recent_performance_samples()
+            solana_client.get_recent_performance_samples(5)
+        """
+        args = self._get_recent_performance_samples_args(limit)
+        return self._provider.make_request(*args)
+
+    def get_max_shred_insert_slot(self) -> types.RPCResponse:
+        """
+        Get the max slot seen from after shred insert.
+
+        solana_client = Client("http://localhost:8899")
+        solana_client.get_max_shred_insert_slot()
+        """
+        return self._provider.make_request(
+            types.RPCMethod("getMaxShredInsertSlot"),
+        )
+
+    def get_blocks_with_limit(
+        self,
+        start_slot: int, limit: int, commitment: Optional[Commitment] = None,
+    ) -> types.RPCResponse:
+        """
+        Returns a list of confirmed blocks starting at the given slot
+
+        Parameters:
+            <u64> - start_slot, as u64 integer
+            <u64> - limit, as u64 integer
+            (optional) Commitment; "processed" is not supported.
+            If parameter not provided, the default is "finalized".
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.get_blocks_with_limit(126411503, 5)
+            solana_client.get_blocks_with_limit(126411503, 10, 'confirmed')
+        """
+        args = self._get_blocks_with_limit_args(start_slot, limit, commitment)
+        return self._provider.make_request(*args)
+
     def get_recent_blockhash(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns a recent block hash from the ledger.
 
@@ -964,6 +1015,132 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 2}
         """
         args = self._get_recent_blockhash_args(commitment)
+        return self._provider.make_request(*args)
+
+    def get_latest_blockhash(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+        """Returns the latest blockhash
+            NEW: This method is only available in solana-core v1.9 or newer.
+            Please use getRecentBlockhash for solana-core v1.8
+
+        Args:
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.get_latest_blockhash()
+        """
+        args = self._get_latest_blockhash_args(commitment)
+        return self._provider.make_request(*args)
+
+    def get_fee_for_message(
+        self, message: str, commitment: Optional[Commitment] = None,
+    ) -> types.RPCResponse:
+        """Get the fee the network will charge for a particular Message
+            NEW: This method is only available in solana-core v1.9 or newer.
+            Please use getRecentBlockhash for solana-core v1.8
+
+        Args:
+            message: Base-64 encoded Message
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.get_fee_for_message(
+                'AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA'
+            )
+        """
+        args = self._get_fee_for_message_args(message, commitment)
+        return self._provider.make_request(*args)
+
+    def is_blockhash_valid(
+        self, blockhash: str, commitment: Optional[Commitment] = None,
+    ) -> types.RPCResponse:
+        """Returns whether a blockhash is still valid or not
+            NEW: This method is only available in solana-core v1.9 or newer.
+            Please use getRecentBlockhash for solana-core v1.8
+
+        Args:
+            blockhash: the blockhash of this block, as base-58 encoded string
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.is_blockhash_valid(
+                'J7rBdM6AecPDEZp8aPq5iPSNKVkU5Q76F3oAV4eW5wsW'
+            )
+        """
+        args = self._get_is_blockhash_valid_args(blockhash, commitment)
+        return self._provider.make_request(*args)
+
+    def get_slot_leaders(self, start_slot: int, limit: int) -> types.RPCResponse:
+        """
+        Returns the slot leaders for a given slot range
+
+        Parameters:
+            <u64> - start_slot, as u64 integer
+            <u64> - limit, as u64 integer
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.get_slot_leaders(126411503, 5)
+        """
+        args = self._get_slot_leaders_args(start_slot, limit)
+        return self._provider.make_request(*args)
+
+    def get_highest_snapshot_slot(self) -> types.RPCResponse:
+        """
+        Returns the highest slot information that the node has snapshots for.
+
+        This will find the highest full snapshot slot, and the highest
+        incremental snapshot slot based on the full snapshot slot,
+        if there is one.
+
+        solana_client = Client("http://localhost:8899")
+        solana_client.get_highest_snapshot_slot()
+        """
+        return self._provider.make_request(
+            types.RPCMethod("getHighestSnapshotSlot"),
+        )
+
+    def get_max_retransmit_slot(self) -> types.RPCResponse:
+        """
+        Get the max slot seen from retransmit stage.
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.get_max_retransmit_slot()
+        """
+        return self._provider.make_request(
+            types.RPCMethod("getMaxRetransmitSlot"),
+        )
+
+    def get_block_production(
+        self,
+        commitment: Optional[Commitment] = None,
+        first_slot: Optional[int] = None,
+        last_slot: Optional[int] = None,
+        identity: Optional[str] = None,
+    ) -> types.RPCResponse:
+        """Returns recent block production information
+        from the current or previous epoch.
+
+        Args:
+            (optional) commitment
+            (optional) first_slot: <u64> - first slot to return block production
+                information for (inclusive)
+            (optional) last_slot: <u64> - last slot to return block production
+                information for (inclusive). If parameter not provided,
+                defaults to the highest slot
+            (optional) identity: <string> - Only return results for this
+                validator identity (base-58 encoded)
+
+        Example:
+            solana_client = Client("http://localhost:8899")
+            solana_client.get_block_production()
+        """
+        args = self._get_block_production_args(
+            commitment, first_slot, last_slot, identity,
+        )
         return self._provider.make_request(*args)
 
     def get_signature_statuses(
