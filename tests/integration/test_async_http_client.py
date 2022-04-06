@@ -16,19 +16,31 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_request_air_drop(async_stubbed_sender: Keypair, test_http_client_async: AsyncClient):
-    """Test air drop to async_stubbed_sender."""
+async def test_request_air_drop(
+    async_stubbed_sender: Keypair, async_stubbed_receiver: Keypair, test_http_client_async: AsyncClient
+):
+    """Test air drop to async_stubbed_sender and async_stubbed_receiver."""
+    # Airdrop to stubbed_sender
     resp = await test_http_client_async.request_airdrop(async_stubbed_sender.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     await test_http_client_async.confirm_transaction(resp["result"])
     balance = await test_http_client_async.get_balance(async_stubbed_sender.public_key)
     assert balance["result"]["value"] == AIRDROP_AMOUNT
+    # Airdrop to stubbed_receiver
+    resp = await test_http_client_async.request_airdrop(async_stubbed_receiver, AIRDROP_AMOUNT)
+    assert_valid_response(resp)
+    await test_http_client_async.confirm_transaction(resp["result"])
+    balance = await test_http_client_async.get_balance(async_stubbed_receiver)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_request_air_drop_prefetched_blockhash(async_stubbed_sender_prefetched_blockhash, test_http_client_async):
-    """Test air drop to async_stubbed_sender."""
+async def test_request_air_drop_prefetched_blockhash(
+    async_stubbed_sender_prefetched_blockhash, async_stubbed_receiver_prefetched_blockhash, test_http_client_async
+):
+    """Test air drop to async_stubbed_sender and async_stubbed_receiver."""
+    # Airdrop to stubbed_sender
     resp = await test_http_client_async.request_airdrop(
         async_stubbed_sender_prefetched_blockhash.public_key, AIRDROP_AMOUNT
     )
@@ -36,14 +48,23 @@ async def test_request_air_drop_prefetched_blockhash(async_stubbed_sender_prefet
     await test_http_client_async.confirm_transaction(resp["result"])
     balance = await test_http_client_async.get_balance(async_stubbed_sender_prefetched_blockhash.public_key)
     assert balance["result"]["value"] == AIRDROP_AMOUNT
+    # Airdrop to stubbed_receiver
+    resp = await test_http_client_async.request_airdrop(async_stubbed_receiver_prefetched_blockhash, AIRDROP_AMOUNT)
+    assert_valid_response(resp)
+    await test_http_client_async.confirm_transaction(resp["result"])
+    balance = await test_http_client_async.get_balance(async_stubbed_receiver_prefetched_blockhash)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_request_air_drop_cached_blockhash(
-    async_stubbed_sender_cached_blockhash, test_http_client_async_cached_blockhash
+    async_stubbed_sender_cached_blockhash,
+    async_stubbed_receiver_cached_blockhash,
+    test_http_client_async_cached_blockhash,
 ):
-    """Test air drop to async_stubbed_sender."""
+    """Test air drop to async_stubbed_sender and async_stubbed_receiver."""
+    # Airdrop to stubbed_sender
     resp = await test_http_client_async_cached_blockhash.request_airdrop(
         async_stubbed_sender_cached_blockhash.public_key, AIRDROP_AMOUNT
     )
@@ -52,6 +73,14 @@ async def test_request_air_drop_cached_blockhash(
     balance = await test_http_client_async_cached_blockhash.get_balance(
         async_stubbed_sender_cached_blockhash.public_key
     )
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    # Airdrop to stubbed_receiver
+    resp = await test_http_client_async_cached_blockhash.request_airdrop(
+        async_stubbed_receiver_cached_blockhash, AIRDROP_AMOUNT
+    )
+    assert_valid_response(resp)
+    await test_http_client_async_cached_blockhash.confirm_transaction(resp["result"])
+    balance = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_receiver_cached_blockhash)
     assert balance["result"]["value"] == AIRDROP_AMOUNT
 
 
@@ -87,7 +116,7 @@ async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stub
     assert resp["result"]["value"] == 9999994000
     resp = await test_http_client_async.get_balance(async_stubbed_receiver)
     assert_valid_response(resp)
-    assert resp["result"]["value"] == 954
+    assert resp["result"]["value"] == 10000001000
 
 
 @pytest.mark.integration
@@ -116,7 +145,7 @@ async def test_send_transaction_prefetched_blockhash(
     assert resp["result"]["value"] == 9999994000
     resp = await test_http_client_async.get_balance(async_stubbed_receiver_prefetched_blockhash)
     assert_valid_response(resp)
-    assert resp["result"]["value"] == 954
+    assert resp["result"]["value"] == 10000001000
 
 
 @pytest.mark.integration
@@ -165,7 +194,7 @@ async def test_send_transaction_cached_blockhash(
     )
     resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_receiver_cached_blockhash)
     assert_valid_response(resp)
-    assert resp["result"]["value"] == 954
+    assert resp["result"]["value"] == 10000001000
     resp = await test_http_client_async_cached_blockhash.send_transaction(
         transfer_tx, async_stubbed_sender_cached_blockhash
     )
@@ -212,7 +241,7 @@ async def test_send_raw_transaction_and_get_balance(
     assert resp["result"]["value"] == 9999988000
     resp = await test_http_client_async.get_balance(async_stubbed_receiver)
     assert_valid_response(resp)
-    assert resp["result"]["value"] == 1954
+    assert resp["result"]["value"] == 10000002000
 
 
 @pytest.mark.integration
@@ -253,7 +282,7 @@ async def test_get_cluster_nodes(test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_confirmed_block(test_http_client_async):
     """Test get confirmed block."""
-    resp = await test_http_client_async.get_confirmed_block(1)
+    resp = await test_http_client_async.get_confirmed_block(2)
     assert_valid_response(resp)
 
 
@@ -261,7 +290,7 @@ async def test_get_confirmed_block(test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_confirmed_block_with_encoding(test_http_client_async):
     """Test get confrimed block with encoding."""
-    resp = await test_http_client_async.get_confirmed_block(1, encoding="base64")
+    resp = await test_http_client_async.get_confirmed_block(2, encoding="base64")
     assert_valid_response(resp)
 
 
@@ -269,7 +298,7 @@ async def test_get_confirmed_block_with_encoding(test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_block(test_http_client_async):
     """Test get block."""
-    resp = await test_http_client_async.get_block(1)
+    resp = await test_http_client_async.get_block(2)
     assert_valid_response(resp)
 
 
@@ -285,7 +314,7 @@ async def test_get_block_height(test_http_client_async):
 @pytest.mark.asyncio
 async def test_get_block_with_encoding(test_http_client_async):
     """Test get block with encoding."""
-    resp = await test_http_client_async.get_block(1, encoding="base64")
+    resp = await test_http_client_async.get_block(2, encoding="base64")
     assert_valid_response(resp)
 
 

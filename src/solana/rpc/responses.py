@@ -238,6 +238,7 @@ class SlotsUpdatesNotification(SubscriptionNotificationBase):
 class VoteItem:
     """Vote data."""
 
+    vote_pubkey: str = field(metadata=alias("votePubkey"))
     hash: str
     slots: List[int]
     timestamp: Optional[int]
