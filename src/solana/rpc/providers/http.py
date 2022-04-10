@@ -1,8 +1,7 @@
 """HTTP RPC Provider."""
 from typing import Any, Optional
-from solana.keypair import Keypair
 
-from base58 import b58encode
+from based58 import b58encode
 
 import requests
 
@@ -10,7 +9,6 @@ from ..types import RPCMethod, RPCResponse
 from .base import BaseProvider
 from .core import _HTTPProviderCore
 from ...exceptions import handle_exceptions, SolanaRpcException
-
 
 
 class HTTPProvider(BaseProvider, _HTTPProviderCore):
