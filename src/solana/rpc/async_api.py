@@ -416,6 +416,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         until: Optional[str] = None,
         limit: Optional[int] = None,
         commitment: Optional[Commitment] = None,
+        **kwargs,
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -441,7 +442,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_signatures_for_address_args(account, before, until, limit, commitment)
-        return await self._provider.make_request(*args)
+        return await self._provider.make_request(*args, **kwargs)
 
     async def get_confirmed_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
@@ -479,7 +480,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_transaction_args(tx_sig, encoding)
         return await self._provider.make_request(*args)
 
-    async def get_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
+    async def get_transaction(self, tx_sig: str, encoding: str = "json", **kwargs) -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
 
         Args:
@@ -513,7 +514,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_transaction_args(tx_sig, encoding)
-        return await self._provider.make_request(*args)
+        return await self._provider.make_request(*args, **kwargs)
 
     async def get_epoch_info(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns information about the current epoch.

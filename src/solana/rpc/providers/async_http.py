@@ -22,9 +22,9 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         return f"Async HTTP RPC connection {self.endpoint_uri}"
 
     @handle_async_exceptions(SolanaRpcException, Exception)
-    async def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
+    async def make_request(self, method: RPCMethod, *params: Any, **kwargs) -> RPCResponse:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_request(method=method, params=params, is_async=True)
+        request_kwargs = self._before_request(method=method, params=params, is_async=True, **kwargs)
         raw_response = await self.session.post(**request_kwargs)
         return self._after_request(raw_response=raw_response, method=method)
 

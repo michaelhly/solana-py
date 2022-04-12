@@ -9,6 +9,7 @@ import requests
 
 from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI, RPCMethod, RPCResponse
+from ...utils.helpers import merge_keep_latter
 
 DEFAULT_TIMEOUT = 10
 
@@ -39,7 +40,7 @@ class _HTTPProviderCore(FriendlyJsonSerde):
     def _increment_counter_and_get_id(self) -> int:
         return next(self._request_counter) + 1
 
-    def _before_request(self, method: RPCMethod, params: Tuple[Any, ...], is_async: bool) -> Dict[str, Any]:
+    def _before_request(self, method: RPCMethod, params: Tuple[Any, ...], is_async: bool, **kwargs) -> Dict[str, Any]:
         request_id = self._increment_counter_and_get_id()
         self.logger.debug(
             "Making HTTP request. URI: %s, RequestID: %d, Method: %s, Params: %s",
@@ -48,7 +49,10 @@ class _HTTPProviderCore(FriendlyJsonSerde):
             method,
             params,
         )
-        return self._build_request_kwargs(request_id=request_id, method=method, params=params, is_async=is_async)
+        built_kwargs = self._build_request_kwargs(
+            request_id=request_id, method=method, params=params, is_async=is_async
+        )
+        return merge_keep_latter(built_kwargs, kwargs)
 
     def _after_request(self, raw_response: Union[requests.Response, httpx.Response], method: RPCMethod) -> RPCResponse:
         raw_response.raise_for_status()
