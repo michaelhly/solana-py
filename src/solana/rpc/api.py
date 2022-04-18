@@ -70,8 +70,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self._provider = http.HTTPProvider(endpoint, timeout=timeout)
 
     @property
-    def request_raw(self):
-        return self._provider.content if getattr(self, '_provider') else None
+    def request(self):
+        if getattr(self, '_provider'):
+            request_raw = self._provider.content
+            return self._provider.json_decode(request_raw)
+        return None
 
     @property
     def response_headers(self):
