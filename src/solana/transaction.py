@@ -195,13 +195,13 @@ class Transaction:
         remaining_am = account_metas.values()
         signer_am = sorted(\
             [x for x in remaining_am if x.is_signer], 
-            key=lambda x: (not x.is_writable, str(x).lower()))
+            key=lambda x: (not x.is_writable, str(x.pubkey).lower()))
         writable_am = sorted(\
             [x for x in remaining_am if (not x.is_signer and x.is_writable)], 
-            key=lambda x: str(x).lower())
+            key=lambda x: str(x.pubkey).lower())
         rest_am = sorted(\
             [x for x in remaining_am if (not x.is_signer and not x.is_writable)], 
-            key=lambda x: str(x).lower())
+            key=lambda x: str(x.pubkey).lower())
         
         joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
         
