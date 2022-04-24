@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from sys import maxsize
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
 from based58 import b58decode, b58encode
