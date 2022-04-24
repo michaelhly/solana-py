@@ -155,79 +155,78 @@ class Transaction:
         if not fee_payer:
             raise AttributeError("transaction feePayer required")
 
-        account_metas, program_ids = [], []
-        for instr in self.instructions:
-            if not instr.program_id:
-                raise AttributeError("invalid instruction:", instr)
-            account_metas.extend(instr.keys)
-            if str(instr.program_id) not in program_ids:
-                program_ids.append(str(instr.program_id))
-
-        # Append programID account metas.
-        for pg_id in program_ids:
-            account_metas.append(AccountMeta(PublicKey(pg_id), False, False))
-
-        # Sort. Prioritizing first by signer, then by writable and converting from set to list.
-        account_metas.sort(key=lambda account: (not account.is_signer, not account.is_writable))
-
-        # Cull duplicate accounts
-        fee_payer_idx = maxsize
-        seen: Dict[str, int] = {}
-        uniq_metas: List[AccountMeta] = []
-        for sig in self.signatures:
-            pubkey = str(sig.pubkey)
-            if pubkey in seen:
-                uniq_metas[seen[pubkey]].is_signer = True
-            else:
-                uniq_metas.append(AccountMeta(sig.pubkey, True, True))
-                seen[pubkey] = len(uniq_metas) - 1
-                if sig.pubkey == fee_payer:
-                    fee_payer_idx = min(fee_payer_idx, seen[pubkey])
-
-        for a_m in account_metas:
-            pubkey = str(a_m.pubkey)
-            if pubkey in seen:
-                idx = seen[pubkey]
-                uniq_metas[idx].is_writable = uniq_metas[idx].is_writable or a_m.is_writable
-            else:
-                uniq_metas.append(a_m)
-                seen[pubkey] = len(uniq_metas) - 1
-                if a_m.pubkey == fee_payer:
-                    fee_payer_idx = min(fee_payer_idx, seen[pubkey])
-
-        # Move fee payer to the front
-        if fee_payer_idx == maxsize:
-            uniq_metas = [AccountMeta(fee_payer, True, True)] + uniq_metas
-        else:
-            uniq_metas = (
-                [uniq_metas[fee_payer_idx]] + uniq_metas[:fee_payer_idx] + uniq_metas[fee_payer_idx + 1 :]  # noqa: E203
-            )
-
-        # Split out signing from nonsigning keys and count readonlys
-        signed_keys: List[str] = []
-        unsigned_keys: List[str] = []
-        num_required_signatures = num_readonly_signed_accounts = num_readonly_unsigned_accounts = 0
-        for a_m in uniq_metas:
-            if a_m.is_signer:
-                signed_keys.append(str(a_m.pubkey))
-                num_required_signatures += 1
-                num_readonly_signed_accounts += int(not a_m.is_writable)
-            else:
-                num_readonly_unsigned_accounts += int(not a_m.is_writable)
-                unsigned_keys.append(str(a_m.pubkey))
+        # Organize account_metas
+        account_metas:Dict[str, AccountMeta] = {}
+        
+        for instruction in self.instructions:
+            
+            if not instruction.program_id:
+                raise AttributeError("invalid instruction:", instruction)
+            
+            # Update `is_signer` and `is_writable` as iterate through instructions
+            for key in instruction.keys:
+                pubkey = str(key.pubkey)
+                if pubkey not in account_metas:
+                    account_metas[pubkey] = key
+                else:
+                    account_metas[pubkey].is_signer = True \
+                        if key.is_signer else account_metas[pubkey].is_signer
+                    account_metas[pubkey].is_writable = True \
+                        if key.is_writable else account_metas[pubkey].is_writable
+                    
+            # Add program_id to account_metas
+            if str(instruction.program_id) not in account_metas:
+                account_metas[str(instruction.program_id)] = \
+                    AccountMeta(
+                        pubkey=instruction.program_id,
+                        is_signer=False,
+                        is_writable=False,
+                    )
+        
+        # Separate `fee_payer_am` and sort the remaining account_metas
+        # Sort keys are:
+        # 1. is_signer
+        # 2. is_writable
+        # 3. PublicKey
+        fee_payer_am  = account_metas.pop(str(fee_payer))
+        remaining_am = account_metas.values()
+        signer_am = sorted(\
+            [x for x in remaining_am if x.is_signer], 
+            key=lambda x: str(x).lower())
+        writable_am = sorted(\
+            [x for x in remaining_am if (not x.is_signer and x.is_writable)], 
+            key=lambda x: str(x).lower())
+        rest_am = sorted(\
+            [x for x in remaining_am if (not x.is_signer and not x.is_writable)], 
+            key=lambda x: str(x).lower())
+        
+        joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
+        
+        # Count signatures required for header
+        num_required_signatures: int = len([x for x in joined_am if x.is_signer])
+        num_readonly_signed_accounts: int = len([x for x in joined_am if (not x.is_writable and x.is_signer)])
+        num_readonly_unsigned_accounts: int = len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
+        
         # Initialize signature array, if needed
-        if not self.signatures:
-            self.signatures = [SigPubkeyPair(pubkey=PublicKey(key), signature=None) for key in signed_keys]
+        self.signatures = [] if not self.signatures else self.signatures
+        exiting_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
+        
+        # Append missing signatures
+        signer_pubkeys = [str(x.pubkey) for x in joined_am if x.is_signer]
+        for signer_pubkey in signer_pubkeys:
+            if signer_pubkey not in exiting_signature_pubkeys:
+                self.signatures.append(SigPubkeyPair(pubkey=PublicKey(signer_pubkey), signature=None))
 
-        account_keys: List[str] = signed_keys + unsigned_keys
-        account_indices: Dict[str, int] = {str(key): i for i, key in enumerate(account_keys)}
+        account_keys = [str(x.pubkey) for x in joined_am]
+        account_indices: Dict[str, int] = {str(key): idx for idx, key in enumerate(account_keys)}
+        
         compiled_instructions: List[CompiledInstruction] = [
             CompiledInstruction(
-                accounts=[account_indices[str(a_m.pubkey)] for a_m in instr.keys],
-                program_id_index=account_indices[str(instr.program_id)],
-                data=b58encode(instr.data),
+                accounts=[account_indices[str(am.pubkey)] for am in instruction.keys],
+                program_id_index=account_indices[str(instruction.program_id)],
+                data=b58encode(instruction.data),
             )
-            for instr in self.instructions
+            for instruction in self.instructions
         ]
 
         return Message(
@@ -269,7 +268,6 @@ class Transaction:
         ]
         self.signatures = signatures
         sign_data = self.serialize_message()
-
         for idx, partial_signer in enumerate(partial_signers):
             if isinstance(partial_signer, Keypair):
                 sig = partial_signer.sign(sign_data).signature
@@ -318,7 +316,9 @@ class Transaction:
         return self.__verify_signatures(self.serialize_message())
 
     def __verify_signatures(self, signed_data: bytes) -> bool:
+        
         for sig_pair in self.signatures:
+            print('SIGPAIR',sig_pair.pubkey, signed_data.hex())
             if not sig_pair.signature:
                 return False
             try:
@@ -353,6 +353,7 @@ class Transaction:
             raise AttributeError("transaction has not been signed")
 
         sign_data = self.serialize_message()
+        
         if not self.__verify_signatures(sign_data):
             raise AttributeError("transaction has not been signed correctly")
 
