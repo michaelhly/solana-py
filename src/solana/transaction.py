@@ -185,14 +185,17 @@ class Transaction:
         
         # Separate `fee_payer_am` and sort the remaining account_metas
         # Sort keys are:
-        # 1. is_signer
+        # 1. is_signer, with `is_writable`=False ordered last 
         # 2. is_writable
         # 3. PublicKey
         fee_payer_am  = account_metas.pop(str(fee_payer))
+        fee_payer_am.is_signer = True
+        fee_payer_am.is_writable = True
+
         remaining_am = account_metas.values()
         signer_am = sorted(\
             [x for x in remaining_am if x.is_signer], 
-            key=lambda x: str(x).lower())
+            key=lambda x: (not x.is_writable, str(x).lower()))
         writable_am = sorted(\
             [x for x in remaining_am if (not x.is_signer and x.is_writable)], 
             key=lambda x: str(x).lower())
@@ -202,10 +205,22 @@ class Transaction:
         
         joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
         
-        # Count signatures required for header
+        # Get signature counts for header
+        
+        # The number of signatures required for this message to be considered valid. The
+        # signatures must match the first `num_required_signatures` of `account_keys`.
+        # NOTE: Serialization-related changes must be paired with the direct read at sigverify.
         num_required_signatures: int = len([x for x in joined_am if x.is_signer])
-        num_readonly_signed_accounts: int = len([x for x in joined_am if (not x.is_writable and x.is_signer)])
-        num_readonly_unsigned_accounts: int = len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
+        # The last num_readonly_signed_accounts of the signed keys are read-only accounts. Programs
+        # may process multiple transactions that load read-only accounts within a single PoH entry,
+        # but are not permitted to credit or debit lamports or modify account data. Transactions
+        # targeting the same read-write account are evaluated sequentially.
+        num_readonly_signed_accounts: int = \
+            len([x for x in joined_am if (not x.is_writable and x.is_signer)])
+        # The last num_readonly_unsigned_accounts of the unsigned keys are read-only accounts.
+        num_readonly_unsigned_accounts: int = \
+            len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
+        
         
         # Initialize signature array, if needed
         self.signatures = [] if not self.signatures else self.signatures
@@ -215,7 +230,14 @@ class Transaction:
         signer_pubkeys = [str(x.pubkey) for x in joined_am if x.is_signer]
         for signer_pubkey in signer_pubkeys:
             if signer_pubkey not in exiting_signature_pubkeys:
-                self.signatures.append(SigPubkeyPair(pubkey=PublicKey(signer_pubkey), signature=None))
+                self.signatures.append(SigPubkeyPair(
+                    pubkey=PublicKey(signer_pubkey), 
+                    signature=None))
+
+        # Ensure fee_payer signature is first
+        fee_payer_signature = [x for x in self.signatures if str(x.pubkey) == str(fee_payer)]
+        other_signatures = [x for x in self.signatures if str(x.pubkey) != str(fee_payer)]
+        self.signatures =  fee_payer_signature + other_signatures
 
         account_keys = [str(x.pubkey) for x in joined_am]
         account_indices: Dict[str, int] = {str(key): idx for idx, key in enumerate(account_keys)}
@@ -318,7 +340,6 @@ class Transaction:
     def __verify_signatures(self, signed_data: bytes) -> bool:
         
         for sig_pair in self.signatures:
-            print('SIGPAIR',sig_pair.pubkey, signed_data.hex())
             if not sig_pair.signature:
                 return False
             try:
