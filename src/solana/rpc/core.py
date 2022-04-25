@@ -119,11 +119,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         limit: Optional[int],
         commitment: Optional[Commitment],
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
-        warn(
-            "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
-            "please use solana.rpc.api.getSignaturesForAddress",
-            category=DeprecationWarning,
-        )
+        # warn(
+        #     "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
+        #     "please use solana.rpc.api.getSignaturesForAddress",
+        #     category=DeprecationWarning,
+        # )
         opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
         account = self._get_signature_for_address_account_arg(account)
         return types.RPCMethod("getConfirmedSignaturesForAddress2"), account, opts
