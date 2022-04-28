@@ -371,7 +371,9 @@ def test_sort_account_metas(stubbed_blockhash):
     fee_payer = signer_one
     sorted_signers = sorted([x.public_key for x in [signer_one, signer_two, signer_three]], key=lambda x: str(x))
     sorted_signers_excluding_fee_payer = [x for x in sorted_signers if str(x) != str(fee_payer.public_key)]
-    sorted_receivers = sorted([x.public_key for x in [receiver_one, receiver_two, receiver_three]], key=lambda x: str(x))
+    sorted_receivers = sorted(
+        [x.public_key for x in [receiver_one, receiver_two, receiver_three]], key=lambda x: str(x)
+    )
 
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash)
     txn.fee_payer = fee_payer.public_key
