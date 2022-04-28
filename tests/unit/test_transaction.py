@@ -14,6 +14,7 @@ from solana.publickey import PublicKey
 def test_sign_partial(stubbed_blockhash):
     """Test paritally sigining a transaction."""
     kp1, kp2 = Keypair(), Keypair()
+    kp1.public_key
     transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
     partial_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     partial_txn.sign_partial(kp1, kp2.public_key)
@@ -384,7 +385,7 @@ def test_sort_account_metas(stubbed_blockhash):
             sp.TransferParams(
                 from_pubkey=signer_one.public_key,
                 to_pubkey=receiver_one.public_key,
-                lamports=1_000,
+                lamports=2_000_000,
             )
         )
     )
@@ -393,7 +394,7 @@ def test_sort_account_metas(stubbed_blockhash):
             sp.TransferParams(
                 from_pubkey=signer_two.public_key,
                 to_pubkey=receiver_two.public_key,
-                lamports=1_000,
+                lamports=2_000_000,
             )
         )
     )
@@ -402,12 +403,16 @@ def test_sort_account_metas(stubbed_blockhash):
             sp.TransferParams(
                 from_pubkey=signer_three.public_key,
                 to_pubkey=receiver_three.public_key,
-                lamports=1_000,
+                lamports=2_000_000,
             )
         )
     )
 
     tx_msg = txn.compile_message()
+
+    js_msg_b64_check = b"AwABBwZtbiRMvgQjcE2kVx9yon8XqPSO5hwc2ApflnOZMu0Qo9G5/xbhB0sp8/03Rv9x4MKSkQ+k4LB6lNLvCgKZ/ju/aw+EyQpTObVa3Xm+NA1gSTzutgFCTfkDto/0KtuIHHAMpKRb92NImxKeWQJ2/291j6nTzFj1D6nW25p7TofHmVsGt8uFnTv7+8vsWZ0uN7azdxa+jCIIm4WzKK+4uKfX39t5UA7S1soBQaJkTGOQkSbBo39gIjDkbW0TrevslgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxJrndgN4IFTxep3s6kO0ROug7bEsbx0xxuDkqEvwUusDBgIABAwCAAAAgIQeAAAAAAAGAgIFDAIAAACAhB4AAAAAAAYCAQMMAgAAAICEHgAAAAAA"  # noqa: E501 pylint: disable=line-too-long
+
+    assert b64encode(tx_msg.serialize()) == js_msg_b64_check
 
     # Transaction should organize AccountMetas by PublicKey
     assert tx_msg.account_keys[0] == fee_payer.public_key
