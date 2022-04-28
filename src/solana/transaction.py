@@ -155,57 +155,54 @@ class Transaction:
             raise AttributeError("transaction feePayer required")
 
         # Organize account_metas
-        account_metas:Dict[str, AccountMeta] = {}
-        
+        account_metas: Dict[str, AccountMeta] = {}
+
         for instruction in self.instructions:
-            
+
             if not instruction.program_id:
                 raise AttributeError("invalid instruction:", instruction)
-            
+
             # Update `is_signer` and `is_writable` as iterate through instructions
             for key in instruction.keys:
                 pubkey = str(key.pubkey)
                 if pubkey not in account_metas:
                     account_metas[pubkey] = key
                 else:
-                    account_metas[pubkey].is_signer = True \
-                        if key.is_signer else account_metas[pubkey].is_signer
-                    account_metas[pubkey].is_writable = True \
-                        if key.is_writable else account_metas[pubkey].is_writable
-                    
+                    account_metas[pubkey].is_signer = True if key.is_signer else account_metas[pubkey].is_signer
+                    account_metas[pubkey].is_writable = True if key.is_writable else account_metas[pubkey].is_writable
+
             # Add program_id to account_metas
             if str(instruction.program_id) not in account_metas:
-                account_metas[str(instruction.program_id)] = \
-                    AccountMeta(
-                        pubkey=instruction.program_id,
-                        is_signer=False,
-                        is_writable=False,
-                    )
-        
+                account_metas[str(instruction.program_id)] = AccountMeta(
+                    pubkey=instruction.program_id,
+                    is_signer=False,
+                    is_writable=False,
+                )
+
         # Separate `fee_payer_am` and sort the remaining account_metas
         # Sort keys are:
-        # 1. is_signer, with `is_writable`=False ordered last 
+        # 1. is_signer, with `is_writable`=False ordered last
         # 2. is_writable
         # 3. PublicKey
-        fee_payer_am  = account_metas.pop(str(fee_payer))
+        fee_payer_am = account_metas.pop(str(fee_payer))
         fee_payer_am.is_signer = True
         fee_payer_am.is_writable = True
 
         remaining_am = account_metas.values()
-        signer_am = sorted(\
-            [x for x in remaining_am if x.is_signer], 
-            key=lambda x: (not x.is_writable, str(x.pubkey).lower()))
-        writable_am = sorted(\
-            [x for x in remaining_am if (not x.is_signer and x.is_writable)], 
-            key=lambda x: str(x.pubkey).lower())
-        rest_am = sorted(\
-            [x for x in remaining_am if (not x.is_signer and not x.is_writable)], 
-            key=lambda x: str(x.pubkey).lower())
-        
+        signer_am = sorted(
+            [x for x in remaining_am if x.is_signer], key=lambda x: (not x.is_writable, str(x.pubkey).lower())
+        )
+        writable_am = sorted(
+            [x for x in remaining_am if (not x.is_signer and x.is_writable)], key=lambda x: str(x.pubkey).lower()
+        )
+        rest_am = sorted(
+            [x for x in remaining_am if (not x.is_signer and not x.is_writable)], key=lambda x: str(x.pubkey).lower()
+        )
+
         joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
-        
+
         # Get signature counts for header
-        
+
         # The number of signatures required for this message to be considered valid. The
         # signatures must match the first `num_required_signatures` of `account_keys`.
         # NOTE: Serialization-related changes must be paired with the direct read at sigverify.
@@ -214,33 +211,28 @@ class Transaction:
         # may process multiple transactions that load read-only accounts within a single PoH entry,
         # but are not permitted to credit or debit lamports or modify account data. Transactions
         # targeting the same read-write account are evaluated sequentially.
-        num_readonly_signed_accounts: int = \
-            len([x for x in joined_am if (not x.is_writable and x.is_signer)])
+        num_readonly_signed_accounts: int = len([x for x in joined_am if (not x.is_writable and x.is_signer)])
         # The last num_readonly_unsigned_accounts of the unsigned keys are read-only accounts.
-        num_readonly_unsigned_accounts: int = \
-            len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
-        
-        
+        num_readonly_unsigned_accounts: int = len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
+
         # Initialize signature array, if needed
         self.signatures = [] if not self.signatures else self.signatures
         exiting_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
-        
+
         # Append missing signatures
         signer_pubkeys = [str(x.pubkey) for x in joined_am if x.is_signer]
         for signer_pubkey in signer_pubkeys:
             if signer_pubkey not in exiting_signature_pubkeys:
-                self.signatures.append(SigPubkeyPair(
-                    pubkey=PublicKey(signer_pubkey), 
-                    signature=None))
+                self.signatures.append(SigPubkeyPair(pubkey=PublicKey(signer_pubkey), signature=None))
 
         # Ensure fee_payer signature is first
         fee_payer_signature = [x for x in self.signatures if str(x.pubkey) == str(fee_payer)]
         other_signatures = [x for x in self.signatures if str(x.pubkey) != str(fee_payer)]
-        self.signatures =  fee_payer_signature + other_signatures
+        self.signatures = fee_payer_signature + other_signatures
 
         account_keys = [str(x.pubkey) for x in joined_am]
         account_indices: Dict[str, int] = {str(key): idx for idx, key in enumerate(account_keys)}
-        
+
         compiled_instructions: List[CompiledInstruction] = [
             CompiledInstruction(
                 accounts=[account_indices[str(am.pubkey)] for am in instruction.keys],
@@ -289,6 +281,7 @@ class Transaction:
         ]
         self.signatures = signatures
         sign_data = self.serialize_message()
+
         for idx, partial_signer in enumerate(partial_signers):
             if isinstance(partial_signer, Keypair):
                 sig = partial_signer.sign(sign_data).signature
@@ -337,7 +330,6 @@ class Transaction:
         return self.__verify_signatures(self.serialize_message())
 
     def __verify_signatures(self, signed_data: bytes) -> bool:
-        
         for sig_pair in self.signatures:
             if not sig_pair.signature:
                 return False
@@ -373,7 +365,6 @@ class Transaction:
             raise AttributeError("transaction has not been signed")
 
         sign_data = self.serialize_message()
-        
         if not self.__verify_signatures(sign_data):
             raise AttributeError("transaction has not been signed correctly")
 
