@@ -184,9 +184,12 @@ class Transaction:
         # 1. is_signer, with `is_writable`=False ordered last
         # 2. is_writable
         # 3. PublicKey
-        fee_payer_am = account_metas.pop(str(fee_payer))
-        fee_payer_am.is_signer = True
-        fee_payer_am.is_writable = True
+        fee_payer_am = account_metas.pop(str(fee_payer), None)
+        if fee_payer_am:
+            fee_payer_am.is_signer = True
+            fee_payer_am.is_writable = True
+        else:
+            fee_payer_am = AccountMeta(fee_payer, True, True)
 
         remaining_am = account_metas.values()
         signer_am = sorted(
