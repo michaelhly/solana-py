@@ -248,7 +248,7 @@ class Transaction:
                     num_readonly_signed_accounts=num_readonly_signed_accounts,
                     num_readonly_unsigned_accounts=num_readonly_unsigned_accounts,
                 ),
-                account_keys=[k for (k, is_signer) in account_keys],
+                account_keys=[k for (k, _) in account_keys],
                 instructions=compiled_instructions,
                 recent_blockhash=self.recent_blockhash,
             )
