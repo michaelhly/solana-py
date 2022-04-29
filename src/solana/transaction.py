@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from sys import maxsize
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
 from based58 import b58decode, b58encode
@@ -155,79 +154,91 @@ class Transaction:
         if not fee_payer:
             raise AttributeError("transaction feePayer required")
 
-        account_metas, program_ids = [], []
-        for instr in self.instructions:
-            if not instr.program_id:
-                raise AttributeError("invalid instruction:", instr)
-            account_metas.extend(instr.keys)
-            if str(instr.program_id) not in program_ids:
-                program_ids.append(str(instr.program_id))
+        # Organize account_metas
+        account_metas: Dict[str, AccountMeta] = {}
 
-        # Append programID account metas.
-        for pg_id in program_ids:
-            account_metas.append(AccountMeta(PublicKey(pg_id), False, False))
+        for instruction in self.instructions:
 
-        # Sort. Prioritizing first by signer, then by writable and converting from set to list.
-        account_metas.sort(key=lambda account: (not account.is_signer, not account.is_writable))
+            if not instruction.program_id:
+                raise AttributeError("invalid instruction:", instruction)
 
-        # Cull duplicate accounts
-        fee_payer_idx = maxsize
-        seen: Dict[str, int] = {}
-        uniq_metas: List[AccountMeta] = []
-        for sig in self.signatures:
-            pubkey = str(sig.pubkey)
-            if pubkey in seen:
-                uniq_metas[seen[pubkey]].is_signer = True
-            else:
-                uniq_metas.append(AccountMeta(sig.pubkey, True, True))
-                seen[pubkey] = len(uniq_metas) - 1
-                if sig.pubkey == fee_payer:
-                    fee_payer_idx = min(fee_payer_idx, seen[pubkey])
+            # Update `is_signer` and `is_writable` as iterate through instructions
+            for key in instruction.keys:
+                pubkey = str(key.pubkey)
+                if pubkey not in account_metas:
+                    account_metas[pubkey] = key
+                else:
+                    account_metas[pubkey].is_signer = True if key.is_signer else account_metas[pubkey].is_signer
+                    account_metas[pubkey].is_writable = True if key.is_writable else account_metas[pubkey].is_writable
 
-        for a_m in account_metas:
-            pubkey = str(a_m.pubkey)
-            if pubkey in seen:
-                idx = seen[pubkey]
-                uniq_metas[idx].is_writable = uniq_metas[idx].is_writable or a_m.is_writable
-            else:
-                uniq_metas.append(a_m)
-                seen[pubkey] = len(uniq_metas) - 1
-                if a_m.pubkey == fee_payer:
-                    fee_payer_idx = min(fee_payer_idx, seen[pubkey])
+            # Add program_id to account_metas
+            instruction_program_id = str(instruction.program_id)
+            if instruction_program_id not in account_metas:
+                account_metas[instruction_program_id] = AccountMeta(
+                    pubkey=instruction.program_id,
+                    is_signer=False,
+                    is_writable=False,
+                )
 
-        # Move fee payer to the front
-        if fee_payer_idx == maxsize:
-            uniq_metas = [AccountMeta(fee_payer, True, True)] + uniq_metas
+        # Separate `fee_payer_am` and sort the remaining account_metas
+        # Sort keys are:
+        # 1. is_signer, with `is_writable`=False ordered last
+        # 2. is_writable
+        # 3. PublicKey
+        fee_payer_am = account_metas.pop(str(fee_payer), None)
+        if fee_payer_am:
+            fee_payer_am.is_signer = True
+            fee_payer_am.is_writable = True
         else:
-            uniq_metas = (
-                [uniq_metas[fee_payer_idx]] + uniq_metas[:fee_payer_idx] + uniq_metas[fee_payer_idx + 1 :]  # noqa: E203
-            )
+            fee_payer_am = AccountMeta(fee_payer, True, True)
 
-        # Split out signing from nonsigning keys and count readonlys
-        signed_keys: List[str] = []
-        unsigned_keys: List[str] = []
-        num_required_signatures = num_readonly_signed_accounts = num_readonly_unsigned_accounts = 0
-        for a_m in uniq_metas:
-            if a_m.is_signer:
-                signed_keys.append(str(a_m.pubkey))
-                num_required_signatures += 1
-                num_readonly_signed_accounts += int(not a_m.is_writable)
-            else:
-                num_readonly_unsigned_accounts += int(not a_m.is_writable)
-                unsigned_keys.append(str(a_m.pubkey))
+        sorted_account_metas = sorted(account_metas.values(), key=lambda am: (str(am.pubkey).lower()))
+        signer_am = sorted([x for x in sorted_account_metas if x.is_signer], key=lambda am: not am.is_writable)
+        writable_am = [x for x in sorted_account_metas if (not x.is_signer and x.is_writable)]
+        rest_am = [x for x in sorted_account_metas if (not x.is_signer and not x.is_writable)]
+
+        joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
+
+        # Get signature counts for header
+
+        # The number of signatures required for this message to be considered valid. The
+        # signatures must match the first `num_required_signatures` of `account_keys`.
+        # NOTE: Serialization-related changes must be paired with the direct read at sigverify.
+        num_required_signatures: int = len([x for x in joined_am if x.is_signer])
+        # The last num_readonly_signed_accounts of the signed keys are read-only accounts. Programs
+        # may process multiple transactions that load read-only accounts within a single PoH entry,
+        # but are not permitted to credit or debit lamports or modify account data. Transactions
+        # targeting the same read-write account are evaluated sequentially.
+        num_readonly_signed_accounts: int = len([x for x in joined_am if (not x.is_writable and x.is_signer)])
+        # The last num_readonly_unsigned_accounts of the unsigned keys are read-only accounts.
+        num_readonly_unsigned_accounts: int = len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
+
         # Initialize signature array, if needed
-        if not self.signatures:
-            self.signatures = [SigPubkeyPair(pubkey=PublicKey(key), signature=None) for key in signed_keys]
+        account_keys = [(str(x.pubkey), x.is_signer) for x in joined_am]
 
-        account_keys: List[str] = signed_keys + unsigned_keys
-        account_indices: Dict[str, int] = {str(key): i for i, key in enumerate(account_keys)}
+        self.signatures = [] if not self.signatures else self.signatures
+        existing_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
+
+        # Append missing signatures
+        signer_pubkeys = [k for (k, is_signer) in account_keys if is_signer]
+        for signer_pubkey in signer_pubkeys:
+            if signer_pubkey not in existing_signature_pubkeys:
+                self.signatures.append(SigPubkeyPair(pubkey=PublicKey(signer_pubkey), signature=None))
+
+        # Ensure fee_payer signature is first
+        fee_payer_signature = [x for x in self.signatures if x.pubkey == fee_payer]
+        other_signatures = [x for x in self.signatures if x.pubkey != fee_payer]
+        self.signatures = fee_payer_signature + other_signatures
+
+        account_indices: Dict[str, int] = {k: idx for idx, (k, _) in enumerate(account_keys)}
+
         compiled_instructions: List[CompiledInstruction] = [
             CompiledInstruction(
-                accounts=[account_indices[str(a_m.pubkey)] for a_m in instr.keys],
-                program_id_index=account_indices[str(instr.program_id)],
-                data=b58encode(instr.data),
+                accounts=[account_indices[str(am.pubkey)] for am in instruction.keys],
+                program_id_index=account_indices[str(instruction.program_id)],
+                data=b58encode(instruction.data),
             )
-            for instr in self.instructions
+            for instruction in self.instructions
         ]
 
         return Message(
@@ -237,7 +248,7 @@ class Transaction:
                     num_readonly_signed_accounts=num_readonly_signed_accounts,
                     num_readonly_unsigned_accounts=num_readonly_unsigned_accounts,
                 ),
-                account_keys=account_keys,
+                account_keys=[k for (k, _) in account_keys],
                 instructions=compiled_instructions,
                 recent_blockhash=self.recent_blockhash,
             )
