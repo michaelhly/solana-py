@@ -491,4 +491,6 @@ def test_advance_nonce_and_transfer():
 
     txn.add_signature(from_keypair.public_key, from_keypair.sign(txn_hash).signature)
 
-    assert txn in [cli_expected_txn, js_expected_txn]
+    assert txn == js_expected_txn
+    # XXX:  Cli message serialization do not sort on account metas producing discrepency 
+    # assert txn == cli_expected_txn
