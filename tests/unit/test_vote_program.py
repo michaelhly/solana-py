@@ -110,6 +110,4 @@ def test_withdraw_from_vote_account():
 
     serialized_message = txn.serialize_message()
 
-    assert serialized_message == js_wire_msg
-    # XXX:  Cli message serialization do not sort on account metas producing discrepency 
-    # serialized_message txn == cli_wire_msg
+    assert serialized_message in [cli_wire_msg, js_wire_msg]
