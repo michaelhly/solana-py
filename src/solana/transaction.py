@@ -216,12 +216,12 @@ class Transaction:
         account_keys = [(str(x.pubkey), x.is_signer) for x in joined_am]
 
         self.signatures = [] if not self.signatures else self.signatures
-        exiting_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
+        existing_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
 
         # Append missing signatures
         signer_pubkeys = [k for (k, is_signer) in account_keys if is_signer]
         for signer_pubkey in signer_pubkeys:
-            if signer_pubkey not in exiting_signature_pubkeys:
+            if signer_pubkey not in existing_signature_pubkeys:
                 self.signatures.append(SigPubkeyPair(pubkey=PublicKey(signer_pubkey), signature=None))
 
         # Ensure fee_payer signature is first
