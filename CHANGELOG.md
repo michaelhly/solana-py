@@ -1,14 +1,26 @@
 # Changelog
 
+## [0.23.3] - 2022-04-29
+
+## Fixed
+
+- Make transaction message compilation consistent with [@solana/web3.js](https://github.com/solana-labs/solana-web3.js/) ([228](https://github.com/michaelhly/solana-py/pull/228))
+
+## [0.23.2] - 2022-04-17
+
+## Changed
+
+- Relax typing-extensions contraint ([#220](https://github.com/michaelhly/solana-py/pull/220))
+
 ## [0.23.1] - 2022-03-31
 
 ## Fixed
 
-Fix str seed input for sp.create_account_with_seed ([#206](https://github.com/michaelhly/solana-py/pull/206))
+- Fix str seed input for sp.create_account_with_seed ([#206](https://github.com/michaelhly/solana-py/pull/206))
 
 ## Changed
 
-Update `jsonrpcserver` dependency ([#205](https://github.com/michaelhly/solana-py/pull/205))
+- Update `jsonrpcserver` dependency ([#205](https://github.com/michaelhly/solana-py/pull/205))
 
 ## [0.23.0] - 2022-03-06
 
@@ -20,13 +32,13 @@ Update `jsonrpcserver` dependency ([#205](https://github.com/michaelhly/solana-p
 
 ## Added
 
-- Add default RPC client commitment to token client [#187]
-- Add cluster_api_url function [#193]
-- Add getBlockHeight RPC method [#200]
+- Add default RPC client commitment to token client ([#187](https://github.com/michaelhly/solana-py/pull/187))
+- Add cluster_api_url function ([#193](https://github.com/michaelhly/solana-py/pull/193))
+- Add getBlockHeight RPC method ([#200](https://github.com/michaelhly/solana-py/pulls?q=is%3Apr+is%3Aclosed))
 
 ### Changed
 
-- Replace base58 library with based58 [#192]
+- Replace base58 library with based58 [#192](https://github.com/michaelhly/solana-py/pull/192)
 
 ## [0.21.0] - 2022-01-13
 
