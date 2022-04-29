@@ -101,8 +101,8 @@ def test_withdraw_from_vote_account():
     # 2 \
     # --blockhash Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH \
     # --sign-only -k withdrawer.json
-    cli_wire_msg = base64.b64decode(
-        b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1wqxUGDtH5ah3TqEKWjcTmfHkpZC1h57NJL8Sx7Q6Olm2F2O70oOvzt1HgIVu+nySaSrWtJiK1eDacPPDWRxCwFgdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMBAgAMAwAAAACUNXcAAAAA"  # noqa: E501 pylint: disable=line-too-long
+    cli_wire_msg = base64.b64decode(  # noqa: F841
+        b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1wqxUGDtH5ah3TqEKWjcTmfHkpZC1h57NJL8Sx7Q6Olm2F2O70oOvzt1HgIVu+nySaSrWtJiK1eDacPPDWRxCwFgdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMBAgAMAwAAAACUNXcAAAAA"  # noqa: E501  pylint: disable=line-too-long
     )
     js_wire_msg = base64.b64decode(
         b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1whdju9KDr87dR4CFbvp8kmkq1rSYitXg2nDzw1kcQsBarFQYO0flqHdOoQpaNxOZ8eSlkLWHns0kvxLHtDo6WbQdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMCAQAMAwAAAACUNXcAAAAA"  # noqa: E501 pylint: disable=line-too-long
@@ -110,4 +110,7 @@ def test_withdraw_from_vote_account():
 
     serialized_message = txn.serialize_message()
 
-    assert serialized_message in [cli_wire_msg, js_wire_msg]
+    assert serialized_message == js_wire_msg
+    # XXX:  Cli message serialization do not sort on account metas producing discrepency
+
+    # serialized_message txn == cli_wire_msg
