@@ -172,8 +172,9 @@ class Transaction:
                     account_metas[pubkey].is_writable = True if key.is_writable else account_metas[pubkey].is_writable
 
             # Add program_id to account_metas
-            if str(instruction.program_id) not in account_metas:
-                account_metas[str(instruction.program_id)] = AccountMeta(
+            instruction_program_id = str(instruction.program_id)
+            if instruction_program_id not in account_metas:
+                account_metas[instruction_program_id] = AccountMeta(
                     pubkey=instruction.program_id,
                     is_signer=False,
                     is_writable=False,
