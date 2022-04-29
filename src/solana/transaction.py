@@ -191,10 +191,16 @@ class Transaction:
         else:
             fee_payer_am = AccountMeta(fee_payer, True, True)
 
-        sorted_account_metas = sorted(account_metas.values(), key=lambda am: (str(am.pubkey).lower())
-        signer_am = sorted([x for x in sorted_account_metas if x.is_signer], key=lambda am: not am.is_writable)
-        writable_am = [x for x in sorted_account_metas if (not x.is_signer and x.is_writable)]
-        rest_am = [x for x in sorted_account_metas if (not x.is_signer and not x.is_writable)]
+        remaining_am = account_metas.values()
+        signer_am = sorted(
+            [x for x in remaining_am if x.is_signer], key=lambda x: (not x.is_writable, str(x.pubkey).lower())
+        )
+        writable_am = sorted(
+            [x for x in remaining_am if (not x.is_signer and x.is_writable)], key=lambda x: str(x.pubkey).lower()
+        )
+        rest_am = sorted(
+            [x for x in remaining_am if (not x.is_signer and not x.is_writable)], key=lambda x: str(x.pubkey).lower()
+        )
 
         joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
 
@@ -213,23 +219,22 @@ class Transaction:
         num_readonly_unsigned_accounts: int = len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
 
         # Initialize signature array, if needed
-        account_keys = [(str(x.pubkey), x.is_signer) for x in joined_am]
-
         self.signatures = [] if not self.signatures else self.signatures
-        existing_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
+        exiting_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
 
         # Append missing signatures
-        signer_pubkeys = [k for (k, is_signer) in account_keys if is_signer]
+        signer_pubkeys = [str(x.pubkey) for x in joined_am if x.is_signer]
         for signer_pubkey in signer_pubkeys:
-            if signer_pubkey not in existing_signature_pubkeys:
+            if signer_pubkey not in exiting_signature_pubkeys:
                 self.signatures.append(SigPubkeyPair(pubkey=PublicKey(signer_pubkey), signature=None))
 
         # Ensure fee_payer signature is first
-        fee_payer_signature = [x for x in self.signatures if x.pubkey == fee_payer]
-        other_signatures = [x for x in self.signatures if x.pubkey != fee_payer]
+        fee_payer_signature = [x for x in self.signatures if str(x.pubkey) == str(fee_payer)]
+        other_signatures = [x for x in self.signatures if str(x.pubkey) != str(fee_payer)]
         self.signatures = fee_payer_signature + other_signatures
 
-        account_indices: Dict[str, int] = {k: idx for idx, (k, _) in enumerate(account_keys)}
+        account_keys = [str(x.pubkey) for x in joined_am]
+        account_indices: Dict[str, int] = {str(key): idx for idx, key in enumerate(account_keys)}
 
         compiled_instructions: List[CompiledInstruction] = [
             CompiledInstruction(
