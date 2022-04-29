@@ -240,7 +240,9 @@ def test_create_nonce_account():
     create_account_txn.add_signature(from_keypair.public_key, from_keypair.sign(create_account_hash).signature)
     create_account_txn.add_signature(nonce_keypair.public_key, nonce_keypair.sign(create_account_hash).signature)
 
-    assert create_account_txn in [js_expected_txn, cli_expected_txn]
+    assert create_account_txn == js_expected_txn
+    # XXX:  Cli message serialization do not sort on account metas producing discrepency 
+    # assert create_account_txn == cli_expected_txn
 
 
 def test_advance_nonce_and_transfer():
