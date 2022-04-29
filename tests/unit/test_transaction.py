@@ -14,7 +14,6 @@ from solana.publickey import PublicKey
 def test_sign_partial(stubbed_blockhash):
     """Test paritally sigining a transaction."""
     kp1, kp2 = Keypair(), Keypair()
-    kp1.public_key
     transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
     partial_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     partial_txn.sign_partial(kp1, kp2.public_key)
