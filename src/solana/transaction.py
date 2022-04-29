@@ -191,16 +191,10 @@ class Transaction:
         else:
             fee_payer_am = AccountMeta(fee_payer, True, True)
 
-        remaining_am = account_metas.values()
-        signer_am = sorted(
-            [x for x in remaining_am if x.is_signer], key=lambda x: (not x.is_writable, str(x.pubkey).lower())
-        )
-        writable_am = sorted(
-            [x for x in remaining_am if (not x.is_signer and x.is_writable)], key=lambda x: str(x.pubkey).lower()
-        )
-        rest_am = sorted(
-            [x for x in remaining_am if (not x.is_signer and not x.is_writable)], key=lambda x: str(x.pubkey).lower()
-        )
+        sorted_account_metas = sorted(account_metas.values(), key=lambda am: (str(am.pubkey).lower())
+        signer_am = sorted([x for x in sorted_account_metas if x.is_signer], key=lambda am: not am.is_writable)
+        writable_am = [x for x in sorted_account_metas if (not x.is_signer and x.is_writable)]
+        rest_am = [x for x in sorted_account_metas if (not x.is_signer and not x.is_writable)]
 
         joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
 
