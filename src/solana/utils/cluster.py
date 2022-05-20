@@ -1,6 +1,6 @@
 """Tools for getting RPC cluster information."""
 
-from typing import NamedTuple, Literal, Optional
+from typing import Literal, NamedTuple, Optional
 
 
 class ClusterUrls(NamedTuple):

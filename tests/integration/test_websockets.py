@@ -1,10 +1,14 @@
 # pylint: disable=unused-argument,redefined-outer-name
 """Tests for the Websocket Client."""
 from typing import List, Tuple
-import pytest
+
 import asyncstdlib
+import pytest
 from jsonrpcclient import request
 
+from solana import system_program as sp
+from solana.keypair import Keypair
+from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.request_builder import (
     AccountSubscribe,
@@ -14,11 +18,8 @@ from solana.rpc.request_builder import (
     LogsUnsubscribe,
     RequestBody,
 )
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana import system_program as sp
+from solana.rpc.websocket_api import SolanaWsClientProtocol, SubscriptionError, connect
 from solana.transaction import Transaction
-from solana.rpc.websocket_api import connect, SubscriptionError, SolanaWsClientProtocol
 
 from .utils import AIRDROP_AMOUNT
 

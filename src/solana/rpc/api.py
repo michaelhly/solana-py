@@ -277,8 +277,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(*args)
 
     def get_recent_performance_samples(self, limit: Optional[int] = None) -> types.RPCResponse:
-        """ Returns a list of recent performance samples, in reverse slot order. 
-        
+        """Returns a list of recent performance samples, in reverse slot order.
+
         Performance samples are taken every 60 seconds and include the number of transactions and slots that occur in a given time window.
 
         Args:
@@ -318,7 +318,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_recent_performance_samples_args(limit)
         return self._provider.make_request(*args)
-    
+
     def get_block(
         self,
         slot: int,

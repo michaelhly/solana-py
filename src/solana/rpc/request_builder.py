@@ -1,11 +1,12 @@
 # pylint: disable=too-few-public-methods
 """This module contains code for building RPC requests."""
-from typing import Any, Optional, Union, Literal, List, Dict
+from typing import Any, Dict, List, Literal, Optional, Union
+
 from jsonrpcclient import request
 
 from solana.publickey import PublicKey
-from solana.rpc.commitment import Commitment
 from solana.rpc import types
+from solana.rpc.commitment import Commitment
 from solana.transaction import TransactionSignature
 
 MentionsFilter = Dict[Literal["mentions"], List[str]]

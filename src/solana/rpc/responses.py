@@ -1,10 +1,9 @@
 """This module contains code for parsing RPC responses."""
 from dataclasses import dataclass, field
-from typing import Union, Tuple, Any, Dict, List, Optional, Literal
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from apischema import alias
 from apischema.conversions import as_str
-
 
 from solana.publickey import PublicKey
 from solana.transaction import TransactionSignature
