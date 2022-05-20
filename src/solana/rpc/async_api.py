@@ -227,7 +227,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_confirmed_block(1)O # doctest: +SKIP
+            >>> asyncio.run(solana_client.get_confirmed_block(1)) # doctest: +SKIP
             {'jsonrpc': '2.0',
              'result': {'blockTime': None,
               'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
@@ -272,6 +272,49 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_block_args(slot, encoding)
         return await self._provider.make_request(*args)
 
+    async def get_recent_performance_samples(self, limit: Optional[int] = None) -> types.RPCResponse:
+        """ Returns a list of recent performance samples, in reverse slot order. 
+        
+        Performance samples are taken every 60 seconds and include the number of transactions and slots that occur in a given time window.
+
+        Args:
+            limit: Limit (optional) number of samples to return (maximum 720)
+
+        Examples:
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> asyncio.run(solana_client.get_recent_performance_samples(4)) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': [
+                {
+                'numSlots': 126,
+                'numTransactions': 126,
+                'samplePeriodSecs': 60,
+                'slot': 348125
+                },
+                {
+                'numSlots': 126,
+                'numTransactions': 126,
+                'samplePeriodSecs': 60,
+                'slot': 347999
+                },
+                {
+                'numSlots': 125,
+                'numTransactions': 125,
+                'samplePeriodSecs': 60,
+                'slot': 347873
+                },
+                {
+                'numSlots': 125,
+                'numTransactions': 125,
+                'samplePeriodSecs': 60,
+                'slot': 347748
+                }
+            ],
+            'id': 1}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_recent_performance_samples_args(limit)
+        return await self._provider.make_request(*args)
+    
     async def get_block(
         self,
         slot: int,
@@ -286,7 +329,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_block(1)O # doctest: +SKIP
+            >>> asyncio.run(solana_client.get_block(1)) # doctest: +SKIP
             {'jsonrpc': '2.0',
              'result': {'blockTime': None, 'blockHeight': 0,
               'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
