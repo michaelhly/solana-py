@@ -2,13 +2,13 @@
 import pytest
 
 import solana.system_program as sp
+from solana.keypair import Keypair
 from solana.rpc.api import DataSliceOpt
 from solana.rpc.async_api import AsyncClient
-from solana.keypair import Keypair
+from solana.rpc.commitment import Finalized
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
 from solana.transaction import Transaction
-from solana.rpc.commitment import Finalized
 from spl.token.constants import WRAPPED_SOL_MINT
 
 from .utils import AIRDROP_AMOUNT, assert_valid_response
@@ -267,6 +267,14 @@ async def test_get_block_commitment(test_http_client_async):
 async def test_get_block_time(test_http_client_async):
     """Test get block time."""
     resp = await test_http_client_async.get_block_time(5)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_get_recent_performance_samples(test_http_client_async):
+    """Test get recent performance samples."""
+    resp = await test_http_client_async.get_recent_performance_samples(4)
     assert_valid_response(resp)
 
 

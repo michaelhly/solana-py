@@ -3,10 +3,10 @@ from typing import Any
 
 import requests
 
+from ...exceptions import SolanaRpcException, handle_exceptions
 from ..types import RPCMethod, RPCResponse
 from .base import BaseProvider
 from .core import _HTTPProviderCore
-from ...exceptions import handle_exceptions, SolanaRpcException
 
 
 class HTTPProvider(BaseProvider, _HTTPProviderCore):

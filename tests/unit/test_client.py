@@ -1,6 +1,7 @@
 from unittest.mock import patch
-from requests.exceptions import ReadTimeout
+
 import pytest
+from requests.exceptions import ReadTimeout
 
 from solana.exceptions import SolanaRpcException
 from solana.publickey import PublicKey
