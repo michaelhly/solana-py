@@ -522,7 +522,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_transaction_args(tx_sig, encoding)
         return await self._provider.make_request(*args)
 
-    async def get_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
+    async def get_transaction(
+        self, tx_sig: str, encoding: str = "json", commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
 
         Args:
@@ -531,6 +533,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 `transaction.message.instructions` list.
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
@@ -555,7 +558,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                'signatures': ['3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy']}},
              'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_transaction_args(tx_sig, encoding)
+        args = self._get_transaction_args(tx_sig, encoding, commitment)
         return await self._provider.make_request(*args)
 
     async def get_epoch_info(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
