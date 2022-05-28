@@ -36,9 +36,11 @@ class Keypair:
 
     @classmethod
     def from_solders(cls, keypair: solders.keypair.Keypair) -> Keypair:
+        """Convert from the corresponding `solders` type."""
         return cls(keypair)
 
     def to_solders(self) -> solders.keypair.Keypair:
+        """Convert to the corresponding `solders` type."""
         return self._solders
 
     @classmethod

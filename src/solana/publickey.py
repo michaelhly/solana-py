@@ -42,9 +42,11 @@ class PublicKey:
 
     @classmethod
     def from_solders(cls, pubkey: Pubkey) -> PublicKey:
+        """Convert from the corresponding `solders` type."""
         return cls(pubkey)
 
     def to_solders(self) -> Pubkey:
+        """Convert to the corresponding `solders` type."""
         return self._solders
 
     def __bytes__(self) -> bytes:
