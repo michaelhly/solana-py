@@ -5,8 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
 from based58 import b58decode, b58encode
-from nacl.exceptions import BadSignatureError  # type: ignore
-from nacl.signing import VerifyKey  # type: ignore
+from solders.signature import Signature
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
@@ -332,9 +331,8 @@ class Transaction:
         for sig_pair in self.signatures:
             if not sig_pair.signature:
                 return False
-            try:
-                VerifyKey(bytes(sig_pair.pubkey)).verify(signed_data, sig_pair.signature)
-            except BadSignatureError:
+            sig = Signature(sig_pair.signature)
+            if not sig.verify(sig_pair.pubkey.to_solders(), signed_data):
                 return False
         return True
 

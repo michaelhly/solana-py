@@ -1,15 +1,14 @@
 import base64
 
-from nacl.bindings import crypto_box_PUBLICKEYBYTES
-
 from solana.keypair import Keypair
+from solders.pubkey import Pubkey
 
 
 def test_new_keypair() -> None:
     """Test new keypair with random seed is created successfully."""
     keypair = Keypair()
     assert len(keypair.secret_key) == 64
-    assert len(bytes(keypair.public_key)) == crypto_box_PUBLICKEYBYTES
+    assert len(bytes(keypair.public_key)) == Pubkey.LENGTH
 
 
 def test_generate_keypair() -> None:
