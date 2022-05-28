@@ -1,6 +1,7 @@
 import base64
 
 from nacl.bindings import crypto_box_PUBLICKEYBYTES
+from nacl.signing import VerifyKey  # type: ignore
 
 from solana.keypair import Keypair
 
@@ -16,6 +17,13 @@ def test_generate_keypair() -> None:
     """Test .generate constructor works."""
     keypair = Keypair.generate()
     assert len(keypair.secret_key) == 64
+
+
+def test_sign_message(stubbed_sender):
+    """Test message signing."""
+    msg = b"hello"
+    signature = stubbed_sender.sign(msg)
+    assert signature.verify(stubbed_sender.public_key.to_solders(), msg)
 
 
 def test_create_from_secret_key() -> None:

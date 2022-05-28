@@ -283,7 +283,7 @@ class Transaction:
 
         for idx, partial_signer in enumerate(partial_signers):
             if isinstance(partial_signer, Keypair):
-                sig = partial_signer.sign(sign_data).signature
+                sig = bytes(partial_signer.sign(sign_data))
                 if len(sig) != SIG_LENGTH:
                     raise RuntimeError("signature has invalid length", sig)
                 self.signatures[idx].signature = sig
@@ -317,8 +317,8 @@ class Transaction:
         The `signer` must be the corresponding `Keypair` for a `PublicKey` that was
         previously provided to `signPartial`
         """
-        signed_msg = signer.sign(self.serialize_message())
-        self.add_signature(signer.public_key, signed_msg.signature)
+        signature = bytes(signer.sign(self.serialize_message()))
+        self.add_signature(signer.public_key, signature)
 
     def verify_signatures(self) -> bool:
         """Verify signatures of a complete, signed Transaction.

@@ -3,40 +3,42 @@ from __future__ import annotations
 
 from typing import Optional
 
-import nacl.public  # type: ignore
-from nacl import signing  # type: ignore
-
 import solana.publickey
+import solders.keypair
+from solders.signature import Signature
 
 
 class Keypair:
     """An account keypair used for signing transactions.
 
     Args:
-        keypair: an `nacl.public.PrivateKey` instance.
+        keypair: a `solders.keypair.Keypair` instance. Optional, defaults to None.
 
     Example:
         >>> # Init with random keypair:
         >>> keypair = Keypair()
         >>> # Init with existing keypair:
-        >>> keys = nacl.public.PrivateKey.generate()
-        >>> keypair = Keypair(keys)
+        >>> underlying = solders.keypair.Keypair()
+        >>> keypair = Keypair(underlying)
     """
 
-    def __init__(self, keypair: Optional[nacl.public.PrivateKey] = None) -> None:
+    def __init__(self, keypair: Optional[solders.keypair.Keypair] = None) -> None:
         """Create a new keypair instance.
 
         Generate random keypair if no keypair is provided. Initialize class variables.
         """
         if keypair is None:
             # the PrivateKey object comes with a public key too
-            self._keypair = nacl.public.PrivateKey.generate()
+            self._solders = solders.keypair.Keypair()
         else:
-            self._keypair = keypair
+            self._solders = keypair
 
-        verify_key = signing.SigningKey(bytes(self._keypair)).verify_key
+    @classmethod
+    def from_solders(cls, keypair: solders.keypair.Keypair) -> Keypair:
+        return cls(keypar)
 
-        self._public_key = solana.publickey.PublicKey(verify_key)
+    def to_solders(self) -> solders.keypair.Keypair:
+        return self._solders
 
     @classmethod
     def generate(cls) -> Keypair:
@@ -80,13 +82,12 @@ class Keypair:
         Returns:
             The generated keypair.
         """
-        return cls(nacl.public.PrivateKey(seed))
+        return cls(solders.keypair.Keypair.from_seed(seed))
 
-    def sign(self, msg: bytes) -> signing.SignedMessage:
+    def sign(self, msg: bytes) -> Signature:
         """Sign a message with this keypair.
 
         Args:
-
             msg: message to sign.
 
         Returns:
@@ -97,23 +98,22 @@ class Keypair:
             >>> seed = bytes([1] * 32)
             >>> keypair = Keypair.from_seed(seed)
             >>> msg = b"hello"
-            >>> signed_msg = keypair.sign(msg)
-            >>> signed_msg.signature.hex()
+            >>> signature = keypair.sign(msg)
+            >>> bytes(signature).hex()
             'e1430c6ebd0d53573b5c803452174f8991ef5955e0906a09e8fdc7310459e9c82a402526748c3431fe7f0e5faafbf7e703234789734063ee42be17af16438d08'
-            >>> signed_msg.message.decode('utf-8')
-            'hello'
         """  # pylint: disable=line-too-long
-        return signing.SigningKey(self.seed).sign(msg)
+        return self._solders.sign_message(msg)
 
     @property
     def seed(self) -> bytes:
         """The 32-byte secret seed."""
-        return bytes(self._keypair)
+        return bytes(self._solders.secret())
 
     @property
     def public_key(self) -> solana.publickey.PublicKey:
         """The public key for this keypair."""
-        return self._public_key
+        underlying = self._solders.pubkey()
+        return solana.publickey.PublicKey.from_solders(underlying)
 
     @property
     def secret_key(self) -> bytes:
@@ -132,4 +132,4 @@ class Keypair:
 
     def __hash__(self) -> int:
         """Returns a unique hash for set operations."""
-        return hash(self._keypair)
+        return hash(self._solders)
