@@ -42,11 +42,22 @@ class PublicKey:
 
     @classmethod
     def from_solders(cls, pubkey: Pubkey) -> PublicKey:
-        """Convert from the corresponding `solders` type."""
+        """Convert from the corresponding `solders` type.
+        
+        Args:
+            pubkey: A `solders` pubkey.
+
+        Returns:
+            A `solana-py` public key.
+        """
         return cls(pubkey)
 
     def to_solders(self) -> Pubkey:
-        """Convert to the corresponding `solders` type."""
+        """Convert to the corresponding `solders` type.
+        
+        Returns:
+            A `solders` pubkey.
+        """
         return self._solders
 
     def __bytes__(self) -> bytes:
