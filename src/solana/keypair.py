@@ -37,10 +37,10 @@ class Keypair:
     @classmethod
     def from_solders(cls, keypair: solders.keypair.Keypair) -> Keypair:
         """Convert from the corresponding `solders` type.
-        
+
         Args:
             keypair: A `solders` keypair.
-        
+
         Returns:
             A `solana-py` keypair.
         """
@@ -48,7 +48,7 @@ class Keypair:
 
     def to_solders(self) -> solders.keypair.Keypair:
         """Convert to the corresponding `solders` type.
-        
+
         Returns:
             A `solders` keypair.
         """
