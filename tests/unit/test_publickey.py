@@ -245,7 +245,6 @@ def test_find_program_address():
     assert program_address == PublicKey.create_program_address([bytes(), helpers.to_uint8_bytes(nonce)], program_id)
 
 
-
 def test_create_with_seed():
     """Test create with seed"""
     default_public_key = PublicKey("11111111111111111111111111111111")

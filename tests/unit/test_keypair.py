@@ -1,7 +1,6 @@
 import base64
 
 from nacl.bindings import crypto_box_PUBLICKEYBYTES
-from nacl.signing import VerifyKey  # type: ignore
 
 from solana.keypair import Keypair
 

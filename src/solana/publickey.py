@@ -1,19 +1,14 @@
 """Library to interface with Solana public keys."""
 from __future__ import annotations
 
-from hashlib import sha256
 from typing import Any, List, Tuple, Union
 
-from based58 import b58encode
-from nacl.signing import VerifyKey
 from solders.pubkey import Pubkey
-
-from solana.utils import ed25519_base, helpers
-
 
 
 def _rjust_pubkey(raw: bytes) -> bytes:
     return raw.rjust(Pubkey.LENGTH, b"\0")
+
 
 class PublicKey:
     """The public key of a keypair.
@@ -25,12 +20,13 @@ class PublicKey:
         '11111111111111111111111111111112'
         >>> bytes(pubkey).hex()
         '0000000000000000000000000000000000000000000000000000000000000001'
+
     """
 
     LENGTH = Pubkey.LENGTH
     """Constant for standard length of a public key."""
 
-    def __init__(self, value: Union[bytearray, bytes, int, str, List[int], VerifyKey, Pubkey]):
+    def __init__(self, value: Union[bytearray, bytes, int, str, List[int], Pubkey]):
         """Init PublicKey object."""
         if isinstance(value, Pubkey):
             self._solders = value

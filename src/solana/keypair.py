@@ -35,7 +35,7 @@ class Keypair:
 
     @classmethod
     def from_solders(cls, keypair: solders.keypair.Keypair) -> Keypair:
-        return cls(keypar)
+        return cls(keypair)
 
     def to_solders(self) -> solders.keypair.Keypair:
         return self._solders
