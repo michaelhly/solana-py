@@ -1,7 +1,8 @@
 import base64
 
-from solana.keypair import Keypair
 from solders.pubkey import Pubkey
+
+from solana.keypair import Keypair
 
 
 def test_new_keypair() -> None:

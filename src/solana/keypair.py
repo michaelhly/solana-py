@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-import solana.publickey
 import solders.keypair
 from solders.signature import Signature
+
+import solana.publickey
 
 
 class Keypair:
