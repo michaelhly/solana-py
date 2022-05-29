@@ -192,7 +192,10 @@ class Transaction:
             fee_payer_am = AccountMeta(fee_payer, True, True)
 
         sorted_account_metas = sorted(account_metas.values(), key=lambda am: (str(am.pubkey).lower()))
-        signer_am = sorted([x for x in sorted_account_metas if x.is_signer], key=lambda am: not am.is_writable)
+        signer_am = sorted(
+            [x for x in sorted_account_metas if x.is_signer],
+            key=lambda am: not am.is_writable,
+        )
         writable_am = [x for x in sorted_account_metas if (not x.is_signer and x.is_writable)]
         rest_am = [x for x in sorted_account_metas if (not x.is_signer and not x.is_writable)]
 
@@ -233,9 +236,9 @@ class Transaction:
 
         compiled_instructions: List[CompiledInstruction] = [
             CompiledInstruction(
-                accounts=[account_indices[str(am.pubkey)] for am in instruction.keys],
+                accounts=bytes([account_indices[str(am.pubkey)] for am in instruction.keys]),
                 program_id_index=account_indices[str(instruction.program_id)],
-                data=b58encode(instruction.data),
+                data=instruction.data,
             )
             for instruction in self.instructions
         ]
@@ -305,7 +308,10 @@ class Transaction:
         """Add an externally created signature to a transaction."""
         if len(signature) != SIG_LENGTH:
             raise ValueError("signature has invalid length", signature)
-        idx = next((i for i, sig_pair in enumerate(self.signatures) if sig_pair.pubkey == pubkey), None)
+        idx = next(
+            (i for i, sig_pair in enumerate(self.signatures) if sig_pair.pubkey == pubkey),
+            None,
+        )
         if idx is None:
             raise ValueError("unknown signer: ", str(pubkey))
         self.signatures[idx].signature = signature
@@ -460,11 +466,15 @@ class Transaction:
                 pubkey = message.account_keys[acc_idx]
                 is_signer = any((pubkey == sigkeypair.pubkey for sigkeypair in transaction.signatures))
                 account_metas.append(
-                    AccountMeta(pubkey=pubkey, is_signer=is_signer, is_writable=message.is_account_writable(acc_idx))
+                    AccountMeta(
+                        pubkey=pubkey,
+                        is_signer=is_signer,
+                        is_writable=message.is_account_writable(acc_idx),
+                    )
                 )
             program_id = message.account_keys[instr.program_id_index]
             transaction.instructions.append(
-                TransactionInstruction(keys=account_metas, program_id=program_id, data=b58decode(instr.data))
+                TransactionInstruction(keys=account_metas, program_id=program_id, data=instr.data)
             )
 
         return transaction
