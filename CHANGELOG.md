@@ -5,6 +5,7 @@
 ## Changed
 
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for keypairs and pubkeys [(#237)](https://github.com/michaelhly/solana-py/pull/237).
+- Remove deprecated `Account` entirely [(#238)](https://github.com/michaelhly/solana-py/pull/238).
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Message` [(#239)](https://github.com/michaelhly/solana-py/pull/239).
 
 ## [0.23.3] - 2022-04-29
