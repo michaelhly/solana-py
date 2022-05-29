@@ -6,6 +6,7 @@ from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
 
 from based58 import b58decode, b58encode
 from solders.signature import Signature
+from solders import instruction
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
@@ -32,6 +33,28 @@ class AccountMeta:
     is_writable: bool
     """True if the `pubkey` can be loaded as a read-write account."""
 
+    @classmethod
+    def from_solders(cls, am: instruction.AccountMeta) -> AccountMeta:
+        """Convert from a `solders` AccountMeta.
+
+        Args:
+            am: The `solders` AccountMeta.
+
+        Returns:
+            The `solana-py` AccountMeta.
+        """
+        return cls(pubkey=PublicKey.from_solders(am.pubkey), is_signer=am.is_signer, is_writable=am.is_writable)
+
+    def to_solders(self) -> instruction.AccountMeta:
+        """Convert to a `solders` AccountMeta.
+
+        Returns:
+            The `solders` AccountMeta.
+        """
+        return instruction.AccountMeta(
+            pubkey=self.pubkey.to_solders(), is_signer=self.is_signer, is_writable=self.is_writable
+        )
+
 
 class TransactionInstruction(NamedTuple):
     """Transaction Instruction class."""
@@ -44,6 +67,29 @@ class TransactionInstruction(NamedTuple):
     """Program Id to execute."""
     data: bytes = bytes(0)
     """Program input."""
+
+    @classmethod
+    def from_solders(cls, ixn: instruction.Instruction) -> TransactionInstruction:
+        """Convert from a `solders` instruction.
+
+        Args:
+            ixn: The `solders` instruction.
+
+        Returns:
+            The `solana-py` instruction.
+        """
+        keys = [AccountMeta.from_solders(am) for am in ixn.accounts]
+        program_id = PublicKey.from_solders(ixn.program_id)
+        return cls(keys=keys, program_id=program_id, data=ixn.data)
+
+    def to_solders(self) -> instruction.Instruction:
+        """Convert to a `solders` instruction.
+
+        Returns:
+            The `solders` instruction.
+        """
+        accounts = [key.to_solders() for key in self.keys]
+        return instruction.Instruction(program_id=self.program_id.to_solders(), data=self.data, accounts=accounts)
 
 
 class NonceInformation(NamedTuple):
