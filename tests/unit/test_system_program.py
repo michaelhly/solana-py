@@ -237,8 +237,8 @@ def test_create_nonce_account():
 
     create_account_hash = create_account_txn.serialize_message()
 
-    create_account_txn.add_signature(from_keypair.public_key, from_keypair.sign(create_account_hash).signature)
-    create_account_txn.add_signature(nonce_keypair.public_key, nonce_keypair.sign(create_account_hash).signature)
+    create_account_txn.add_signature(from_keypair.public_key, bytes(from_keypair.sign(create_account_hash)))
+    create_account_txn.add_signature(nonce_keypair.public_key, bytes(nonce_keypair.sign(create_account_hash)))
 
     assert create_account_txn == js_expected_txn
     # XXX:  Cli message serialization do not sort on account metas producing discrepency
@@ -491,7 +491,7 @@ def test_advance_nonce_and_transfer():
 
     txn_hash = txn.serialize_message()
 
-    txn.add_signature(from_keypair.public_key, from_keypair.sign(txn_hash).signature)
+    txn.add_signature(from_keypair.public_key, bytes(from_keypair.sign(txn_hash)))
 
     assert txn == js_expected_txn
     # XXX:  Cli message serialization do not sort on account metas producing discrepency

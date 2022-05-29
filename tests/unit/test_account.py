@@ -2,8 +2,6 @@
 from base64 import b64decode
 
 from based58 import b58decode
-from nacl.bindings import crypto_box_SECRETKEYBYTES  # type: ignore
-from nacl.signing import VerifyKey  # type: ignore
 
 from solana._layouts.account import VERSIONS_LAYOUT
 from solana.account import Account
@@ -12,7 +10,7 @@ from solana.account import Account
 def test_generate_account():
     """Generate an account."""
     acc = Account()
-    assert len(acc.secret_key()) == crypto_box_SECRETKEYBYTES
+    assert len(acc.secret_key()) == 32
 
 
 def test_generate_account_from_secret_key():
@@ -55,13 +53,6 @@ def test_generate_account_from_secret_key():
     )
     acc = Account(secret_key)
     assert str(acc.public_key()) == "2q7pyhPwAwZ3QMfZrnAbDhnh9mDUqycszcpf86VgQxhF"
-
-
-def test_sign_message(stubbed_sender):
-    """Test message signing."""
-    msg = b"hello"
-    signed_msg = stubbed_sender.sign(msg)
-    assert VerifyKey(bytes(stubbed_sender.public_key)).verify(signed_msg.message, signed_msg.signature) == msg
 
 
 def test_account_keypair():

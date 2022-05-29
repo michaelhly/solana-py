@@ -1,17 +1,13 @@
 """Library to interface with Solana public keys."""
 from __future__ import annotations
 
-from hashlib import sha256
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Tuple, Union
 
-from based58 import b58decode, b58encode
-from nacl.signing import VerifyKey
-
-from solana.utils import ed25519_base, helpers
+from solders.pubkey import Pubkey
 
 
-class OnCurveException(Exception):
-    """Raise when generated address is on the curve."""
+def _rjust_pubkey(raw: bytes) -> bytes:
+    return raw.rjust(Pubkey.LENGTH, b"\0")
 
 
 class PublicKey:
@@ -24,34 +20,49 @@ class PublicKey:
         '11111111111111111111111111111112'
         >>> bytes(pubkey).hex()
         '0000000000000000000000000000000000000000000000000000000000000001'
+
     """
 
-    LENGTH = 32
+    LENGTH = Pubkey.LENGTH
     """Constant for standard length of a public key."""
 
-    def __init__(self, value: Union[bytearray, bytes, int, str, List[int], VerifyKey]):
+    def __init__(self, value: Union[bytearray, bytes, int, str, List[int], Pubkey]):
         """Init PublicKey object."""
-        self._key: Optional[bytes] = None
-        if isinstance(value, str):
+        if isinstance(value, Pubkey):
+            self._solders = value
+        elif isinstance(value, str):
             try:
-                self._key = b58decode(value.encode("ascii"))
+                self._solders = Pubkey.from_string(value)
             except ValueError as err:
                 raise ValueError("invalid public key input:", value) from err
-            if len(self._key) != self.LENGTH:
-                raise ValueError("invalid public key input:", value)
         elif isinstance(value, int):
-            self._key = bytes([value])
+            self._solders = Pubkey(_rjust_pubkey(bytes([value])))
         else:
-            self._key = bytes(value)
+            self._solders = Pubkey(_rjust_pubkey(bytes(value)))
 
-        if len(self._key) > self.LENGTH:
-            raise ValueError("invalid public key input:", value)
+    @classmethod
+    def from_solders(cls, pubkey: Pubkey) -> PublicKey:
+        """Convert from the corresponding `solders` type.
+
+        Args:
+            pubkey: A `solders` pubkey.
+
+        Returns:
+            A `solana-py` public key.
+        """
+        return cls(pubkey)
+
+    def to_solders(self) -> Pubkey:
+        """Convert to the corresponding `solders` type.
+
+        Returns:
+            A `solders` pubkey.
+        """
+        return self._solders
 
     def __bytes__(self) -> bytes:
         """Public key in bytes."""
-        if not self._key:
-            return bytes(self.LENGTH)
-        return self._key if len(self._key) == self.LENGTH else self._key.rjust(self.LENGTH, b"\0")
+        return bytes(self._solders)
 
     def __eq__(self, other: Any) -> bool:
         """Equality definition for PublicKeys."""
@@ -75,33 +86,30 @@ class PublicKey:
         Returns:
             The base58-encoded public key.
         """
-        return b58encode(bytes(self))
+        return str(self._solders).encode()
 
-    @staticmethod
-    def create_with_seed(from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:
+    @classmethod
+    def create_with_seed(cls, from_public_key: PublicKey, seed: str, program_id: PublicKey) -> PublicKey:
         """Derive a public key from another key, a seed, and a program ID.
 
         Returns:
             The derived public key.
         """
-        buf = bytes(from_public_key) + seed.encode("utf-8") + bytes(program_id)
-        return PublicKey(sha256(buf).digest())
+        underlying = Pubkey.create_with_seed(from_public_key.to_solders(), seed, program_id.to_solders())
+        return PublicKey.from_solders(underlying)
 
-    @staticmethod
-    def create_program_address(seeds: List[bytes], program_id: PublicKey) -> PublicKey:
+    @classmethod
+    def create_program_address(cls, seeds: List[bytes], program_id: PublicKey) -> PublicKey:
         """Derive a program address from seeds and a program ID.
 
         Returns:
             The derived program address.
         """
-        buffer = b"".join(seeds + [bytes(program_id), b"ProgramDerivedAddress"])
-        hashbytes: bytes = sha256(buffer).digest()
-        if not PublicKey._is_on_curve(hashbytes):
-            return PublicKey(hashbytes)
-        raise OnCurveException("Invalid seeds, address must fall off the curve")
+        underlying = Pubkey.create_program_address(seeds, program_id.to_solders())
+        return cls.from_solders(underlying)
 
-    @staticmethod
-    def find_program_address(seeds: List[bytes], program_id: PublicKey) -> Tuple[PublicKey, int]:
+    @classmethod
+    def find_program_address(cls, seeds: List[bytes], program_id: PublicKey) -> Tuple[PublicKey, int]:
         """Find a valid program address.
 
         Valid program addresses must fall off the ed25519 curve.  This function
@@ -111,18 +119,5 @@ class PublicKey:
         Returns:
             The program address and nonce used.
         """
-        nonce = 255
-        while nonce != 0:
-            try:
-                buffer = seeds + [helpers.to_uint8_bytes(nonce)]
-                address = PublicKey.create_program_address(buffer, program_id)
-            except OnCurveException:
-                nonce -= 1
-                continue
-            return address, nonce
-        raise KeyError("Unable to find a viable program address nonce")
-
-    @staticmethod
-    def _is_on_curve(pubkey_bytes: bytes) -> bool:
-        """Verify the point is on curve or not."""
-        return ed25519_base.is_on_curve(pubkey_bytes)
+        underlying_pubkey, nonce = Pubkey.find_program_address(seeds, program_id.to_solders())
+        return cls.from_solders(underlying_pubkey), nonce

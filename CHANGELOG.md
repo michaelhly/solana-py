@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.24.0] - Unreleased
+
+## Changed
+
+- Use [solders](https://github.com/kevinheavey/solders) under the hood for keypairs and pubkeys [(#237)](https://github.com/michaelhly/solana-py/pull/237).
+
 ## [0.23.3] - 2022-04-29
 
 ## Fixed
