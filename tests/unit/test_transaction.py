@@ -76,7 +76,7 @@ def test_populate(stubbed_blockhash):
             header=MessageHeader(
                 num_readonly_signed_accounts=0, num_readonly_unsigned_accounts=3, num_required_signatures=2
             ),
-            instructions=[CompiledInstruction(accounts=[1, 2, 3], data=b58encode(bytes([9] * 5)), program_id_index=4)],
+            instructions=[CompiledInstruction(accounts=bytes([1, 2, 3]), data=bytes([9] * 5), program_id_index=4)],
             recent_blockhash=stubbed_blockhash,
         )
     )
