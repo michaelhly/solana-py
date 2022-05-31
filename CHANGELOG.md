@@ -7,7 +7,7 @@
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for keypairs and pubkeys [(#237)](https://github.com/michaelhly/solana-py/pull/237).
 - Remove deprecated `Account` entirely [(#238)](https://github.com/michaelhly/solana-py/pull/238).
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Message` [(#239)](https://github.com/michaelhly/solana-py/pull/239).
-- Use [solders](https://github.com/kevinheavey/solders) under the hood for `Transaction` [(#240)](https://github.com/michaelhly/solana-py/pull/240). BREAKING CHANGES:
+- Use [solders](https://github.com/kevinheavey/solders) under the hood for `Transaction` [(#241)](https://github.com/michaelhly/solana-py/pull/241). BREAKING CHANGES:
   - `Transaction.__init__` no longer accepts a `signatures` argument. If you want to construct a transaction with certain signatures, you can still use `Transaction.populate`.
   - The `signatures` attribute of `Transaction` has been changed to a read-only property.
   - Where previously a "signature" was represented as `bytes`, it is now expected to be a `solders.signature.Signature`.
