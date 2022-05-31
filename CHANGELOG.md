@@ -10,6 +10,7 @@
 - Remove unused and very old instruction.py file [(#240)](https://github.com/michaelhly/solana-py/pull/240).
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Transaction` [(#241)](https://github.com/michaelhly/solana-py/pull/241). BREAKING CHANGES:
   - `Transaction.__init__` no longer accepts a `signatures` argument. If you want to construct a transaction with certain signatures, you can still use `Transaction.populate`.
+  - `Transaction.add_signer` has been removed (it was removed from web3.js in September 2020).
   - The `signatures` attribute of `Transaction` has been changed to a read-only property.
   - Where previously a "signature" was represented as `bytes`, it is now expected to be a `solders.signature.Signature`.
     This affects the following properties and functions: `Transaction.signature`, `Transacton.signatures`, `Transaction.add_signature`, `Transaction.populate`
