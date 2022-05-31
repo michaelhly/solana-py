@@ -15,7 +15,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.fixture(scope="module")
-async def test_token(stubbed_sender, freeze_authority, test_http_client_async, test_http_client) -> AsyncToken:
+async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -> AsyncToken:
     """Test create mint."""
     resp = await test_http_client_async.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
     await test_http_client_async.confirm_transaction(resp["result"])
