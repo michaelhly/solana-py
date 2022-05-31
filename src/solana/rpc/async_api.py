@@ -1388,7 +1388,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return resp
 
     async def confirm_transaction(
-        self, tx_sig: str, commitment: Commitment = Finalized, sleep_seconds: float = 0.5
+        self, tx_sig: str, commitment: Optional[Commitment] = None, sleep_seconds: float = 0.5
     ) -> types.RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
@@ -1398,6 +1398,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
         timeout = time() + 30
+        commitment_to_use = self._commitment if commitment is None else commitment
+        commitment_rank = COMMITMENT_RANKS[commitment_to_use]
         while time() < timeout:
             resp = await self.get_signature_statuses([tx_sig])
             maybe_rpc_error = resp.get("error")
@@ -1407,7 +1409,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             if resp_value is not None:
                 confirmation_status = resp_value["confirmationStatus"]
                 confirmation_rank = COMMITMENT_RANKS[confirmation_status]
-                commitment_rank = COMMITMENT_RANKS[commitment]
                 if confirmation_rank >= commitment_rank:
                     break
             await asyncio.sleep(sleep_seconds)
