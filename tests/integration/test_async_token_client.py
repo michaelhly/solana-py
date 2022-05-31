@@ -81,9 +81,7 @@ async def async_stubbed_receiver_token_account_pk(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_new_account(
-    stubbed_sender, test_http_client_async, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_new_account(stubbed_sender, test_http_client_async, test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
     token_account_pk = await test_token.create_account(stubbed_sender.public_key)
     resp = await test_http_client_async.get_account_info(token_account_pk)
@@ -138,9 +136,7 @@ async def test_get_account_info(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_get_mint_info(
-    stubbed_sender, freeze_authority, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_get_mint_info(stubbed_sender, freeze_authority, test_token):  # pylint: disable=redefined-outer-name
     """Test get token mint info."""
     mint_info = await test_token.get_mint_info()
     assert mint_info.mint_authority == stubbed_sender.public_key
@@ -459,9 +455,7 @@ async def test_create_multisig(
 ):  # pylint: disable=redefined-outer-name
     """Test creating a multisig account."""
     min_signers = 2
-    multisig_pubkey = await test_token.create_multisig(
-        min_signers, [stubbed_sender.public_key, async_stubbed_receiver]
-    )
+    multisig_pubkey = await test_token.create_multisig(min_signers, [stubbed_sender.public_key, async_stubbed_receiver])
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
