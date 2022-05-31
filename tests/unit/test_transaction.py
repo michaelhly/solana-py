@@ -2,29 +2,62 @@
 from base64 import b64decode, b64encode
 
 import pytest
-from based58 import b58encode
 
 import solana.system_program as sp
 import solana.transaction as txlib
+from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solana.publickey import PublicKey
+import solders.system_program as ssp
+from solders.transaction import Transaction as SoldersTx
+from solders.message import Message as SoldersMessage
+from solders.hash import Hash
+from solders.pubkey import Pubkey
+from solders.signature import Signature
+
+
+def test_to_solders(stubbed_blockhash: Blockhash) -> None:
+    """Test converting a Transaction to solders."""
+    kp1, kp2 = Keypair(), Keypair()
+    transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
+    solders_transfer = ssp.transfer(
+        ssp.TransferParams(from_pubkey=kp1.public_key.to_solders(), to_pubkey=kp2.public_key.to_solders(), lamports=123)
+    )
+    assert transfer.data == solders_transfer.data
+    txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
+    solders_blockhash = Hash.from_string(stubbed_blockhash)
+    solders_msg = SoldersMessage.new_with_blockhash([solders_transfer], None, solders_blockhash)
+    solders_txn = SoldersTx.new_unsigned(solders_msg)
+    assert txn.to_solders() == solders_txn
+    assert txlib.Transaction.from_solders(solders_txn) == txn
 
 
 def test_sign_partial(stubbed_blockhash):
-    """Test paritally sigining a transaction."""
-    kp1, kp2 = Keypair(), Keypair()
-    transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
-    partial_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
-    partial_txn.sign_partial(kp1, kp2.public_key)
-    assert len(partial_txn.signature()) == txlib.SIG_LENGTH
-    assert len(partial_txn.signatures) == 2
-    assert not partial_txn.signatures[1].signature
-
-    partial_txn.add_signer(kp2)
-    expected_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
-    expected_txn.sign(kp1, kp2)
-    assert partial_txn == expected_txn
+    """Test partially sigining a transaction."""
+    keypair0 = Keypair()
+    keypair1 = Keypair()
+    keypair2 = Keypair()
+    ix = txlib.TransactionInstruction(
+        program_id=PublicKey.from_solders(Pubkey.default()),
+        data=bytes([0, 0, 0, 0]),
+        keys=[
+            txlib.AccountMeta(keypair0.public_key, True, True),
+            txlib.AccountMeta(keypair1.public_key, True, True),
+            txlib.AccountMeta(keypair2.public_key, True, True),
+        ],
+    )
+    tx = txlib.Transaction(fee_payer=keypair0.public_key, instructions=[ix], recent_blockhash=stubbed_blockhash)
+    assert tx._solders.message.header.num_required_signatures == 3
+    tx.sign_partial(keypair0, keypair2)
+    assert not tx._solders.is_signed()
+    tx.sign_partial(keypair1)
+    assert tx._solders.is_signed()
+    expected_tx = txlib.Transaction(
+        fee_payer=keypair0.public_key, instructions=[ix], recent_blockhash=stubbed_blockhash
+    )
+    expected_tx.sign(keypair0, keypair1, keypair2)
+    assert tx == expected_tx
 
 
 def test_transfer_signatures(stubbed_blockhash):
@@ -32,12 +65,11 @@ def test_transfer_signatures(stubbed_blockhash):
     kp1, kp2 = Keypair(), Keypair()
     transfer1 = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
     transfer2 = sp.transfer(sp.TransferParams(from_pubkey=kp2.public_key, to_pubkey=kp1.public_key, lamports=123))
-    txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer1, transfer2)
+    txn = txlib.Transaction(recent_blockhash=stubbed_blockhash)
+    txn.add(transfer1, transfer2)
     txn.sign(kp1, kp2)
 
-    expected = txlib.Transaction(recent_blockhash=stubbed_blockhash, signatures=txn.signatures).add(
-        transfer1, transfer2
-    )
+    expected = txlib.Transaction.populate(txn.compile_message(), txn.signatures)
     assert txn == expected
 
 
@@ -80,7 +112,7 @@ def test_populate(stubbed_blockhash):
             recent_blockhash=stubbed_blockhash,
         )
     )
-    signatures = [b58encode(bytes([1] * txlib.SIG_LENGTH)), b58encode(bytes([2] * txlib.SIG_LENGTH))]
+    signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]
     transaction = txlib.Transaction.populate(msg, signatures)
     assert len(transaction.instructions) == len(msg.instructions)
     assert len(transaction.signatures) == len(signatures)
@@ -93,11 +125,11 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stu
         sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=49)
     )
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
-    assert len(txn.signatures) == 0
+    assert txn.signatures == (Signature.default(),)
     # Empty signature array fails
     with pytest.raises(AttributeError):
         txn.serialize()
-    assert len(txn.signatures) == 0
+    assert txn.signatures == (Signature.default(),)
 
     # Set fee payer
     txn.fee_payer = stubbed_sender.public_key
@@ -110,7 +142,7 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stu
     # Signature array populated with null signatures fails
     with pytest.raises(AttributeError):
         txn.serialize()
-    assert len(txn.signatures) == 1
+    assert txn.signatures == (Signature.default(),)
     # Properly signed transaction succeeds
     txn.sign(stubbed_sender)
     assert len(txn.instructions) == 1
@@ -121,6 +153,7 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stu
     )
     assert txn.serialize() == expected_serialization
     assert len(txn.signatures) == 1
+    assert txn.signatures != (Signature.default(),)
 
 
 def test_sort_account_metas(stubbed_blockhash):

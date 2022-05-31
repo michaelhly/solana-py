@@ -2,17 +2,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, NamedTuple, NewType, Optional, Union
+from typing import Any, List, NamedTuple, NewType, Optional, Union, Tuple, Sequence
 
-from based58 import b58decode, b58encode
 from solders.signature import Signature
 from solders import instruction
+from solders.presigner import Presigner
+from solders.hash import Hash
+from solders.message import Message as SoldersMessage
+from solders.transaction import Transaction as SoldersTx, TransactionError
+from solders.instruction import Instruction, AccountMeta as SoldersAccountMeta
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
-from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
+from solana.message import Message
 from solana.publickey import PublicKey
-from solana.utils import shortvec_encoding as shortvec
 
 TransactionSignature = NewType("TransactionSignature", str)
 """Type for TransactionSignature."""
@@ -34,16 +37,16 @@ class AccountMeta:
     """True if the `pubkey` can be loaded as a read-write account."""
 
     @classmethod
-    def from_solders(cls, am: instruction.AccountMeta) -> AccountMeta:
+    def from_solders(cls, meta: instruction.AccountMeta) -> AccountMeta:
         """Convert from a `solders` AccountMeta.
 
         Args:
-            am: The `solders` AccountMeta.
+            meta: The `solders` AccountMeta.
 
         Returns:
             The `solana-py` AccountMeta.
         """
-        return cls(pubkey=PublicKey.from_solders(am.pubkey), is_signer=am.is_signer, is_writable=am.is_writable)
+        return cls(pubkey=PublicKey.from_solders(meta.pubkey), is_signer=meta.is_signer, is_writable=meta.is_writable)
 
     def to_solders(self) -> instruction.AccountMeta:
         """Convert to a `solders` AccountMeta.
@@ -109,6 +112,44 @@ class SigPubkeyPair:
     signature: Optional[bytes] = None
 
 
+def _build_solders_tx(
+    recent_blockhash: Optional[Blockhash] = None,
+    nonce_info: Optional[NonceInformation] = None,
+    fee_payer: Optional[PublicKey] = None,
+    instructions: Optional[Sequence[TransactionInstruction]] = None,
+) -> SoldersTx:
+    core_instructions = [] if instructions is None else [ixn.to_solders() for ixn in instructions]
+    underlying_instructions = (
+        core_instructions if nonce_info is None else [nonce_info.nonce_instruction.to_solders(), *core_instructions]
+    )
+    underlying_blockhash_str: Optional[str]
+    if nonce_info is not None:
+        underlying_blockhash_str = nonce_info.nonce
+    elif recent_blockhash is not None:
+        underlying_blockhash_str = recent_blockhash
+    else:
+        underlying_blockhash_str = None
+    underlying_fee_payer = None if fee_payer is None else fee_payer.to_solders()
+    underlying_blockhash = (
+        Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
+    )
+    msg = SoldersMessage.new_with_blockhash(underlying_instructions, underlying_fee_payer, underlying_blockhash)
+    return SoldersTx.new_unsigned(msg)
+
+
+def _decompile_instructions(msg: SoldersMessage) -> List[TransactionInstruction]:
+    account_keys = msg.account_keys
+    decompiled_instructions: List[Instruction] = []
+    for compiled_ix in msg.instructions:
+        program_id = account_keys[compiled_ix.program_id_index]
+        account_metas = [
+            SoldersAccountMeta(account_keys[idx], is_signer=msg.is_signer(idx), is_writable=msg.is_writable(idx))
+            for idx in compiled_ix.accounts
+        ]
+        decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
+    return [TransactionInstruction.from_solders(ixn) for ixn in decompiled_instructions]
+
+
 class Transaction:
     """Transaction class to represent an atomic transaction.
 
@@ -116,9 +157,8 @@ class Transaction:
         recent_blockhash: A recent transaction id.
         nonce_info: Nonce information.
             If populated, transaction will use a durable Nonce hash instead of a `recent_blockhash`.
-        signatures: Signatures for the transaction.
-            Typically created by invoking the `sign()` method.
         fee_payer: The transaction fee payer.
+        instructions: The instructions to be executed in this transaction.
     """
 
     # Default (empty) signature
@@ -128,33 +168,89 @@ class Transaction:
         self,
         recent_blockhash: Optional[Blockhash] = None,
         nonce_info: Optional[NonceInformation] = None,
-        signatures: Optional[List[SigPubkeyPair]] = None,
         fee_payer: Optional[PublicKey] = None,
+        instructions: Optional[Sequence[TransactionInstruction]] = None,
     ) -> None:
         """Init transaction object."""
-        self.fee_payer = fee_payer
-        self.instructions: List[TransactionInstruction] = []
-        self.signatures: List[SigPubkeyPair] = signatures if signatures else []
-        self.recent_blockhash, self.nonce_info = recent_blockhash, nonce_info
+        self._solders = _build_solders_tx(
+            recent_blockhash=recent_blockhash, nonce_info=nonce_info, fee_payer=fee_payer, instructions=instructions
+        )
+
+    @classmethod
+    def from_solders(cls, txn: SoldersTx) -> Transaction:
+        """Convert from a `solders` transaction.
+
+        Args:
+            txn: The `solders` transaction.
+
+        Returns:
+            The `solana-py` transaction.
+        """
+        new_tx = cls()
+        new_tx._solders = txn
+        return new_tx
+
+    def to_solders(self) -> SoldersTx:
+        """Convert to a `solders` transaction.
+
+        Returns:
+            The `solders` transaction.
+        """
+        return self._solders
 
     def __eq__(self, other: Any) -> bool:
         """Equality defintion for Transactions."""
         if not isinstance(other, Transaction):
             return False
-        return (
-            self.recent_blockhash == other.recent_blockhash
-            and self.nonce_info == other.nonce_info
-            and self.signatures == other.signatures
-            and self.instructions == other.instructions
+        return self.to_solders() == other.to_solders()
+
+    @property
+    def recent_blockhash(self) -> Optional[Blockhash]:
+        """Optional[Blockhash]: The blockhash assigned to this transaction."""
+        return Blockhash(str(self._solders.message.recent_blockhash))
+
+    @recent_blockhash.setter
+    def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:
+        self._solders = _build_solders_tx(
+            recent_blockhash=blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=self.instructions
         )
 
-    def signature(self) -> Optional[bytes]:
+    @property
+    def fee_payer(self) -> Optional[PublicKey]:
+        """Optional[PublicKey]: The transaction fee payer."""
+        account_keys = self._solders.message.account_keys
+        return PublicKey.from_solders(account_keys[0]) if account_keys else None
+
+    @fee_payer.setter
+    def fee_payer(self, payer: Optional[PublicKey]) -> None:
+        self._solders = _build_solders_tx(
+            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=payer, instructions=self.instructions
+        )
+
+    @property
+    def instructions(self) -> Tuple[TransactionInstruction, ...]:
+        """Tuple[TransactionInstruction]: The instructions contained in this transaction."""
+        msg = self._solders.message
+        return tuple(_decompile_instructions(msg))
+
+    @instructions.setter
+    def instructions(self, ixns: Sequence[TransactionInstruction]) -> None:
+        self._solders = _build_solders_tx(
+            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=ixns
+        )
+
+    @property
+    def signatures(self) -> Tuple[Signature, ...]:
+        """Tuple[Signature]: Signatures for the transaction."""
+        return tuple(self._solders.signatures)
+
+    def signature(self) -> Signature:
         """The first (payer) Transaction signature.
 
         Returns:
             The payer signature.
         """
-        return None if not self.signatures else self.signatures[0].signature
+        return self._solders.signatures[0]
 
     def add(self, *args: Union[Transaction, TransactionInstruction]) -> Transaction:
         """Add one or more instructions to this Transaction.
@@ -168,9 +264,9 @@ class Transaction:
         """
         for arg in args:
             if isinstance(arg, Transaction):
-                self.instructions.extend(arg.instructions)
+                self.instructions = self.instructions + arg.instructions
             elif isinstance(arg, TransactionInstruction):
-                self.instructions.append(arg)
+                self.instructions = (*self.instructions, arg)
             else:
                 raise ValueError("invalid instruction:", arg)
 
@@ -182,125 +278,7 @@ class Transaction:
         Returns:
             The compiled message.
         """
-        if self.nonce_info and self.instructions[0] != self.nonce_info.nonce_instruction:
-            self.recent_blockhash = self.nonce_info.nonce
-            self.instructions = [self.nonce_info.nonce_instruction] + self.instructions
-
-        if not self.recent_blockhash:
-            raise AttributeError("transaction recentBlockhash required")
-        if len(self.instructions) < 1:
-            raise AttributeError("no instructions provided")
-
-        fee_payer = self.fee_payer
-        if not fee_payer and len(self.signatures) > 0 and self.signatures[0].pubkey:
-            # Use implicit fee payer
-            fee_payer = self.signatures[0].pubkey
-
-        if not fee_payer:
-            raise AttributeError("transaction feePayer required")
-
-        # Organize account_metas
-        account_metas: Dict[str, AccountMeta] = {}
-
-        for instruction in self.instructions:
-
-            if not instruction.program_id:
-                raise AttributeError("invalid instruction:", instruction)
-
-            # Update `is_signer` and `is_writable` as iterate through instructions
-            for key in instruction.keys:
-                pubkey = str(key.pubkey)
-                if pubkey not in account_metas:
-                    account_metas[pubkey] = key
-                else:
-                    account_metas[pubkey].is_signer = True if key.is_signer else account_metas[pubkey].is_signer
-                    account_metas[pubkey].is_writable = True if key.is_writable else account_metas[pubkey].is_writable
-
-            # Add program_id to account_metas
-            instruction_program_id = str(instruction.program_id)
-            if instruction_program_id not in account_metas:
-                account_metas[instruction_program_id] = AccountMeta(
-                    pubkey=instruction.program_id,
-                    is_signer=False,
-                    is_writable=False,
-                )
-
-        # Separate `fee_payer_am` and sort the remaining account_metas
-        # Sort keys are:
-        # 1. is_signer, with `is_writable`=False ordered last
-        # 2. is_writable
-        # 3. PublicKey
-        fee_payer_am = account_metas.pop(str(fee_payer), None)
-        if fee_payer_am:
-            fee_payer_am.is_signer = True
-            fee_payer_am.is_writable = True
-        else:
-            fee_payer_am = AccountMeta(fee_payer, True, True)
-
-        sorted_account_metas = sorted(account_metas.values(), key=lambda am: (str(am.pubkey).lower()))
-        signer_am = sorted(
-            [x for x in sorted_account_metas if x.is_signer],
-            key=lambda am: not am.is_writable,
-        )
-        writable_am = [x for x in sorted_account_metas if (not x.is_signer and x.is_writable)]
-        rest_am = [x for x in sorted_account_metas if (not x.is_signer and not x.is_writable)]
-
-        joined_am = [fee_payer_am] + signer_am + writable_am + rest_am
-
-        # Get signature counts for header
-
-        # The number of signatures required for this message to be considered valid. The
-        # signatures must match the first `num_required_signatures` of `account_keys`.
-        # NOTE: Serialization-related changes must be paired with the direct read at sigverify.
-        num_required_signatures: int = len([x for x in joined_am if x.is_signer])
-        # The last num_readonly_signed_accounts of the signed keys are read-only accounts. Programs
-        # may process multiple transactions that load read-only accounts within a single PoH entry,
-        # but are not permitted to credit or debit lamports or modify account data. Transactions
-        # targeting the same read-write account are evaluated sequentially.
-        num_readonly_signed_accounts: int = len([x for x in joined_am if (not x.is_writable and x.is_signer)])
-        # The last num_readonly_unsigned_accounts of the unsigned keys are read-only accounts.
-        num_readonly_unsigned_accounts: int = len([x for x in joined_am if (not x.is_writable and not x.is_signer)])
-
-        # Initialize signature array, if needed
-        account_keys = [(str(x.pubkey), x.is_signer) for x in joined_am]
-
-        self.signatures = [] if not self.signatures else self.signatures
-        existing_signature_pubkeys: List[str] = [str(x.pubkey) for x in self.signatures]
-
-        # Append missing signatures
-        signer_pubkeys = [k for (k, is_signer) in account_keys if is_signer]
-        for signer_pubkey in signer_pubkeys:
-            if signer_pubkey not in existing_signature_pubkeys:
-                self.signatures.append(SigPubkeyPair(pubkey=PublicKey(signer_pubkey), signature=None))
-
-        # Ensure fee_payer signature is first
-        fee_payer_signature = [x for x in self.signatures if x.pubkey == fee_payer]
-        other_signatures = [x for x in self.signatures if x.pubkey != fee_payer]
-        self.signatures = fee_payer_signature + other_signatures
-
-        account_indices: Dict[str, int] = {k: idx for idx, (k, _) in enumerate(account_keys)}
-
-        compiled_instructions: List[CompiledInstruction] = [
-            CompiledInstruction(
-                accounts=bytes([account_indices[str(am.pubkey)] for am in instruction.keys]),
-                program_id_index=account_indices[str(instruction.program_id)],
-                data=instruction.data,
-            )
-            for instruction in self.instructions
-        ]
-
-        return Message(
-            MessageArgs(
-                header=MessageHeader(
-                    num_required_signatures=num_required_signatures,
-                    num_readonly_signed_accounts=num_readonly_signed_accounts,
-                    num_readonly_unsigned_accounts=num_readonly_unsigned_accounts,
-                ),
-                account_keys=[k for (k, _) in account_keys],
-                instructions=compiled_instructions,
-                recent_blockhash=self.recent_blockhash,
-            )
-        )
+        return Message.from_solders(self._solders.message)
 
     def serialize_message(self) -> bytes:
         """Get raw transaction data that need to be covered by signatures.
@@ -310,31 +288,13 @@ class Transaction:
         """
         return self.compile_message().serialize()
 
-    def sign_partial(self, *partial_signers: Union[PublicKey, Keypair]) -> None:
-        """Partially sign a Transaction with the specified accounts.
+    def sign_partial(self, *partial_signers: Keypair) -> None:
+        """Partially sign a Transaction with the specified keypairs.
 
-        The `Keypair` inputs will be used to sign the Transaction immediately, while any
-        `PublicKey` inputs will be referenced in the signed Transaction but need to
-        be filled in later by calling `addSigner()` with the matching `Keypair`.
-
-        All the caveats from the `sign` method apply to `signPartial`
+        All the caveats from the `sign` method apply to `sign_partial`
         """
-
-        def partial_signer_pubkey(account_or_pubkey: Union[PublicKey, Keypair]):
-            return account_or_pubkey.public_key if isinstance(account_or_pubkey, Keypair) else account_or_pubkey
-
-        signatures: List[SigPubkeyPair] = [
-            SigPubkeyPair(pubkey=partial_signer_pubkey(partial_signer)) for partial_signer in partial_signers
-        ]
-        self.signatures = signatures
-        sign_data = self.serialize_message()
-
-        for idx, partial_signer in enumerate(partial_signers):
-            if isinstance(partial_signer, Keypair):
-                sig = bytes(partial_signer.sign(sign_data))
-                if len(sig) != SIG_LENGTH:
-                    raise RuntimeError("signature has invalid length", sig)
-                self.signatures[idx].signature = sig
+        underlying_signers = [signer.to_solders() for signer in partial_signers]
+        self._solders.partial_sign(underlying_signers, self._solders.message.recent_blockhash)
 
     def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.
@@ -346,30 +306,20 @@ class Transaction:
         as doing so may invalidate the signature and cause the Transaction to be
         rejected.
 
-        The Transaction must be assigned a valid `recentBlockhash` before invoking this method.
+        The Transaction must be assigned a valid `recent_blockhash` before invoking this method.
         """
-        self.sign_partial(*signers)
+        underlying_signers = [signer.to_solders() for signer in signers]
+        self._solders.sign(underlying_signers, self._solders.message.recent_blockhash)
 
-    def add_signature(self, pubkey: PublicKey, signature: bytes) -> None:
-        """Add an externally created signature to a transaction."""
-        if len(signature) != SIG_LENGTH:
-            raise ValueError("signature has invalid length", signature)
-        idx = next(
-            (i for i, sig_pair in enumerate(self.signatures) if sig_pair.pubkey == pubkey),
-            None,
-        )
-        if idx is None:
-            raise ValueError("unknown signer: ", str(pubkey))
-        self.signatures[idx].signature = signature
+    def add_signature(self, pubkey: PublicKey, signature: Signature) -> None:
+        """Add an externally created signature to a transaction.
 
-    def add_signer(self, signer: Keypair) -> None:
-        """Fill in a signature for a partially signed Transaction.
-
-        The `signer` must be the corresponding `Keypair` for a `PublicKey` that was
-        previously provided to `signPartial`
+        Args:
+            pubkey: The public key that created the signature.
+            signature: The signature to add.
         """
-        signature = bytes(signer.sign(self.serialize_message()))
-        self.add_signature(signer.public_key, signature)
+        presigner = Presigner(pubkey.to_solders(), signature)
+        self._solders.partial_sign([presigner], self._solders.message.recent_blockhash)
 
     def verify_signatures(self) -> bool:
         """Verify signatures of a complete, signed Transaction.
@@ -377,15 +327,10 @@ class Transaction:
         Returns:
             a bool indicating if the signatures are correct or not.
         """
-        return self.__verify_signatures(self.serialize_message())
-
-    def __verify_signatures(self, signed_data: bytes) -> bool:
-        for sig_pair in self.signatures:
-            if not sig_pair.signature:
-                return False
-            sig = Signature(sig_pair.signature)
-            if not sig.verify(sig_pair.pubkey.to_solders(), signed_data):
-                return False
+        try:
+            self._solders.verify()
+        except TransactionError:
+            return False
         return True
 
     def serialize(self) -> bytes:
@@ -410,41 +355,16 @@ class Transaction:
         Returns:
             The serialized transaction.
         """  # noqa: E501 pylint: disable=line-too-long
-        if not self.signatures:
+        if self.signatures == [Signature.default() for sig in self.signatures]:
             raise AttributeError("transaction has not been signed")
 
-        sign_data = self.serialize_message()
-        if not self.__verify_signatures(sign_data):
+        if not self.verify_signatures():
             raise AttributeError("transaction has not been signed correctly")
 
-        return self.__serialize(sign_data)
+        return bytes(self._solders)
 
-    def __serialize(self, signed_data: bytes) -> bytes:
-        if len(self.signatures) >= SIG_LENGTH * 4:
-            raise AttributeError("too many signatures to encode")
-        wire_transaction = bytearray()
-        # Encode signature count
-        signature_count = shortvec.encode_length(len(self.signatures))
-        wire_transaction.extend(signature_count)
-        # Encode signatures
-        for sig_pair in self.signatures:
-            if sig_pair.signature and len(sig_pair.signature) != SIG_LENGTH:
-                raise RuntimeError("signature has invalid length", sig_pair.signature)
-
-            if not sig_pair.signature:
-                wire_transaction.extend(bytearray(SIG_LENGTH))
-            else:
-                wire_transaction.extend(sig_pair.signature)
-        # Encode signed data
-        wire_transaction.extend(signed_data)
-
-        if len(wire_transaction) > PACKET_DATA_SIZE:
-            raise RuntimeError(f"transaction too large: {len(wire_transaction)} > {PACKET_DATA_SIZE}")
-
-        return bytes(wire_transaction)
-
-    @staticmethod
-    def deserialize(raw_transaction: bytes) -> Transaction:
+    @classmethod
+    def deserialize(cls, raw_transaction: bytes) -> Transaction:
         """Parse a wire transaction into a Transaction object.
 
         Example:
@@ -467,15 +387,10 @@ class Transaction:
         Returns:
             The deserialized transaction.
         """
-        signatures = []
-        signature_count, offset = shortvec.decode_length(raw_transaction)
-        for _ in range(signature_count):
-            signatures.append(b58encode(raw_transaction[offset : offset + SIG_LENGTH]))  # noqa: E203
-            offset += SIG_LENGTH
-        return Transaction.populate(Message.deserialize(raw_transaction[offset:]), signatures)
+        return cls.from_solders(SoldersTx.from_bytes(raw_transaction))
 
-    @staticmethod
-    def populate(message: Message, signatures: List[bytes]) -> Transaction:
+    @classmethod
+    def populate(cls, message: Message, signatures: List[Signature]) -> Transaction:
         """Populate Transaction object from message and signatures.
 
         Example:
@@ -492,35 +407,14 @@ class Transaction:
             ... )
             >>> from based58 import b58encode
             >>> from solana.message import Message
+            >>> from solders.signature import Signature
             >>> msg = Message.deserialize(raw_message)
-            >>> signatures = [b58encode(bytes([1] * SIG_LENGTH)), b58encode(bytes([2] * SIG_LENGTH))]
+            >>> signatures = [Signature(bytes([1] * SIG_LENGTH)), Signature(bytes([2] * SIG_LENGTH))]
             >>> type(Transaction.populate(msg, signatures))
             <class 'solana.transaction.Transaction'>
 
         Returns:
             The populated transaction.
         """
-        transaction = Transaction(recent_blockhash=message.recent_blockhash)
-
-        for idx, sig in enumerate(signatures):
-            signature = None if sig == b58encode(Transaction.__DEFAULT_SIG) else b58decode(sig)
-            transaction.signatures.append(SigPubkeyPair(pubkey=message.account_keys[idx], signature=signature))
-
-        for instr in message.instructions:
-            account_metas: List[AccountMeta] = []
-            for acc_idx in instr.accounts:
-                pubkey = message.account_keys[acc_idx]
-                is_signer = any((pubkey == sigkeypair.pubkey for sigkeypair in transaction.signatures))
-                account_metas.append(
-                    AccountMeta(
-                        pubkey=pubkey,
-                        is_signer=is_signer,
-                        is_writable=message.is_account_writable(acc_idx),
-                    )
-                )
-            program_id = message.account_keys[instr.program_id_index]
-            transaction.instructions.append(
-                TransactionInstruction(keys=account_metas, program_id=program_id, data=instr.data)
-            )
-
-        return transaction
+        message_underlying = message.to_solders()
+        return cls.from_solders(SoldersTx.populate(message_underlying, signatures))
