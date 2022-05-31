@@ -1243,7 +1243,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._request_airdrop_args(pubkey, lamports, commitment)
         return self._provider.make_request(*args)
 
-    def send_raw_transaction(self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()) -> types.RPCResponse:
+    def send_raw_transaction(self, txn: Union[bytes, str], opts: Optional[types.TxOpts] = None) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1269,19 +1269,19 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': 'CMwyESM2NE74mghfbvsHJDERF7xMYKshwwm6VgH6GFqXzx8LfBFuP5ruccumfhTguha6seUHPpiHzzHUQXzq2kN',
              'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._send_raw_transaction_args(txn, opts)
-
+        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        args = self._send_raw_transaction_args(txn, opts_to_use)
         resp = self._provider.make_request(*args)
-        if opts.skip_confirmation:
+        if opts_to_use.skip_confirmation:
             return self._post_send(resp)
-        post_send_args = self._send_raw_transaction_post_send_args(resp, opts)
+        post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return self.__post_send_with_confirm(*post_send_args)
 
     def send_transaction(
         self,
         txn: Transaction,
         *signers: Keypair,
-        opts: types.TxOpts = types.TxOpts(),
+        opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
@@ -1308,6 +1308,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
              'id': 12}
         """
+        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
         if recent_blockhash is None:
             if self.blockhash_cache:
                 try:
@@ -1321,7 +1322,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
-        txn_resp = self.send_raw_transaction(txn.serialize(), opts=opts)
+        txn_resp = self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
         if self.blockhash_cache:
             blockhash_resp = self.get_recent_blockhash(Finalized)
             self._process_blockhash_resp(blockhash_resp, used_immediately=False)
