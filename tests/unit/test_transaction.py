@@ -16,6 +16,18 @@ from solders.hash import Hash
 from solders.pubkey import Pubkey
 from solders.signature import Signature
 
+def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> txlib.Transaction:
+    ix = txlib.TransactionInstruction(
+        program_id=PublicKey.from_solders(Pubkey.default()),
+        data=bytes([0, 0, 0, 0]),
+        keys=[
+            txlib.AccountMeta(kp0.public_key, True, True),
+            txlib.AccountMeta(kp1.public_key, True, True),
+            txlib.AccountMeta(kp2.public_key, True, True),
+        ],
+    )
+    return txlib.Transaction(fee_payer=kp0.public_key, instructions=[ix], recent_blockhash=stubbed_blockhash)
+
 
 def test_to_solders(stubbed_blockhash: Blockhash) -> None:
     """Test converting a Transaction to solders."""
@@ -59,6 +71,12 @@ def test_sign_partial(stubbed_blockhash):
     expected_tx.sign(keypair0, keypair1, keypair2)
     assert tx == expected_tx
 
+def test_recent_blockhash_setter(stubbed_blockhash):
+    kp0, kp1, kp2 = Keypair(), Keypair(), Keypair()
+    tx0 = example_tx(stubbed_blockhash, kp0, kp1, kp2)
+    tx1 = example_tx(stubbed_blockhash, kp0, kp1, kp2)
+    tx1.recent_blockhash = tx0.recent_blockhash
+    assert tx0 == tx1
 
 def test_transfer_signatures(stubbed_blockhash):
     """Test signing transfer transactions."""
