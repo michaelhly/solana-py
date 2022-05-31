@@ -405,7 +405,6 @@ class Transaction:
             ...     '0000000000000005c49ae77603782054f17a9decea43b444eba0'
             ...     'edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909'
             ... )
-            >>> from based58 import b58encode
             >>> from solana.message import Message
             >>> from solders.signature import Signature
             >>> msg = Message.deserialize(raw_message)
