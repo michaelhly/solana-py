@@ -1,7 +1,5 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
-import asyncio
-
 import pytest
 
 import spl.token._layouts as layouts
@@ -10,7 +8,6 @@ from solana.rpc.types import TxOpts
 from solana.utils.helpers import decode_byte_string
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
-from spl.token.core import _TokenCore
 
 from .utils import AIRDROP_AMOUNT, assert_valid_response
 
@@ -25,14 +22,6 @@ async def test_token(stubbed_sender, freeze_authority, test_http_client_async, t
     assert_valid_response(resp)
 
     expected_decimals = 6
-    # balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_mint(test_http_client_async)
-    # # Construct transaction
-    # token, txn, payer, mint_account, opts = _TokenCore._create_mint_args(
-    #         conn=test_http_client_async, payer=stubbed_sender, mint_authority=stubbed_sender.public_key, decimals=expected_decimals, program_id=TOKEN_PROGRAM_ID, freeze_authority=freeze_authority.public_key, skip_confirmation=False, balance_needed=balance_needed, cls=AsyncToken
-    #     )
-    # # Send the two instructions
-    # await test_http_client_async.send_transaction(txn, payer, mint_account, opts=opts)
-    # token_client = cast(AsyncToken, token)
     token_client = await AsyncToken.create_mint(
         test_http_client_async,
         stubbed_sender,
