@@ -53,7 +53,6 @@ nav:
       - rpc/providers.md
   - Core API:
       - core/blockhash.md
-      - core/instruction.md
       - core/keypair.md
       - core/message.md
       - core/publickey.md

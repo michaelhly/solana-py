@@ -7,6 +7,7 @@
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for keypairs and pubkeys [(#237)](https://github.com/michaelhly/solana-py/pull/237).
 - Remove deprecated `Account` entirely [(#238)](https://github.com/michaelhly/solana-py/pull/238).
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Message` [(#239)](https://github.com/michaelhly/solana-py/pull/239).
+- Remove unused and very old instruction.py file [(#240)](https://github.com/michaelhly/solana-py/pull/240).
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Transaction` [(#241)](https://github.com/michaelhly/solana-py/pull/241). BREAKING CHANGES:
   - `Transaction.__init__` no longer accepts a `signatures` argument. If you want to construct a transaction with certain signatures, you can still use `Transaction.populate`.
   - The `signatures` attribute of `Transaction` has been changed to a read-only property.
@@ -15,6 +16,7 @@
   - The `keypairs` in `Transaction.sign_partial` are now only allowed to be `Keypair` objects. Previously `Union[PublicKey, Keypair]` was allowed.
   - The `.signatures` property of an unsigned transaction is now a list of `solders.signature.Signature.default()` instead
     of an empty list.
+
 
 ## [0.23.3] - 2022-04-29
 
