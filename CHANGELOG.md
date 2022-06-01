@@ -17,7 +17,7 @@
   - The `keypairs` in `Transaction.sign_partial` are now only allowed to be `Keypair` objects. Previously `Union[PublicKey, Keypair]` was allowed.
   - The `.signatures` property of an unsigned transaction is now a list of `solders.signature.Signature.default()` instead
     of an empty list.
-
+- Use [solders](https://github.com/kevinheavey/solders) under the hood for system instructions [(#243)](https://github.com/michaelhly/solana-py/pull/243)
 
 ## [0.23.3] - 2022-04-29
 
