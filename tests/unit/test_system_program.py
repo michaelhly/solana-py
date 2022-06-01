@@ -48,7 +48,7 @@ def test_allocate_with_seed():
     params = sp.AllocateWithSeedParams(
         account_pubkey=Keypair().public_key,
         base_pubkey=PublicKey(1),
-        seed={"length": 4, "chars": "gqln"},
+        seed="gqln",
         space=65537,
         program_id=PublicKey(2),
     )

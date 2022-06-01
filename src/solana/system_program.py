@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from typing import Any, NamedTuple, Union
+from solders import system_program as ssp
+
 
 from solana import sysvar
 from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
@@ -28,6 +30,38 @@ class CreateAccountParams(NamedTuple):
     program_id: PublicKey
     """"""
 
+    @classmethod
+    def from_solders(cls, params: ssp.CreateAccountParams) -> CreateAccountParams:
+        """Convert from `solders` CreateAccountParams.
+
+        Args:
+            params: `solders` CreateAccountParams
+
+        Returns:
+            `solana-py` CreateAccountParams
+        """
+        return cls(
+            from_pubkey=PublicKey.from_solders(params["from_pubkey"]),
+            new_account_pubkey=PublicKey.from_solders(params["to_pubkey"]),
+            lamports=params["lamports"],
+            space=params["space"],
+            program_id=PublicKey.from_solders(params["owner"]),
+        )
+
+    def to_solders(self) -> ssp.CreateAccountParams:
+        """Convert to `solders` CreateAccountParams.
+
+        Returns:
+            `solders` CreateAccountParams
+        """
+        return ssp.CreateAccountParams(
+            from_pubkey=self.from_pubkey.to_solders(),
+            to_pubkey=self.new_account_pubkey.to_solders(),
+            lamports=self.lamports,
+            space=self.space,
+            owner=self.program_id.to_solders(),
+        )
+
 
 class TransferParams(NamedTuple):
     """Transfer system transaction params."""
@@ -39,6 +73,34 @@ class TransferParams(NamedTuple):
     lamports: int
     """"""
 
+    @classmethod
+    def from_solders(cls, params: ssp.TransferParams) -> TransferParams:
+        """Convert from `solders` TransferParams.
+
+        Args:
+            params: `solders` TransferParams
+
+        Returns:
+            `solana-py` TransferParams
+        """
+        return cls(
+            from_pubkey=PublicKey.from_solders(params["from_pubkey"]),
+            to_pubkey=PublicKey.from_solders(params["to_pubkey"]),
+            lamports=params["lamports"],
+        )
+
+    def to_solders(self) -> ssp.TransferParams:
+        """Convert to `solders` TransferParams.
+
+        Returns:
+            `solders` TransferParams
+        """
+        return ssp.TransferParams(
+            from_pubkey=self.from_pubkey.to_solders(),
+            to_pubkey=self.to_pubkey.to_solders(),
+            lamports=self.lamports,
+        )
+
 
 class AssignParams(NamedTuple):
     """Assign system transaction params."""
@@ -47,6 +109,32 @@ class AssignParams(NamedTuple):
     """"""
     program_id: PublicKey
     """"""
+
+    @classmethod
+    def from_solders(cls, params: ssp.AssignParams) -> AssignParams:
+        """Convert from `solders` AssignParams.
+
+        Args:
+            params: `solders` AssignParams
+
+        Returns:
+            `solana-py` AssignParams
+        """
+        return cls(
+            account_pubkey=PublicKey.from_solders(params["pubkey"]),
+            program_id=PublicKey.from_solders(params["owner"]),
+        )
+
+    def to_solders(self) -> ssp.AssignParams:
+        """Convert to `solders` AssignParams.
+
+        Returns:
+            `solders` AssignParams
+        """
+        return ssp.AssignParams(
+            pubkey=self.account_pubkey.to_solders(),
+            owner=self.program_id.to_solders(),
+        )
 
 
 class CreateAccountWithSeedParams(NamedTuple):
@@ -66,6 +154,42 @@ class CreateAccountWithSeedParams(NamedTuple):
     """"""
     program_id: PublicKey
     """"""
+
+    @classmethod
+    def from_solders(cls, params: ssp.CreateAccountWithSeedParams) -> CreateAccountWithSeedParams:
+        """Convert from `solders` CreateAccountWithSeedParams.
+
+        Args:
+            params: `solders` CreateAccountWithSeedParams
+
+        Returns:
+            `solana-py` CreateAccountWithSeedParams
+        """
+        return cls(
+            from_pubkey=PublicKey.from_solders(params["from_pubkey"]),
+            new_account_pubkey=PublicKey.from_solders(params["to_pubkey"]),
+            base_pubkey=PublicKey.from_solders(params["base"]),
+            seed=params["seed"],
+            lamports=params["lamports"],
+            space=params["space"],
+            program_id=PublicKey.from_solders(params["owner"]),
+        )
+
+    def to_solders(self) -> ssp.CreateAccountWithSeedParams:
+        """Convert to `solders` CreateAccountWithSeedParams.
+
+        Returns:
+            `solders` CreateAccountWithSeedParams
+        """
+        return ssp.CreateAccountWithSeedParams(
+            from_pubkey=self.from_pubkey.to_solders(),
+            to_pubkey=self.new_account_pubkey.to_solders(),
+            base=self.base_pubkey.to_solders(),
+            seed=self.seed,
+            lamports=self.lamports,
+            space=self.space,
+            owner=self.program_id.to_solders(),
+        )
 
 
 class CreateNonceAccountParams(NamedTuple):
@@ -106,6 +230,32 @@ class InitializeNonceParams(NamedTuple):
     authorized_pubkey: PublicKey
     """"""
 
+    @classmethod
+    def from_solders(cls, params: ssp.InitializeNonceAccountParams) -> InitializeNonceParams:
+        """Convert from `solders` InitializeNonceParams.
+
+        Args:
+            params: `solders` InitializeNonceParams
+
+        Returns:
+            `solana-py` InitializeNonceParams
+        """
+        return cls(
+            nonce_pubkey=PublicKey.from_solders(params["nonce_pubkey"]),
+            authorized_pubkey=PublicKey.from_solders(params["authority"]),
+        )
+
+    def to_solders(self) -> ssp.InitializeNonceAccountParams:
+        """Convert to `solders` InitializeNonceParams.
+
+        Returns:
+            `solders` InitializeNonceParams
+        """
+        return ssp.InitializeNonceAccountParams(
+            nonce_pubkey=self.nonce_pubkey.to_solders(),
+            authority=self.authorized_pubkey.to_solders(),
+        )
+
 
 class AdvanceNonceParams(NamedTuple):
     """Advance nonce account system instruction params."""
@@ -114,6 +264,32 @@ class AdvanceNonceParams(NamedTuple):
     """"""
     authorized_pubkey: PublicKey
     """"""
+
+    @classmethod
+    def from_solders(cls, params: ssp.AdvanceNonceAccountParams) -> AdvanceNonceParams:
+        """Convert from `solders` AdvanceNonceParams.
+
+        Args:
+            params: `solders` AdvanceNonceParams
+
+        Returns:
+            `solana-py` AdvanceNonceParams
+        """
+        return cls(
+            nonce_pubkey=PublicKey.from_solders(params["nonce_pubkey"]),
+            authorized_pubkey=PublicKey.from_solders(params["authority"]),
+        )
+
+    def to_solders(self) -> ssp.AdvanceNonceAccountParams:
+        """Convert to `solders` AdvanceNonceParams.
+
+        Returns:
+            `solders` AdvanceNonceParams
+        """
+        return ssp.AdvanceNonceAccountParams(
+            nonce_pubkey=self.nonce_pubkey.to_solders(),
+            authority=self.authorized_pubkey.to_solders(),
+        )
 
 
 class WithdrawNonceParams(NamedTuple):
@@ -128,6 +304,36 @@ class WithdrawNonceParams(NamedTuple):
     lamports: int
     """"""
 
+    @classmethod
+    def from_solders(cls, params: ssp.WithdrawNonceAccountParams) -> WithdrawNonceParams:
+        """Convert from `solders` WithdrawNonceParams.
+
+        Args:
+            params: `solders` WithdrawNonceParams
+
+        Returns:
+            `solana-py` WithdrawNonceParams
+        """
+        return cls(
+            nonce_pubkey=PublicKey.from_solders(params["nonce_pubkey"]),
+            authorized_pubkey=PublicKey.from_solders(params["authority"]),
+            to_pubkey=PublicKey.from_solders(params["to_pubkey"]),
+            lamports=params["lamports"],
+        )
+
+    def to_solders(self) -> ssp.WithdrawNonceAccountParams:
+        """Convert to `solders` WithdrawNonceParams.
+
+        Returns:
+            `solders` WithdrawNonceParams
+        """
+        return ssp.WithdrawNonceAccountParams(
+            nonce_pubkey=self.nonce_pubkey.to_solders(),
+            authority=self.authorized_pubkey.to_solders(),
+            to_pubkey=self.to_pubkey.to_solders(),
+            lamports=self.lamports,
+        )
+
 
 class AuthorizeNonceParams(NamedTuple):
     """Authorize nonce account system transaction params."""
@@ -139,6 +345,34 @@ class AuthorizeNonceParams(NamedTuple):
     new_authorized_pubkey: PublicKey
     """"""
 
+    @classmethod
+    def from_solders(cls, params: ssp.AuthorizeNonceAccountParams) -> AuthorizeNonceParams:
+        """Convert from `solders` AuthorizeNonceParams.
+
+        Args:
+            params: `solders` AuthorizeNonceParams
+
+        Returns:
+            `solana-py` AuthorizeNonceParams
+        """
+        return cls(
+            nonce_pubkey=PublicKey.from_solders(params["nonce_pubkey"]),
+            authorized_pubkey=PublicKey.from_solders(params["authorized_pubkey"]),
+            new_authorized_pubkey=params["new_authority"],
+        )
+
+    def to_solders(self) -> ssp.AuthorizeNonceAccountParams:
+        """Convert to `solders` AuthorizeNonceParams.
+
+        Returns:
+            `solders` AuthorizeNonceParams
+        """
+        return ssp.AuthorizeNonceAccountParams(
+            nonce_pubkey=self.nonce_pubkey.to_solders(),
+            authorized_pubkey=self.authorized_pubkey.to_solders(),
+            new_authority=self.new_authorized_pubkey.to_solders(),
+        )
+
 
 class AllocateParams(NamedTuple):
     """Allocate account with seed system transaction params."""
@@ -147,6 +381,32 @@ class AllocateParams(NamedTuple):
     """"""
     space: int
     """"""
+
+    @classmethod
+    def from_solders(cls, params: ssp.AllocateParams) -> AllocateParams:
+        """Convert from `solders` AllocateParams.
+
+        Args:
+            params: `solders` AllocateParams
+
+        Returns:
+            `solana-py` AllocateParams
+        """
+        return cls(
+            account_pubkey=PublicKey.from_solders(params["pubkey"]),
+            space=params["space"],
+        )
+
+    def to_solders(self) -> ssp.AllocateParams:
+        """Convert to `solders` AllocateParams.
+
+        Returns:
+            `solders` AllocateParams
+        """
+        return ssp.AllocateParams(
+            pubkey=self.account_pubkey.to_solders(),
+            space=self.space,
+        )
 
 
 class AllocateWithSeedParams(NamedTuple):
@@ -163,6 +423,38 @@ class AllocateWithSeedParams(NamedTuple):
     program_id: PublicKey
     """"""
 
+    @classmethod
+    def from_solders(cls, params: ssp.AllocateWithSeedParams) -> AllocateWithSeedParams:
+        """Convert from `solders` AllocateWithSeedParams.
+
+        Args:
+            params: `solders` AllocateWithSeedParams
+
+        Returns:
+            `solana-py` AllocateWithSeedParams
+        """
+        return cls(
+            account_pubkey=PublicKey.from_solders(params["address"]),
+            base_pubkey=PublicKey.from_solders(params["base"]),
+            seed=params["seed"],
+            space=params["space"],
+            program_id=PublicKey.from_solders(params["owner"]),
+        )
+
+    def to_solders(self) -> ssp.AllocateWithSeedParams:
+        """Convert to `solders` AllocateWithSeedParams.
+
+        Returns:
+            `solders` AllocateWithSeedParams
+        """
+        return ssp.AllocateWithSeedParams(
+            address=self.account_pubkey.to_solders(),
+            base=self.base_pubkey.to_solders(),
+            seed=self.seed,
+            space=self.space,
+            owner=self.program_id.to_solders(),
+        )
+
 
 class AssignWithSeedParams(NamedTuple):
     """Assign account with seed system transaction params."""
@@ -176,10 +468,35 @@ class AssignWithSeedParams(NamedTuple):
     program_id: PublicKey
     """"""
 
+    @classmethod
+    def from_solders(cls, params: ssp.AssignWithSeedParams) -> AssignWithSeedParams:
+        """Convert from `solders` AssignWithSeedParams.
 
-def __check_program_id(program_id: PublicKey) -> None:
-    if program_id != SYS_PROGRAM_ID:
-        raise ValueError("invalid instruction: programId is not SystemProgram")
+        Args:
+            params: `solders` AssignWithSeedParams
+
+        Returns:
+            `solana-py` AssignWithSeedParams
+        """
+        return cls(
+            account_pubkey=PublicKey.from_solders(params["address"]),
+            base_pubkey=PublicKey.from_solders(params["base"]),
+            seed=params["seed"],
+            program_id=PublicKey.from_solders(params["owner"]),
+        )
+
+    def to_solders(self) -> ssp.AssignWithSeedParams:
+        """Convert to `solders` AssignWithSeedParams.
+
+        Returns:
+            `solders` AssignWithSeedParams
+        """
+        return ssp.AssignWithSeedParams(
+            address=self.account_pubkey.to_solders(),
+            base=self.base_pubkey.to_solders(),
+            seed=self.seed,
+            owner=self.program_id.to_solders(),
+        )
 
 
 def __parse_and_validate_instruction(
@@ -214,14 +531,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     Returns:
         The decoded instruction params.
     """  # noqa: E501 # pylint: disable=line-too-long
-    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.CREATE_ACCOUNT)
-    return CreateAccountParams(
-        from_pubkey=instruction.keys[0].pubkey,
-        new_account_pubkey=instruction.keys[1].pubkey,
-        lamports=parsed_data.args.lamports,
-        space=parsed_data.args.space,
-        program_id=PublicKey(parsed_data.args.program_id),
-    )
+    return CreateAccountParams.from_solders(ssp.decode_create_account(instruction.to_solders()))
 
 
 def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
@@ -243,10 +553,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     Returns:
         The decoded instruction params.
     """  # pylint: disable=line-too-long # noqa: E501
-    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.TRANSFER)
-    return TransferParams(
-        from_pubkey=instruction.keys[0].pubkey, to_pubkey=instruction.keys[1].pubkey, lamports=parsed_data.args.lamports
-    )
+    return TransferParams.from_solders(ssp.decode_transfer(instruction.to_solders()))
 
 
 def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
@@ -268,8 +575,7 @@ def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
     Returns:
         The decoded instruction params.
     """  # pylint: disable=line-too-long # noqa: E501
-    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ALLOCATE)
-    return AllocateParams(account_pubkey=instruction.keys[0].pubkey, space=parsed_data.args.space)
+    return AllocateParams.from_solders(ssp.decode_allocate(instruction.to_solders()))
 
 
 def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWithSeedParams:
@@ -297,14 +603,7 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
     Returns:
         The decoded instruction params.
     """  # pylint: disable=line-too-long # noqa: E501
-    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ALLOCATE_WITH_SEED)
-    return AllocateWithSeedParams(
-        account_pubkey=instruction.keys[0].pubkey,
-        base_pubkey=PublicKey(parsed_data.args.base),
-        seed=parsed_data.args.seed,
-        space=parsed_data.args.space,
-        program_id=PublicKey(parsed_data.args.program_id),
-    )
+    return AllocateWithSeedParams.from_solders(ssp.decode_allocate_with_seed(instruction.to_solders()))
 
 
 def decode_assign(instruction: TransactionInstruction) -> AssignParams:
@@ -326,13 +625,19 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     Returns:
         The decoded instruction params.
     """
-    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.ASSIGN)
-    return AssignParams(account_pubkey=instruction.keys[0].pubkey, program_id=PublicKey(parsed_data.args.program_id))
+    return AssignParams.from_solders(ssp.decode_assign(instruction.to_solders()))
 
 
 def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
-    """Decode an assign system with seed instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_assign_with_seed not implemented")
+    """Decode an assign system with seed instruction and retrieve the instruction params.
+
+    Args:
+        instruction: The instruction to decode.
+
+    Returns:
+        The decoded instruction params.
+    """
+    return AssignWithSeedParams.from_solders(ssp.decode_assign_with_seed(instruction.to_solders()))
 
 
 def decode_create_account_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
@@ -344,36 +649,56 @@ def decode_create_account_with_seed(instruction: TransactionInstruction) -> Crea
     Returns:
         The decoded instruction params.
     """
-    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.CREATE_ACCOUNT_WITH_SEED)
-    return CreateAccountWithSeedParams(
-        from_pubkey=instruction.keys[0].pubkey,
-        new_account_pubkey=instruction.keys[1].pubkey,
-        base_pubkey=PublicKey(parsed_data.args.base),
-        seed=parsed_data.args.seed,
-        lamports=parsed_data.args.lamports,
-        space=parsed_data.args.space,
-        program_id=PublicKey(parsed_data.args.program_id),
-    )
+    return CreateAccountWithSeedParams.from_solders(ssp.decode_create_account_with_seed(instruction.to_solders()))
 
 
 def decode_nonce_initialize(instruction: TransactionInstruction) -> InitializeNonceParams:
-    """Decode a nonce initialize system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_nonce_initialize not implemented")
+    """Decode a nonce initialize system instruction and retrieve the instruction params.
+
+    Args:
+        instruction: The instruction to decode.
+
+    Returns:
+        The decoded instruction params.
+    """
+    return InitializeNonceParams.from_solders(ssp.decode_initialize_nonce_account(instruction.to_solders()))
 
 
 def decode_nonce_advance(instruction: TransactionInstruction) -> AdvanceNonceParams:
-    """Decode a nonce advance system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_nonce_advance not implemented")
+    """Decode a nonce advance system instruction and retrieve the instruction params.
+
+    Args:
+        instruction: The instruction to decode.
+
+    Returns:
+        The decoded instruction params.
+    """
+    return AdvanceNonceParams.from_solders(ssp.decode_advance_nonce_account(instruction.to_solders()))
 
 
 def decode_nonce_withdraw(instruction: TransactionInstruction) -> WithdrawNonceParams:
-    """Decode a nonce withdraw system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_nonce_withdraw not implemented")
+    """Decode a nonce withdraw system instruction and retrieve the instruction params.
+
+    Args:
+        instruction: The instruction to decode.
+
+    Returns:
+        The decoded instruction params.
+    """
+    return WithdrawNonceParams.from_solders(ssp.decode_withdraw_nonce_account(instruction.to_solders()))
 
 
 def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonceParams:
-    """Decode a nonce authorize system instruction and retrieve the instruction params."""
-    raise NotImplementedError("decode_nonce_authorize not implemented")
+    """Decode a nonce authorize system instruction and retrieve the instruction params.
+
+    Args:
+        instruction: The instruction to decode.
+
+    Returns:
+        The decoded instruction params.
+
+    """
+    return AuthorizeNonceParams.from_solders(ssp.decode_authorize_nonce_account(instruction.to_solders()))
 
 
 def create_account(params: CreateAccountParams) -> TransactionInstruction:
