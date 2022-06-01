@@ -1,15 +1,12 @@
 """Library to interface with the system program."""
 from __future__ import annotations
 
-from typing import Any, NamedTuple, Union
+from typing import NamedTuple, Union
 from solders import system_program as ssp
 
 
-from solana import sysvar
-from solana._layouts.system_instructions import SYSTEM_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
-from solana.transaction import AccountMeta, Transaction, TransactionInstruction
-from solana.utils.validate import validate_instruction_keys, validate_instruction_type
+from solana.transaction import Transaction, TransactionInstruction
 
 SYS_PROGRAM_ID: PublicKey = PublicKey("11111111111111111111111111111111")
 """Public key that identifies the System program."""
@@ -316,7 +313,7 @@ class WithdrawNonceParams(NamedTuple):
         """
         return cls(
             nonce_pubkey=PublicKey.from_solders(params["nonce_pubkey"]),
-            authorized_pubkey=PublicKey.from_solders(params["authority"]),
+            authorized_pubkey=PublicKey.from_solders(params["authorized_pubkey"]),
             to_pubkey=PublicKey.from_solders(params["to_pubkey"]),
             lamports=params["lamports"],
         )
@@ -329,7 +326,7 @@ class WithdrawNonceParams(NamedTuple):
         """
         return ssp.WithdrawNonceAccountParams(
             nonce_pubkey=self.nonce_pubkey.to_solders(),
-            authority=self.authorized_pubkey.to_solders(),
+            authorized_pubkey=self.authorized_pubkey.to_solders(),
             to_pubkey=self.to_pubkey.to_solders(),
             lamports=self.lamports,
         )
@@ -358,7 +355,7 @@ class AuthorizeNonceParams(NamedTuple):
         return cls(
             nonce_pubkey=PublicKey.from_solders(params["nonce_pubkey"]),
             authorized_pubkey=PublicKey.from_solders(params["authorized_pubkey"]),
-            new_authorized_pubkey=params["new_authority"],
+            new_authorized_pubkey=PublicKey.from_solders(params["new_authority"]),
         )
 
     def to_solders(self) -> ssp.AuthorizeNonceAccountParams:
@@ -497,17 +494,6 @@ class AssignWithSeedParams(NamedTuple):
             seed=self.seed,
             owner=self.program_id.to_solders(),
         )
-
-
-def __parse_and_validate_instruction(
-    instruction: TransactionInstruction,
-    expected_keys: int,
-    expected_type: InstructionType,
-) -> Any:  # Returns a Construct container.
-    validate_instruction_keys(instruction, expected_keys)
-    data = SYSTEM_INSTRUCTIONS_LAYOUT.parse(instruction.data)
-    validate_instruction_type(data, expected_type)
-    return data
 
 
 def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
@@ -739,7 +725,12 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInst
         >>> type(instruction)
         <class 'solana.transaction.TransactionInstruction'>
     """
-    return TransactionInstruction.from_solders(ssp.assign(params.to_solders()))
+    solders_ix = (
+        ssp.assign(params.to_solders())
+        if isinstance(params, AssignParams)
+        else ssp.assign_with_seed(params.to_solders())
+    )
+    return TransactionInstruction.from_solders(solders_ix)
 
 
 def transfer(params: TransferParams) -> TransactionInstruction:
