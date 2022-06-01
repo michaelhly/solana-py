@@ -277,7 +277,7 @@ class AdvanceNonceParams(NamedTuple):
         """
         return cls(
             nonce_pubkey=PublicKey.from_solders(params["nonce_pubkey"]),
-            authorized_pubkey=PublicKey.from_solders(params["authority"]),
+            authorized_pubkey=PublicKey.from_solders(params["authorized_pubkey"]),
         )
 
     def to_solders(self) -> ssp.AdvanceNonceAccountParams:
@@ -288,7 +288,7 @@ class AdvanceNonceParams(NamedTuple):
         """
         return ssp.AdvanceNonceAccountParams(
             nonce_pubkey=self.nonce_pubkey.to_solders(),
-            authority=self.authorized_pubkey.to_solders(),
+            authorized_pubkey=self.authorized_pubkey.to_solders(),
         )
 
 
@@ -592,13 +592,13 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
         ...     AllocateWithSeedParams(
         ...         account_pubkey=allocator,
         ...         base_pubkey=base,
-        ...         seed={"length": 4, "chars": "gqln"},
+        ...         seed="gqln",
         ...         space=65537,
         ...         program_id=program_id
         ...     )
         ... )
         >>> decode_allocate_with_seed(instruction)
-        AllocateWithSeedParams(account_pubkey=11111111111111111111111111111112, base_pubkey=11111111111111111111111111111113, seed=Container(length=4, chars=u'gqln'), space=65537, program_id=11111111111111111111111111111114)
+        AllocateWithSeedParams(account_pubkey=11111111111111111111111111111112, base_pubkey=11111111111111111111111111111113, seed='gqln', space=65537, program_id=11111111111111111111111111111114)
 
     Returns:
         The decoded instruction params.
@@ -721,21 +721,7 @@ def create_account(params: CreateAccountParams) -> TransactionInstruction:
     Returns:
         The instruction to create the account.
     """
-    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-        dict(
-            instruction_type=InstructionType.CREATE_ACCOUNT,
-            args=dict(lamports=params.lamports, space=params.space, program_id=bytes(params.program_id)),
-        )
-    )
-
-    return TransactionInstruction(
-        keys=[
-            AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-            AccountMeta(pubkey=params.new_account_pubkey, is_signer=True, is_writable=True),
-        ],
-        program_id=SYS_PROGRAM_ID,
-        data=data,
-    )
+    return TransactionInstruction.from_solders(ssp.create_account(params.to_solders()))
 
 
 def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInstruction:
@@ -753,19 +739,7 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInst
         >>> type(instruction)
         <class 'solana.transaction.TransactionInstruction'>
     """
-    if isinstance(params, AssignWithSeedParams):
-        raise NotImplementedError("assign with key is not implemented")
-    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.ASSIGN, args=dict(program_id=bytes(params.program_id)))
-    )
-
-    return TransactionInstruction(
-        keys=[
-            AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
-        ],
-        program_id=SYS_PROGRAM_ID,
-        data=data,
-    )
+    return TransactionInstruction.from_solders(ssp.assign(params.to_solders()))
 
 
 def transfer(params: TransferParams) -> TransactionInstruction:
@@ -788,18 +762,7 @@ def transfer(params: TransferParams) -> TransactionInstruction:
         The transfer instruction.
 
     """
-    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.TRANSFER, args=dict(lamports=params.lamports))
-    )
-
-    return TransactionInstruction(
-        keys=[
-            AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-            AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
-        ],
-        program_id=SYS_PROGRAM_ID,
-        data=data,
-    )
+    return TransactionInstruction.from_solders(ssp.transfer(params.to_solders()))
 
 
 def create_account_with_seed(
@@ -813,29 +776,7 @@ def create_account_with_seed(
     Returns:
         The instruction to create the account.
     """
-    seed = {"length": len(params.seed), "chars": params.seed} if isinstance(params.seed, str) else params.seed
-    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-        dict(
-            instruction_type=InstructionType.CREATE_ACCOUNT_WITH_SEED,
-            args=dict(
-                base=bytes(params.base_pubkey),
-                seed=seed,
-                lamports=params.lamports,
-                space=params.space,
-                program_id=bytes(params.program_id),
-            ),
-        )
-    )
-
-    keys = [
-        AccountMeta(pubkey=params.from_pubkey, is_signer=True, is_writable=True),
-        AccountMeta(pubkey=params.new_account_pubkey, is_signer=False, is_writable=True),
-    ]
-
-    if params.base_pubkey != params.from_pubkey:
-        keys.append(AccountMeta(pubkey=params.base_pubkey, is_signer=True, is_writable=False))
-
-    return TransactionInstruction(keys=keys, program_id=SYS_PROGRAM_ID, data=data)
+    return TransactionInstruction.from_solders(ssp.create_account_with_seed(params.to_solders()))
 
 
 def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAccountWithSeedParams]) -> Transaction:
@@ -848,35 +789,23 @@ def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAcco
         The transaction to create the new nonce account.
     """
     if isinstance(params, CreateNonceAccountParams):
-        create_account_instruction = create_account(
-            CreateAccountParams(
-                from_pubkey=params.from_pubkey,
-                new_account_pubkey=params.nonce_pubkey,
-                lamports=params.lamports,
-                space=80,  # derived from rust implementation
-                program_id=SYS_PROGRAM_ID,
-            )
+        solders_ixs = ssp.create_nonce_account(
+            from_pubkey=params.from_pubkey.to_solders(),
+            nonce_pubkey=params.nonce_pubkey.to_solders(),
+            authority=params.authorized_pubkey.to_solders(),
+            lamports=params.lamports,
         )
     else:
-        create_account_instruction = create_account_with_seed(
-            CreateAccountWithSeedParams(
-                from_pubkey=params.from_pubkey,
-                new_account_pubkey=params.nonce_pubkey,
-                base_pubkey=params.base_pubkey,
-                seed=params.seed,
-                lamports=params.lamports,
-                space=80,  # derived from rust implementation
-                program_id=SYS_PROGRAM_ID,
-            )
+        solders_ixs = ssp.create_nonce_account_with_seed(
+            from_pubkey=params.from_pubkey.to_solders(),
+            nonce_pubkey=params.nonce_pubkey.to_solders(),
+            base=params.base_pubkey.to_solders(),
+            seed=params.seed,
+            authority=params.authorized_pubkey.to_solders(),
+            lamports=params.lamports,
         )
-
-    initialize_nonce_instruction = nonce_initialization(
-        InitializeNonceParams(
-            nonce_pubkey=params.nonce_pubkey,
-            authorized_pubkey=params.authorized_pubkey,
-        )
-    )
-
+    create_account_instruction = TransactionInstruction.from_solders(solders_ixs[0])
+    initialize_nonce_instruction = TransactionInstruction.from_solders(solders_ixs[1])
     return Transaction(fee_payer=params.from_pubkey).add(create_account_instruction, initialize_nonce_instruction)
 
 
@@ -890,24 +819,7 @@ def nonce_initialization(params: InitializeNonceParams) -> TransactionInstructio
         The instruction to initialize the nonce account.
 
     """
-    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-        dict(
-            instruction_type=InstructionType.INITIALIZE_NONCE_ACCOUNT,
-            args=dict(
-                authorized=bytes(params.authorized_pubkey),
-            ),
-        )
-    )
-
-    return TransactionInstruction(
-        keys=[
-            AccountMeta(pubkey=params.nonce_pubkey, is_signer=True, is_writable=True),
-            AccountMeta(pubkey=sysvar.SYSVAR_RECENT_BLOCKHASHES_PUBKEY, is_signer=False, is_writable=False),
-            AccountMeta(pubkey=sysvar.SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
-        ],
-        program_id=SYS_PROGRAM_ID,
-        data=data,
-    )
+    return TransactionInstruction.from_solders(ssp.initialize_nonce_account(params.to_solders()))
 
 
 def nonce_advance(params: AdvanceNonceParams) -> TransactionInstruction:
@@ -919,32 +831,31 @@ def nonce_advance(params: AdvanceNonceParams) -> TransactionInstruction:
     Returns:
         The instruction to advance the nonce.
     """
-    data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-        dict(
-            instruction_type=InstructionType.ADVANCE_NONCE_ACCOUNT,
-            args={},
-        )
-    )
-
-    return TransactionInstruction(
-        keys=[
-            AccountMeta(pubkey=params.nonce_pubkey, is_signer=False, is_writable=True),
-            AccountMeta(pubkey=sysvar.SYSVAR_RECENT_BLOCKHASHES_PUBKEY, is_signer=False, is_writable=False),
-            AccountMeta(pubkey=params.authorized_pubkey, is_signer=True, is_writable=True),
-        ],
-        program_id=SYS_PROGRAM_ID,
-        data=data,
-    )
+    return TransactionInstruction.from_solders(ssp.advance_nonce_account(params.to_solders()))
 
 
 def nonce_withdraw(params: WithdrawNonceParams) -> TransactionInstruction:
-    """Generate an instruction that withdraws lamports from a Nonce account."""
-    raise NotImplementedError("nonce_withdraw not implemented")
+    """Generate an instruction that withdraws lamports from a Nonce account.
+
+    Args:
+        params: The withdraw nonce params
+
+    Returns:
+        The instruction to withdraw from the nonce account.
+    """
+    return TransactionInstruction.from_solders(ssp.withdraw_nonce_account(params.to_solders()))
 
 
 def nonce_authorize(params: AuthorizeNonceParams) -> TransactionInstruction:
-    """Generate an instruction that authorizes a new PublicKey as the authority on a Nonce account."""
-    raise NotImplementedError("nonce_authorize not implemented")
+    """Generate an instruction that authorizes a new PublicKey as the authority on a Nonce account.
+
+    Args:
+        params: The authorize nonce params
+
+    Returns:
+        The instruction to grant the new nonce authority.
+    """
+    return TransactionInstruction.from_solders(ssp.authorize_nonce_account(params.to_solders()))
 
 
 def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> TransactionInstruction:
@@ -967,26 +878,8 @@ def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Transacti
         The allocate instruction.
     """
     if isinstance(params, AllocateWithSeedParams):
-        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-            dict(
-                instruction_type=InstructionType.ALLOCATE_WITH_SEED,
-                args=dict(
-                    base=bytes(params.base_pubkey),
-                    seed=params.seed,
-                    space=params.space,
-                    program_id=bytes(params.program_id),
-                ),
-            )
-        )
+        solders_ix = ssp.allocate_with_seed(params.to_solders())
     else:
-        data = SYSTEM_INSTRUCTIONS_LAYOUT.build(
-            dict(instruction_type=InstructionType.ALLOCATE, args=dict(space=params.space))
-        )
+        solders_ix = ssp.allocate(params.to_solders())
 
-    return TransactionInstruction(
-        keys=[
-            AccountMeta(pubkey=params.account_pubkey, is_signer=True, is_writable=True),
-        ],
-        program_id=SYS_PROGRAM_ID,
-        data=data,
-    )
+    return TransactionInstruction.from_solders(solders_ix)

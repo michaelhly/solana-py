@@ -61,7 +61,7 @@ def test_create_account_with_seed():
         from_pubkey=Keypair().public_key,
         new_account_pubkey=PublicKey(3),
         base_pubkey=PublicKey(1),
-        seed={"length": 4, "chars": "gqln"},
+        seed="gqln",
         lamports=123,
         space=4,
         program_id=PublicKey(2),
