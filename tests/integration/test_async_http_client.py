@@ -270,9 +270,6 @@ async def test_get_block_time(test_http_client_async):
     assert_valid_response(resp)
 
 
-
-
-
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_get_cluster_nodes(test_http_client_async):

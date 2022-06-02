@@ -470,5 +470,3 @@ def test_get_vote_accounts(test_http_client):
     """Test get vote accounts."""
     resp = test_http_client.get_vote_accounts()
     assert_valid_response(resp)
-
-
