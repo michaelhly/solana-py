@@ -4,7 +4,6 @@ import pytest
 import solana.system_program as sp
 from solana.keypair import Keypair
 from solana.rpc.api import Client, DataSliceOpt
-from solana.rpc.commitment import Finalized
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
 from solana.transaction import Transaction
