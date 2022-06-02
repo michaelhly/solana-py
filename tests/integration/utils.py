@@ -19,4 +19,5 @@ def compare_responses_without_ids(left: RPCResponse, right: RPCResponse) -> None
         key: val for key, val in right.items() if key != "id"
     }
 
+
 OPTS = TxOpts(skip_confirmation=False, preflight_commitment=Processed)

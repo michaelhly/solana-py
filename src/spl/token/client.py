@@ -134,7 +134,16 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         balance_needed = Token.get_min_balance_rent_for_exempt_for_mint(conn)
         # Construct transaction
         token, txn, payer, mint_account, opts = _TokenCore._create_mint_args(
-            conn, payer, mint_authority, decimals, program_id, freeze_authority, skip_confirmation, balance_needed, cls, conn.commitment
+            conn,
+            payer,
+            mint_authority,
+            decimals,
+            program_id,
+            freeze_authority,
+            skip_confirmation,
+            balance_needed,
+            cls,
+            conn.commitment,
         )
         # Send the two instructions
         conn.send_transaction(txn, payer, mint_account, opts=opts, recent_blockhash=recent_blockhash)
@@ -191,7 +200,9 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         or until the transaction is confirmed.
         """
         # Construct transaction
-        public_key, txn, payer, opts = self._create_associated_token_account_args(owner, skip_confirmation, self._conn.commitment)
+        public_key, txn, payer, opts = self._create_associated_token_account_args(
+            owner, skip_confirmation, self._conn.commitment
+        )
         self._conn.send_transaction(txn, payer, opts=opts, recent_blockhash=recent_blockhash)
         return public_key
 
@@ -500,7 +511,9 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
             recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
-        txn, signers, opts = self._transfer_checked_args(source, dest, owner, amount, decimals, multi_signers, opts_to_use)
+        txn, signers, opts = self._transfer_checked_args(
+            source, dest, owner, amount, decimals, multi_signers, opts_to_use
+        )
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     def approve_checked(
@@ -556,7 +569,9 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
             recent_blockhash: (optional) a prefetched Blockhash for the transaction.
         """
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
-        txn, signers, opts = self._mint_to_checked_args(dest, mint_authority, amount, decimals, multi_signers, opts_to_use)
+        txn, signers, opts = self._mint_to_checked_args(
+            dest, mint_authority, amount, decimals, multi_signers, opts_to_use
+        )
         return self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     def burn_checked(

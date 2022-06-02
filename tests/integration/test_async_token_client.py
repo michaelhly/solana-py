@@ -4,7 +4,6 @@ import pytest
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
-from solana.rpc.types import TxOpts
 from solana.utils.helpers import decode_byte_string
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
@@ -315,7 +314,7 @@ async def test_approve(
         delegate=async_stubbed_receiver,
         owner=stubbed_sender.public_key,
         amount=expected_amount_delegated,
-        opts=OPTS
+        opts=OPTS,
     )
     await test_http_client_async.confirm_transaction(resp["result"])
     assert_valid_response(resp)
@@ -340,9 +339,7 @@ async def test_revoke(
     assert account_info.delegated_amount == expected_amount_delegated
 
     revoke_resp = await test_token.revoke(
-        account=stubbed_sender_token_account_pk,
-        owner=stubbed_sender.public_key,
-        opts=OPTS
+        account=stubbed_sender_token_account_pk, owner=stubbed_sender.public_key, opts=OPTS
     )
     await test_http_client_async.confirm_transaction(revoke_resp["result"])
     assert_valid_response(revoke_resp)
@@ -368,7 +365,7 @@ async def test_approve_checked(
         owner=stubbed_sender.public_key,
         amount=expected_amount_delegated,
         decimals=6,
-        opts=OPTS
+        opts=OPTS,
     )
     await test_http_client_async.confirm_transaction(resp["result"])
     assert_valid_response(resp)
@@ -431,7 +428,7 @@ async def test_close_account(
         account=stubbed_sender_token_account_pk,
         dest=async_stubbed_receiver_token_account_pk,
         authority=stubbed_sender,
-        opts=OPTS
+        opts=OPTS,
     )
     await test_http_client_async.confirm_transaction(close_resp["result"])
     assert_valid_response(close_resp)
@@ -448,7 +445,9 @@ async def test_create_multisig(
 ):  # pylint: disable=redefined-outer-name
     """Test creating a multisig account."""
     min_signers = 2
-    multisig_pubkey = await test_token.create_multisig(min_signers, [stubbed_sender.public_key, async_stubbed_receiver], opts=OPTS)
+    multisig_pubkey = await test_token.create_multisig(
+        min_signers, [stubbed_sender.public_key, async_stubbed_receiver], opts=OPTS
+    )
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)

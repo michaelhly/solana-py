@@ -565,7 +565,9 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             recent_blockhash (optional): A prefetched blockhash for the transaction.
         """
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
-        txn, signers, opts = self._mint_to_checked_args(dest, mint_authority, amount, decimals, multi_signers, opts_to_use)
+        txn, signers, opts = self._mint_to_checked_args(
+            dest, mint_authority, amount, decimals, multi_signers, opts_to_use
+        )
         return await self._conn.send_transaction(txn, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def burn_checked(
