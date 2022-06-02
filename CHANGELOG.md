@@ -9,6 +9,16 @@
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Message` [(#239)](https://github.com/michaelhly/solana-py/pull/239).
 - Remove unused and very old instruction.py file [(#240)](https://github.com/michaelhly/solana-py/pull/240).
 - Default to client's commitment in confirm_transaction and send_transaction [(#242)](https://github.com/michaelhly/solana-py/pull/242).
+- Use [solders](https://github.com/kevinheavey/solders) under the hood for `Transaction` [(#241)](https://github.com/michaelhly/solana-py/pull/241). BREAKING CHANGES:
+  - `Transaction.__init__` no longer accepts a `signatures` argument. If you want to construct a transaction with certain signatures, you can still use `Transaction.populate`.
+  - `Transaction.add_signer` has been removed (it was removed from web3.js in September 2020).
+  - The `signatures` attribute of `Transaction` has been changed to a read-only property.
+  - Where previously a "signature" was represented as `bytes`, it is now expected to be a `solders.signature.Signature`.
+    This affects the following properties and functions: `Transaction.signature`, `Transacton.signatures`, `Transaction.add_signature`, `Transaction.populate`
+  - The `keypairs` in `Transaction.sign_partial` are now only allowed to be `Keypair` objects. Previously `Union[PublicKey, Keypair]` was allowed.
+  - The `.signatures` property of an unsigned transaction is now a list of `solders.signature.Signature.default()` instead
+    of an empty list.
+- Use [solders](https://github.com/kevinheavey/solders) under the hood for system instructions [(#243)](https://github.com/michaelhly/solana-py/pull/243)
 
 ## [0.23.3] - 2022-04-29
 

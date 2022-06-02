@@ -48,7 +48,7 @@ def test_allocate_with_seed():
     params = sp.AllocateWithSeedParams(
         account_pubkey=Keypair().public_key,
         base_pubkey=PublicKey(1),
-        seed={"length": 4, "chars": "gqln"},
+        seed="gqln",
         space=65537,
         program_id=PublicKey(2),
     )
@@ -61,7 +61,7 @@ def test_create_account_with_seed():
         from_pubkey=Keypair().public_key,
         new_account_pubkey=PublicKey(3),
         base_pubkey=PublicKey(1),
-        seed={"length": 4, "chars": "gqln"},
+        seed="gqln",
         lamports=123,
         space=4,
         program_id=PublicKey(2),
@@ -237,8 +237,8 @@ def test_create_nonce_account():
 
     create_account_hash = create_account_txn.serialize_message()
 
-    create_account_txn.add_signature(from_keypair.public_key, bytes(from_keypair.sign(create_account_hash)))
-    create_account_txn.add_signature(nonce_keypair.public_key, bytes(nonce_keypair.sign(create_account_hash)))
+    create_account_txn.add_signature(from_keypair.public_key, from_keypair.sign(create_account_hash))
+    create_account_txn.add_signature(nonce_keypair.public_key, nonce_keypair.sign(create_account_hash))
 
     assert create_account_txn == js_expected_txn
     # XXX:  Cli message serialization do not sort on account metas producing discrepency
@@ -491,7 +491,7 @@ def test_advance_nonce_and_transfer():
 
     txn_hash = txn.serialize_message()
 
-    txn.add_signature(from_keypair.public_key, bytes(from_keypair.sign(txn_hash)))
+    txn.add_signature(from_keypair.public_key, from_keypair.sign(txn_hash))
 
     assert txn == js_expected_txn
     # XXX:  Cli message serialization do not sort on account metas producing discrepency
