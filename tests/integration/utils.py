@@ -1,7 +1,7 @@
 """Integration test utils."""
 
 from solana.rpc.types import RPCResponse, TxOpts
-from solana.rpc.commitment import Processed
+from solana.rpc.commitment import Confirmed
 
 AIRDROP_AMOUNT = 10_000_000_000
 
@@ -20,4 +20,4 @@ def compare_responses_without_ids(left: RPCResponse, right: RPCResponse) -> None
     }
 
 
-OPTS = TxOpts(skip_confirmation=False, preflight_commitment=Processed)
+OPTS = TxOpts(skip_confirmation=False, preflight_commitment=Confirmed)

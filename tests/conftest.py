@@ -10,7 +10,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Processed
+from solana.rpc.commitment import Confirmed
 
 
 class Clients(NamedTuple):
@@ -122,14 +122,14 @@ def freeze_authority() -> Keypair:
 @pytest.fixture(scope="session")
 def unit_test_http_client() -> Client:
     """Client to be used in unit tests."""
-    client = Client(commitment=Processed)
+    client = Client(commitment=Confirmed)
     return client
 
 
 @pytest.fixture(scope="session")
 def unit_test_http_client_async() -> AsyncClient:
     """Async client to be used in unit tests."""
-    client = AsyncClient(commitment=Processed)
+    client = AsyncClient(commitment=Confirmed)
     return client
 
 
@@ -143,7 +143,7 @@ def _sleep_for_first_blocks() -> None:
 @pytest.fixture(scope="session")
 def test_http_client(docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
-    http_client = Client(commitment=Processed)
+    http_client = Client(commitment=Confirmed)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
@@ -154,7 +154,7 @@ def test_http_client_cached_blockhash(
     docker_services, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
 ) -> Client:
     """Test http_client.is_connected."""
-    http_client = Client(commitment=Processed, blockhash_cache=True)
+    http_client = Client(commitment=Confirmed, blockhash_cache=True)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
@@ -165,7 +165,7 @@ def test_http_client_async(
     docker_services, event_loop, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
 ) -> AsyncClient:
     """Test http_client.is_connected."""
-    http_client = AsyncClient(commitment=Processed)
+    http_client = AsyncClient(commitment=Confirmed)
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())
@@ -181,7 +181,7 @@ def test_http_client_async_cached_blockhash(
     docker_services, event_loop, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
 ) -> AsyncClient:
     """Test http_client.is_connected."""
-    http_client = AsyncClient(commitment=Processed, blockhash_cache=True)
+    http_client = AsyncClient(commitment=Confirmed, blockhash_cache=True)
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())
