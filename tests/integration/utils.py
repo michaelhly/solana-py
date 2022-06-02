@@ -1,6 +1,7 @@
 """Integration test utils."""
 
-from solana.rpc.types import RPCResponse
+from solana.rpc.types import RPCResponse, TxOpts
+from solana.rpc.commitment import Processed
 
 AIRDROP_AMOUNT = 10_000_000_000
 
@@ -17,3 +18,5 @@ def compare_responses_without_ids(left: RPCResponse, right: RPCResponse) -> None
     assert {key: val for key, val in left.items() if key != "id"} == {
         key: val for key, val in right.items() if key != "id"
     }
+
+OPTS = TxOpts(skip_confirmation=False, preflight_commitment=Processed)

@@ -3,6 +3,7 @@ import pytest
 
 import solana.system_program as sp
 from solana.keypair import Keypair
+from solana.publickey import PublicKey
 from solana.rpc.api import Client, DataSliceOpt
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
@@ -13,7 +14,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
-def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: Keypair, test_http_client: Client):
+def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: PublicKey, test_http_client: Client):
     """Test air drop to stubbed_sender and stubbed_receiver."""
     # Airdrop to stubbed_sender
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
