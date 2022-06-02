@@ -5,7 +5,7 @@ from pytest import mark, fixture
 from .utils import assert_valid_response
 
 
-@fixture
+@fixture(scope="session")
 def wait_until_ready() -> None:
     """Sleep for a minute so that performance samples are available."""
     time.sleep(60)
