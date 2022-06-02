@@ -270,12 +270,7 @@ async def test_get_block_time(test_http_client_async):
     assert_valid_response(resp)
 
 
-@pytest.mark.integration
-@pytest.mark.asyncio
-async def test_get_recent_performance_samples(test_http_client_async):
-    """Test get recent performance samples."""
-    resp = await test_http_client_async.get_recent_performance_samples(4)
-    assert_valid_response(resp)
+
 
 
 @pytest.mark.integration

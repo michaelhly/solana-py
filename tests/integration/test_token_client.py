@@ -1,7 +1,5 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
-import time
-
 import pytest
 
 import spl.token._layouts as layouts
@@ -18,7 +16,6 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 @pytest.fixture(scope="module")
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
-    time.sleep(1)  # first two blocks are inaccessible, sleep so we skip them.
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
     test_http_client.confirm_transaction(resp["result"])
 
