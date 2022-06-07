@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from typing import List, NamedTuple
 
-from solders.message import MessageHeader, Message as SoldersMessage
-from solders.instruction import CompiledInstruction
 from solders.hash import Hash
+from solders.instruction import CompiledInstruction
+from solders.message import Message as SoldersMessage
+from solders.message import MessageHeader
 from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash

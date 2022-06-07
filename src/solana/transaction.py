@@ -2,15 +2,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List, NamedTuple, NewType, Optional, Union, Tuple, Sequence
+from typing import Any, List, NamedTuple, NewType, Optional, Sequence, Tuple, Union
 
-from solders.signature import Signature
 from solders import instruction
-from solders.presigner import Presigner
 from solders.hash import Hash
+from solders.instruction import AccountMeta as SoldersAccountMeta
+from solders.instruction import Instruction
 from solders.message import Message as SoldersMessage
-from solders.transaction import Transaction as SoldersTx, TransactionError
-from solders.instruction import Instruction, AccountMeta as SoldersAccountMeta
+from solders.presigner import Presigner
+from solders.signature import Signature
+from solders.transaction import Transaction as SoldersTx
+from solders.transaction import TransactionError
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
@@ -333,10 +335,14 @@ class Transaction:
             return False
         return True
 
-    def serialize(self) -> bytes:
+    def serialize(self, verify_signatures: bool = True) -> bytes:
         """Serialize the Transaction in the wire format.
 
         The Transaction must have a valid `signature` before invoking this method.
+        verify_signatures can be added if the signature does not require to be verified.
+
+        Args:
+            verify_signatures: a bool indicating to verify the signature or not. Defaults to True
 
         Example:
 
@@ -358,8 +364,9 @@ class Transaction:
         if self.signatures == [Signature.default() for sig in self.signatures]:
             raise AttributeError("transaction has not been signed")
 
-        if not self.verify_signatures():
-            raise AttributeError("transaction has not been signed correctly")
+        if verify_signatures:
+            if not self.verify_signatures():
+                raise AttributeError("transaction has not been signed correctly")
 
         return bytes(self._solders)
 
