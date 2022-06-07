@@ -24,7 +24,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 construct-typing = "^0.5.2"
-httpx = "^0.18.2"
+httpx = "^0.23.0"
 requests = "^2.24"
 typing-extensions = ">=3.10.0"
 cachetools = "^4.2.2"
