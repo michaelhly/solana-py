@@ -3,8 +3,8 @@ import pytest
 
 import solana.system_program as sp
 from solana.keypair import Keypair
+from solana.publickey import PublicKey
 from solana.rpc.api import Client, DataSliceOpt
-from solana.rpc.commitment import Finalized
 from solana.rpc.core import RPCException
 from solana.rpc.types import RPCError
 from solana.transaction import Transaction
@@ -14,7 +14,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
-def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: Keypair, test_http_client: Client):
+def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: PublicKey, test_http_client: Client):
     """Test air drop to stubbed_sender and stubbed_receiver."""
     # Airdrop to stubbed_sender
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
@@ -114,7 +114,7 @@ def test_send_transaction_prefetched_blockhash(
             )
         )
     )
-    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_recent_blockhash(Finalized))
+    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_recent_blockhash())
     resp = test_http_client.send_transaction(
         transfer_tx, stubbed_sender_prefetched_blockhash, recent_blockhash=recent_blockhash
     )
@@ -191,7 +191,7 @@ def test_send_transaction_cached_blockhash(
 def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client):
     """Test sending a raw transaction to localnet."""
     # Get a recent blockhash
-    resp = test_http_client.get_recent_blockhash(Finalized)
+    resp = test_http_client.get_recent_blockhash()
     assert_valid_response(resp)
     recent_blockhash = resp["result"]["value"]["blockhash"]
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
@@ -234,13 +234,6 @@ def test_get_block_commitment(test_http_client):
 def test_get_block_time(test_http_client):
     """Test get block time."""
     resp = test_http_client.get_block_time(5)
-    assert_valid_response(resp)
-
-
-@pytest.mark.integration
-def test_get_recent_performance_samples(test_http_client):
-    """Test get recent performance samples."""
-    resp = test_http_client.get_recent_performance_samples(4)
     assert_valid_response(resp)
 
 
@@ -331,7 +324,7 @@ def test_get_epoch_schedule(test_http_client):
 @pytest.mark.integration
 def test_get_fee_calculator_for_blockhash(test_http_client):
     """Test get fee calculator for blockhash."""
-    resp = test_http_client.get_recent_blockhash(Finalized)
+    resp = test_http_client.get_recent_blockhash()
     assert_valid_response(resp)
     resp = test_http_client.get_fee_calculator_for_blockhash(resp["result"]["value"]["blockhash"])
     assert_valid_response(resp)

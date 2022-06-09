@@ -8,6 +8,7 @@
 - Remove deprecated `Account` entirely [(#238)](https://github.com/michaelhly/solana-py/pull/238).
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Message` [(#239)](https://github.com/michaelhly/solana-py/pull/239).
 - Remove unused and very old instruction.py file [(#240)](https://github.com/michaelhly/solana-py/pull/240).
+- Default to client's commitment in confirm_transaction, send_transaction and the `Token` client [(#242)](https://github.com/michaelhly/solana-py/pull/242).
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for `Transaction` [(#241)](https://github.com/michaelhly/solana-py/pull/241). BREAKING CHANGES:
   - `Transaction.__init__` no longer accepts a `signatures` argument. If you want to construct a transaction with certain signatures, you can still use `Transaction.populate`.
   - `Transaction.add_signer` has been removed (it was removed from web3.js in September 2020).
@@ -18,6 +19,10 @@
   - The `.signatures` property of an unsigned transaction is now a list of `solders.signature.Signature.default()` instead
     of an empty list.
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for system instructions [(#243)](https://github.com/michaelhly/solana-py/pull/243)
+
+## Added
+
+- Expose `client.commmitment` as a property like in web3.js [(#242)](https://github.com/michaelhly/solana-py/pull/242).
 
 ## [0.23.3] - 2022-04-29
 

@@ -62,6 +62,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             else cast(Union[BlockhashCache, Literal[False]], blockhash_cache)
         )
 
+    @property
+    def commitment(self) -> Commitment:
+        """The default commitment used for requests."""
+        return self._commitment
+
     def _get_balance_args(
         self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:

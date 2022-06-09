@@ -3,6 +3,7 @@ import pytest
 
 import solana.system_program as sp
 from solana.keypair import Keypair
+from solana.publickey import PublicKey
 from solana.rpc.api import DataSliceOpt
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
@@ -17,7 +18,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_request_air_drop(
-    async_stubbed_sender: Keypair, async_stubbed_receiver: Keypair, test_http_client_async: AsyncClient
+    async_stubbed_sender: Keypair, async_stubbed_receiver: PublicKey, test_http_client_async: AsyncClient
 ):
     """Test air drop to async_stubbed_sender and async_stubbed_receiver."""
     # Airdrop to stubbed_sender
@@ -267,14 +268,6 @@ async def test_get_block_commitment(test_http_client_async):
 async def test_get_block_time(test_http_client_async):
     """Test get block time."""
     resp = await test_http_client_async.get_block_time(5)
-    assert_valid_response(resp)
-
-
-@pytest.mark.integration
-@pytest.mark.asyncio
-async def test_get_recent_performance_samples(test_http_client_async):
-    """Test get recent performance samples."""
-    resp = await test_http_client_async.get_recent_performance_samples(4)
     assert_valid_response(resp)
 
 

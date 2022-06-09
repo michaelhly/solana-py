@@ -1240,7 +1240,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(*args)
 
     async def send_raw_transaction(
-        self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()
+        self, txn: Union[bytes, str], opts: Optional[types.TxOpts] = None
     ) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
@@ -1268,19 +1268,20 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': 'CMwyESM2NE74mghfbvsHJDERF7xMYKshwwm6VgH6GFqXzx8LfBFuP5ruccumfhTguha6seUHPpiHzzHUQXzq2kN',
              'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._send_raw_transaction_args(txn, opts)
+        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        args = self._send_raw_transaction_args(txn, opts_to_use)
 
         resp = await self._provider.make_request(*args)
-        if opts.skip_confirmation:
+        if opts_to_use.skip_confirmation:
             return self._post_send(resp)
-        post_send_args = self._send_raw_transaction_post_send_args(resp, opts)
+        post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return await self.__post_send_with_confirm(*post_send_args)
 
     async def send_transaction(
         self,
         txn: Transaction,
         *signers: Keypair,
-        opts: types.TxOpts = types.TxOpts(),
+        opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
@@ -1318,7 +1319,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
-        txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts)
+        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
         if self.blockhash_cache:
             blockhash_resp = await self.get_recent_blockhash(Finalized)
             self._process_blockhash_resp(blockhash_resp, used_immediately=False)
@@ -1388,7 +1390,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return resp
 
     async def confirm_transaction(
-        self, tx_sig: str, commitment: Commitment = Finalized, sleep_seconds: float = 0.5
+        self, tx_sig: str, commitment: Optional[Commitment] = None, sleep_seconds: float = 0.5
     ) -> types.RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
@@ -1398,6 +1400,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
         timeout = time() + 30
+        commitment_to_use = self._commitment if commitment is None else commitment
+        commitment_rank = COMMITMENT_RANKS[commitment_to_use]
         while time() < timeout:
             resp = await self.get_signature_statuses([tx_sig])
             maybe_rpc_error = resp.get("error")
@@ -1407,7 +1411,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             if resp_value is not None:
                 confirmation_status = resp_value["confirmationStatus"]
                 confirmation_rank = COMMITMENT_RANKS[confirmation_status]
-                commitment_rank = COMMITMENT_RANKS[commitment]
                 if confirmation_rank >= commitment_rank:
                     break
             await asyncio.sleep(sleep_seconds)
