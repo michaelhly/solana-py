@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.25.0] - Unreleased
+
+## Fixed
+
+- Use latest Solders version to make objects pickleable again [(#252)](https://github.com/michaelhly/solana-py/pull/252)
+
 ## [0.24.0] - 2022-06-04
 
 ## Changed
