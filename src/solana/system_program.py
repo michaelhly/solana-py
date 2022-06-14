@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 from typing import NamedTuple, Union
-from solders import system_program as ssp
 
+from solders import system_program as ssp
 
 from solana.publickey import PublicKey
 from solana.transaction import Transaction, TransactionInstruction

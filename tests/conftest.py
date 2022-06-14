@@ -1,5 +1,6 @@
 """Fixtures for pytest."""
 import asyncio
+import time
 from typing import NamedTuple
 
 import pytest
@@ -132,9 +133,15 @@ def unit_test_http_client_async() -> AsyncClient:
     return client
 
 
+@pytest.fixture(scope="session")
+def _sleep_for_first_blocks() -> None:
+    """Blocks 0 and 1 are unavailable so we sleep until they're done."""
+    time.sleep(20)
+
+
 @pytest.mark.integration
 @pytest.fixture(scope="session")
-def test_http_client(docker_services) -> Client:
+def test_http_client(docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
     http_client = Client(commitment=Processed)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
@@ -143,7 +150,9 @@ def test_http_client(docker_services) -> Client:
 
 @pytest.mark.integration
 @pytest.fixture(scope="session")
-def test_http_client_cached_blockhash(docker_services) -> Client:
+def test_http_client_cached_blockhash(
+    docker_services, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
+) -> Client:
     """Test http_client.is_connected."""
     http_client = Client(commitment=Processed, blockhash_cache=True)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
@@ -152,7 +161,9 @@ def test_http_client_cached_blockhash(docker_services) -> Client:
 
 @pytest.mark.integration
 @pytest.fixture(scope="session")
-def test_http_client_async(docker_services, event_loop) -> AsyncClient:  # pylint: disable=redefined-outer-name
+def test_http_client_async(
+    docker_services, event_loop, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
+) -> AsyncClient:
     """Test http_client.is_connected."""
     http_client = AsyncClient(commitment=Processed)
 
@@ -167,7 +178,7 @@ def test_http_client_async(docker_services, event_loop) -> AsyncClient:  # pylin
 @pytest.mark.integration
 @pytest.fixture(scope="session")
 def test_http_client_async_cached_blockhash(
-    docker_services, event_loop  # pylint: disable=redefined-outer-name
+    docker_services, event_loop, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
 ) -> AsyncClient:
     """Test http_client.is_connected."""
     http_client = AsyncClient(commitment=Processed, blockhash_cache=True)

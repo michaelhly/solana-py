@@ -2,6 +2,12 @@
 from base64 import b64decode, b64encode
 
 import pytest
+import solders.system_program as ssp
+from solders.hash import Hash
+from solders.message import Message as SoldersMessage
+from solders.pubkey import Pubkey
+from solders.signature import Signature
+from solders.transaction import Transaction as SoldersTx
 
 import solana.system_program as sp
 import solana.transaction as txlib
@@ -9,12 +15,6 @@ from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solana.publickey import PublicKey
-import solders.system_program as ssp
-from solders.transaction import Transaction as SoldersTx
-from solders.message import Message as SoldersMessage
-from solders.hash import Hash
-from solders.pubkey import Pubkey
-from solders.signature import Signature
 
 
 def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> txlib.Transaction:
@@ -175,6 +175,33 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stu
     assert txn.serialize() == expected_serialization
     assert len(txn.signatures) == 1
     assert txn.signatures != (Signature.default(),)
+
+
+def test_serialize_unsigned_transaction_without_verifying_signatures(
+    stubbed_blockhash, stubbed_receiver, stubbed_sender
+):
+    """Test to serialize an unsigned transaction without verifying the signatures."""
+    transfer = sp.transfer(
+        sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=49)
+    )
+    txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
+    assert txn.signatures == (Signature.default(),)
+
+    # empty signatures should not fail
+    txn.serialize(verify_signatures=False)
+    assert txn.signatures == (Signature.default(),)
+
+    # Set fee payer
+    txn.fee_payer = stubbed_sender.public_key
+    # Serialize message
+    assert b64encode(txn.serialize_message()) == (
+        b"AQABAxOY9ixtGkV8UbpqS189vS9p/KkyFiGNyJl+QWvRfZPK/UOfzLZnJ/KJxcbeO8So/l3V13dwvI/xXD7u3LFK8/wAAAAAAAAA"
+        b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMSa53YDeCBU8Xqd7OpDtETroO2xLG8dMcbg5KhL8FLrAQICAAEMAgAAADEAAAAAAAAA"
+    )
+    assert len(txn.instructions) == 1
+    # Signature array populated with null signatures should not fail
+    txn.serialize(verify_signatures=False)
+    assert txn.signatures == (Signature.default(),)
 
 
 def test_sort_account_metas(stubbed_blockhash):

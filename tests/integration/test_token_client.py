@@ -1,27 +1,26 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
-import time
-
 import pytest
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
-from solana.rpc.types import TxOpts
 from solana.utils.helpers import decode_byte_string
 from spl.token.client import Token
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response
+from .utils import AIRDROP_AMOUNT, assert_valid_response, OPTS
 
 
 @pytest.mark.integration
 @pytest.fixture(scope="module")
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
-    time.sleep(1)  # first two blocks are inaccessible, sleep so we skip them.
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    test_http_client.confirm_transaction(resp["result"])
-
+    test_http_client.confirm_transaction(
+        resp["result"],
+    )
+    balance = test_http_client.get_balance(stubbed_sender.public_key)
+    assert balance["result"]["value"] == AIRDROP_AMOUNT
     expected_decimals = 6
     token_client = Token.create_mint(
         test_http_client,
@@ -133,12 +132,7 @@ def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  
     """Test mint token to account and get balance."""
     expected_amount = 1000
     assert_valid_response(
-        test_token.mint_to(
-            dest=stubbed_sender_token_account_pk,
-            mint_authority=stubbed_sender,
-            amount=1000,
-            opts=TxOpts(skip_confirmation=False),
-        )
+        test_token.mint_to(dest=stubbed_sender_token_account_pk, mint_authority=stubbed_sender, amount=1000, opts=OPTS)
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
     balance_info = resp["result"]["value"]
@@ -159,7 +153,7 @@ def test_transfer(
             dest=stubbed_receiver_token_account_pk,
             owner=stubbed_sender,
             amount=expected_amount,
-            opts=TxOpts(skip_confirmation=False),
+            opts=OPTS,
         )
     )
     resp = test_token.get_balance(stubbed_receiver_token_account_pk)
@@ -185,7 +179,7 @@ def test_burn(
             owner=stubbed_sender,
             amount=burn_amount,
             multi_signers=None,
-            opts=TxOpts(skip_confirmation=False),
+            opts=OPTS,
         )
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
@@ -211,7 +205,7 @@ def test_mint_to_checked(
             amount=mint_amount,
             decimals=expected_decimals,
             multi_signers=None,
-            opts=TxOpts(skip_confirmation=False),
+            opts=OPTS,
         )
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
@@ -238,7 +232,7 @@ def test_transfer_checked(
             amount=transfer_amount,
             decimals=expected_decimals,
             multi_signers=None,
-            opts=TxOpts(skip_confirmation=False),
+            opts=OPTS,
         )
     )
     resp = test_token.get_balance(stubbed_receiver_token_account_pk)
@@ -263,7 +257,7 @@ def test_burn_checked(
             amount=burn_amount,
             decimals=expected_decimals,
             multi_signers=None,
-            opts=TxOpts(skip_confirmation=False),
+            opts=OPTS,
         )
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
@@ -296,9 +290,12 @@ def test_approve(
         delegate=stubbed_receiver,
         owner=stubbed_sender.public_key,
         amount=expected_amount_delegated,
+        opts=OPTS,
     )
     assert_valid_response(resp)
-    test_http_client.confirm_transaction(resp["result"])
+    test_http_client.confirm_transaction(
+        resp["result"],
+    )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
     assert account_info.delegated_amount == expected_amount_delegated
@@ -314,12 +311,11 @@ def test_revoke(
     assert account_info.delegate == stubbed_receiver
     assert account_info.delegated_amount == expected_amount_delegated
 
-    revoke_resp = test_token.revoke(
-        account=stubbed_sender_token_account_pk,
-        owner=stubbed_sender.public_key,
-    )
+    revoke_resp = test_token.revoke(account=stubbed_sender_token_account_pk, owner=stubbed_sender.public_key, opts=OPTS)
     assert_valid_response(revoke_resp)
-    test_http_client.confirm_transaction(revoke_resp["result"])
+    test_http_client.confirm_transaction(
+        revoke_resp["result"],
+    )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate is None
     assert account_info.delegated_amount == 0
@@ -337,9 +333,12 @@ def test_approve_checked(
         owner=stubbed_sender.public_key,
         amount=expected_amount_delegated,
         decimals=6,
+        opts=OPTS,
     )
     assert_valid_response(resp)
-    test_http_client.confirm_transaction(resp["result"])
+    test_http_client.confirm_transaction(
+        resp["result"],
+    )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
     assert account_info.delegated_amount == expected_amount_delegated
@@ -352,14 +351,18 @@ def test_freeze_account(
     """Test freezing an account."""
     resp = test_http_client.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
-    test_http_client.confirm_transaction(resp["result"])
+    test_http_client.confirm_transaction(
+        resp["result"],
+    )
 
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
-    freeze_resp = test_token.freeze_account(stubbed_sender_token_account_pk, freeze_authority)
+    freeze_resp = test_token.freeze_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     assert_valid_response(freeze_resp)
-    test_http_client.confirm_transaction(freeze_resp["result"])
+    test_http_client.confirm_transaction(
+        freeze_resp["result"],
+    )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
 
@@ -372,9 +375,11 @@ def test_thaw_account(
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
 
-    thaw_resp = test_token.thaw_account(stubbed_sender_token_account_pk, freeze_authority)
+    thaw_resp = test_token.thaw_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     assert_valid_response(thaw_resp)
-    test_http_client.confirm_transaction(thaw_resp["result"])
+    test_http_client.confirm_transaction(
+        thaw_resp["result"],
+    )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
@@ -389,10 +394,15 @@ def test_close_account(
     assert create_resp["result"]["value"]["data"]
 
     close_resp = test_token.close_account(
-        account=stubbed_sender_token_account_pk, dest=stubbed_receiver_token_account_pk, authority=stubbed_sender
+        account=stubbed_sender_token_account_pk,
+        dest=stubbed_receiver_token_account_pk,
+        authority=stubbed_sender,
+        opts=OPTS,
     )
     assert_valid_response(close_resp)
-    test_http_client.confirm_transaction(close_resp["result"])
+    test_http_client.confirm_transaction(
+        close_resp["result"],
+    )
 
     info_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(info_resp)
@@ -405,7 +415,7 @@ def test_create_multisig(
 ):  # pylint: disable=redefined-outer-name
     """Test creating a multisig account."""
     min_signers = 2
-    multisig_pubkey = test_token.create_multisig(min_signers, [stubbed_sender.public_key, stubbed_receiver])
+    multisig_pubkey = test_token.create_multisig(min_signers, [stubbed_sender.public_key, stubbed_receiver], opts=OPTS)
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
     assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)

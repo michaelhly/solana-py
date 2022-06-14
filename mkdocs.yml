@@ -69,5 +69,9 @@ nav:
           - spl/token/constants.md
           - spl/token/instructions.md
           - spl/token/core.md
+      - Memo Program:
+          - spl/memo/intro.md
+          - spl/memo/constants.md
+          - spl/memo/instructions.md
 extra_css:
   - css/mkdocstrings.css
