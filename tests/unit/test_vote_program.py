@@ -1,8 +1,8 @@
 """Unit tests for solana.vote_program."""
 import base64
 
-import solana.vote_program as vp
 import solana.transaction as txlib
+import solana.vote_program as vp
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 
@@ -81,16 +81,6 @@ def test_withdraw_from_vote_account():
     vote_account_pubkey = PublicKey("CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk")
     receiver_account_pubkey = PublicKey("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
 
-    # solana withdraw-from-vote-account --dump-transaction-message \
-    #   CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK \
-    # --authorized-withdrawer withdrawer.json \
-    # 2 \
-    # --blockhash Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH \
-    # --sign-only -k withdrawer.json
-    wire_msg = base64.b64decode(
-        b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1wqxUGDtH5ah3TqEKWjcTmfHkpZC1h57NJL8Sx7Q6Olm2F2O70oOvzt1HgIVu+nySaSrWtJiK1eDacPPDWRxCwFgdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMBAgAMAwAAAACUNXcAAAAA"  # noqa: E501 pylint: disable=line-too-long
-    )
-
     txn = txlib.Transaction(fee_payer=withdrawer_keypair.public_key)
     txn.recent_blockhash = "Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH"
 
@@ -105,5 +95,21 @@ def test_withdraw_from_vote_account():
         )
     )
 
+    # solana withdraw-from-vote-account --dump-transaction-message \
+    #   CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK \
+    # --authorized-withdrawer withdrawer.json \
+    # 2 \
+    # --blockhash Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH \
+    # --sign-only -k withdrawer.json
+    cli_wire_msg = base64.b64decode(  # noqa: F841
+        b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1wqxUGDtH5ah3TqEKWjcTmfHkpZC1h57NJL8Sx7Q6Olm2F2O70oOvzt1HgIVu+nySaSrWtJiK1eDacPPDWRxCwFgdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMBAgAMAwAAAACUNXcAAAAA"  # noqa: E501  pylint: disable=line-too-long
+    )
+    js_wire_msg = base64.b64decode(
+        b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1whdju9KDr87dR4CFbvp8kmkq1rSYitXg2nDzw1kcQsBarFQYO0flqHdOoQpaNxOZ8eSlkLWHns0kvxLHtDo6WbQdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMCAQAMAwAAAACUNXcAAAAA"  # noqa: E501 pylint: disable=line-too-long
+    )
+
     serialized_message = txn.serialize_message()
-    assert serialized_message == wire_msg
+
+    assert serialized_message == js_wire_msg
+    # XXX:  Cli message serialization do not sort on account metas producing discrepency
+    # serialized_message txn == cli_wire_msg

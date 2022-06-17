@@ -1,3 +1,0 @@
-# Instruction
-
-:::solana.instruction

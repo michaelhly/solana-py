@@ -1,5 +1,7 @@
 """Test get confirmed block."""
 
+from solders.signature import Signature
+
 import solana.transaction as txlib
 from solana.keypair import Keypair
 from solana.system_program import TransferParams, transfer
@@ -48,8 +50,8 @@ def test_verify_confirmed_block(stubbed_blockhash):
     # Verify signatures in confirmed_block
     assert all(tx_with_meta["transaction"].verify_signatures() for tx_with_meta in confirmed_block["transactions"])
     # Test block with bogus signature
-    bogus_signature = txlib.SigPubkeyPair(kp2.public_key, bytes([9] * 64))  # pylint: disable=protected-access
-    txn1.signatures[0] = bogus_signature
+    bogus_signature = Signature.default()
+    bogus_txn1 = txlib.Transaction.populate(txn1.compile_message(), [bogus_signature])
     bad_confirmed_block = confirmed_block
-    bad_confirmed_block["transactions"][0]["transaction"] = txn1
+    bad_confirmed_block["transactions"][0]["transaction"] = bogus_txn1
     assert not all(tx_with_meta["transaction"].verify_signatures() for tx_with_meta in confirmed_block["transactions"])

@@ -62,6 +62,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         test_path: [
             "tests/integration/test_async_http_client.py",
@@ -69,6 +70,7 @@ jobs:
             "tests/integration/test_http_client.py",
             "tests/integration/test_token_client.py",
             "tests/integration/test_websockets.py",
+            "tests/integration/test_recent_performance_samples.py",
             "tests/unit",
             "src", # doctests
           ]

@@ -1,11 +1,11 @@
 """Token instruction layouts."""
 from enum import IntEnum
 
-from construct import Switch  # type: ignore
-from construct import Int8ul, Int32ul, Int64ul, Pass  # type: ignore
+from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass
 from construct import Struct as cStruct
+from construct import Switch
 
-from solana._layouts.shared import PUBLIC_KEY_LAYOUT
+PUBLIC_KEY_LAYOUT = Bytes(32)
 
 
 class InstructionType(IntEnum):

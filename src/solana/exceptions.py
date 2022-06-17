@@ -1,5 +1,5 @@
 """Exceptions native to solana-py."""
-from typing import Callable, Any
+from typing import Any, Callable
 
 
 class SolanaExceptionBase(Exception):
