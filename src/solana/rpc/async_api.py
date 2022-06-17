@@ -235,7 +235,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_confirmed_block(1)O # doctest: +SKIP
+            >>> asyncio.run(solana_client.get_confirmed_block(1)) # doctest: +SKIP
             {'jsonrpc': '2.0',
              'result': {'blockTime': None,
               'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
@@ -280,6 +280,49 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_block_args(slot, encoding)
         return await self._provider.make_request(*args)
 
+    async def get_recent_performance_samples(self, limit: Optional[int] = None) -> types.RPCResponse:
+        """Returns a list of recent performance samples, in reverse slot order.
+
+        Performance samples are taken every 60 seconds and include the number of transactions and slots that occur in a given time window.
+
+        Args:
+            limit: Limit (optional) number of samples to return (maximum 720)
+
+        Examples:
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> asyncio.run(solana_client.get_recent_performance_samples(4)) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+            'result': [
+                {
+                'numSlots': 126,
+                'numTransactions': 126,
+                'samplePeriodSecs': 60,
+                'slot': 348125
+                },
+                {
+                'numSlots': 126,
+                'numTransactions': 126,
+                'samplePeriodSecs': 60,
+                'slot': 347999
+                },
+                {
+                'numSlots': 125,
+                'numTransactions': 125,
+                'samplePeriodSecs': 60,
+                'slot': 347873
+                },
+                {
+                'numSlots': 125,
+                'numTransactions': 125,
+                'samplePeriodSecs': 60,
+                'slot': 347748
+                }
+            ],
+            'id': 1}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_recent_performance_samples_args(limit)
+        return await self._provider.make_request(*args)
+
     async def get_block(
         self,
         slot: int,
@@ -294,7 +337,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_block(1)O # doctest: +SKIP
+            >>> asyncio.run(solana_client.get_block(1)) # doctest: +SKIP
             {'jsonrpc': '2.0',
              'result': {'blockTime': None, 'blockHeight': 0,
               'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
@@ -487,7 +530,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_confirmed_transaction_args(tx_sig, encoding)
         return await self._provider.make_request(*args)
 
-    async def get_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
+    async def get_transaction(
+        self, tx_sig: str, encoding: str = "json", commitment: Optional[Commitment] = None
+    ) -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
 
         Args:
@@ -496,6 +541,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 `transaction.message.instructions` list.
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
@@ -520,7 +566,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                'signatures': ['3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy']}},
              'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_transaction_args(tx_sig, encoding)
+        args = self._get_transaction_args(tx_sig, encoding, commitment)
         return await self._provider.make_request(*args)
 
     async def get_epoch_info(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
@@ -1202,7 +1248,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(*args)
 
     async def send_raw_transaction(
-        self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()
+        self, txn: Union[bytes, str], opts: Optional[types.TxOpts] = None
     ) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
@@ -1230,19 +1276,20 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': 'CMwyESM2NE74mghfbvsHJDERF7xMYKshwwm6VgH6GFqXzx8LfBFuP5ruccumfhTguha6seUHPpiHzzHUQXzq2kN',
              'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._send_raw_transaction_args(txn, opts)
+        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        args = self._send_raw_transaction_args(txn, opts_to_use)
 
         resp = await self._provider.make_request(*args)
-        if opts.skip_confirmation:
+        if opts_to_use.skip_confirmation:
             return self._post_send(resp)
-        post_send_args = self._send_raw_transaction_post_send_args(resp, opts)
+        post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return await self.__post_send_with_confirm(*post_send_args)
 
     async def send_transaction(
         self,
         txn: Transaction,
         *signers: Keypair,
-        opts: types.TxOpts = types.TxOpts(),
+        opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
@@ -1280,7 +1327,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
-        txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts)
+        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
         if self.blockhash_cache:
             blockhash_resp = await self.get_recent_blockhash(Finalized)
             self._process_blockhash_resp(blockhash_resp, used_immediately=False)
@@ -1350,7 +1398,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return resp
 
     async def confirm_transaction(
-        self, tx_sig: str, commitment: Commitment = Finalized, sleep_seconds: float = 0.5
+        self, tx_sig: str, commitment: Optional[Commitment] = None, sleep_seconds: float = 0.5
     ) -> types.RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
@@ -1360,6 +1408,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
         timeout = time() + 30
+        commitment_to_use = self._commitment if commitment is None else commitment
+        commitment_rank = COMMITMENT_RANKS[commitment_to_use]
         while time() < timeout:
             resp = await self.get_signature_statuses([tx_sig])
             maybe_rpc_error = resp.get("error")
@@ -1369,7 +1419,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             if resp_value is not None:
                 confirmation_status = resp_value["confirmationStatus"]
                 confirmation_rank = COMMITMENT_RANKS[confirmation_status]
-                commitment_rank = COMMITMENT_RANKS[commitment]
                 if confirmation_rank >= commitment_rank:
                     break
             await asyncio.sleep(sleep_seconds)

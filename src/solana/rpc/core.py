@@ -63,6 +63,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             else cast(Union[BlockhashCache, Literal[False]], blockhash_cache)
         )
 
+    @property
+    def commitment(self) -> Commitment:
+        """The default commitment used for requests."""
+        return self._commitment
+
     def _get_balance_args(
         self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
@@ -98,6 +103,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_block_height_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getBlockHeight"), {self._comm_key: commitment or self._commitment}
+
+    @staticmethod
+    def _get_recent_performance_samples_args(limit: Optional[int]) -> Tuple[types.RPCMethod, Optional[int]]:
+        return types.RPCMethod("getRecentPerformanceSamples"), limit
 
     @staticmethod
     def _get_confirmed_blocks_args(start_slot: int, end_slot: Optional[int]) -> Tuple:

@@ -1,47 +1,49 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
-from typing import Union, Dict, Any, List, Optional, cast
-from json import loads, dumps
-from websockets.legacy.client import connect as ws_connect, WebSocketClientProtocol
-from jsonrpcserver.dispatcher import create_request
-from jsonrpcclient import parse, Error, Ok
-from apischema import deserialize
+from json import dumps, loads
+from typing import Any, Dict, List, Optional, Union, cast
 
-from solana.rpc.request_builder import RequestBody
+from apischema import deserialize
+from jsonrpcclient import Error, Ok, parse
+from jsonrpcserver.dispatcher import create_request
+from websockets.legacy.client import WebSocketClientProtocol
+from websockets.legacy.client import connect as ws_connect
+
 from solana.publickey import PublicKey
-from solana.transaction import TransactionSignature
-from solana.rpc.commitment import Commitment
 from solana.rpc import types
-from solana.rpc.responses import (
-    AccountNotification,
-    LogsNotification,
-    SubscriptionNotification,
-    ProgramNotification,
-    SignatureNotification,
-    SlotNotification,
-    RootNotification,
-    SlotsUpdatesNotification,
-    VoteNotification,
-)
+from solana.rpc.commitment import Commitment
 from solana.rpc.request_builder import (
     AccountSubscribe,
     AccountUnsubscribe,
     LogsSubscribe,
-    LogsUnsubscribe,
     LogsSubscribeFilter,
+    LogsUnsubscribe,
     MentionsFilter,
     ProgramSubscribe,
     ProgramUnsubscribe,
+    RequestBody,
+    RootSubscribe,
+    RootUnsubscribe,
     SignatureSubscribe,
     SignatureUnsubscribe,
     SlotSubscribe,
-    SlotUnsubscribe,
     SlotsUpdatesSubscribe,
     SlotsUpdatesUnsubscribe,
-    RootSubscribe,
-    RootUnsubscribe,
+    SlotUnsubscribe,
     VoteSubscribe,
     VoteUnsubscribe,
 )
+from solana.rpc.responses import (
+    AccountNotification,
+    LogsNotification,
+    ProgramNotification,
+    RootNotification,
+    SignatureNotification,
+    SlotNotification,
+    SlotsUpdatesNotification,
+    SubscriptionNotification,
+    VoteNotification,
+)
+from solana.transaction import TransactionSignature
 
 _NOTIFICATION_MAP = {
     "accountNotification": AccountNotification,

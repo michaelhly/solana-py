@@ -107,6 +107,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         skip_confirmation: bool,
         balance_needed: int,
         cls: Union[Type[Token], Type[AsyncToken]],
+        commitment: Commitment,
     ) -> Tuple[Union[Token, AsyncToken], Transaction, Keypair, Keypair, TxOpts]:
         mint_keypair = Keypair()
         token = cls(conn, mint_keypair.public_key, program_id, payer)  # type: ignore
@@ -134,13 +135,20 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
                 )
             )
         )
-        return token, txn, payer, mint_keypair, TxOpts(skip_confirmation=skip_confirmation, skip_preflight=True)
+        return (
+            token,
+            txn,
+            payer,
+            mint_keypair,
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
+        )
 
     def _create_account_args(
         self,
         owner: PublicKey,
         skip_confirmation: bool,
         balance_needed: int,
+        commitment: Commitment,
     ) -> Tuple[PublicKey, Transaction, Keypair, Keypair, TxOpts]:
         new_keypair = Keypair()
         # Allocate memory for the account
@@ -170,13 +178,14 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             txn,
             self.payer,
             new_keypair,
-            TxOpts(skip_preflight=True, skip_confirmation=skip_confirmation),
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
         )
 
     def _create_associated_token_account_args(
         self,
         owner: PublicKey,
         skip_confirmation: bool,
+        commitment: Commitment,
     ) -> Tuple[PublicKey, Transaction, Keypair, TxOpts]:
 
         # Construct transaction
@@ -185,7 +194,12 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             payer=self.payer.public_key, owner=owner, mint=self.pubkey
         )
         txn.add(create_txn)
-        return create_txn.keys[1].pubkey, txn, self.payer, TxOpts(skip_confirmation=skip_confirmation)
+        return (
+            create_txn.keys[1].pubkey,
+            txn,
+            self.payer,
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
+        )
 
     @staticmethod
     def _create_wrapped_native_account_args(
@@ -195,6 +209,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         amount: int,
         skip_confirmation: bool,
         balance_needed: int,
+        commitment: Commitment,
     ) -> Tuple[PublicKey, Transaction, Keypair, Keypair, TxOpts]:
         new_keypair = Keypair()
         # Allocate memory for the account
@@ -226,7 +241,13 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             )
         )
 
-        return new_keypair.public_key, txn, payer, new_keypair, TxOpts(skip_confirmation=skip_confirmation)
+        return (
+            new_keypair.public_key,
+            txn,
+            payer,
+            new_keypair,
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
+        )
 
     def _transfer_args(
         self,
@@ -265,7 +286,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         authority_type: spl_token.AuthorityType,
         new_authority: Optional[PublicKey],
         multi_signers: Optional[List[Keypair]],
-        opts: TxOpts = TxOpts(),
+        opts: TxOpts,
     ) -> Tuple[Transaction, Keypair, List[Keypair], TxOpts]:
         if isinstance(current_authority, Keypair):
             current_authority_pubkey = current_authority.public_key
@@ -409,7 +430,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         owner: Union[Keypair, PublicKey],
         amount: int,
         multi_signers: Optional[List[Keypair]],
-        opts: TxOpts = TxOpts(),
+        opts: TxOpts,
     ) -> Tuple[Transaction, Keypair, List[Keypair], TxOpts]:
         if isinstance(owner, Keypair):
             owner_pubkey = owner.public_key
@@ -437,7 +458,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         account: PublicKey,
         owner: Union[Keypair, PublicKey],
         multi_signers: Optional[List[Keypair]],
-        opts: TxOpts = TxOpts(),
+        opts: TxOpts,
     ) -> Tuple[Transaction, Keypair, List[Keypair], TxOpts]:
         if isinstance(owner, Keypair):
             owner_pubkey = owner.public_key
@@ -463,7 +484,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         account: PublicKey,
         authority: Union[PublicKey, Keypair],
         multi_signers: Optional[List[Keypair]],
-        opts: TxOpts = TxOpts(),
+        opts: TxOpts,
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(authority, Keypair):
             authority_pubkey = authority.public_key
@@ -490,7 +511,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         account: PublicKey,
         authority: Union[PublicKey, Keypair],
         multi_signers: Optional[List[Keypair]],
-        opts: TxOpts = TxOpts(),
+        opts: TxOpts,
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(authority, Keypair):
             authority_pubkey = authority.public_key
@@ -518,7 +539,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         dest: PublicKey,
         authority: Union[PublicKey, Keypair],
         multi_signers: Optional[List[Keypair]],
-        opts: TxOpts = TxOpts(),
+        opts: TxOpts,
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(authority, Keypair):
             authority_pubkey = authority.public_key
@@ -546,7 +567,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         owner: Union[PublicKey, Keypair],
         amount: int,
         multi_signers: Optional[List[Keypair]],
-        opts: TxOpts = TxOpts(),
+        opts: TxOpts,
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(owner, Keypair):
             owner_pubkey = owner.public_key
