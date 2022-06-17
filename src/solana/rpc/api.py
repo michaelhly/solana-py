@@ -1514,13 +1514,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def send_transaction(
         self,
         txn: Transaction,
-<<<<<<< HEAD
         *signers: Union[Keypair, Account],
         opts: types.TxOpts = types.TxOpts(),
-=======
-        *signers: Keypair,
-        opts: Optional[types.TxOpts] = None,
->>>>>>> ec5ea6a3a75482ae8a7a2663439c4f2d4a295c31
+
+        # *signers: Keypair,
+        # opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
@@ -1643,13 +1641,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
-<<<<<<< HEAD
         timeout = time() + 90
-=======
-        timeout = time() + 30
         commitment_to_use = self._commitment if commitment is None else commitment
         commitment_rank = COMMITMENT_RANKS[commitment_to_use]
->>>>>>> ec5ea6a3a75482ae8a7a2663439c4f2d4a295c31
+
         while time() < timeout:
             resp = self.get_signature_statuses([tx_sig])
             maybe_rpc_error = resp.get("error")
