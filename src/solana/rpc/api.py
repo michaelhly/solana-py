@@ -938,7 +938,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns a recent block hash from the ledger.
 
         Response also includes a fee schedule that can be used to compute the cost
-        of submitting a transaction using it.
+        of submitting a transaction using it. Deprecated, please use get_latest_blockhash() instead.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
