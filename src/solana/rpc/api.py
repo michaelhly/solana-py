@@ -952,7 +952,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                'feeCalculator': {'lamportsPerSignature': 5000}}},
              'id': 2}
         """
-        warn("get_recent_blockhash is deprecated, please use get_latest_blockhash instead", category=DeprecationWarning)
         args = self._get_recent_blockhash_args(commitment)
         return self._provider.make_request(*args)
 
@@ -970,7 +969,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             {'jsonrpc': '2.0',
              'result': {'context': {'slot': 1637},
               'value': {'blockhash': 'EALChog1mXQ9nEgEUQpWAtmA5UueUZvZiL16ZivmR7eb',
-               "lastValidBlockHeight": 3090}},
+               'lastValidBlockHeight': 3090}},
              'id': 2}
         """
         args = self._get_latest_blockhash_args(commitment)

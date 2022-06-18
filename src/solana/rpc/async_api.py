@@ -965,7 +965,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             {'jsonrpc': '2.0',
              'result': {'context': {'slot': 1637},
               'value': {'blockhash': 'EALChog1mXQ9nEgEUQpWAtmA5UueUZvZiL16ZivmR7eb',
-               "lastValidBlockHeight": 3090}},
+               'lastValidBlockHeight': 3090}},
              'id': 2}
         """
         args = self._get_latest_blockhash_args(commitment)
