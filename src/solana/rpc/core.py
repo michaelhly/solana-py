@@ -33,6 +33,10 @@ class UnconfirmedTxError(Exception):
     """Raise when confirming a transaction times out."""
 
 
+class TransactionExpiredBlockheightExceededError(Exception):
+    """Raise when confirming an expired transaction that exceeded the blockheight."""
+
+
 class _ClientCore:  # pylint: disable=too-few-public-methods
     _comm_key = "commitment"
     _encoding_key = "encoding"
@@ -268,6 +272,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getRecentBlockhash"), {self._comm_key: commitment or self._commitment}
 
+    def _get_latest_blockhash_args(
+        self, commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        return types.RPCMethod("getLatestBlockhash"), {self._comm_key: commitment or self._commitment}
+
     @staticmethod
     def _get_signature_statuses_args(
         signatures: List[Union[str, bytes]], search_transaction_history: bool
@@ -394,9 +403,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _send_raw_transaction_post_send_args(
-        resp: types.RPCResponse, opts: types.TxOpts
-    ) -> Tuple[types.RPCResponse, Commitment]:
-        return resp, opts.preflight_commitment
+        resp: types.RPCResponse, opts: types.TxOpts, last_valid_block_height: Optional[int]
+    ) -> Tuple[types.RPCResponse, Commitment, Optional[int]]:
+        return resp, opts.preflight_commitment, last_valid_block_height
 
     def _simulate_transaction_args(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool, commitment: Optional[Commitment]

@@ -24,7 +24,10 @@ class Clients(NamedTuple):
 @pytest.fixture(scope="session")
 def event_loop():
     """Event loop for pytest-asyncio."""
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
@@ -75,6 +78,24 @@ def async_stubbed_receiver_cached_blockhash() -> PublicKey:
 def stubbed_sender() -> Keypair:
     """Arbitrary known account to be used as sender."""
     return Keypair.from_seed(bytes([8] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_http() -> Keypair:
+    """Arbitrary known account to be used as sender."""
+    return Keypair.from_seed(bytes([10] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_memo() -> Keypair:
+    """Arbitrary known account to be used as sender."""
+    return Keypair.from_seed(bytes([11] * PublicKey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_token() -> Keypair:
+    """Arbitrary known account to be used as sender."""
+    return Keypair.from_seed(bytes([12] * PublicKey.LENGTH))
 
 
 @pytest.fixture(scope="session")

@@ -8,7 +8,6 @@ from solana.publickey import PublicKey
 from solana.rpc.commitment import Finalized
 
 
-@pytest.mark.asyncio
 async def test_async_client_http_exception(unit_test_http_client_async):
     """Test AsyncClient raises native Solana-py exceptions."""
 

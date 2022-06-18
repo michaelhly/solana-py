@@ -5,8 +5,9 @@ import solana.system_program as sp
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, DataSliceOpt
-from solana.rpc.core import RPCException
-from solana.rpc.types import RPCError
+from solana.rpc.commitment import Finalized
+from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
+from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
@@ -14,13 +15,13 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
-def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: PublicKey, test_http_client: Client):
-    """Test air drop to stubbed_sender and stubbed_receiver."""
-    # Airdrop to stubbed_sender
-    resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
+def test_request_air_drop(stubbed_sender_http: Keypair, stubbed_receiver: PublicKey, test_http_client: Client):
+    """Test air drop to stubbed_sender_http and stubbed_receiver."""
+    # Airdrop to stubbed_sender_http
+    resp = test_http_client.request_airdrop(stubbed_sender_http.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp["result"])
-    balance = test_http_client.get_balance(stubbed_sender.public_key)
+    balance = test_http_client.get_balance(stubbed_sender_http.public_key)
     assert balance["result"]["value"] == AIRDROP_AMOUNT
     # Airdrop to stubbed_receiver
     resp = test_http_client.request_airdrop(stubbed_receiver, AIRDROP_AMOUNT)
@@ -34,8 +35,8 @@ def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: PublicKey, 
 def test_request_air_drop_prefetched_blockhash(
     stubbed_sender_prefetched_blockhash, stubbed_receiver_prefetched_blockhash, test_http_client
 ):
-    """Test air drop to stubbed_sender and stubbed_receiver."""
-    # Airdrop to stubbed_sender
+    """Test air drop to stubbed_sender_http and stubbed_receiver."""
+    # Airdrop to stubbed_sender_http
     resp = test_http_client.request_airdrop(stubbed_sender_prefetched_blockhash.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp["result"])
@@ -53,8 +54,8 @@ def test_request_air_drop_prefetched_blockhash(
 def test_request_air_drop_cached_blockhash(
     stubbed_sender_cached_blockhash, stubbed_receiver_cached_blockhash, test_http_client
 ):
-    """Test air drop to stubbed_sender and stubbed_receiver."""
-    # Airdrop to stubbed_sender
+    """Test air drop to stubbed_sender_http and stubbed_receiver."""
+    # Airdrop to stubbed_sender_http
     resp = test_http_client.request_airdrop(stubbed_sender_cached_blockhash.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp["result"])
@@ -80,18 +81,20 @@ def test_send_invalid_transaction(test_http_client):
 
 
 @pytest.mark.integration
-def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client):
+def test_send_transaction_and_get_balance(stubbed_sender_http, stubbed_receiver, test_http_client):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction().add(
-        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+        )
     )
-    resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
+    resp = test_http_client.send_transaction(transfer_tx, stubbed_sender_http)
     assert_valid_response(resp)
     # Confirm transaction
     test_http_client.confirm_transaction(resp["result"])
     # Check balances
-    resp = test_http_client.get_balance(stubbed_sender.public_key)
+    resp = test_http_client.get_balance(stubbed_sender_http.public_key)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999994000
     resp = test_http_client.get_balance(stubbed_receiver)
@@ -188,7 +191,7 @@ def test_send_transaction_cached_blockhash(
 
 
 @pytest.mark.integration
-def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client):
+def test_send_raw_transaction_and_get_balance(stubbed_sender_http, stubbed_receiver, test_http_client):
     """Test sending a raw transaction to localnet."""
     # Get a recent blockhash
     resp = test_http_client.get_recent_blockhash()
@@ -196,22 +199,58 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
     recent_blockhash = resp["result"]["value"]["blockhash"]
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
-        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+        )
     )
     # Sign transaction
-    transfer_tx.sign(stubbed_sender)
+    transfer_tx.sign(stubbed_sender_http)
     # Send raw transaction
     resp = test_http_client.send_raw_transaction(transfer_tx.serialize())
     assert_valid_response(resp)
     # Confirm transaction
     test_http_client.confirm_transaction(resp["result"])
     # Check balances
-    resp = test_http_client.get_balance(stubbed_sender.public_key)
+    resp = test_http_client.get_balance(stubbed_sender_http.public_key)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 9999988000
     resp = test_http_client.get_balance(stubbed_receiver)
     assert_valid_response(resp)
     assert resp["result"]["value"] == 10000002000
+
+
+@pytest.mark.integration
+def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
+    stubbed_sender_http, stubbed_receiver, test_http_client
+):
+    """Test sending a raw transaction to localnet using latest blockhash."""
+    # Get a recent blockhash
+    resp = test_http_client.get_latest_blockhash()
+    assert_valid_response(resp)
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    last_valid_block_height = resp["result"]["value"]["lastValidBlockHeight"]
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+        )
+    )
+    # Sign transaction
+    transfer_tx.sign(stubbed_sender_http)
+    # Send raw transaction
+    resp = test_http_client.send_raw_transaction(
+        transfer_tx.serialize(), last_valid_block_height=last_valid_block_height
+    )
+    assert_valid_response(resp)
+    # Confirm transaction
+    test_http_client.confirm_transaction(resp["result"], last_valid_block_height=last_valid_block_height)
+    # Check balances
+    resp = test_http_client.get_balance(stubbed_sender_http.public_key)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999982000
+    resp = test_http_client.get_balance(stubbed_receiver)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 10000003000
 
 
 @pytest.mark.integration
@@ -221,6 +260,33 @@ def test_confirm_bad_signature(test_http_client: Client) -> None:
         test_http_client.confirm_transaction("foo")
     err_object = exc_info.value.args[0]
     assert err_object == {"code": -32602, "message": "Invalid param: WrongSize"}
+
+
+@pytest.mark.integration
+def test_confirm_expired_transaction(stubbed_sender_http, stubbed_receiver, test_http_client):
+    """Test that RPCException is raised when trying to confirm a transaction that exceeded last valid block height."""
+    # Get a recent blockhash
+    resp = test_http_client.get_latest_blockhash()
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    last_valid_block_height = resp["result"]["value"]["lastValidBlockHeight"] - 330
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+        )
+    )
+    # Sign transaction
+    transfer_tx.sign(stubbed_sender_http)
+    # Send raw transaction
+    resp = test_http_client.send_raw_transaction(
+        transfer_tx.serialize(), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
+    )
+    assert_valid_response(resp)
+    # Confirm transaction
+    with pytest.raises(TransactionExpiredBlockheightExceededError) as exc_info:
+        test_http_client.confirm_transaction(resp["result"], Finalized, last_valid_block_height=last_valid_block_height)
+    err_object = exc_info.value.args[0]
+    assert "block height exceeded" in err_object
 
 
 @pytest.mark.integration
@@ -331,6 +397,15 @@ def test_get_fee_calculator_for_blockhash(test_http_client):
 
 
 @pytest.mark.integration
+def test_get_latest_blockhash(test_http_client):
+    """Test get latest blockhash."""
+    resp = test_http_client.get_latest_blockhash()
+    assert_valid_response(resp)
+    assert resp["result"]["value"]["blockhash"] is not None
+    assert resp["result"]["value"]["lastValidBlockHeight"] is not None
+
+
+@pytest.mark.integration
 def test_get_slot(test_http_client):
     """Test get slot."""
     resp = test_http_client.get_slot()
@@ -429,20 +504,20 @@ def test_get_version(test_http_client):
 
 
 @pytest.mark.integration
-def test_get_account_info(stubbed_sender, test_http_client):
+def test_get_account_info(stubbed_sender_http, test_http_client):
     """Test get_account_info."""
-    resp = test_http_client.get_account_info(stubbed_sender.public_key)
+    resp = test_http_client.get_account_info(stubbed_sender_http.public_key)
     assert_valid_response(resp)
-    resp = test_http_client.get_account_info(stubbed_sender.public_key, encoding="jsonParsed")
+    resp = test_http_client.get_account_info(stubbed_sender_http.public_key, encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = test_http_client.get_account_info(stubbed_sender.public_key, data_slice=DataSliceOpt(1, 1))
+    resp = test_http_client.get_account_info(stubbed_sender_http.public_key, data_slice=DataSliceOpt(1, 1))
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-def test_get_multiple_accounts(stubbed_sender, test_http_client):
+def test_get_multiple_accounts(stubbed_sender_http, test_http_client):
     """Test get_multiple_accounts."""
-    pubkeys = [stubbed_sender.public_key] * 2
+    pubkeys = [stubbed_sender_http.public_key] * 2
     resp = test_http_client.get_multiple_accounts(pubkeys)
     assert_valid_response(resp)
     resp = test_http_client.get_multiple_accounts(pubkeys, encoding="jsonParsed")

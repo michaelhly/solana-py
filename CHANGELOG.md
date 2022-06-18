@@ -4,7 +4,23 @@
 
 ## Fixed
 
-- Use latest Solders version to make objects pickleable again [(#252)](https://github.com/michaelhly/solana-py/pull/252)
+- Use latest Solders version to make objects pickleable again [(#252)](https://github.com/michaelhly/solana-py/pull/252).
+
+
+## Changed
+
+- Updated httpx to fix critical vulnerability [(#248)](https://github.com/michaelhly/solana-py/pull/248).
+- Updated pytest, websockets, pytest-docker, pytest-asyncio to latest. 
+
+
+## Added
+
+- Added `get_latest_blockhash` RPC Call.
+- Added confirmation strategy which checks if the tranaction has exceeded last valid blockheight.
+- Added `asyncio_mode = auto` in pytest.ini.
+- Added an optional `verify_signature` bool when `transaction.serialize()` is called [(#249)](https://github.com/michaelhly/solana-py/pull/249).
+- Added Memo program [(#249)](https://github.com/michaelhly/solana-py/pull/249).
+
 
 ## [0.24.0] - 2022-06-04
 

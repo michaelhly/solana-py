@@ -1,7 +1,9 @@
 """These tests live in their own file so that their sleeping doesn't slow down other tests."""
 
 import time
-from pytest import mark, fixture
+
+from pytest import fixture, mark
+
 from .utils import assert_valid_response
 
 
