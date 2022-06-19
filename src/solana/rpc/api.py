@@ -13,7 +13,13 @@ from solana.rpc import types
 from solana.transaction import Transaction
 
 from .commitment import COMMITMENT_RANKS, Commitment, Finalized
-from .core import RPCException, TransactionExpiredBlockheightExceededError, UnconfirmedTxError, _ClientCore
+from .core import (
+    RPCException,
+    TransactionExpiredBlockheightExceededError,
+    TransactionUncompiled,
+    UnconfirmedTxError,
+    _ClientCore,
+)
 from .providers import http
 
 
@@ -642,6 +648,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': { 'context': { 'slot': 5068 }, 'value': 5000 },
              'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
+        if isinstance(message, Transaction):
+            raise TransactionUncompiled("Transaction uncompiled, please compile to message first.")
         args = self._get_fee_for_message_args(message, commitment)
         return self._provider.make_request(*args)
 

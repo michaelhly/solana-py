@@ -7,7 +7,7 @@ from solana.publickey import PublicKey
 from solana.rpc.api import DataSliceOpt
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
-from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
+from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiled
 from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
@@ -329,6 +329,25 @@ async def test_get_fee_for_transaction(stubbed_sender_http, stubbed_receiver, te
     resp = await test_http_client_async.get_fee_for_message(transfer_tx.compile_message())
     assert_valid_response(resp)
     assert resp["result"]["value"] is not None
+
+
+@pytest.mark.integration
+async def test_get_fee_for_uncompiled_transaction(stubbed_sender_http, stubbed_receiver, test_http_client_async):
+    """Test that gets a fee for a transaction that is uncompiled using get_fee_for_message."""
+    # Get a recent blockhash
+    resp = await test_http_client_async.get_latest_blockhash()
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+        )
+    )
+    # fails when transaction has not been compiled via .compile_message()
+    with pytest.raises(TransactionUncompiled) as exc_info:
+        resp = await test_http_client_async.get_fee_for_message(transfer_tx)
+    err_object = exc_info.value.args[0]
+    assert "Transaction uncompiled" in err_object
 
 
 @pytest.mark.integration

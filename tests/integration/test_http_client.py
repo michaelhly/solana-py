@@ -6,7 +6,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, DataSliceOpt
 from solana.rpc.commitment import Finalized
-from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
+from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiled
 from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
@@ -305,6 +305,25 @@ def test_get_fee_for_transaction(stubbed_sender_http, stubbed_receiver, test_htt
     resp = test_http_client.get_fee_for_message(transfer_tx.compile_message())
     assert_valid_response(resp)
     assert resp["result"]["value"] is not None
+
+
+@pytest.mark.integration
+def test_get_fee_for_uncompiled_transaction(stubbed_sender_http, stubbed_receiver, test_http_client):
+    """Test that gets a fee for a transaction using get_fee_for_message."""
+    # Get a recent blockhash
+    resp = test_http_client.get_latest_blockhash()
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(
+            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+        )
+    )
+    # Get fee for transaction
+    with pytest.raises(TransactionUncompiled) as exc_info:
+        resp = test_http_client.get_fee_for_message(transfer_tx)
+    err_object = exc_info.value.args[0]
+    assert "Transaction uncompiled" in err_object
 
 
 @pytest.mark.integration
