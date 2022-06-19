@@ -12,6 +12,7 @@ from warnings import warn
 
 from based58 import b58decode, b58encode
 
+from solana.message import Message
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
@@ -201,6 +202,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return (
             types.RPCMethod("getFeeCalculatorForBlockhash"),
             blockhash,
+            {self._comm_key: commitment or self._commitment},
+        )
+
+    def _get_fee_for_message_args(
+        self, message: Message, commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
+        raw_message = b64encode(message.serialize()).decode("utf-8")
+        return (
+            types.RPCMethod("getFeeForMessage"),
+            raw_message,
             {self._comm_key: commitment or self._commitment},
         )
 

@@ -7,6 +7,7 @@ from warnings import warn
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
+from solana.message import Message
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -619,6 +620,23 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_fee_calculator_for_blockhash_args(blockhash, commitment)
+        return self._provider.make_request(*args)
+
+    def get_fee_for_message(self, message: Message, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+        """Returns the fee for a message.
+
+        Args:
+            message: Message that the fee is requested for.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_fee_for_message("AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA") # doctest: +SKIP
+            {'jsonrpc': '2.0',
+             'result': { 'context': { 'slot': 5068 }, 'value': 5000 },
+             'id': 4}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        args = self._get_fee_for_message_args(message, commitment)
         return self._provider.make_request(*args)
 
     def get_fee_rate_governor(self) -> types.RPCResponse:

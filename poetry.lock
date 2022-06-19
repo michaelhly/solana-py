@@ -18,8 +18,8 @@ trio = ["trio (>=0.16)"]
 
 [[package]]
 name = "apischema"
-version = "0.16.6"
-description = "JSON (de)serialization, *GraphQL* and JSON schema generation using Python typing."
+version = "0.17.5"
+description = "JSON (de)serialization, GraphQL and JSON schema generation using Python typing."
 category = "main"
 optional = false
 python-versions = ">=3.6"
@@ -1214,7 +1214,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "ccc6e3aeaf068cdb3d93d8d3f7f16c4e8ab006cb85fdc73881a16d66dcf900f2"
+content-hash = "2aa504f2568881a051831233109ac41733c2d5aa8a58bd9f81d74d9ffc50678a"
 
 [metadata.files]
 anyio = [
@@ -1222,8 +1222,42 @@ anyio = [
     {file = "anyio-3.6.1.tar.gz", hash = "sha256:413adf95f93886e442aea925f3ee43baa5a765a64a0f52c6081894f9992fdd0b"},
 ]
 apischema = [
-    {file = "apischema-0.16.6-py3-none-any.whl", hash = "sha256:b1ffcc19831fceb99c175ce53d81125bb46b8b22a019f4d8307f6d23f13e5647"},
-    {file = "apischema-0.16.6.tar.gz", hash = "sha256:5e53830269d17a3586103c71d7961f23df5fe8844f93afbcc3e7a1a7cbac0c75"},
+    {file = "apischema-0.17.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:21a1ba34ab4c2638f67589eb71baa76c126698569090194ea1133ed8fa044da5"},
+    {file = "apischema-0.17.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cba5ca8627e39ec357e63e1ca3fd4b1c7ab0c2a7000d2f0d47cdf445b1b870a6"},
+    {file = "apischema-0.17.5-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:37195236e8fc8750673584dd2273f997b8ebff534a35e5fa23d3cc1a6b19d42a"},
+    {file = "apischema-0.17.5-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:5cef4588d1167a343b788d39596befa58b1df9c234bc9193dee1b82e4e54a29e"},
+    {file = "apischema-0.17.5-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:874febeb8f2ca1169dccc3f5f1d09ffc667ca913aa2015ccf9db87dcb2306e94"},
+    {file = "apischema-0.17.5-cp310-cp310-win32.whl", hash = "sha256:a2c389e9f17c0ba49513ad2dc87bc5196cfa8e1b585caaf9b02099cfe1b80958"},
+    {file = "apischema-0.17.5-cp310-cp310-win_amd64.whl", hash = "sha256:552466c3c9f7c9105599a9501adf16aca3e815dae296567a0d5db5da445a09c3"},
+    {file = "apischema-0.17.5-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:a9137c0b355439dab63c015744579f83a982133afc833ad600368297b2564f0e"},
+    {file = "apischema-0.17.5-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d60833bd9c7820716bee6ac69d4df9f59f5f6f01e46ff2b13ff2a63670316c9d"},
+    {file = "apischema-0.17.5-cp36-cp36m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:10e0aea9766bb27b5e68c71e6f61c6564b199d70e19683cbea94429e8bce548c"},
+    {file = "apischema-0.17.5-cp36-cp36m-musllinux_1_1_i686.whl", hash = "sha256:3f94d23815eef966fa802daaca994ba1382a1a2ee2ef28c0c84069b241d7f088"},
+    {file = "apischema-0.17.5-cp36-cp36m-musllinux_1_1_x86_64.whl", hash = "sha256:03e7d4f8e64096159353c81564091f72ed9925d99f77fb022b715851b64d8905"},
+    {file = "apischema-0.17.5-cp36-cp36m-win32.whl", hash = "sha256:ac12b0038ace744b692db067fd0a15d5f0b417f0452c66bfd8103c022d0fd818"},
+    {file = "apischema-0.17.5-cp36-cp36m-win_amd64.whl", hash = "sha256:9fcddde7416c514a63adf02369d925030dcb74bee95bd77780dd9177faab136d"},
+    {file = "apischema-0.17.5-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:b03ad6ed25c9247945dcacd7f4adb63a23774534424920c87c52a8bb9f38485f"},
+    {file = "apischema-0.17.5-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4669066ade969ed1b28cd5f30bf7f56dda494f20a2f1ad7294cd9aefc29d0c57"},
+    {file = "apischema-0.17.5-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:caa72d8f939e978daef305ccb429213d89d40ddfae74424231bc71bdcfd44651"},
+    {file = "apischema-0.17.5-cp37-cp37m-musllinux_1_1_i686.whl", hash = "sha256:0d4eabf40a31fd60144e3f21576efcf63fd14c2aed7ab45dcfdf2c1ba6692a6f"},
+    {file = "apischema-0.17.5-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:6ef0a655aa82454ce5482a50cd8a4c14cd4f7a849ab3a10b4bc09ca018b85946"},
+    {file = "apischema-0.17.5-cp37-cp37m-win32.whl", hash = "sha256:ff29a5b86067c8664dd3e6ae9dec2f687bab0498cb0f90ce543676ad0a79bced"},
+    {file = "apischema-0.17.5-cp37-cp37m-win_amd64.whl", hash = "sha256:b1464e96e9bff4f3f0449ab7ad26dd28e560fcc355304abcd871c6cfbd46cea1"},
+    {file = "apischema-0.17.5-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:72eab80f29bc55cd23c685e909ffa21c9db8b545e3a4b1d6961e65ead11fc1d0"},
+    {file = "apischema-0.17.5-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b285e05f5a791d376f0af04964201a4e16218a860f09a8987b7e81638633bde6"},
+    {file = "apischema-0.17.5-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3191c72113709647e3f56ae354468e50b5f93618cfc36bd0709ca1ec9f31a765"},
+    {file = "apischema-0.17.5-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:ca8be57dd31bd4ace958fd46b12ddb99e007b3b6ebbbfabedb8989e35dfca965"},
+    {file = "apischema-0.17.5-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:9d6fdaf63db3e823f7d09548cbcaf279d7b98c4f630b875efdad91a02abbe45b"},
+    {file = "apischema-0.17.5-cp38-cp38-win32.whl", hash = "sha256:de1f31687ab373031d161666fd36f99a013d1e9fea91b5f2de7bfc01db9e15db"},
+    {file = "apischema-0.17.5-cp38-cp38-win_amd64.whl", hash = "sha256:a4197aac0bffca619eeae3d162ae425647032e0f7a453751509d6fa54fc61f6a"},
+    {file = "apischema-0.17.5-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:0b8b85f90aa2af05171f9fb48dcfb2291c14e01858d840a34579ee9930e2ac03"},
+    {file = "apischema-0.17.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e9576d4c90a2771275e3d4fd1878cb41f354267646a892e3ccc9b86d2991acc7"},
+    {file = "apischema-0.17.5-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:763304928b7275b1c9e6efced5287bd4721b818dcc277c35820dd27249d05462"},
+    {file = "apischema-0.17.5-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:b82976a3700c4065da1c2619caac06111251809a9aa74c8f19e894d98896ba16"},
+    {file = "apischema-0.17.5-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:25a7d56ca644a0ac01e4e8e061bcafd9c5b040e0e8891900f2030068ca437003"},
+    {file = "apischema-0.17.5-cp39-cp39-win32.whl", hash = "sha256:650602ad12669a9537b88f2a5850199937bb4da87b9b4ef160bc1eb4e74647e3"},
+    {file = "apischema-0.17.5-cp39-cp39-win_amd64.whl", hash = "sha256:19910f39ebf3c2c7663772639400432831cbbfb9495b54415366ef5f24a62f97"},
+    {file = "apischema-0.17.5.tar.gz", hash = "sha256:958175d3a2608ff49d4e3ba01bde4888837f4efd7418e27770d2c4b79648b41d"},
 ]
 astroid = [
     {file = "astroid-2.11.6-py3-none-any.whl", hash = "sha256:ba33a82a9a9c06a5ceed98180c5aab16e29c285b828d94696bf32d6015ea82a9"},
