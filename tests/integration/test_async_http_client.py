@@ -332,7 +332,9 @@ async def test_get_fee_for_transaction_message(stubbed_sender_http, stubbed_rece
 
 
 @pytest.mark.integration
-async def test_get_fee_for_uncompiled_transaction_message(stubbed_sender_http, stubbed_receiver, test_http_client_async):
+async def test_get_fee_for_uncompiled_transaction_message(
+    stubbed_sender_http, stubbed_receiver, test_http_client_async
+):
     """Test that gets a fee for a transaction that is uncompiled using get fee for message."""
     # Get latest blockhash
     resp = await test_http_client_async.get_latest_blockhash()
