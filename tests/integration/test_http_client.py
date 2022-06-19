@@ -304,7 +304,7 @@ def test_get_fee_for_transaction(stubbed_sender_http, stubbed_receiver, test_htt
     # get fee for transaction
     resp = test_http_client.get_fee_for_message(transfer_tx.compile_message())
     assert_valid_response(resp)
-    assert resp["result"]["context"]["value"] is not None
+    assert resp["result"]["value"] is not None
 
 
 @pytest.mark.integration

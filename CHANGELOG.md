@@ -11,11 +11,13 @@
 
 - Updated httpx to fix critical vulnerability [(#248)](https://github.com/michaelhly/solana-py/pull/248).
 - Updated pytest, websockets, pytest-docker, pytest-asyncio to latest. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
+- Updated apischema to latest. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
 
 
 ## Added
 
 - Added `get_latest_blockhash` RPC Call. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
+- Added `get_fee_for_message` RPC Call. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
 - Added confirmation strategy which checks if the transaction has exceeded last valid blockheight. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
 - Added `asyncio_mode = auto` in pytest.ini. [(#248)](https://github.com/michaelhly/solana-py/pull/254).
 - Added an optional `verify_signature` bool when `transaction.serialize()` is called [(#249)](https://github.com/michaelhly/solana-py/pull/249).
