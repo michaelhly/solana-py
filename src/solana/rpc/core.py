@@ -12,9 +12,9 @@ from warnings import warn
 
 from based58 import b58decode, b58encode
 
-from solana.message import Message
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
+from solana.message import Message
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction

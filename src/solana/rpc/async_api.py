@@ -626,8 +626,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fee_for_message("AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA") # doctest: +SKIP
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> asyncio.run(solana_client.get_fee_for_message("AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA")) # doctest: +SKIP
             {'jsonrpc': '2.0',
              'result': { 'context': { 'slot': 5068 }, 'value': 5000 },
              'id': 4}
