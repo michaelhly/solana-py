@@ -630,8 +630,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
+            >>> from solana.keypair import Keypair
+            >>> from solana.system_program import TransferParams, transfer
+            >>> from solana.transaction import Transaction
+            >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
+            >>> txn = Transaction().add(transfer(TransferParams(
+            ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fee_for_message("AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA") # doctest: +SKIP
+            >>> solana_client.get_fee_for_message(txn.compile_message()) # doctest: +SKIP
             {'jsonrpc': '2.0',
              'result': { 'context': { 'slot': 5068 }, 'value': 5000 },
              'id': 4}
