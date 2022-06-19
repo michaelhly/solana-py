@@ -14,7 +14,7 @@ from .commitment import COMMITMENT_RANKS, Commitment, Finalized
 from .core import (
     RPCException,
     TransactionExpiredBlockheightExceededError,
-    TransactionUncompiled,
+    TransactionUncompiledError,
     UnconfirmedTxError,
     _ClientCore,
 )
@@ -645,7 +645,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
         if isinstance(message, Transaction):
-            raise TransactionUncompiled("Transaction uncompiled, please compile to message first.")
+            raise TransactionUncompiledError("Transaction uncompiled, please compile to message first.")
         args = self._get_fee_for_message_args(message, commitment)
         return await self._provider.make_request(*args)
 

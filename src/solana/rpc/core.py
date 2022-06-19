@@ -38,7 +38,7 @@ class TransactionExpiredBlockheightExceededError(Exception):
     """Raise when confirming an expired transaction that exceeded the blockheight."""
 
 
-class TransactionUncompiled(Exception):
+class TransactionUncompiledError(Exception):
     """Raise when transaction is not compiled to a message."""
 
 
