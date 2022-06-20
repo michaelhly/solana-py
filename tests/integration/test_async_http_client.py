@@ -7,7 +7,7 @@ from solana.publickey import PublicKey
 from solana.rpc.api import DataSliceOpt
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
-from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiled
+from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiledError
 from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
@@ -346,7 +346,7 @@ async def test_get_fee_for_uncompiled_transaction_message(
         )
     )
     # fails when transaction has not been compiled via .compile_message()
-    with pytest.raises(TransactionUncompiled) as exc_info:
+    with pytest.raises(TransactionUncompiledError) as exc_info:
         resp = await test_http_client_async.get_fee_for_message(transfer_tx)
     err_object = exc_info.value.args[0]
     assert "Transaction uncompiled" in err_object

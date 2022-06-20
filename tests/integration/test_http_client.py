@@ -6,7 +6,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, DataSliceOpt
 from solana.rpc.commitment import Finalized
-from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiled
+from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiledError
 from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
@@ -320,7 +320,7 @@ def test_get_fee_for_uncompiled_transaction(stubbed_sender_http, stubbed_receive
         )
     )
     # Get fee for transaction
-    with pytest.raises(TransactionUncompiled) as exc_info:
+    with pytest.raises(TransactionUncompiledError) as exc_info:
         resp = test_http_client.get_fee_for_message(transfer_tx)
     err_object = exc_info.value.args[0]
     assert "Transaction uncompiled" in err_object
