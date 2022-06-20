@@ -81,24 +81,6 @@ def stubbed_sender() -> Keypair:
 
 
 @pytest.fixture(scope="session")
-def stubbed_sender_http() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([10] * PublicKey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_memo() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([11] * PublicKey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_token() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([12] * PublicKey.LENGTH))
-
-
-@pytest.fixture(scope="session")
 def stubbed_sender_prefetched_blockhash() -> Keypair:
     """Arbitrary known account to be used as sender."""
     return Keypair.from_seed(bytes([9] * PublicKey.LENGTH))

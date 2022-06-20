@@ -12,9 +12,9 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
-def test_send_memo_in_transaction(stubbed_sender_memo: Keypair, test_http_client: Client):
+def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Client):
     """Test sending a memo instruction to localnet."""
-    airdrop_resp = test_http_client.request_airdrop(stubbed_sender_memo.public_key, AIRDROP_AMOUNT)
+    airdrop_resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
     assert_valid_response(airdrop_resp)
     test_http_client.confirm_transaction(airdrop_resp["result"])
     raw_message = "test"
@@ -22,14 +22,14 @@ def test_send_memo_in_transaction(stubbed_sender_memo: Keypair, test_http_client
     # Create memo params
     memo_params = MemoParams(
         program_id=MEMO_PROGRAM_ID,
-        signer=stubbed_sender_memo.public_key,
+        signer=stubbed_sender.public_key,
         message=message,
     )
     # Create memo instruction
     memo_ix = create_memo(memo_params)
     # Create transfer tx to add memo to transaction from stubbed sender
     transfer_tx = Transaction().add(memo_ix)
-    resp = test_http_client.send_transaction(transfer_tx, stubbed_sender_memo)
+    resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
     txn_id = resp["result"]
     # Txn needs to be finalized in order to parse the logs.
