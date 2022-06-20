@@ -6,7 +6,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import DataSliceOpt
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Finalized
+from solana.rpc.commitment import Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiledError
 from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
@@ -259,7 +259,8 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     transfer_tx.sign(async_stubbed_sender)
     # Send raw transaction
     resp = await test_http_client_async.send_raw_transaction(
-        transfer_tx.serialize(), last_valid_block_height=last_valid_block_height
+        transfer_tx.serialize(),
+        opts=TxOpts(preflight_commitment=Processed, last_valid_block_height=last_valid_block_height),
     )
     assert_valid_response(resp)
     # Confirm transaction

@@ -5,7 +5,7 @@ import solana.system_program as sp
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, DataSliceOpt
-from solana.rpc.commitment import Finalized
+from solana.rpc.commitment import Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiledError
 from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
@@ -225,7 +225,7 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
 ):
     """Test sending a raw transaction to localnet using latest blockhash."""
     # Get a recent blockhash
-    resp = test_http_client.get_latest_blockhash()
+    resp = test_http_client.get_latest_blockhash(Finalized)
     assert_valid_response(resp)
     recent_blockhash = resp["result"]["value"]["blockhash"]
     last_valid_block_height = resp["result"]["value"]["lastValidBlockHeight"]
@@ -239,7 +239,8 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     transfer_tx.sign(stubbed_sender_http)
     # Send raw transaction
     resp = test_http_client.send_raw_transaction(
-        transfer_tx.serialize(), last_valid_block_height=last_valid_block_height
+        transfer_tx.serialize(),
+        opts=TxOpts(preflight_commitment=Processed, last_valid_block_height=last_valid_block_height),
     )
     assert_valid_response(resp)
     # Confirm transaction

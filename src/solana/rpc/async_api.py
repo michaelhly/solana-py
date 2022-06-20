@@ -1292,7 +1292,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(*args)
 
     async def send_raw_transaction(
-        self, txn: Union[bytes, str], opts: Optional[types.TxOpts] = None, last_valid_block_height: Optional[int] = None
+        self, txn: Union[bytes, str], opts: Optional[types.TxOpts] = None
     ) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
@@ -1300,7 +1300,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             txn: Fully-signed Transaction object, a fully sign transaction in wire format,
                 or a fully transaction as base-64 encoded string.
             opts: (optional) Transaction options.
-            last_valid_block_height: (optional) Pass the latest valid block height here. Valid only if skip_confirmation is False.
 
         Before submitting, the following preflight checks are performed (unless disabled with the `skip_preflight` option):
 
@@ -1327,7 +1326,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         resp = await self._provider.make_request(*args)
         if opts_to_use.skip_confirmation:
             return self._post_send(resp)
-        post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use, last_valid_block_height)
+        post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return await self.__post_send_with_confirm(*post_send_args)
 
     async def send_transaction(
@@ -1336,7 +1335,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         *signers: Keypair,
         opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-        last_valid_block_height: Optional[int] = None,
     ) -> types.RPCResponse:
         """Send a transaction.
 
@@ -1346,7 +1344,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             opts: (optional) Transaction options.
             recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
                 skip fetching the recent blockhash or relying on the cache.
-            last_valid_block_height: (optional) Pass the latest valid block height here.
 
         Example:
             >>> from solana.keypair import Keypair
@@ -1361,6 +1358,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
              'id': 12}
         """
+        last_valid_block_height = None
         if recent_blockhash is None:
             if self.blockhash_cache:
                 try:
@@ -1368,16 +1366,20 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 except ValueError:
                     blockhash_resp = await self.get_latest_blockhash(Finalized)
                     recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
+                    last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
             else:
                 blockhash_resp = await self.get_latest_blockhash(Finalized)
                 recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
-                if last_valid_block_height is None:
-                    last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
+                last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
 
         txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
-        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        opts_to_use = (
+            types.TxOpts(preflight_commitment=self._commitment, last_valid_block_height=last_valid_block_height)
+            if opts is None
+            else opts
+        )
         txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
         if self.blockhash_cache:
             blockhash_resp = await self.get_latest_blockhash(Finalized)
@@ -1440,13 +1442,13 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(self._validator_exit)
 
     async def __post_send_with_confirm(
-        self, resp: types.RPCResponse, conf_comm: Commitment, lvbh: Optional[int]
+        self, resp: types.RPCResponse, conf_comm: Commitment, last_valid_block_height: Optional[int]
     ) -> types.RPCResponse:
         resp = self._post_send(resp)
         self._provider.logger.info(
             "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
         )
-        await self.confirm_transaction(resp["result"], conf_comm, last_valid_block_height=lvbh)
+        await self.confirm_transaction(resp["result"], conf_comm, last_valid_block_height=last_valid_block_height)
         return resp
 
     async def confirm_transaction(

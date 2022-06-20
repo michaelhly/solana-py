@@ -71,6 +71,7 @@ jobs:
             "tests/integration/test_token_client.py",
             "tests/integration/test_websockets.py",
             "tests/integration/test_recent_performance_samples.py",
+            "tests/integration/test_memo.py",
             "tests/unit",
             "src", # doctests
           ]

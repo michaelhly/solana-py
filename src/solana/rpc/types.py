@@ -92,5 +92,9 @@ class TxOpts(NamedTuple):
     max_retries: Optional[int] = None
     """Maximum number of times for the RPC node to retry sending the transaction to the leader.
     If this parameter not provided, the RPC node will retry the transaction until it is finalized
-    or until the blockhash expires
+    or until the blockhash expires.
+    """
+    last_valid_block_height: Optional[int] = None
+    """Pass the latest valid block height here, to be consumed by confirm_transaction.
+    Valid only if skip_confirmation is False.
     """

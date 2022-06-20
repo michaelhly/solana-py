@@ -418,9 +418,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _send_raw_transaction_post_send_args(
-        resp: types.RPCResponse, opts: types.TxOpts, last_valid_block_height: Optional[int]
+        resp: types.RPCResponse, opts: types.TxOpts
     ) -> Tuple[types.RPCResponse, Commitment, Optional[int]]:
-        return resp, opts.preflight_commitment, last_valid_block_height
+        return resp, opts.preflight_commitment, opts.last_valid_block_height
 
     def _simulate_transaction_args(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool, commitment: Optional[Commitment]
