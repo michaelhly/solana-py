@@ -27,13 +27,13 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
             headers = request_kwargs['headers']
             data = request_kwargs['data'].encode('utf-8')
 
-            data_authority_signature = header_opt['authority_pair'].sign(data).signature
-            data_identity_signature = header_opt['identity_pair'].sign(data).signature
+            data_authority_signature = header_opt['authority_pair'].sign(data)
+            data_identity_signature = header_opt['identity_pair'].sign(data)
 
             authorization_value = f"authority:{header_opt['authority_pair'].public_key}=" \
-                                  f"{b58encode(data_authority_signature).decode('utf-8')}," \
+                                  f"{b58encode(bytes(data_authority_signature)).decode('utf-8')}," \
                                   f"identity:{header_opt['identity_pair'].public_key}=" \
-                                  f"{b58encode(data_identity_signature).decode('utf-8')}"
+                                  f"{b58encode(bytes(data_identity_signature)).decode('utf-8')}"
             headers.update({'authorization': authorization_value})
 
         raw_response = requests.post(**request_kwargs, timeout=60)
