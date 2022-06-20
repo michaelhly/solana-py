@@ -286,7 +286,7 @@ async def test_confirm_bad_signature(test_http_client_async: AsyncClient) -> Non
 
 
 @pytest.mark.integration
-async def test_confirm_expired_transaction(stubbed_sender_http, stubbed_receiver, test_http_client_async):
+async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http_client_async):
     """Test that RPCException is raised when trying to confirm a transaction that exceeded last valid block height."""
     # Get a recent blockhash
     resp = await test_http_client_async.get_latest_blockhash()
@@ -295,11 +295,11 @@ async def test_confirm_expired_transaction(stubbed_sender_http, stubbed_receiver
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+            sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000)
         )
     )
     # Sign transaction
-    transfer_tx.sign(stubbed_sender_http)
+    transfer_tx.sign(stubbed_sender)
     # Send raw transaction
     resp = await test_http_client_async.send_raw_transaction(
         transfer_tx.serialize(), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
@@ -315,7 +315,7 @@ async def test_confirm_expired_transaction(stubbed_sender_http, stubbed_receiver
 
 
 @pytest.mark.integration
-async def test_get_fee_for_transaction_message(stubbed_sender_http, stubbed_receiver, test_http_client_async):
+async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver, test_http_client_async):
     """Test that gets a fee for a transaction using get fee for message."""
     # Get latest blockhash
     resp = await test_http_client_async.get_latest_blockhash()
@@ -323,7 +323,7 @@ async def test_get_fee_for_transaction_message(stubbed_sender_http, stubbed_rece
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+            sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000)
         )
     )
     # Get fee for transaction message
@@ -334,7 +334,7 @@ async def test_get_fee_for_transaction_message(stubbed_sender_http, stubbed_rece
 
 @pytest.mark.integration
 async def test_get_fee_for_uncompiled_transaction_message(
-    stubbed_sender_http, stubbed_receiver, test_http_client_async
+    stubbed_sender, stubbed_receiver, test_http_client_async
 ):
     """Test that gets a fee for a transaction that is uncompiled using get fee for message."""
     # Get latest blockhash
@@ -343,7 +343,7 @@ async def test_get_fee_for_uncompiled_transaction_message(
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender_http.public_key, to_pubkey=stubbed_receiver, lamports=1000)
+            sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000)
         )
     )
     # fails when transaction has not been compiled via .compile_message()
