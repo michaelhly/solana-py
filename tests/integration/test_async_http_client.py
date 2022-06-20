@@ -294,9 +294,7 @@ async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, tes
     last_valid_block_height = resp["result"]["value"]["lastValidBlockHeight"] - 330
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
-        sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000)
-        )
+        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
     )
     # Sign transaction
     transfer_tx.sign(stubbed_sender)
@@ -322,9 +320,7 @@ async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver,
     recent_blockhash = resp["result"]["value"]["blockhash"]
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
-        sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000)
-        )
+        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
     )
     # Get fee for transaction message
     resp = await test_http_client_async.get_fee_for_message(transfer_tx.compile_message())
@@ -333,18 +329,14 @@ async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver,
 
 
 @pytest.mark.integration
-async def test_get_fee_for_uncompiled_transaction_message(
-    stubbed_sender, stubbed_receiver, test_http_client_async
-):
+async def test_get_fee_for_uncompiled_transaction_message(stubbed_sender, stubbed_receiver, test_http_client_async):
     """Test that gets a fee for a transaction that is uncompiled using get fee for message."""
     # Get latest blockhash
     resp = await test_http_client_async.get_latest_blockhash()
     recent_blockhash = resp["result"]["value"]["blockhash"]
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
     transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
-        sp.transfer(
-            sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000)
-        )
+        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
     )
     # fails when transaction has not been compiled via .compile_message()
     with pytest.raises(TransactionUncompiledError) as exc_info:
