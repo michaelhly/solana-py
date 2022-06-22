@@ -1,5 +1,5 @@
 """Async HTTP RPC Provider."""
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import httpx
 
@@ -12,9 +12,14 @@ from .core import DEFAULT_TIMEOUT, _HTTPProviderCore
 class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     """Async HTTP provider to interact with the http rpc endpoint."""
 
-    def __init__(self, endpoint: Optional[str] = None, timeout: float = DEFAULT_TIMEOUT):
+    def __init__(
+        self,
+        endpoint: Optional[str] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+        timeout: float = DEFAULT_TIMEOUT,
+    ):
         """Init AsyncHTTPProvider."""
-        super().__init__(endpoint)
+        super().__init__(endpoint, extra_headers)
         self.session = httpx.AsyncClient(timeout=timeout)
 
     def __str__(self) -> str:

@@ -1,7 +1,7 @@
 """Async API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
 import asyncio
 from time import time
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
@@ -44,6 +44,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
             and pass that value in your `.send_transaction` calls.
         timeout: HTTP request timeout in seconds.
+        extra_headers: Extra headers to pass for HTTP request.
     """
 
     def __init__(
@@ -52,10 +53,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         blockhash_cache: Union[BlockhashCache, bool] = False,
         timeout: float = 10,
+        extra_headers: Optional[Dict[str, str]] = None,
     ) -> None:
         """Init API client."""
         super().__init__(commitment, blockhash_cache)
-        self._provider = async_http.AsyncHTTPProvider(endpoint, timeout=timeout)
+        self._provider = async_http.AsyncHTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers)
 
     async def __aenter__(self) -> "AsyncClient":
         """Use as a context manager."""
