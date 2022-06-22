@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from time import sleep, time
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from warnings import warn
 
 from solana.blockhash import Blockhash, BlockhashCache
@@ -61,6 +61,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
             and pass that value in your `.send_transaction` calls.
         timeout: HTTP request timeout in seconds.
+        extra_headers: Extra headers to pass for HTTP request.
 
     """
 
@@ -70,10 +71,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         blockhash_cache: Union[BlockhashCache, bool] = False,
         timeout: float = 10,
+        extra_headers: Optional[Dict[str, str]] = None,
     ):
         """Init API client."""
         super().__init__(commitment, blockhash_cache)
-        self._provider = http.HTTPProvider(endpoint, timeout=timeout)
+        self._provider = http.HTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers)
 
     def is_connected(self) -> bool:
         """Health check.
