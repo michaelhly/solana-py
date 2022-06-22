@@ -12,7 +12,7 @@ FOOTER = "=======END SECURITY.TXT V1=======\0"
 
 @dataclass
 class SecurityTxt:
-    """RPC result context."""
+    """Security txt data."""
 
     # pylint: disable=too-many-instance-attributes
     name: str
