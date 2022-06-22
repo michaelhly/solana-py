@@ -5,8 +5,9 @@ import solana.system_program as sp
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, DataSliceOpt
-from solana.rpc.core import RPCException
-from solana.rpc.types import RPCError
+from solana.rpc.commitment import Finalized, Processed
+from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError, TransactionUncompiledError
+from solana.rpc.types import RPCError, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
@@ -215,12 +216,103 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
 
 
 @pytest.mark.integration
+def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
+    stubbed_sender, stubbed_receiver, test_http_client
+):
+    """Test sending a raw transaction to localnet using latest blockhash."""
+    # Get a recent blockhash
+    resp = test_http_client.get_latest_blockhash(Finalized)
+    assert_valid_response(resp)
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    last_valid_block_height = resp["result"]["value"]["lastValidBlockHeight"]
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
+    )
+    # Sign transaction
+    transfer_tx.sign(stubbed_sender)
+    # Send raw transaction
+    resp = test_http_client.send_raw_transaction(
+        transfer_tx.serialize(),
+        opts=TxOpts(preflight_commitment=Processed, last_valid_block_height=last_valid_block_height),
+    )
+    assert_valid_response(resp)
+    # Confirm transaction
+    test_http_client.confirm_transaction(resp["result"], last_valid_block_height=last_valid_block_height)
+    # Check balances
+    resp = test_http_client.get_balance(stubbed_sender.public_key)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 9999982000
+    resp = test_http_client.get_balance(stubbed_receiver)
+    assert_valid_response(resp)
+    assert resp["result"]["value"] == 10000003000
+
+
+@pytest.mark.integration
 def test_confirm_bad_signature(test_http_client: Client) -> None:
     """Test that RPCException is raised when trying to confirm an invalid signature."""
     with pytest.raises(RPCException) as exc_info:
         test_http_client.confirm_transaction("foo")
     err_object = exc_info.value.args[0]
     assert err_object == {"code": -32602, "message": "Invalid param: WrongSize"}
+
+
+@pytest.mark.integration
+def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http_client):
+    """Test that RPCException is raised when trying to confirm a transaction that exceeded last valid block height."""
+    # Get a recent blockhash
+    resp = test_http_client.get_latest_blockhash()
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    last_valid_block_height = resp["result"]["value"]["lastValidBlockHeight"] - 330
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
+    )
+    # Sign transaction
+    transfer_tx.sign(stubbed_sender)
+    # Send raw transaction
+    resp = test_http_client.send_raw_transaction(
+        transfer_tx.serialize(), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
+    )
+    assert_valid_response(resp)
+    # Confirm transaction
+    with pytest.raises(TransactionExpiredBlockheightExceededError) as exc_info:
+        test_http_client.confirm_transaction(resp["result"], Finalized, last_valid_block_height=last_valid_block_height)
+    err_object = exc_info.value.args[0]
+    assert "block height exceeded" in err_object
+
+
+@pytest.mark.integration
+def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_client):
+    """Test that gets a fee for a transaction using get_fee_for_message."""
+    # Get a recent blockhash
+    resp = test_http_client.get_latest_blockhash()
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
+    )
+    # get fee for transaction
+    resp = test_http_client.get_fee_for_message(transfer_tx.compile_message())
+    assert_valid_response(resp)
+    assert resp["result"]["value"] is not None
+
+
+@pytest.mark.integration
+def test_get_fee_for_uncompiled_transaction(stubbed_sender, stubbed_receiver, test_http_client):
+    """Test that gets a fee for a transaction using get_fee_for_message."""
+    # Get a recent blockhash
+    resp = test_http_client.get_latest_blockhash()
+    recent_blockhash = resp["result"]["value"]["blockhash"]
+    # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+        sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
+    )
+    # Get fee for transaction
+    with pytest.raises(TransactionUncompiledError) as exc_info:
+        resp = test_http_client.get_fee_for_message(transfer_tx)
+    err_object = exc_info.value.args[0]
+    assert "Transaction uncompiled" in err_object
 
 
 @pytest.mark.integration
@@ -328,6 +420,15 @@ def test_get_fee_calculator_for_blockhash(test_http_client):
     assert_valid_response(resp)
     resp = test_http_client.get_fee_calculator_for_blockhash(resp["result"]["value"]["blockhash"])
     assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_get_latest_blockhash(test_http_client):
+    """Test get latest blockhash."""
+    resp = test_http_client.get_latest_blockhash()
+    assert_valid_response(resp)
+    assert resp["result"]["value"]["blockhash"] is not None
+    assert resp["result"]["value"]["lastValidBlockHeight"] is not None
 
 
 @pytest.mark.integration

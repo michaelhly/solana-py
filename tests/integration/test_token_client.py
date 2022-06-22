@@ -4,11 +4,12 @@ import pytest
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
+from solana.rpc.commitment import Finalized
 from solana.utils.helpers import decode_byte_string
 from spl.token.client import Token
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response, OPTS
+from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 
 
 @pytest.mark.integration
@@ -16,9 +17,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response, OPTS
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    test_http_client.confirm_transaction(
-        resp["result"],
-    )
+    test_http_client.confirm_transaction(resp["result"], commitment=Finalized)
     balance = test_http_client.get_balance(stubbed_sender.public_key)
     assert balance["result"]["value"] == AIRDROP_AMOUNT
     expected_decimals = 6
@@ -386,7 +385,11 @@ def test_thaw_account(
 
 @pytest.mark.integration
 def test_close_account(
-    stubbed_sender, stubbed_sender_token_account_pk, stubbed_receiver_token_account_pk, test_token, test_http_client
+    stubbed_sender,
+    stubbed_sender_token_account_pk,
+    stubbed_receiver_token_account_pk,
+    test_token,
+    test_http_client,
 ):  # pylint: disable=redefined-outer-name
     """Test closing a token account."""
     create_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)

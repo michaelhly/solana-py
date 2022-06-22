@@ -5,12 +5,19 @@ from typing import List, Optional, Union
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
+from solana.message import Message
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
 from .commitment import COMMITMENT_RANKS, Commitment, Finalized
-from .core import RPCException, UnconfirmedTxError, _ClientCore
+from .core import (
+    RPCException,
+    TransactionExpiredBlockheightExceededError,
+    TransactionUncompiledError,
+    UnconfirmedTxError,
+    _ClientCore,
+)
 from .providers import async_http
 
 
@@ -617,6 +624,31 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_fee_calculator_for_blockhash_args(blockhash, commitment)
         return await self._provider.make_request(*args)
 
+    async def get_fee_for_message(self, message: Message, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+        """Returns the fee for a message.
+
+        Args:
+            message: Message that the fee is requested for.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            >>> from solana.keypair import Keypair
+            >>> from solana.system_program import TransferParams, transfer
+            >>> from solana.transaction import Transaction
+            >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
+            >>> txn = Transaction().add(transfer(TransferParams(
+            ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> asyncio.run(solana_client.get_fee_for_message(txn.compile_message())) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+             'result': { 'context': { 'slot': 5068 }, 'value': 5000 },
+             'id': 4}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        if isinstance(message, Transaction):
+            raise TransactionUncompiledError("Transaction uncompiled, please compile to message first.")
+        args = self._get_fee_for_message_args(message, commitment)
+        return await self._provider.make_request(*args)
+
     async def get_fee_rate_governor(self) -> types.RPCResponse:
         """Return the fee rate governor information from the root bank.
 
@@ -934,7 +966,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns a recent block hash from the ledger.
 
         Response also includes a fee schedule that can be used to compute the cost
-        of submitting a transaction using it.
+        of submitting a transaction using it. Deprecated, please use get_latest_blockhash() instead.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
@@ -949,6 +981,26 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 2}
         """
         args = self._get_recent_blockhash_args(commitment)
+        return await self._provider.make_request(*args)
+
+    async def get_latest_blockhash(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+        """Returns the latest block hash from the ledger.
+
+        Response also includes the last valid block height.
+
+        Args:
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> asyncio.run(solana_client.get_latest_blockhash()) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+             'result': {'context': {'slot': 1637},
+              'value': {'blockhash': 'EALChog1mXQ9nEgEUQpWAtmA5UueUZvZiL16ZivmR7eb',
+               'lastValidBlockHeight': 3090}},
+             'id': 2}
+        """
+        args = self._get_latest_blockhash_args(commitment)
         return await self._provider.make_request(*args)
 
     async def get_signature_statuses(
@@ -1306,23 +1358,31 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
              'id': 12}
         """
+        last_valid_block_height = None
         if recent_blockhash is None:
             if self.blockhash_cache:
                 try:
                     recent_blockhash = self.blockhash_cache.get()
                 except ValueError:
-                    blockhash_resp = await self.get_recent_blockhash(Finalized)
+                    blockhash_resp = await self.get_latest_blockhash(Finalized)
                     recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
+                    last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
             else:
-                blockhash_resp = await self.get_recent_blockhash(Finalized)
+                blockhash_resp = await self.get_latest_blockhash(Finalized)
                 recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
+                last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
+
         txn.recent_blockhash = recent_blockhash
 
         txn.sign(*signers)
-        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        opts_to_use = (
+            types.TxOpts(preflight_commitment=self._commitment, last_valid_block_height=last_valid_block_height)
+            if opts is None
+            else opts
+        )
         txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
         if self.blockhash_cache:
-            blockhash_resp = await self.get_recent_blockhash(Finalized)
+            blockhash_resp = await self.get_latest_blockhash(Finalized)
             self._process_blockhash_resp(blockhash_resp, used_immediately=False)
         return txn_resp
 
@@ -1381,16 +1441,22 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return await self._provider.make_request(self._validator_exit)
 
-    async def __post_send_with_confirm(self, resp: types.RPCResponse, conf_comm: Commitment) -> types.RPCResponse:
+    async def __post_send_with_confirm(
+        self, resp: types.RPCResponse, conf_comm: Commitment, last_valid_block_height: Optional[int]
+    ) -> types.RPCResponse:
         resp = self._post_send(resp)
         self._provider.logger.info(
             "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
         )
-        await self.confirm_transaction(resp["result"], conf_comm)
+        await self.confirm_transaction(resp["result"], conf_comm, last_valid_block_height=last_valid_block_height)
         return resp
 
     async def confirm_transaction(
-        self, tx_sig: str, commitment: Optional[Commitment] = None, sleep_seconds: float = 0.5
+        self,
+        tx_sig: str,
+        commitment: Optional[Commitment] = None,
+        sleep_seconds: float = 0.5,
+        last_valid_block_height: Optional[int] = None,
     ) -> types.RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
@@ -1398,25 +1464,48 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             tx_sig: the transaction signature to confirm.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             sleep_seconds: The number of seconds to sleep when polling the signature status.
+            last_valid_block_height: The block height by which the transaction would become invalid.
         """
-        timeout = time() + 30
         commitment_to_use = self._commitment if commitment is None else commitment
         commitment_rank = COMMITMENT_RANKS[commitment_to_use]
-        while time() < timeout:
-            resp = await self.get_signature_statuses([tx_sig])
-            maybe_rpc_error = resp.get("error")
-            if maybe_rpc_error is not None:
-                raise RPCException(maybe_rpc_error)
-            resp_value = resp["result"]["value"][0]
-            if resp_value is not None:
-                confirmation_status = resp_value["confirmationStatus"]
-                confirmation_rank = COMMITMENT_RANKS[confirmation_status]
-                if confirmation_rank >= commitment_rank:
-                    break
-            await asyncio.sleep(sleep_seconds)
+        if last_valid_block_height:  # pylint: disable=no-else-return
+            current_blockheight = (await self.get_block_height(commitment))["result"]
+            while current_blockheight <= last_valid_block_height:
+                resp = await self.get_signature_statuses([tx_sig])
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                resp_value = resp["result"]["value"][0]
+                if resp_value is not None:
+                    confirmation_status = resp_value["confirmationStatus"]
+                    confirmation_rank = COMMITMENT_RANKS[confirmation_status]
+                    if confirmation_rank >= commitment_rank:
+                        break
+                current_blockheight = (await self.get_block_height(commitment))["result"]
+                await asyncio.sleep(sleep_seconds)
+            else:
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
+            return resp
         else:
-            maybe_rpc_error = resp.get("error")
-            if maybe_rpc_error is not None:
-                raise RPCException(maybe_rpc_error)
-            raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
-        return resp
+            timeout = time() + 30
+            while time() < timeout:
+                resp = await self.get_signature_statuses([tx_sig])
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                resp_value = resp["result"]["value"][0]
+                if resp_value is not None:
+                    confirmation_status = resp_value["confirmationStatus"]
+                    confirmation_rank = COMMITMENT_RANKS[confirmation_status]
+                    if confirmation_rank >= commitment_rank:
+                        break
+                await asyncio.sleep(sleep_seconds)
+            else:
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
+            return resp

@@ -14,6 +14,7 @@ from based58 import b58decode, b58encode
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
+from solana.message import Message
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -31,6 +32,14 @@ class RPCNoResultException(Exception):
 
 class UnconfirmedTxError(Exception):
     """Raise when confirming a transaction times out."""
+
+
+class TransactionExpiredBlockheightExceededError(Exception):
+    """Raise when confirming an expired transaction that exceeded the blockheight."""
+
+
+class TransactionUncompiledError(Exception):
+    """Raise when transaction is not compiled to a message."""
 
 
 class _ClientCore:  # pylint: disable=too-few-public-methods
@@ -200,6 +209,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             {self._comm_key: commitment or self._commitment},
         )
 
+    def _get_fee_for_message_args(
+        self, message: Message, commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
+        raw_message = b64encode(message.serialize()).decode("utf-8")
+        return (
+            types.RPCMethod("getFeeForMessage"),
+            raw_message,
+            {self._comm_key: commitment or self._commitment},
+        )
+
     def _get_fees_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getFees"), {self._comm_key: commitment or self._commitment}
 
@@ -267,6 +286,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self, commitment: Optional[Commitment]
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
         return types.RPCMethod("getRecentBlockhash"), {self._comm_key: commitment or self._commitment}
+
+    def _get_latest_blockhash_args(
+        self, commitment: Optional[Commitment]
+    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        return types.RPCMethod("getLatestBlockhash"), {self._comm_key: commitment or self._commitment}
 
     @staticmethod
     def _get_signature_statuses_args(
@@ -395,8 +419,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _send_raw_transaction_post_send_args(
         resp: types.RPCResponse, opts: types.TxOpts
-    ) -> Tuple[types.RPCResponse, Commitment]:
-        return resp, opts.preflight_commitment
+    ) -> Tuple[types.RPCResponse, Commitment, Optional[int]]:
+        return resp, opts.preflight_commitment, opts.last_valid_block_height
 
     def _simulate_transaction_args(
         self, txn: Union[bytes, str, Transaction], sig_verify: bool, commitment: Optional[Commitment]
