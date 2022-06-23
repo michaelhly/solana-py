@@ -43,6 +43,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _before_rpc_config_key = "before"
     _limit_rpc_config_key = "limit"
     _until_rpc_config_key = "until"
+    _min_slot_key = "minContextSlot"
+
     _get_cluster_nodes = types.RPCMethod("getClusterNodes")
     _get_epoch_schedule = types.RPCMethod("getEpochSchedule")
     _get_fee_rate_governor = types.RPCMethod("getFeeRateGovernor")
@@ -324,12 +326,19 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         )
 
     def _get_is_blockhash_valid_args(
-        self, blockhash: str, commitment: Optional[Commitment]
+        self,
+        blockhash: str,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int],
     ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
         return (
             types.RPCMethod("isBlockhashValid"),
             blockhash,
-            {self._comm_key: commitment or self._commitment},
+            configuration,
         )
 
     @staticmethod
