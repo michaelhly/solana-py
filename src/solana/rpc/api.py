@@ -1099,7 +1099,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(*args)
 
     def is_blockhash_valid(
-        self, blockhash: str, commitment: Optional[Commitment] = None,
+        self,
+        blockhash: str,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns whether a blockhash is still valid or not
             NEW: This method is only available in solana-core v1.9 or newer.
@@ -1108,6 +1111,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             blockhash: the blockhash of this block, as base-58 encoded string
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             solana_client = Client("http://localhost:8899")
@@ -1115,7 +1119,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 'J7rBdM6AecPDEZp8aPq5iPSNKVkU5Q76F3oAV4eW5wsW'
             )
         """
-        args = self._get_is_blockhash_valid_args(blockhash, commitment)
+        args = self._get_is_blockhash_valid_args(
+            blockhash,
+            commitment,
+            min_context_slot,
+        )
         return self._provider.make_request(*args)
 
     def get_slot_leaders(self, start_slot: int, limit: int) -> types.RPCResponse:
