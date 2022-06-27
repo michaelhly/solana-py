@@ -71,9 +71,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return self._commitment
 
     def _get_balance_args(
-        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment]
+        self,
+        pubkey: Union[PublicKey, str],
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
-        return types.RPCMethod("getBalance"), str(pubkey), {self._comm_key: commitment or self._commitment}
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
+        return types.RPCMethod("getBalance"), str(pubkey), configuration
 
     def _get_account_info_args(
         self,
@@ -81,10 +88,18 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment: Optional[Commitment],
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],
+        min_context_slot: Optional[int],
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:
-        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment or self._commitment}
+        opts: Dict[str, Any] = {
+            self._encoding_key: encoding,
+            self._comm_key: commitment or self._commitment,
+        }
         if data_slice:
             opts[self._data_slice_key] = dict(data_slice._asdict())
+
+        if min_context_slot is not None:
+            opts[self._min_slot_key] = min_context_slot
+
         return types.RPCMethod("getAccountInfo"), str(pubkey), opts
 
     @staticmethod
@@ -103,8 +118,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
         return types.RPCMethod("getBlock"), slot, encoding
 
-    def _get_block_height_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getBlockHeight"), {self._comm_key: commitment or self._commitment}
+    def _get_block_height_args(
+        self,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
+    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
+        return types.RPCMethod("getBlockHeight"), configuration
 
     @staticmethod
     def _get_recent_performance_samples_args(limit: Optional[int]) -> Tuple[types.RPCMethod, Optional[int]]:
@@ -146,8 +169,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         until: Optional[str],
         limit: Optional[int],
         commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
-        opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
+        opts = self._get_signature_for_address_config_arg(
+            before, until, limit, commitment, min_context_slot,
+        )
         account = self._get_signature_for_address_account_arg(account)
         return types.RPCMethod("getSignaturesForAddress"), account, opts
 
@@ -165,6 +191,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         until: Optional[str],
         limit: Optional[int],
         commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> Dict[str, Union[int, str, Commitment]]:
         opts: Dict[str, Union[int, str, Commitment]] = {}
         if before:
@@ -175,6 +202,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             opts[self._limit_rpc_config_key] = limit
         if commitment:
             opts[self._comm_key] = commitment
+
+        if min_context_slot is not None:
+            opts[self._min_slot_key] = min_context_slot
+
         return opts
 
     @staticmethod
@@ -191,8 +222,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             {self._encoding_key: encoding, self._comm_key: commitment or self._commitment},
         )
 
-    def _get_epoch_info_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getEpochInfo"), {self._comm_key: commitment or self._commitment}
+    def _get_epoch_info_args(
+        self,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
+    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
+        return types.RPCMethod("getEpochInfo"), configuration
 
     def _get_fee_calculator_for_blockhash_args(
         self, blockhash: Union[str, Blockhash], commitment: Optional[Commitment]
@@ -214,7 +253,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_inflation_reward_args(
             self, address_list: List[Union[str, PublicKey]],
             commitment: Optional[Commitment] = None,
-            epoch: Optional[int] = None
+            epoch: Optional[int] = None,
+            min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, List[Union[str, PublicKey]], Dict[str, Any]]:
 
         if isinstance(address_list, list):
@@ -225,6 +265,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if epoch:
             opts["epoch"] = epoch
         opts[self._comm_key] = commitment or self._commitment
+        if min_context_slot is not None:
+            opts[self._min_slot_key] = min_context_slot
+
         return types.RPCMethod("getInflationReward"), prepared_list, opts
 
     def _get_largest_accounts_args(
@@ -254,10 +297,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment: Optional[Commitment],
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, List[str], Dict[str, Any]]:
         opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment or self._commitment}
         if data_slice:
             opts[self._data_slice_key] = dict(data_slice._asdict())
+
+        if min_context_slot is not None:
+            opts[self._min_slot_key] = min_context_slot
+
         return types.RPCMethod("getMultipleAccounts"), [str(pubkey) for pubkey in pubkeys], opts
 
     def _get_program_accounts_args(
@@ -268,7 +316,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         data_slice: Optional[types.DataSliceOpts],
         data_size: Optional[int],
         memcmp_opts: Optional[List[types.MemcmpOpts]],
-        with_context: Optional[bool]
+        with_context: Optional[bool],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:  # pylint: disable=too-many-arguments
         opts: Dict[str, Any] = {}
         for opt in [] if not memcmp_opts else memcmp_opts:
@@ -283,6 +332,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             opts[self._comm_key] = commitment
         if with_context is not None:
             opts['withContext'] = with_context
+
+        if min_context_slot is not None:
+            opts[self._min_slot_key] = min_context_slot
 
         if not opts:
             return types.RPCMethod("getProgramAccounts"), str(pubkey)
@@ -312,9 +364,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getRecentBlockhash"), {self._comm_key: commitment or self._commitment}
 
     def _get_latest_blockhash_args(
-        self, commitment: Optional[Commitment]
+        self,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getLatestBlockhash"), {self._comm_key: commitment or self._commitment}
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
+        return types.RPCMethod("getLatestBlockhash"), configuration
 
     def _get_fee_for_message_args(
         self, message: str, commitment: Optional[Commitment]
@@ -390,21 +448,41 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             {"searchTransactionHistory": search_transaction_history},
         )
 
-    def _get_slot_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getSlot"), {self._comm_key: commitment or self._commitment}
+    def _get_slot_args(
+        self,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
+    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
 
-    def _get_slot_leader_args(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getSlotLeader"), {self._comm_key: commitment or self._commitment}
+        return types.RPCMethod("getSlot"), configuration
+
+    def _get_slot_leader_args(
+        self,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
+    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
+        return types.RPCMethod("getSlotLeader"), configuration
 
     def _get_stake_activation_args(
         self,
         pubkey: Union[PublicKey, str],
         epoch: Optional[int],
         commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, Commitment]]]:
         opts: Dict[str, Union[int, Commitment]] = {self._comm_key: commitment or self._commitment}
         if epoch:
             opts["epoch"] = epoch
+
+        if min_context_slot is not None:
+            opts[self._min_slot_key] = min_context_slot
 
         return types.RPCMethod("getStakeActivation"), str(pubkey), opts
 
@@ -448,6 +526,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if opts.data_slice:
             rpc_opts[self._data_slice_key] = dict(opts.data_slice._asdict())
 
+        if opts.min_context_slot is not None:
+            rpc_opts[self._min_slot_key] = opts.min_context_slot
+
         return method, pubkey, acc_opts, rpc_opts
 
     def _get_token_largest_account_args(
@@ -461,9 +542,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getTokenSupply"), str(pubkey), {self._comm_key: commitment or self._commitment}
 
     def _get_transaction_count_args(
-        self, commitment: Optional[Commitment]
+        self,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getTransactionCount"), {self._comm_key: commitment or self._commitment}
+        configuration = {self._comm_key: commitment or self._commitment}
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
+        return types.RPCMethod("getTransactionCount"), configuration
 
     def _get_vote_accounts_args(
         self, commitment: Optional[Commitment]
@@ -481,7 +568,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         )
 
     def _send_raw_transaction_args(
-        self, txn: Union[bytes, str], opts: types.TxOpts
+        self,
+        txn: Union[bytes, str],
+        opts: types.TxOpts,
+
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[bool, Commitment, str, int]]]:
 
         if isinstance(txn, bytes):
@@ -493,6 +583,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         }
         if opts.max_retries is not None:
             params[self._max_retries] = opts.max_retries
+
+        if opts.min_context_slot is not None:
+            params[self._min_slot_key] = opts.min_context_slot
+
         return (
             types.RPCMethod("sendTransaction"),
             txn,
@@ -506,7 +600,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return resp, opts.preflight_commitment
 
     def _simulate_transaction_args(
-        self, txn: Union[bytes, str, Transaction], sig_verify: bool, commitment: Optional[Commitment]
+        self,
+        txn: Union[bytes, str, Transaction],
+        sig_verify: bool,
+        commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> Tuple[types.RPCMethod, str, Dict[str, Union[Commitment, bool, str]]]:
         if isinstance(txn, Transaction):
             if txn.recent_blockhash is None:
@@ -517,10 +615,18 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         else:
             wire_format = txn
 
+        configuration = {
+            self._comm_key: commitment or self._commitment,
+            "sigVerify": sig_verify,
+            self._encoding_key: "base64",
+        }
+        if min_context_slot is not None:
+            configuration[self._min_slot_key] = min_context_slot
+
         return (
             types.RPCMethod("simulateTransaction"),
             wire_format,
-            {self._comm_key: commitment or self._commitment, "sigVerify": sig_verify, self._encoding_key: "base64"},
+            configuration,
         )
 
     @staticmethod

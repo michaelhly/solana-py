@@ -74,6 +74,9 @@ class TokenAccountOpts(NamedTuple):
     """
     data_slice: Optional[DataSliceOpts] = None
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
+    min_context_slot: Optional[int] = None
+    """Set the minimum slot that the request can be evaluated at.
+    """
 
 
 class TxOpts(NamedTuple):
@@ -93,4 +96,7 @@ class TxOpts(NamedTuple):
     """Maximum number of times for the RPC node to retry sending the transaction to the leader.
     If this parameter not provided, the RPC node will retry the transaction until it is finalized
     or until the blockhash expires
+    """
+    min_context_slot: Optional[int] = None
+    """Set the minimum slot that the request can be evaluated at.
     """

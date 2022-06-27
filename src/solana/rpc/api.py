@@ -93,12 +93,18 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.is_connected()
 
-    def get_balance(self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_balance(
+        self,
+        pubkey: Union[PublicKey, str],
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
+    ) -> types.RPCResponse:
         """Returns the balance of the account of provided Pubkey.
 
         Args:
             pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -106,7 +112,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_balance(PublicKey(1)) # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': {'context': {'slot': 228}, 'value': 0}, 'id': 1}
         """
-        args = self._get_balance_args(pubkey, commitment)
+        args = self._get_balance_args(pubkey, commitment, min_context_slot)
         return self._provider.make_request(*args)
 
     def get_account_info(
@@ -115,6 +121,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
+        min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns all the account info for the specified public key.
 
@@ -132,6 +139,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
             data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -147,7 +155,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_account_info_args(
-            pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
+            pubkey=pubkey,
+            commitment=commitment,
+            encoding=encoding,
+            data_slice=data_slice,
+            min_context_slot=min_context_slot,
         )
         return self._provider.make_request(*args)
 
@@ -390,7 +402,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_block_args(slot, encoding)
         return self._provider.make_request(*args)
 
-    def get_block_height(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_block_height(
+        self,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
+    ) -> types.RPCResponse:
         """Returns the current block height of the node.
 
         Args:
@@ -401,7 +417,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_block_height() # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 1233, 'id': 1}
         """
-        args = self._get_block_height_args(commitment)
+        args = self._get_block_height_args(commitment, min_context_slot)
         return self._provider.make_request(*args)
 
     def get_confirmed_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> types.RPCResponse:
@@ -475,6 +491,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         until: Optional[str] = None,
         limit: Optional[int] = None,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -499,7 +516,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                'slot': 4290}],
              'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._get_signatures_for_address_args(account, before, until, limit, commitment)
+        args = self._get_signatures_for_address_args(
+            account, before, until, limit, commitment, min_context_slot,
+        )
         return self._provider.make_request(*args)
 
     def get_confirmed_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
@@ -577,7 +596,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_transaction_args(tx_sig, encoding, commitment)
         return self._provider.make_request(*args)
 
-    def get_epoch_info(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_epoch_info(
+        self,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
+    ) -> types.RPCResponse:
         """Returns information about the current epoch.
 
         Args:
@@ -594,7 +617,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
               'slotsInEpoch': 8192},
              'id': 5}
         """
-        args = self._get_epoch_info_args(commitment)
+        args = self._get_epoch_info_args(commitment, min_context_slot)
         return self._provider.make_request(*args)
 
     def get_epoch_schedule(self) -> types.RPCResponse:
@@ -755,6 +778,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             address_list: List[Union[str, PublicKey]],
             commitment: Optional[Commitment] = None,
             epoch: Optional[int] = None,
+            min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns the inflation reward for a list of addresses for an epoch.
 
@@ -778,7 +802,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             "id": 1
           }
         """
-        args = self._get_inflation_reward_args(address_list=address_list, commitment=commitment, epoch=epoch)
+        args = self._get_inflation_reward_args(
+            address_list=address_list,
+            commitment=commitment,
+            epoch=epoch,
+            min_context_slot=min_context_slot,
+        )
         return self._provider.make_request(*args)
 
     def get_largest_accounts(
@@ -889,6 +918,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
+        min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns all the account info for a list of public keys.
 
@@ -906,6 +936,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
             data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -937,7 +968,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             }
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_multiple_accounts_args(
-            pubkeys=pubkeys, commitment=commitment, encoding=encoding, data_slice=data_slice
+            pubkeys=pubkeys,
+            commitment=commitment,
+            encoding=encoding,
+            data_slice=data_slice,
+            min_context_slot=min_context_slot,
         )
         return self._provider.make_request(*args)
 
@@ -949,7 +984,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         data_slice: Optional[types.DataSliceOpts] = None,
         data_size: Optional[int] = None,
         memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
-        with_context: Optional[bool] = None
+        with_context: Optional[bool] = None,
+        min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
  
@@ -962,7 +998,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         :param data_size: (optional) Option to compare the program account data length with the provided data size.
         :param memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
         :param with_context: (optional ) Option to wrap the result in an RpcResponse JSON object.
-
+        :param min_context_slot: (optional ) set the minimum slot that the request can be evaluated at
 
         >>> solana_client = Client("http://localhost:8899")
         >>> memcmp_opts = [
@@ -987,7 +1023,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             data_slice=data_slice,
             data_size=data_size,
             memcmp_opts=memcmp_opts,
-            with_context=with_context
+            with_context=with_context,
+            min_context_slot=min_context_slot,
         )
         return self._provider.make_request(*args)
 
@@ -1063,19 +1100,24 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_recent_blockhash_args(commitment)
         return self._provider.make_request(*args)
 
-    def get_latest_blockhash(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_latest_blockhash(
+        self,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
+    ) -> types.RPCResponse:
         """Returns the latest blockhash
             NEW: This method is only available in solana-core v1.9 or newer.
             Please use getRecentBlockhash for solana-core v1.8
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             solana_client = Client("http://localhost:8899")
             solana_client.get_latest_blockhash()
         """
-        args = self._get_latest_blockhash_args(commitment)
+        args = self._get_latest_blockhash_args(commitment, min_context_slot)
         return self._provider.make_request(*args)
 
     def get_fee_for_message(
@@ -1230,25 +1272,35 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_signature_statuses_args(signatures, search_transaction_history)
         return self._provider.make_request(*args)
 
-    def get_slot(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_slot(
+        self,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
+    ) -> types.RPCResponse:
         """Returns the current slot the node is processing.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_slot() # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 7515, 'id': 1}
         """
-        args = self._get_slot_args(commitment)
+        args = self._get_slot_args(commitment, min_context_slot)
         return self._provider.make_request(*args)
 
-    def get_slot_leader(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_slot_leader(
+        self,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
+    ) -> types.RPCResponse:
         """Returns the current slot leader.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1257,11 +1309,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': 'EWj2cuEuVhi7RX81cnAY3TzpyFwnHzzVwvuTyfmxmhs3',
              'id': 1}
         """
-        args = self._get_slot_leader_args(commitment)
+        args = self._get_slot_leader_args(commitment, min_context_slot)
         return self._provider.make_request(*args)
 
     def get_stake_activation(
-        self, pubkey: Union[PublicKey, str], epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+        self,
+        pubkey: Union[PublicKey, str],
+        epoch: Optional[int] = None,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns epoch activation information for a stake account.
 
@@ -1270,13 +1326,16 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
                 defaults to current epoch.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_stake_activation() # doctest: +SKIP
             {'jsonrpc': '2.0','result': {'active': 124429280, 'inactive': 73287840, 'state': 'activating'}, 'id': 1}}
         """
-        args = self._get_stake_activation_args(pubkey, epoch, commitment)
+        args = self._get_stake_activation_args(
+            pubkey, epoch, commitment, min_context_slot,
+        )
         return self._provider.make_request(*args)
 
     def get_supply(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
@@ -1328,7 +1387,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         delegate: PublicKey,
         opts: Optional[types.TokenAccountOpts] = None,
-        commitment: Optional[Commitment] = None
+        commitment: Optional[Commitment] = None,
     ) -> types.RPCResponse:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
 
@@ -1380,18 +1439,23 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_token_supply_args(pubkey, commitment)
         return self._provider.make_request(*args)
 
-    def get_transaction_count(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_transaction_count(
+        self,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
+    ) -> types.RPCResponse:
         """Returns the current Transaction count from the ledger.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_transaction_count() # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': 4554, 'id': 1}
         """
-        args = self._get_transaction_count_args(commitment)
+        args = self._get_transaction_count_args(commitment, min_context_slot)
         return self._provider.make_request(*args)
 
     def get_minimum_ledger_slot(self) -> types.RPCResponse:
@@ -1485,7 +1549,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._request_airdrop_args(pubkey, lamports, commitment)
         return self._provider.make_request(*args)
 
-    def send_raw_transaction(self, txn: Union[bytes, str], opts: Optional[types.TxOpts] = None) -> types.RPCResponse:
+    def send_raw_transaction(
+        self,
+        txn: Union[bytes, str],
+        opts: Optional[types.TxOpts] = None,
+    ) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1577,7 +1645,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return txn_resp
 
     def simulate_transaction(
-        self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Optional[Commitment] = None
+        self,
+        txn: Union[bytes, str, Transaction],
+        sig_verify: bool = False,
+        commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Simulate sending a transaction.
 
@@ -1586,6 +1658,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 The transaction must have a valid blockhash, but is not required to be signed.
             sig_verify: If true the transaction signatures will be verified (default: false).
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1602,7 +1675,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                  'logs': ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']},
              'id':1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        args = self._simulate_transaction_args(txn, sig_verify, commitment)
+        args = self._simulate_transaction_args(
+            txn, sig_verify, commitment, min_context_slot,
+        )
         return self._provider.make_request(*args)
 
     def set_log_filter(self, log_filter: str) -> types.RPCResponse:
