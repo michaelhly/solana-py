@@ -5,6 +5,8 @@ from time import sleep, time
 from typing import Dict, List, Optional, Union
 from warnings import warn
 
+from solders.rpc.requests import GetClusterNodes
+
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
 from solana.message import Message
@@ -224,7 +226,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                'version': '1.4.0 5332fcad'}],
              'id': 1}
         """
-        return self._provider.make_request(self._get_cluster_nodes)
+        req = GetClusterNodes()
+        return self._provider.send_request(req)
 
     def get_confirmed_block(
         self,

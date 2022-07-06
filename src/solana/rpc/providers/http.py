@@ -2,6 +2,8 @@
 from typing import Any
 
 import requests
+import httpx
+from solders.rpc.requests import Body
 
 from ...exceptions import SolanaRpcException, handle_exceptions
 from ..types import RPCMethod, RPCResponse
@@ -15,6 +17,16 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
         return f"HTTP RPC connection {self.endpoint_uri}"
+
+    @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
+    def send_request(self, req: Body) -> RPCResponse:
+        """Make an HTTP request to an http rpc endpoint."""
+        as_json = req.to_json()
+        headers = {"Content-Type": "application/json"}
+        if self.extra_headers:
+            headers.update(self.extra_headers)
+        raw_response = httpx.post(url=self.endpoint_uri, content=as_json.encode(), headers=headers)
+        return self._after_request(raw_response=raw_response, method=req.__class__.__name__)
 
     @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
     def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
