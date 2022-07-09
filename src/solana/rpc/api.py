@@ -449,7 +449,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             before: (optional) Start searching backwards from this transaction signature.
                 If not provided the search starts from the top of the highest max confirmed block.
             until: (optional) Search until this transaction signature, if found before limit reached.
-            limit: (optoinal) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
+            limit: (optional) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
             commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
