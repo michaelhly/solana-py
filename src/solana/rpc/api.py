@@ -63,7 +63,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
         blockhash_cache: Union[BlockhashCache, bool] = False,
-        timeout: float = 10,
+        timeout: float = 60,
     ):
         """Init API client."""
         super().__init__(commitment, blockhash_cache)
@@ -1724,7 +1724,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
-        timeout = time() + 90
+        timeout = time() + 900
         commitment_to_use = self._commitment if commitment is None else commitment
         commitment_rank = COMMITMENT_RANKS[commitment_to_use]
 

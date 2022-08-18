@@ -36,7 +36,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
                                   f"{b58encode(bytes(data_identity_signature)).decode('utf-8')}"
             headers.update({'authorization': authorization_value})
 
-        raw_response = requests.post(**request_kwargs, timeout=60)
+        raw_response = requests.post(**request_kwargs, timeout=self.timeout)
         return self._after_request(raw_response=raw_response, method=method)
 
     def is_connected(self) -> bool:

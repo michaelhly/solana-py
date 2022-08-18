@@ -60,8 +60,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         await self.close()
 
     @property
-    def request_raw(self):
-        return self._provider.content if getattr(self, '_provider') else None
+    def request(self):
+        if getattr(self, '_provider'):
+            request_raw = self._provider.content
+            return self._provider.json_decode(request_raw)
+        return None
 
     @property
     def response_headers(self):
@@ -139,7 +142,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_account_info_args(
-            pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
+            pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice, min_context_slot=None
         )
         return await self._provider.make_request(*args)
 
