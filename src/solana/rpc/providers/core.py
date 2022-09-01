@@ -51,7 +51,8 @@ class _HTTPProviderCore(FriendlyJsonSerde):
         return self._build_request_kwargs(request_id=request_id, method=method, params=params, is_async=is_async)
 
     def _after_request(self, raw_response: Union[requests.Response, httpx.Response], method: RPCMethod) -> RPCResponse:
-        raw_response.raise_for_status()
+        if raw_response.status_code not in [406]:
+            raw_response.raise_for_status()
         self.response_headers = dict(raw_response.headers)
         self.logger.debug(
             "Getting response HTTP. URI: %s, " "Method: %s, Response: %s", self.endpoint_uri, method, raw_response.text

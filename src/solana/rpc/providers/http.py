@@ -1,8 +1,7 @@
 """HTTP RPC Provider."""
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from based58 import b58encode
-
 import requests
 
 from ...exceptions import SolanaRpcException, handle_exceptions
@@ -19,7 +18,8 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         return f"HTTP RPC connection {self.endpoint_uri}"
 
     @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
-    def make_request(self, method: RPCMethod, *params: Any, header_opt: Optional[dict] = None) -> RPCResponse:
+    def make_request(self, method: RPCMethod, *params: Any, header_opt: Optional[dict] = None) -> Union[RPCResponse,
+                                                                                                        requests.Response]:
         """Make an HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(method=method, params=params, is_async=False)
 
@@ -37,7 +37,10 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
             headers.update({'authorization': authorization_value})
 
         raw_response = requests.post(**request_kwargs, timeout=self.timeout)
-        return self._after_request(raw_response=raw_response, method=method)
+        if raw_response.status_code == 200:
+            return self._after_request(raw_response=raw_response, method=method)
+        else:
+            return raw_response
 
     def is_connected(self) -> bool:
         """Health check."""
