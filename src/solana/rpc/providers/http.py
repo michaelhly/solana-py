@@ -18,23 +18,34 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         return f"HTTP RPC connection {self.endpoint_uri}"
 
     @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
-    def make_request(self, method: RPCMethod, *params: Any, header_opt: Optional[dict] = None) -> Union[RPCResponse,
-                                                                                                        requests.Response]:
-        """Make an HTTP request to an http rpc endpoint."""
+    def make_request(
+        self, method: RPCMethod, *params: Any, header_opt: Optional[dict] = None
+    ) -> Union[RPCResponse, requests.Response]:
+        """Make a HTTP request to a http rpc endpoint."""
         request_kwargs = self._before_request(method=method, params=params, is_async=False)
 
         if header_opt:
-            headers = request_kwargs['headers']
-            data = request_kwargs['data'].encode('utf-8')
+            headers = request_kwargs["headers"]
+            data = request_kwargs["data"].encode("utf-8")
+            authorization_value = None
 
-            data_authority_signature = header_opt['authority_pair'].sign(data)
-            data_identity_signature = header_opt['identity_pair'].sign(data)
+            if "authority_pair" in header_opt:
 
-            authorization_value = f"authority:{header_opt['authority_pair'].public_key}=" \
-                                  f"{b58encode(bytes(data_authority_signature)).decode('utf-8')}," \
-                                  f"identity:{header_opt['identity_pair'].public_key}=" \
-                                  f"{b58encode(bytes(data_identity_signature)).decode('utf-8')}"
-            headers.update({'authorization': authorization_value})
+                data_authority_signature = header_opt["authority_pair"].sign(data)
+                authorization_value = (
+                    f"authority:{header_opt['authority_pair'].public_key}="
+                    f"{b58encode(bytes(data_authority_signature)).decode('utf-8')}"
+                )
+
+            if "identity_pair" in header_opt:
+
+                data_identity_signature = header_opt["identity_pair"].sign(data)
+                authorization_value += (
+                    f",identity:{header_opt['identity_pair'].public_key}="
+                    f"{b58encode(bytes(data_identity_signature)).decode('utf-8')}"
+                )
+
+            headers.update({"authorization": authorization_value})
 
         raw_response = requests.post(**request_kwargs, timeout=self.timeout)
         if raw_response.status_code == 200:
