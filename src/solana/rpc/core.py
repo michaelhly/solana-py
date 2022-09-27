@@ -11,9 +11,10 @@ except ImportError:
 from warnings import warn
 
 from based58 import b58decode, b58encode
-from solders.rpc.requests import GetBalance, GetAccountInfo, GetBlockCommitment, GetBlockTime, GetClusterNodes, GetBlock, GetBlockHeight
-from solders.rpc.config import RpcContextConfig, RpcAccountInfoConfig, UiDataSliceConfig, RpcBlockConfig
+from solders.rpc.requests import GetBalance, GetAccountInfo, GetBlockCommitment, GetBlockTime, GetClusterNodes, GetBlock, GetBlockHeight, GetRecentPerformanceSamples, GetBlocks, GetSignaturesForAddress, GetTransaction, GetEpochInfo, GetFeeForMessage, GetInflationGovernor
+from solders.rpc.config import RpcContextConfig, RpcAccountInfoConfig, UiDataSliceConfig, RpcBlockConfig, RpcSignaturesForAddressConfig, RpcTransactionConfig
 from solders.account_decoder import UiAccountEncoding
+from solders.signature import Signature
 from solders.commitment_config import CommitmentLevel
 
 from solana.blockhash import Blockhash, BlockhashCache
@@ -26,7 +27,12 @@ from solana.transaction import Transaction
 from .commitment import Commitment, Finalized, Confirmed, Processed
 
 _COMMITMENT_TO_SOLDERS = {Finalized: CommitmentLevel.Finalized, Confirmed: CommitmentLevel.Confirmed, Processed: CommitmentLevel.Processed}
-
+_ENCODING_TO_SOLDERS = {
+            "base58": UiAccountEncoding.Base58,
+            "base64": UiAccountEncoding.Base64,
+            "jsonParsed": UiAccountEncoding.JsonParsed,
+            "base64+zstd": UiAccountEncoding.Base64Zstd,
+}
 
 class RPCException(Exception):
     """Raised when RPC method returns an error result."""
@@ -95,17 +101,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:
         opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment or self._commitment}
         data_slice_to_use = None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
-        encoding_map = {
-            "base58": UiAccountEncoding.Base58,
-            "base64": UiAccountEncoding.Base64,
-            "jsonParsed": UiAccountEncoding.JsonParsed,
-            "base64+zstd": UiAccountEncoding.Base64Zstd,
-        }
-        encoding_to_use = encoding_map[encoding]
+        encoding_to_use = _ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcAccountInfoConfig(encoding=encoding_to_use, data_slice=data_slice_to_use, commitment=commitment_to_use)
         return GetAccountInfo(pubkey.to_solders(), config)
-        return types.RPCMethod("getAccountInfo"), str(pubkey), opts
 
     @staticmethod
     def _get_block_commitment_body(slot: int) -> GetBlockCommitment:
@@ -117,7 +116,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _get_block_body(slot: int, encoding: str) -> GetBlock:
-        encoding_to_use = encoding_map[encoding]
+        encoding_to_use = _ENCODING_TO_SOLDERS[encoding]
         config = RpcBlockConfig(encoding=encoding_to_use)
         return GetBlock(slot=slot, config=config)
 
@@ -127,119 +126,50 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return GetBlockHeight(RpcContextConfig(commitment=commitment_to_use))
 
     @staticmethod
-    def _get_recent_performance_samples_body(limit: Optional[int]) -> Tuple[types.RPCMethod, Optional[int]]:
-        return types.RPCMethod("getRecentPerformanceSamples"), limit
+    def _get_recent_performance_samples_body(limit: Optional[int]) -> GetRecentPerformanceSamples:
+        return GetRecentPerformanceSamples(limit)
 
     @staticmethod
-    def _get_blocks_body(start_slot: int, end_slot: Optional[int]) -> Tuple:
-        if end_slot:
-            return types.RPCMethod("getConfirmedBlocks"), start_slot, end_slot
-        return types.RPCMethod("getConfirmedBlocks"), start_slot
-
-    @staticmethod
-    def _get_blocks_body(start_slot: int, end_slot: Optional[int]) -> Tuple:
-        if end_slot:
-            return types.RPCMethod("getBlocks"), start_slot, end_slot
-        return types.RPCMethod("getBlocks"), start_slot
-
-    def _get_confirmed_signature_for_address2_body(
-        self,
-        account: Union[str, Keypair, PublicKey],
-        before: Optional[str],
-        until: Optional[str],
-        limit: Optional[int],
-        commitment: Optional[Commitment],
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
-        warn(
-            "solana.rpc.api.getConfirmedSignaturesForAddress2 is deprecated, "
-            "please use solana.rpc.api.getSignaturesForAddress",
-            category=DeprecationWarning,
-        )
-        opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
-        account = self._get_signature_for_address_account_arg(account)
-        return types.RPCMethod("getConfirmedSignaturesForAddress2"), account, opts
+    def _get_blocks_body(start_slot: int, end_slot: Optional[int]) -> GetBlocks:
+        return GetBlocks(start_slot, end_slot)
 
     def _get_signatures_for_address_body(
         self,
-        account: Union[str, Keypair, PublicKey],
-        before: Optional[str],
-        until: Optional[str],
-        limit: Optional[int],
+        address: PublicKey,
+        before: Optional[Signature],
+        until: Optional[Signature],
+        limit: Optional[Signature],
         commitment: Optional[Commitment],
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[int, str, Commitment]]]:
-        opts = self._get_signature_for_address_config_arg(before, until, limit, commitment)
-        account = self._get_signature_for_address_account_arg(account)
-        return types.RPCMethod("getSignaturesForAddress"), account, opts
+    ) -> GetSignaturesForAddress:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        config = RpcSignaturesForAddressConfig(before=before, until=until, limit=limit, commitment=commitment_to_use)
+        return GetSignaturesForAddress(address.to_solders(), config)
 
-    @staticmethod
-    def _get_signature_for_address_account_arg(account: Union[str, Keypair, PublicKey]) -> str:
-        if isinstance(account, Keypair):
-            account = str(account.public_key)
-        if isinstance(account, PublicKey):
-            account = str(account)
-        return account
-
-    def _get_signature_for_address_config_arg(
-        self,
-        before: Optional[str],
-        until: Optional[str],
-        limit: Optional[int],
-        commitment: Optional[Commitment],
-    ) -> Dict[str, Union[int, str, Commitment]]:
-        opts: Dict[str, Union[int, str, Commitment]] = {}
-        if before:
-            opts[self._before_rpc_config_key] = before
-        if until:
-            opts[self._until_rpc_config_key] = until
-        if limit:
-            opts[self._limit_rpc_config_key] = limit
-        if commitment:
-            opts[self._comm_key] = commitment
-        return opts
-
-    @staticmethod
-    def _get_confirmed_transaction_body(tx_sig: str, encoding: str = "json") -> Tuple[types.RPCMethod, str, str]:
-        return types.RPCMethod("getConfirmedTransaction"), tx_sig, encoding
 
     def _get_transaction_body(
-        self, tx_sig: str, encoding: str = "json", commitment: Commitment = None
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[str, Commitment]]]:
+        self, tx_sig: Signature, encoding: str = "json", commitment: Commitment = None
+    ) -> GetTransaction:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        encoding_to_use = _ENCODING_TO_SOLDERS[encoding]
+        config = RpcTransactionConfig(encoding=encoding_to_use, commitment=commitment_to_use)
+        return GetTransaction(tx_sig, config)
 
-        return (
-            types.RPCMethod("getTransaction"),
-            tx_sig,
-            {self._encoding_key: encoding, self._comm_key: commitment or self._commitment},
-        )
-
-    def _get_epoch_info_body(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getEpochInfo"), {self._comm_key: commitment or self._commitment}
-
-    def _get_fee_calculator_for_blockhash_body(
-        self, blockhash: Union[str, Blockhash], commitment: Optional[Commitment]
-    ) -> Tuple[types.RPCMethod, Union[str, Blockhash], Dict[str, Commitment]]:
-        return (
-            types.RPCMethod("getFeeCalculatorForBlockhash"),
-            blockhash,
-            {self._comm_key: commitment or self._commitment},
-        )
+    def _get_epoch_info_body(self, commitment: Optional[Commitment]) -> GetEpochInfo:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        config = RpcContextConfig(commitment=commitment_to_use)
+        return GetEpochInfo(config)
 
     def _get_fee_for_message_body(
         self, message: Message, commitment: Optional[Commitment]
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Commitment]]:
-        raw_message = b64encode(message.serialize()).decode("utf-8")
-        return (
-            types.RPCMethod("getFeeForMessage"),
-            raw_message,
-            {self._comm_key: commitment or self._commitment},
-        )
-
-    def _get_fees_body(self, commitment: Optional[Commitment]) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getFees"), {self._comm_key: commitment or self._commitment}
+    ) -> GetFeeForMessage:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        return GetFeeForMessage(message.to_solders(), commitment_to_use)
 
     def _get_inflation_governor_body(
         self, commitment: Optional[Commitment]
-    ) -> Tuple[types.RPCMethod, Dict[str, Commitment]]:
-        return types.RPCMethod("getInflationGovernor"), {self._comm_key: commitment or self._commitment}
+    ) -> GetInflationGovernor:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        return GetInflationGovernor(commitment_to_use)
 
     def _get_largest_accounts_body(
         self, filter_opt: Optional[str], commitment: Optional[Commitment]
