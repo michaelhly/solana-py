@@ -337,16 +337,16 @@ def test_get_cluster_nodes(test_http_client):
 
 
 @pytest.mark.integration
-def test_get_confirmed_block(test_http_client):
+def test_get_block(test_http_client):
     """Test get confirmed block."""
-    resp = test_http_client.get_confirmed_block(2)
+    resp = test_http_client.get_block(2)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-def test_get_confirmed_block_with_encoding(test_http_client):
+def test_get_block_with_encoding(test_http_client):
     """Test get confrimed block with encoding."""
-    resp = test_http_client.get_confirmed_block(2, encoding="base64")
+    resp = test_http_client.get_block(2, encoding="base64")
     assert_valid_response(resp)
 
 
@@ -372,9 +372,9 @@ def test_get_block_height(test_http_client):
 
 
 @pytest.mark.integration
-def test_get_confirmed_blocks(test_http_client):
+def test_get_blocks(test_http_client):
     """Test get confirmed blocks."""
-    resp = test_http_client.get_confirmed_blocks(5, 10)
+    resp = test_http_client.get_blocks(5, 10)
     assert_valid_response(resp)
 
 
