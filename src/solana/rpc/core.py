@@ -11,8 +11,8 @@ except ImportError:
 from warnings import warn
 
 from based58 import b58decode, b58encode
-from solders.rpc.requests import GetBalance, GetAccountInfo, GetBlockCommitment, GetBlockTime, GetClusterNodes, GetBlock, GetBlockHeight, GetRecentPerformanceSamples, GetBlocks, GetSignaturesForAddress, GetTransaction, GetEpochInfo, GetFeeForMessage, GetInflationGovernor
-from solders.rpc.config import RpcContextConfig, RpcAccountInfoConfig, UiDataSliceConfig, RpcBlockConfig, RpcSignaturesForAddressConfig, RpcTransactionConfig
+from solders.rpc.requests import GetBalance, GetAccountInfo, GetBlockCommitment, GetBlockTime, GetClusterNodes, GetBlock, GetBlockHeight, GetRecentPerformanceSamples, GetBlocks, GetSignaturesForAddress, GetTransaction, GetEpochInfo, GetFeeForMessage, GetInflationGovernor, GetLargestAccounts
+from solders.rpc.config import RpcContextConfig, RpcAccountInfoConfig, UiDataSliceConfig, RpcBlockConfig, RpcSignaturesForAddressConfig, RpcTransactionConfig, RpcLargestAccountsFilter
 from solders.account_decoder import UiAccountEncoding
 from solders.signature import Signature
 from solders.commitment_config import CommitmentLevel
@@ -32,6 +32,10 @@ _ENCODING_TO_SOLDERS = {
             "base64": UiAccountEncoding.Base64,
             "jsonParsed": UiAccountEncoding.JsonParsed,
             "base64+zstd": UiAccountEncoding.Base64Zstd,
+}
+_LARGEST_ACCOUNTS_FILTER_TO_SOLDERS = {
+    "circulating": RpcLargestAccountsFilter.Circulating,
+    "nonCirculating": RpcLargestAccountsFilter.NonCirculating
 }
 
 class RPCException(Exception):
@@ -173,10 +177,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_largest_accounts_body(
         self, filter_opt: Optional[str], commitment: Optional[Commitment]
-    ) -> Tuple[types.RPCMethod, Dict[Optional[str], Optional[str]]]:
-        opt: Dict[Optional[str], Optional[str]] = {"filter": filter_opt} if filter_opt else {}
-        opt[self._comm_key] = str(commitment)
-        return types.RPCMethod("getLargestAccounts"), opt
+    ) -> GetLargestAccounts:
+        filter_to_use = None if filter_opt else _LARGEST_ACCOUNTS_FILTER_TO_SOLDERS[filter_opt]
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        return GetLargestAccounts(commitment=commitment_to_use, filter_=filter_to_use)
 
     def _get_leader_schedule_body(
         self, epoch: Optional[int], commitment: Optional[Commitment]
