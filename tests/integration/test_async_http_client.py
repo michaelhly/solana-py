@@ -374,38 +374,11 @@ async def test_get_block(test_http_client_async):
 
 
 @pytest.mark.integration
-async def test_get_block_with_encoding(test_http_client_async):
-    """Test get confrimed block with encoding."""
-    resp = await test_http_client_async.get_block(2, encoding="base64")
-    assert_valid_response(resp)
-
-
-@pytest.mark.integration
-async def test_get_block(test_http_client_async):
-    """Test get block."""
-    resp = await test_http_client_async.get_block(2)
-    assert_valid_response(resp)
-
-
-@pytest.mark.integration
 async def test_get_block_height(test_http_client_async):
     """Test get height."""
     resp = await test_http_client_async.get_block_height()
     assert_valid_response(resp)
 
-
-@pytest.mark.integration
-async def test_get_block_with_encoding(test_http_client_async):
-    """Test get block with encoding."""
-    resp = await test_http_client_async.get_block(2, encoding="base64")
-    assert_valid_response(resp)
-
-
-@pytest.mark.integration
-async def test_get_blocks(test_http_client_async):
-    """Test get confirmed blocks."""
-    resp = await test_http_client_async.get_blocks(5, 10)
-    assert_valid_response(resp)
 
 
 @pytest.mark.integration
@@ -414,14 +387,6 @@ async def test_get_blocks(test_http_client_async):
     resp = await test_http_client_async.get_blocks(5, 10)
     assert_valid_response(resp)
 
-
-@pytest.mark.integration
-async def test_get_confirmed_signature_for_address2(test_http_client_async):
-    """Test get confirmed signature for address2."""
-    resp = await test_http_client_async.get_confirmed_signature_for_address2(
-        "Vote111111111111111111111111111111111111111", limit=1
-    )
-    assert_valid_response(resp)
 
 
 @pytest.mark.integration

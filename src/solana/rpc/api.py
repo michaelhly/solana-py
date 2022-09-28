@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from time import sleep, time
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Sequence
 from warnings import warn
+from solders.signature import Signature
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
@@ -108,7 +109,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_account_info(
         self,
-        pubkey: Union[PublicKey, str],
+        pubkey: PublicKey,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -359,9 +360,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_signatures_for_address(
         self,
-        account: Union[str, Keypair, PublicKey],
-        before: Optional[str] = None,
-        until: Optional[str] = None,
+        account: PublicKey,
+        before: Optional[Signature] = None,
+        until: Optional[Signature] = None,
         limit: Optional[int] = None,
         commitment: Optional[Commitment] = None,
     ) -> types.RPCResponse:
@@ -392,7 +393,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body)
 
     def get_transaction(
-        self, tx_sig: str, encoding: str = "json", commitment: Optional[Commitment] = None
+        self, tx_sig: Signature, encoding: str = "json", commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
         """Returns transaction details for a confirmed transaction.
 
@@ -681,7 +682,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_multiple_accounts(
         self,
-        pubkeys: List[Union[PublicKey, str]],
+        pubkeys: List[PublicKey],
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -739,12 +740,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
-        pubkey: Union[str, PublicKey],
+        pubkey: PublicKey,
         commitment: Optional[Commitment] = Finalized,
         encoding: Optional[str] = None,
         data_slice: Optional[types.DataSliceOpts] = None,
-        data_size: Optional[int] = None,
-        memcmp_opts: Optional[List[types.MemcmpOpts]] = None,
+        filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
     ) -> types.RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
 
@@ -755,15 +755,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
             data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
             `   length`: <usize> fields; only available for "base58" or "base64" encoding.
-            data_size: (optional) Option to compare the program account data length with the provided data size.
-            memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
+            filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
+                Note: an int entry is converted to a `dataSize` filter.
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = [
             ...     MemcmpOpt(offset=4, bytes="3Mc6vR"),
             ... ]
-            >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", data_size=17, memcmp_opts=memcmp_opts) # doctest: +SKIP
+            >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", filters=[17, memcmp_opts]) # doctest: +SKIP
             {'jsonrpc': "2.0",
              'result' :[{
                 'account' :{
@@ -780,30 +780,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment=commitment,
             encoding=encoding,
             data_slice=data_slice,
-            data_size=data_size,
-            memcmp_opts=memcmp_opts,
+            filters=filters,
         )
-        return self._provider.make_request(body)
-
-    def get_recent_blockhash(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
-        """Returns a recent block hash from the ledger.
-
-        Response also includes a fee schedule that can be used to compute the cost
-        of submitting a transaction using it. Deprecated, please use get_latest_blockhash() instead.
-
-        Args:
-            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_recent_blockhash() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 1637},
-              'value': {'blockhash': 'EALChog1mXQ9nEgEUQpWAtmA5UueUZvZiL16ZivmR7eb',
-               'feeCalculator': {'lamportsPerSignature': 5000}}},
-             'id': 2}
-        """
-        body = self._get_recent_blockhash_body(commitment)
         return self._provider.make_request(body)
 
     def get_latest_blockhash(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
@@ -827,7 +805,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body)
 
     def get_signature_statuses(
-        self, signatures: List[Union[str, bytes]], search_transaction_history: bool = False
+        self, signatures: List[Signature], search_transaction_history: bool = False
     ) -> types.RPCResponse:
         """Returns the statuses of a list of signatures.
 
@@ -890,7 +868,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body)
 
     def get_stake_activation(
-        self, pubkey: Union[PublicKey, str], epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+        self, pubkey: PublicKey, epoch: Optional[int] = None, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
         """Returns epoch activation information for a stake account.
 
@@ -932,7 +910,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_supply_body(commitment)
         return self._provider.make_request(body)
 
-    def get_token_account_balance(self, pubkey: Union[str, PublicKey], commitment: Optional[Commitment] = None):
+    def get_token_account_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None):
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
         Args:
@@ -986,14 +964,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body)
 
     def get_token_largest_accounts(
-        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
         """Returns the 20 largest accounts of a particular SPL Token type."""
-        body = self._get_token_largest_account_body(pubkey, commitment)
+        body = self._get_token_largest_accounts_body(pubkey, commitment)
         return self._provider.make_request(body)
 
     def get_token_supply(
-        self, pubkey: Union[PublicKey, str], commitment: Optional[Commitment] = None
+        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
         """Returns the total supply of an SPL Token type."""
         body = self._get_token_supply_body(pubkey, commitment)
@@ -1084,7 +1062,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body)
 
     def request_airdrop(
-        self, pubkey: Union[PublicKey, str], lamports: int, commitment: Optional[Commitment] = None
+        self, pubkey: PublicKey, lamports: int, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
         """Requests an airdrop of lamports to a Pubkey.
 
@@ -1104,7 +1082,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return self._provider.make_request(body)
 
-    def send_raw_transaction(self, txn: Union[bytes, str], opts: Optional[types.TxOpts] = None) -> types.RPCResponse:
+    def send_raw_transaction(self, txn: bytes, opts: Optional[types.TxOpts] = None) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1200,7 +1178,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return txn_resp
 
     def simulate_transaction(
-        self, txn: Union[bytes, str, Transaction], sig_verify: bool = False, commitment: Optional[Commitment] = None
+        self, txn: Transaction, sig_verify: bool = False, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
         """Simulate sending a transaction.
 
@@ -1253,7 +1231,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def confirm_transaction(
         self,
-        tx_sig: str,
+        tx_sig: Signature,
         commitment: Optional[Commitment] = None,
         sleep_seconds: float = 0.5,
         last_valid_block_height: Optional[int] = None,

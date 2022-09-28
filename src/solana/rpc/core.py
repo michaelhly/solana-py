@@ -49,7 +49,6 @@ from solders.rpc.requests import (
 from solders.rpc.config import (
     RpcContextConfig,
     RpcAccountInfoConfig,
-    UiDataSliceConfig,
     RpcBlockConfig,
     RpcSignaturesForAddressConfig,
     RpcTransactionConfig,
@@ -67,7 +66,7 @@ from solders.rpc.config import (
     RpcSimulateTransactionConfig,
 )
 from solders.rpc.filter import Memcmp
-from solders.account_decoder import UiAccountEncoding
+from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.transaction_status import UiTransactionEncoding
 from solders.signature import Signature
 from solders.commitment_config import CommitmentLevel
@@ -212,7 +211,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         address: PublicKey,
         before: Optional[Signature],
         until: Optional[Signature],
-        limit: Optional[Signature],
+        limit: Optional[int],
         commitment: Optional[Commitment],
     ) -> GetSignaturesForAddress:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -243,7 +242,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_largest_accounts_body(
         self, filter_opt: Optional[str], commitment: Optional[Commitment]
     ) -> GetLargestAccounts:
-        filter_to_use = None if filter_opt else _LARGEST_ACCOUNTS_FILTER_TO_SOLDERS[filter_opt]
+        filter_to_use = None if filter_opt is None else _LARGEST_ACCOUNTS_FILTER_TO_SOLDERS[filter_opt]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetLargestAccounts(commitment=commitment_to_use, filter_=filter_to_use)
 
@@ -284,7 +283,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         data_slice: Optional[types.DataSliceOpts],
         filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
     ) -> GetProgramAccounts:  # pylint: disable=too-many-arguments
-        encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
+        encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         data_slice_to_use = (
             None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
@@ -292,7 +291,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         account_config = RpcAccountInfoConfig(
             encoding=encoding_to_use, commitment=commitment_to_use, data_slice=data_slice_to_use
         )
-        filters_to_use = None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
+        filters_to_use: Optional[List[Union[int, Memcmp]]] = None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
         config = RpcProgramAccountsConfig(account_config, filters_to_use)
         return GetProgramAccounts(pubkey.to_solders(), config)
 
@@ -326,7 +325,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_supply_body(self, commitment: Optional[Commitment]) -> GetSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetSupply(RpcSupplyConfig(commitment=commitment_to_use))
+        return GetSupply(RpcSupplyConfig(commitment=commitment_to_use, exclude_non_circulating_accounts_list=False))
 
     def _get_token_account_balance_body(
         self, pubkey: PublicKey, commitment: Optional[Commitment]
@@ -337,7 +336,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_convert(
         self, pubkey: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> Tuple[
-        Pubkey, Optional[Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId]], RpcAccountInfoConfig
+        Pubkey, Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId], RpcAccountInfoConfig
     ]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[opts.encoding]
@@ -352,7 +351,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if maybe_mint is not None:
             filter_to_use = RpcTokenAccountsFilterMint(maybe_mint.to_solders())
         elif maybe_program_id is not None:
-            filter_to_use = RpcTokenAccountsFilterMint(maybe_mint.to_solders())
+            filter_to_use = RpcTokenAccountsFilterMint(maybe_program_id.to_solders())
         else:
             raise ValueError("Please provide one of mint or program_id")
         config = RpcAccountInfoConfig(
@@ -363,12 +362,14 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_delegate_body(
         self, delegate: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> GetTokenAccountsByDelegate:
-        return GetTokenAccountsByDelegate(self._get_token_accounts_convert(delegate, opts, commitment))
+        pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts, commitment)
+        return GetTokenAccountsByDelegate(pubkey, filter_, config)
 
     def _get_token_accounts_by_owner_body(
         self, owner: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> GetTokenAccountsByOwner:
-        return GetTokenAccountsByOwner(self._get_token_accounts_convert(owner, opts, commitment))
+        pubkey, filter_, config = self._get_token_accounts_convert(owner, opts, commitment)
+        return GetTokenAccountsByOwner(pubkey, filter_, config)
 
     def _get_token_largest_accounts_body(
         self, pubkey: PublicKey, commitment: Optional[Commitment]
@@ -409,7 +410,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _send_raw_transaction_body(
         self, txn: bytes, opts: types.TxOpts
     ) -> SendTransaction:
-        solders_tx = SoldersTx.from_bytes(bytes)
+        solders_tx = SoldersTx.from_bytes(txn)
         preflight_commitment_to_use = _COMMITMENT_TO_SOLDERS[opts.preflight_commitment or self._commitment]
         config = RpcSendTransactionConfig(skip_preflight=opts.skip_preflight, preflight_commitment=preflight_commitment_to_use, encoding=UiTransactionEncoding.Base64, max_retries=opts.max_retries)
         return SendTransaction(
