@@ -7,6 +7,7 @@
 - Use Solders for building RPC requests:
     - **Breaking change**: Removed deprecated RPC methods.
     - **Breaking change**: Functions that accepted Union[PublicKey, str] now only accept PublicKey.
+    - **Breaking change**: RPC functions that accepted a `str` signature param now expect a `solders.signature.Signature`.
 
 ## Fixed
 
