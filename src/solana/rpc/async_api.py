@@ -1326,7 +1326,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         resp = await self._provider.make_request(body)
         if opts_to_use.skip_confirmation:
             return self._post_send(resp)
-        post_send_body = self._send_raw_transaction_post_send_body(resp, opts_to_use)
+        post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return await self.__post_send_with_confirm(*post_send_args)
 
     async def send_transaction(
@@ -1413,20 +1413,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
              'id':1}
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._simulate_transaction_body(txn, sig_verify, commitment)
-        return await self._provider.make_request(body)
-
-    async def set_log_filter(self, log_filter: str) -> types.RPCResponse:
-        """Sets the log filter on the validator.
-
-        Args:
-            log_filter: The new log filter to use.
-
-        Example:
-            >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.set_log_filter("solana_core=debug")) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': None, 'id': 1}
-        """
-        body = self._set_log_filter_body(log_filter)
         return await self._provider.make_request(body)
 
     async def validator_exit(self) -> types.RPCResponse:

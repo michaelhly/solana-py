@@ -328,65 +328,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_recent_performance_samples_body(limit)
         return self._provider.make_request(body)
 
-    def get_block(
-        self,
-        slot: int,
-        encoding: str = "json",
-    ) -> types.RPCResponse:
-        """Returns identity and transaction information about a confirmed block in the ledger.
-
-        Args:
-            slot: Slot, as u64 integer.
-            encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
-                "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_block(1) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'blockTime': None, 'blockHeight': 0,
-              'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-              'parentSlot': 0,
-              'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-              'rewards': [],
-              'transactions': [{'meta': {'err': None,
-                 'fee': 0,
-                 'postBalances': [500000000000, 26858640, 1, 1, 1],
-                 'preBalances': [500000000000, 26858640, 1, 1, 1],
-                 'status': {'Ok': None}},
-                'transaction': {'message': {'accountKeys': ['LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
-                   'EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po',
-                   'SysvarS1otHashes111111111111111111111111111',
-                   'SysvarC1ock11111111111111111111111111111111',
-                   'Vote111111111111111111111111111111111111111'],
-                  'header': {'numReadonlySignedAccounts': 0,
-                   'numReadonlyUnsignedAccounts': 3,
-                   'numRequiredSignatures': 1},
-                  'instructions': [{'accounts': [1, 2, 3, 0],
-                    'data': '37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q',
-                    'programIdIndex': 4}],
-                  'recentBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2'},
-                 'signatures': ['63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE']}}]},
-             'id': 9}
-            >>> solana_client.get_block(1, encoding="base64") # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'blockTime': None, 'blockHeight': 0,
-              'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-              'parentSlot': 0,
-              'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-              'rewards': [],
-              'transactions': [{'meta': {'err': None,
-                 'fee': 0,
-                 'postBalances': [500000000000, 26858640, 1, 1, 1],
-                 'preBalances': [500000000000, 26858640, 1, 1, 1],
-                 'status': {'Ok': None}},
-                'transaction': ['AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==',
-                 'base64']}]},
-             'id': 10}
-        """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_block_body(slot, encoding)
-        return self._provider.make_request(body)
-
     def get_block_height(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns the current block height of the node.
 
@@ -414,55 +355,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
         """
         body = self._get_blocks_body(start_slot, end_slot)
-        return self._provider.make_request(body)
-
-    def get_blocks(self, start_slot: int, end_slot: Optional[int] = None) -> types.RPCResponse:
-        """Returns a list of confirmed blocks.
-
-        Args:
-            start_slot: Start slot, as u64 integer.
-            end_slot: (optional) End slot, as u64 integer.
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_blocks(5, 10) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
-        """
-        body = self._get_blocks_body(start_slot, end_slot)
-        return self._provider.make_request(body)
-
-    def get_confirmed_signature_for_address2(
-        self,
-        account: Union[str, Keypair, PublicKey],
-        before: Optional[str] = None,
-        until: Optional[str] = None,
-        limit: Optional[int] = None,
-        commitment: Optional[Commitment] = None,
-    ) -> types.RPCResponse:
-        """Returns confirmed signatures for transactions involving an address.
-
-        Signatures are returned backwards in time from the provided signature or
-        most recent confirmed block.
-
-        Args:
-            account: Account to be queried.
-            before: (optional) Start searching backwards from this transaction signature.
-                If not provided the search starts from the top of the highest max confirmed block.
-            until: (optional) Search until this transaction signature, if found before limit reached.
-            limit: (optional) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
-            commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_confirmed_signature_for_address2("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': [{'err': None,
-               'memo': None,
-               'signature': 'v1BK8XcaPBzAGd7TB1K53pMdi6TBGe5CLCgx8cmZ4Bj63ZNvA6ca2QaxFpBFdvmpoFQ51VorBjifkBGLTDhwpqN',
-               'slot': 4290}],
-            'id': 2}
-        """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_confirmed_signature_for_address2_body(account, before, until, limit, commitment)
         return self._provider.make_request(body)
 
     def get_signatures_for_address(
@@ -497,42 +389,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 2}
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
-        return self._provider.make_request(body)
-
-    def get_confirmed_transaction(self, tx_sig: str, encoding: str = "json") -> types.RPCResponse:
-        """Returns transaction details for a confirmed transaction.
-
-        Args:
-            tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
-                    instruction parsers to return more human-readable and explicit data in the
-                    `transaction.message.instructions` list.
-            encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
-                    "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_confirmed_transaction("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy") # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'meta': {'err': None,
-               'fee': 5000,
-               'postBalances': [498449233720610510, 1000001001987940, 1],
-               'preBalances': [498449233721615510, 1000001000987940, 1],
-               'status': {'Ok': None}},
-              'slot': 1659335,
-              'transaction': {'message': {'accountKeys': ['9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g',
-                 '2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1',
-                 '11111111111111111111111111111111'],
-                'header': {'numReadonlySignedAccounts': 0,
-                 'numReadonlyUnsignedAccounts': 1,
-                 'numRequiredSignatures': 1},
-                'instructions': [{'accounts': [0, 1],
-                  'data': '3Bxs4Bc3VYuGVB19',
-                  'programIdIndex': 2}],
-                'recentBlockhash': 'FwcsKNptGtMLccXAA9YgnivVFK95mKzECLT1DNPi3SDr'},
-               'signatures': ['3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy']}},
-             'id': 4}
-        """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_confirmed_transaction_body(tx_sig, encoding)
         return self._provider.make_request(body)
 
     def get_transaction(
@@ -610,26 +466,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(self._get_epoch_schedule)
 
-    def get_fee_calculator_for_blockhash(
-        self, blockhash: Union[str, Blockhash], commitment: Optional[Commitment] = None
-    ) -> types.RPCResponse:
-        """Returns the fee calculator associated with the query blockhash, or null if the blockhash has expired.
-
-        Args:
-            blockhash: Blockhash to query as a Base58 encoded string.
-            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fee_calculator_for_blockhash("BaQSR194dC4dZaRxATtxYyEwDkk7VgqUY8NVNkub8HFZ") # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 7065},
-              'value': {'feeCalculator': {'lamportsPerSignature': 5000}}},
-             'id': 4}
-        """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_fee_calculator_for_blockhash_body(blockhash, commitment)
-        return self._provider.make_request(body)
-
     def get_fee_for_message(self, message: Message, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns the fee for a message.
 
@@ -671,25 +507,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'id': 5}
         """
         return self._provider.make_request(self._get_fee_rate_governor)
-
-    def get_fees(self, commitment: Optional[Commitment] = None) -> types.RPCResponse:
-        """Returns a recent block hash from the ledger, a fee schedule and the last slot the blockhash will be valid.
-
-        Args:
-            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fees() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 7727},
-              'value': {'blockhash': 'GGS6AEDqjF5irU6D6VQNherEZ2hckGaeBiVdfSZKg4gd',
-               'feeCalculator': {'lamportsPerSignature': 5000},
-               'lastValidSlot': 8027}},
-             'id': 1}
-        """
-        body = self._get_fees_body(commitment)
-        return self._provider.make_request(body)
 
     def get_first_available_block(self) -> types.RPCResponse:
         """Returns the slot of the lowest confirmed block that has not been purged from the ledger.
@@ -1150,7 +967,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         body = self._get_token_accounts_by_delegate_body(delegate, opts, commitment)
-        return self.__get_token_accounts(*args)
+        return self._provider.make_request(body)
 
     def get_token_accounts_by_owner(
         self,
@@ -1166,16 +983,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         body = self._get_token_accounts_by_owner_body(owner, opts, commitment)
-        return self.__get_token_accounts(*args)
-
-    def __get_token_accounts(
-        self,
-        method: types.RPCMethod,
-        pubkey: str,
-        opts: types.TokenAccountOpts,
-        commitment: Commitment,
-    ) -> types.RPCResponse:
-        body = self._get_token_accounts_body(method, pubkey, opts, commitment)
         return self._provider.make_request(body)
 
     def get_token_largest_accounts(
@@ -1328,7 +1135,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         resp = self._provider.make_request(body)
         if opts_to_use.skip_confirmation:
             return self._post_send(resp)
-        post_send_body = self._send_raw_transaction_post_send_body(resp, opts_to_use)
+        post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return self.__post_send_with_confirm(*post_send_args)
 
     def send_transaction(
@@ -1421,19 +1228,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._simulate_transaction_body(txn, sig_verify, commitment)
         return self._provider.make_request(body)
 
-    def set_log_filter(self, log_filter: str) -> types.RPCResponse:
-        """Sets the log filter on the validator.
-
-        Args:
-            log_filter: The new log filter to use.
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.set_log_filter("solana_core=debug") # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': None, 'id': 1}
-        """
-        body = self._set_log_filter_body(log_filter)
-        return self._provider.make_request(body)
 
     def validator_exit(self) -> types.RPCResponse:
         """Request to have the validator exit.
