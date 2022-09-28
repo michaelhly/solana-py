@@ -8,17 +8,38 @@ try:
 except ImportError:
     from typing_extensions import Literal  # type: ignore
 
-from warnings import warn
-
 from based58 import b58decode, b58encode
-from solders.rpc.requests import GetBalance, GetAccountInfo, GetBlockCommitment, GetBlockTime, GetClusterNodes, GetBlock, GetBlockHeight, GetRecentPerformanceSamples, GetBlocks, GetSignaturesForAddress, GetTransaction, GetEpochInfo, GetFeeForMessage, GetInflationGovernor, GetLargestAccounts
-from solders.rpc.config import RpcContextConfig, RpcAccountInfoConfig, UiDataSliceConfig, RpcBlockConfig, RpcSignaturesForAddressConfig, RpcTransactionConfig, RpcLargestAccountsFilter
+from solders.rpc.requests import (
+    GetBalance,
+    GetAccountInfo,
+    GetBlockCommitment,
+    GetBlockTime,
+    GetClusterNodes,
+    GetBlock,
+    GetBlockHeight,
+    GetRecentPerformanceSamples,
+    GetBlocks,
+    GetSignaturesForAddress,
+    GetTransaction,
+    GetEpochInfo,
+    GetFeeForMessage,
+    GetInflationGovernor,
+    GetLargestAccounts,
+)
+from solders.rpc.config import (
+    RpcContextConfig,
+    RpcAccountInfoConfig,
+    UiDataSliceConfig,
+    RpcBlockConfig,
+    RpcSignaturesForAddressConfig,
+    RpcTransactionConfig,
+    RpcLargestAccountsFilter,
+)
 from solders.account_decoder import UiAccountEncoding
 from solders.signature import Signature
 from solders.commitment_config import CommitmentLevel
 
 from solana.blockhash import Blockhash, BlockhashCache
-from solana.keypair import Keypair
 from solana.message import Message
 from solana.publickey import PublicKey
 from solana.rpc import types
@@ -26,17 +47,22 @@ from solana.transaction import Transaction
 
 from .commitment import Commitment, Finalized, Confirmed, Processed
 
-_COMMITMENT_TO_SOLDERS = {Finalized: CommitmentLevel.Finalized, Confirmed: CommitmentLevel.Confirmed, Processed: CommitmentLevel.Processed}
+_COMMITMENT_TO_SOLDERS = {
+    Finalized: CommitmentLevel.Finalized,
+    Confirmed: CommitmentLevel.Confirmed,
+    Processed: CommitmentLevel.Processed,
+}
 _ENCODING_TO_SOLDERS = {
-            "base58": UiAccountEncoding.Base58,
-            "base64": UiAccountEncoding.Base64,
-            "jsonParsed": UiAccountEncoding.JsonParsed,
-            "base64+zstd": UiAccountEncoding.Base64Zstd,
+    "base58": UiAccountEncoding.Base58,
+    "base64": UiAccountEncoding.Base64,
+    "jsonParsed": UiAccountEncoding.JsonParsed,
+    "base64+zstd": UiAccountEncoding.Base64Zstd,
 }
 _LARGEST_ACCOUNTS_FILTER_TO_SOLDERS = {
     "circulating": RpcLargestAccountsFilter.Circulating,
-    "nonCirculating": RpcLargestAccountsFilter.NonCirculating
+    "nonCirculating": RpcLargestAccountsFilter.NonCirculating,
 }
+
 
 class RPCException(Exception):
     """Raised when RPC method returns an error result."""
@@ -103,11 +129,14 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],
     ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:
-        opts: Dict[str, Any] = {self._encoding_key: encoding, self._comm_key: commitment or self._commitment}
-        data_slice_to_use = None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
+        data_slice_to_use = (
+            None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
+        )
         encoding_to_use = _ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcAccountInfoConfig(encoding=encoding_to_use, data_slice=data_slice_to_use, commitment=commitment_to_use)
+        config = RpcAccountInfoConfig(
+            encoding=encoding_to_use, data_slice=data_slice_to_use, commitment=commitment_to_use
+        )
         return GetAccountInfo(pubkey.to_solders(), config)
 
     @staticmethod
@@ -123,7 +152,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         encoding_to_use = _ENCODING_TO_SOLDERS[encoding]
         config = RpcBlockConfig(encoding=encoding_to_use)
         return GetBlock(slot=slot, config=config)
-
 
     def _get_block_height_body(self, commitment: Optional[Commitment]) -> GetBlockHeight:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -149,7 +177,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcSignaturesForAddressConfig(before=before, until=until, limit=limit, commitment=commitment_to_use)
         return GetSignaturesForAddress(address.to_solders(), config)
 
-
     def _get_transaction_body(
         self, tx_sig: Signature, encoding: str = "json", commitment: Commitment = None
     ) -> GetTransaction:
@@ -163,15 +190,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcContextConfig(commitment=commitment_to_use)
         return GetEpochInfo(config)
 
-    def _get_fee_for_message_body(
-        self, message: Message, commitment: Optional[Commitment]
-    ) -> GetFeeForMessage:
+    def _get_fee_for_message_body(self, message: Message, commitment: Optional[Commitment]) -> GetFeeForMessage:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetFeeForMessage(message.to_solders(), commitment_to_use)
 
-    def _get_inflation_governor_body(
-        self, commitment: Optional[Commitment]
-    ) -> GetInflationGovernor:
+    def _get_inflation_governor_body(self, commitment: Optional[Commitment]) -> GetInflationGovernor:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetInflationGovernor(commitment_to_use)
 
