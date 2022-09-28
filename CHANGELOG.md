@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.26.0] - 2022-09-28
+
+## Changed
+
+- Use Solders for building RPC requests:
+    - **Breaking change**: Removed deprecated RPC methods.
+    - **Breaking change**: Functions that accepted Union[PublicKey, str] now only accept PublicKey.
+
+## Fixed
+
+- `send_raw_transaction` now defaults to the client's commitment level if `preflight_commitment` is not otherwise specified.
+
 ## [0.25.0] - 2022-06-21
 
 ## Fixed
