@@ -39,18 +39,3 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     assert log_message[1] == raw_message
     assert resp2["result"]["transaction"]["message"]["instructions"][0]["parsed"] == raw_message
     assert resp2["result"]["transaction"]["message"]["instructions"][0]["programId"] == str(MEMO_PROGRAM_ID)
-
-
-@pytest.mark.integration
-def test_send_invalid_memo_in_memo_params(stubbed_sender: Keypair):
-    """Test creating a string message instead of bytes for the message."""
-    message = "test"
-    with pytest.raises(TypeError):
-        memo_params = MemoParams(
-            program_id=MEMO_PROGRAM_ID,
-            signer=stubbed_sender.public_key,
-            message=message,
-        )
-        memo_ix = create_memo(memo_params)
-        # The test will fail here.
-        Transaction().add(memo_ix)
