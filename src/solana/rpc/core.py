@@ -25,6 +25,8 @@ from solders.rpc.requests import (
     GetFeeForMessage,
     GetInflationGovernor,
     GetLargestAccounts,
+    GetLeaderSchedule,
+    GetMinimumBalanceForRentExemption,
 )
 from solders.rpc.config import (
     RpcContextConfig,
@@ -34,6 +36,7 @@ from solders.rpc.config import (
     RpcSignaturesForAddressConfig,
     RpcTransactionConfig,
     RpcLargestAccountsFilter,
+    RpcLeaderScheduleConfig,
 )
 from solders.account_decoder import UiAccountEncoding
 from solders.signature import Signature
@@ -128,7 +131,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment: Optional[Commitment],
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Any]]:
+    ) -> GetAccountInfo:
         data_slice_to_use = (
             None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
         )
@@ -205,19 +208,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetLargestAccounts(commitment=commitment_to_use, filter_=filter_to_use)
 
-    def _get_leader_schedule_body(
-        self, epoch: Optional[int], commitment: Optional[Commitment]
-    ) -> Tuple[types.RPCMethod, Optional[int], Dict[str, Commitment]]:
-        return types.RPCMethod("getLeaderSchedule"), epoch, {self._comm_key: commitment or self._commitment}
+    def _get_leader_schedule_body(self, slot: Optional[int], commitment: Optional[Commitment]) -> GetLeaderSchedule:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        config = RpcLeaderScheduleConfig(commitment=commitment_to_use)
+        return GetLeaderSchedule(slot, config)
 
     def _get_minimum_balance_for_rent_exemption_body(
         self, usize: int, commitment: Optional[Commitment]
-    ) -> Tuple[types.RPCMethod, int, Dict[str, Commitment]]:
-        return (
-            types.RPCMethod("getMinimumBalanceForRentExemption"),
-            usize,
-            {self._comm_key: commitment or self._commitment},
-        )
+    ) -> GetMinimumBalanceForRentExemption:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        return GetMinimumBalanceForRentExemption(usize, commitment_to_use)
 
     def _get_multiple_accounts_body(
         self,
