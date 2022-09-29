@@ -4,21 +4,21 @@ from typing import List, Tuple
 
 import asyncstdlib
 import pytest
-from jsonrpcclient import request
+from solders.rpc.requests import (
+    AccountSubscribe,
+    AccountUnsubscribe,
+    LogsSubscribe,
+    LogsUnsubscribe,
+    Body,
+)
+from solders.system_program import ID as SYS_PROGRAM_ID
+from solders.rpc.config import RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
 
 from solana import system_program as sp
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
-from solana.rpc.request_builder import (
-    AccountSubscribe,
-    AccountUnsubscribe,
-    LogsSubscribe,
-    LogsSubscribeFilter,
-    LogsUnsubscribe,
-    RequestBody,
-)
 from solana.rpc.websocket_api import SolanaWsClientProtocol, SubscriptionError, connect
 from solana.transaction import Transaction
 
@@ -33,17 +33,20 @@ async def websocket(test_http_client_async: AsyncClient) -> SolanaWsClientProtoc
 
 
 @pytest.fixture
-async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> List[RequestBody]:
+async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> List[Body]:
     """Setup multiple subscriptions."""
     reqs = [
-        LogsSubscribe(filter_=LogsSubscribeFilter.ALL),
-        AccountSubscribe(stubbed_sender.public_key),
+        LogsSubscribe(filter_=RpcTransactionLogsFilter.All, id=websocket.increment_counter_and_get_id()),
+        AccountSubscribe(stubbed_sender.public_key.to_solders(), id=websocket.increment_counter_and_get_id()),
     ]
     await websocket.send_data(reqs)  # None
     first_resp = await websocket.recv()
     logs_subscription_id, account_subscription_id = [resp.result for resp in first_resp]
     yield reqs
-    unsubscribe_reqs = [LogsUnsubscribe(logs_subscription_id), AccountUnsubscribe(account_subscription_id)]
+    unsubscribe_reqs = [
+        LogsUnsubscribe(logs_subscription_id, websocket.increment_counter_and_get_id()),
+        AccountUnsubscribe(account_subscription_id, websocket.increment_counter_and_get_id()),
+    ]
     await websocket.send_data(unsubscribe_reqs)
 
 
@@ -71,7 +74,7 @@ async def logs_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProt
 @pytest.fixture
 async def logs_subscribed_mentions_filter(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> None:
     """Setup logs subscription with a mentions filter."""
-    await websocket.logs_subscribe(LogsSubscribeFilter.mentions(sp.SYS_PROGRAM_ID))
+    await websocket.logs_subscribe(RpcTransactionLogsFilterMentions(SYS_PROGRAM_ID))
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
     yield
@@ -152,7 +155,7 @@ async def vote_subscribed(websocket: SolanaWsClientProtocol) -> None:
 async def test_multiple_subscriptions(
     stubbed_sender: Keypair,
     test_http_client_async: AsyncClient,
-    multiple_subscriptions: List[RequestBody],
+    multiple_subscriptions: List[Body],
     websocket: SolanaWsClientProtocol,
 ):
     """Test subscribing to multiple feeds."""
@@ -163,17 +166,6 @@ async def test_multiple_subscriptions(
             break
     balance = await test_http_client_async.get_balance(stubbed_sender.public_key, Finalized)
     assert balance["result"]["value"] == AIRDROP_AMOUNT
-
-
-@pytest.mark.integration
-async def test_bad_request(websocket: SolanaWsClientProtocol):
-    """Test sending a malformed subscription request."""
-    bad_req = request("logsSubscribe", params=["foo"])
-    await websocket._send(bad_req)  # pylint: disable=protected-access
-    with pytest.raises(SubscriptionError) as exc_info:
-        _ = await websocket.recv()
-    assert exc_info.value.code == -32602
-    assert exc_info.value.subscription == bad_req
 
 
 @pytest.mark.integration

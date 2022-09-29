@@ -43,9 +43,6 @@ class _HTTPProviderCore(FriendlyJsonSerde):
         data_kwarg = "content" if is_async else "data"
         return {"url": self.endpoint_uri, "headers": headers, data_kwarg: data}
 
-    def _increment_counter_and_get_id(self) -> int:
-        return next(self._request_counter) + 1
-
     def _before_request(self, body: Body, is_async: bool) -> Dict[str, Any]:
         return self._build_request_kwargs(body=body, is_async=is_async)
 

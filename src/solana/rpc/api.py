@@ -741,7 +741,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
         pubkey: PublicKey,
-        commitment: Optional[Commitment] = Finalized,
+        commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
         data_slice: Optional[types.DataSliceOpts] = None,
         filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
