@@ -44,6 +44,13 @@ from solders.rpc.requests import (
     RequestAirdrop,
     SendTransaction,
     SimulateTransaction,
+    GetVersion,
+    GetEpochSchedule,
+    GetFirstAvailableBlock,
+    GetGenesisHash,
+    GetIdentity,
+    GetInflationRate,
+    MinimumLedgerSlot,
 )
 from solders.rpc.config import (
     RpcContextConfig,
@@ -135,14 +142,13 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _limit_rpc_config_key = "limit"
     _until_rpc_config_key = "until"
     _get_cluster_nodes = GetClusterNodes()
-    _get_epoch_schedule = types.RPCMethod("getEpochSchedule")
-    _get_fee_rate_governor = types.RPCMethod("getFeeRateGovernor")
-    _get_first_available_block = types.RPCMethod("getFirstAvailableBlock")
-    _get_genesis_hash = types.RPCMethod("getGenesisHash")
-    _get_identity = types.RPCMethod("getIdentity")
-    _get_inflation_rate = types.RPCMethod("getInflationRate")
-    _minimum_ledger_slot = types.RPCMethod("minimumLedgerSlot")
-    _get_version = types.RPCMethod("getVersion")
+    _get_epoch_schedule = GetEpochSchedule()
+    _get_first_available_block = GetFirstAvailableBlock()
+    _get_genesis_hash = GetGenesisHash()
+    _get_identity = GetIdentity()
+    _get_inflation_rate = GetInflationRate()
+    _minimum_ledger_slot = MinimumLedgerSlot()
+    _get_version = GetVersion()
     _validator_exit = types.RPCMethod("validatorExit")
 
     def __init__(self, commitment: Optional[Commitment] = None, blockhash_cache: Union[BlockhashCache, bool] = False):

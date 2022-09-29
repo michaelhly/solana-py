@@ -9,7 +9,7 @@ AIRDROP_AMOUNT = 10_000_000_000
 def assert_valid_response(resp: RPCResponse):
     """Assert valid RPCResponse."""
     assert resp["jsonrpc"] == "2.0"
-    assert resp["id"]
+    assert isinstance(resp["id"], int)
     assert resp["result"] is not None
 
 

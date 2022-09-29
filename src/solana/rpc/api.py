@@ -492,22 +492,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_fee_for_message_body(message, commitment)
         return self._provider.make_request(body)
 
-    def get_fee_rate_governor(self) -> types.RPCResponse:
-        """Returns the fee rate governor information from the root bank.
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fee_rate_governor() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 7172},
-              'value': {'feeRateGovernor': {'burnPercent': 50,
-                'maxLamportsPerSignature': 100000,
-                'minLamportsPerSignature': 5000,
-                'targetLamportsPerSignature': 10000,
-                'targetSignaturesPerSlot': 20000}}},
-             'id': 5}
-        """
-        return self._provider.make_request(self._get_fee_rate_governor)
 
     def get_first_available_block(self) -> types.RPCResponse:
         """Returns the slot of the lowest confirmed block that has not been purged from the ledger.

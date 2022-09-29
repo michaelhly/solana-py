@@ -386,7 +386,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
         return await self._provider.make_request(body)
 
-
     async def get_transaction(
         self, tx_sig: Signature, encoding: str = "json", commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
@@ -486,23 +485,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             raise TransactionUncompiledError("Transaction uncompiled, please compile to message first.")
         body = self._get_fee_for_message_body(message, commitment)
         return await self._provider.make_request(body)
-
-    async def get_fee_rate_governor(self) -> types.RPCResponse:
-        """Return the fee rate governor information from the root bank.
-
-        Example:
-            >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_fee_rate_governor()) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 7172},
-              'value': {'feeRateGovernor': {'burnPercent': 50,
-                'maxLamportsPerSignature': 100000,
-                'minLamportsPerSignature': 5000,
-                'targetLamportsPerSignature': 10000,
-                'targetSignaturesPerSlot': 20000}}},
-             'id': 5}
-        """
-        return await self._provider.make_request(self._get_fee_rate_governor)
 
     async def get_first_available_block(self) -> types.RPCResponse:
         """Returns the slot of the lowest confirmed block that has not been purged from the ledger.
@@ -958,7 +940,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_token_accounts_by_owner_body(owner, opts, commitment)
         return await self._provider.make_request(body)
 
-
     async def get_token_largest_accounts(
         self, pubkey: PublicKey, commitment: Optional[Commitment] = None
     ) -> types.RPCResponse:
@@ -966,9 +947,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_token_largest_accounts_body(pubkey, commitment)
         return await self._provider.make_request(body)
 
-    async def get_token_supply(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
-    ) -> types.RPCResponse:
+    async def get_token_supply(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns the total supply of an SPL Token type."""
         body = self._get_token_supply_body(pubkey, commitment)
         return await self._provider.make_request(body)
@@ -1078,9 +1057,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return await self._provider.make_request(body)
 
-    async def send_raw_transaction(
-        self, txn: bytes, opts: Optional[types.TxOpts] = None
-    ) -> types.RPCResponse:
+    async def send_raw_transaction(self, txn: bytes, opts: Optional[types.TxOpts] = None) -> types.RPCResponse:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
