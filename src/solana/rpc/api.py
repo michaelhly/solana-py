@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from time import sleep, time
 from typing import Dict, List, Optional, Union, Sequence
-from warnings import warn
 from solders.signature import Signature
 
 from solana.blockhash import Blockhash, BlockhashCache
