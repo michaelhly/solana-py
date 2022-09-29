@@ -726,9 +726,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
+            >>> from solana.rpc.types import MemcmpOpts
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = [
-            ...     MemcmpOpt(offset=4, bytes="3Mc6vR"),
+            ...     MemcmpOpts(offset=4, bytes="3Mc6vR"),
             ... ]
             >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", filters=[17, memcmp_opts]) # doctest: +SKIP
             {'jsonrpc': "2.0",
