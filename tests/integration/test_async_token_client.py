@@ -1,6 +1,7 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
 import pytest
+from solders.signature import Signature
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
@@ -17,7 +18,7 @@ from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -> AsyncToken:
     """Test create mint."""
     resp = await test_http_client_async.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    await test_http_client_async.confirm_transaction(resp["result"], commitment=Finalized)
+    await test_http_client_async.confirm_transaction(Signature.from_string(resp["result"]), commitment=Finalized)
     assert_valid_response(resp)
 
     expected_decimals = 6
@@ -302,7 +303,7 @@ async def test_approve(
         amount=expected_amount_delegated,
         opts=OPTS,
     )
-    await test_http_client_async.confirm_transaction(resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(resp["result"]))
     assert_valid_response(resp)
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == async_stubbed_receiver
@@ -326,7 +327,7 @@ async def test_revoke(
     revoke_resp = await test_token.revoke(
         account=stubbed_sender_token_account_pk, owner=stubbed_sender.public_key, opts=OPTS
     )
-    await test_http_client_async.confirm_transaction(revoke_resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(revoke_resp["result"]))
     assert_valid_response(revoke_resp)
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate is None
@@ -351,7 +352,7 @@ async def test_approve_checked(
         decimals=6,
         opts=OPTS,
     )
-    await test_http_client_async.confirm_transaction(resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(resp["result"]))
     assert_valid_response(resp)
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == async_stubbed_receiver
@@ -364,14 +365,14 @@ async def test_freeze_account(
 ):  # pylint: disable=redefined-outer-name
     """Test freezing an account."""
     resp = await test_http_client_async.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
-    await test_http_client_async.confirm_transaction(resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(resp["result"]))
     assert_valid_response(resp)
 
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
     freeze_resp = await test_token.freeze_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
-    await test_http_client_async.confirm_transaction(freeze_resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(freeze_resp["result"]))
     assert_valid_response(freeze_resp)
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
@@ -386,7 +387,7 @@ async def test_thaw_account(
     assert account_info.is_frozen is True
 
     thaw_resp = await test_token.thaw_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
-    await test_http_client_async.confirm_transaction(thaw_resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(thaw_resp["result"]))
     assert_valid_response(thaw_resp)
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
@@ -411,7 +412,7 @@ async def test_close_account(
         authority=stubbed_sender,
         opts=OPTS,
     )
-    await test_http_client_async.confirm_transaction(close_resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(close_resp["result"]))
     assert_valid_response(close_resp)
 
     info_resp = await test_http_client_async.get_account_info(stubbed_sender_token_account_pk)

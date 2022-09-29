@@ -1198,7 +1198,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self._provider.logger.info(
             "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
         )
-        await self.confirm_transaction(resp["result"], conf_comm, last_valid_block_height=last_valid_block_height)
+        await self.confirm_transaction(
+            Signature.from_string(resp["result"]), conf_comm, last_valid_block_height=last_valid_block_height
+        )
         return resp
 
     async def confirm_transaction(

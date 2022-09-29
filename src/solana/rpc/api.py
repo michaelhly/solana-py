@@ -24,21 +24,6 @@ from .core import (
 from .providers import http
 
 
-def DataSliceOpt(*args, **kwargs) -> types.DataSliceOpts:  # pylint: disable=invalid-name
-    """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
-    warn(
-        "solana.rpc.api.DataSliceOpt is deprecated, please use solana.rpc.types.DataSliceOpts",
-        category=DeprecationWarning,
-    )
-    return types.DataSliceOpts(*args, **kwargs)
-
-
-def MemcmpOpt(*args, **kwargs) -> types.MemcmpOpts:  # pylint: disable=invalid-name
-    """Option to compare a provided series of bytes with program account data at a particular offset."""
-    warn("solana.rpc.api.MemcmpOpt is deprecated, please use solana.rpc.types.MemcmpOpts", category=DeprecationWarning)
-    return types.MemcmpOpts(*args, **kwargs)
-
-
 class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     """Client class.
 
@@ -491,7 +476,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             raise TransactionUncompiledError("Transaction uncompiled, please compile to message first.")
         body = self._get_fee_for_message_body(message, commitment)
         return self._provider.make_request(body)
-
 
     def get_first_available_block(self) -> types.RPCResponse:
         """Returns the slot of the lowest confirmed block that has not been purged from the ledger.
@@ -954,9 +938,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_token_largest_accounts_body(pubkey, commitment)
         return self._provider.make_request(body)
 
-    def get_token_supply(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
-    ) -> types.RPCResponse:
+    def get_token_supply(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> types.RPCResponse:
         """Returns the total supply of an SPL Token type."""
         body = self._get_token_supply_body(pubkey, commitment)
         return self._provider.make_request(body)
@@ -1190,7 +1172,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._simulate_transaction_body(txn, sig_verify, commitment)
         return self._provider.make_request(body)
 
-
     def validator_exit(self) -> types.RPCResponse:
         """Request to have the validator exit.
 
@@ -1210,7 +1191,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self._provider.logger.info(
             "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
         )
-        self.confirm_transaction(resp["result"], conf_comm, last_valid_block_height=last_valid_block_height)
+        self.confirm_transaction(
+            Signature.from_string(resp["result"]), conf_comm, last_valid_block_height=last_valid_block_height
+        )
         return resp
 
     def confirm_transaction(

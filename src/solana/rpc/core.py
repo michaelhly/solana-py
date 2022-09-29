@@ -51,6 +51,7 @@ from solders.rpc.requests import (
     GetIdentity,
     GetInflationRate,
     MinimumLedgerSlot,
+    ValidatorExit,
 )
 from solders.rpc.config import (
     RpcContextConfig,
@@ -149,7 +150,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _get_inflation_rate = GetInflationRate()
     _minimum_ledger_slot = MinimumLedgerSlot()
     _get_version = GetVersion()
-    _validator_exit = types.RPCMethod("validatorExit")
+    _validator_exit = ValidatorExit()
 
     def __init__(self, commitment: Optional[Commitment] = None, blockhash_cache: Union[BlockhashCache, bool] = False):
         self._commitment = commitment or Finalized
