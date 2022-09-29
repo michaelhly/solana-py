@@ -1,7 +1,6 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
-from base64 import b64encode, b64decode
-from typing import Any, Dict, List, Optional, Tuple, Union, cast, Sequence
+from typing import List, Optional, Tuple, Union, cast, Sequence
 
 try:
     from typing import Literal  # type: ignore
@@ -291,7 +290,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         account_config = RpcAccountInfoConfig(
             encoding=encoding_to_use, commitment=commitment_to_use, data_slice=data_slice_to_use
         )
-        filters_to_use: Optional[List[Union[int, Memcmp]]] = None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
+        filters_to_use: Optional[List[Union[int, Memcmp]]] = (
+            None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
+        )
         config = RpcProgramAccountsConfig(account_config, filters_to_use)
         return GetProgramAccounts(pubkey.to_solders(), config)
 
@@ -335,9 +336,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_token_accounts_convert(
         self, pubkey: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
-    ) -> Tuple[
-        Pubkey, Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId], RpcAccountInfoConfig
-    ]:
+    ) -> Tuple[Pubkey, Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId], RpcAccountInfoConfig]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[opts.encoding]
         maybe_data_slice = opts.data_slice
@@ -377,21 +376,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTokenLargestAccounts(pubkey.to_solders(), commitment_to_use)
 
-    def _get_token_supply_body(
-        self, pubkey: PublicKey, commitment: Optional[Commitment]
-    ) -> GetTokenSupply:
+    def _get_token_supply_body(self, pubkey: PublicKey, commitment: Optional[Commitment]) -> GetTokenSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTokenSupply(pubkey.to_solders(), commitment_to_use)
 
-    def _get_transaction_count_body(
-        self, commitment: Optional[Commitment]
-    ) -> GetTransactionCount:
+    def _get_transaction_count_body(self, commitment: Optional[Commitment]) -> GetTransactionCount:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTransactionCount(RpcContextConfig(commitment_to_use))
 
-    def _get_vote_accounts_body(
-        self, commitment: Optional[Commitment]
-    ) -> GetVoteAccounts:
+    def _get_vote_accounts_body(self, commitment: Optional[Commitment]) -> GetVoteAccounts:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcGetVoteAccountsConfig(commitment=commitment_to_use)
         return GetVoteAccounts(config)
@@ -400,19 +393,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self, pubkey: PublicKey, lamports: int, commitment: Optional[Commitment]
     ) -> RequestAirdrop:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcGetVoteAccountsConfig(commitment=commitment_to_use)
-        return RequestAirdrop(
-            pubkey.to_solders(),
-            lamports,
-            RpcRequestAirdropConfig(commitment=commitment_to_use)
-        )
+        return RequestAirdrop(pubkey.to_solders(), lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
 
-    def _send_raw_transaction_body(
-        self, txn: bytes, opts: types.TxOpts
-    ) -> SendTransaction:
+    def _send_raw_transaction_body(self, txn: bytes, opts: types.TxOpts) -> SendTransaction:
         solders_tx = SoldersTx.from_bytes(txn)
         preflight_commitment_to_use = _COMMITMENT_TO_SOLDERS[opts.preflight_commitment or self._commitment]
-        config = RpcSendTransactionConfig(skip_preflight=opts.skip_preflight, preflight_commitment=preflight_commitment_to_use, encoding=UiTransactionEncoding.Base64, max_retries=opts.max_retries)
+        config = RpcSendTransactionConfig(
+            skip_preflight=opts.skip_preflight,
+            preflight_commitment=preflight_commitment_to_use,
+            max_retries=opts.max_retries,
+        )
         return SendTransaction(
             solders_tx,
             config,
@@ -430,11 +420,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if txn.recent_blockhash is None:
             raise ValueError("transaction must have a valid blockhash")
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcSimulateTransactionConfig(sig_verify=sig_verify, commitment=commitment_to_use, encoding=UiTransactionEncoding.Base64)
-        return SimulateTransaction(
-            txn.to_solders(),
-            config
+        config = RpcSimulateTransactionConfig(
+            sig_verify=sig_verify, commitment=commitment_to_use, encoding=UiTransactionEncoding.Base64
         )
+        return SimulateTransaction(txn.to_solders(), config)
 
     @staticmethod
     def _post_send(resp: types.RPCResponse) -> types.RPCResponse:

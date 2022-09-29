@@ -13,13 +13,14 @@ from solders.rpc.requests import (
 )
 from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.rpc.config import RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
+from solders.signature import Signature
 
 from solana import system_program as sp
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
-from solana.rpc.websocket_api import SolanaWsClientProtocol, SubscriptionError, connect
+from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
 from solana.transaction import Transaction
 
 from .utils import AIRDROP_AMOUNT
@@ -89,7 +90,7 @@ async def program_subscribed(
     program = Keypair()
     owned = Keypair()
     airdrop_resp = await test_http_client_async.request_airdrop(owned.public_key, AIRDROP_AMOUNT)
-    await test_http_client_async.confirm_transaction(airdrop_resp["result"])
+    await test_http_client_async.confirm_transaction(Signature.from_string(airdrop_resp["result"]))
     await websocket.program_subscribe(program.public_key)
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -104,7 +105,7 @@ async def signature_subscribed(
     """Setup signature subscription."""
     recipient = Keypair()
     airdrop_resp = await test_http_client_async.request_airdrop(recipient.public_key, AIRDROP_AMOUNT)
-    await websocket.signature_subscribe(airdrop_resp["result"])
+    await websocket.signature_subscribe(Signature.from_string(airdrop_resp["result"]))
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
     yield
