@@ -34,7 +34,7 @@ websockets = "^10.3"
 jsonrpcserver = "^5.0.7"
 apischema = "^0.17.5"
 based58 = "^0.1.0"
-solders = "^0.5.0"
+solders = "^0.5.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"
