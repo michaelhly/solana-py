@@ -2,13 +2,14 @@
 import itertools
 import logging
 import os
-from typing import Any, Dict, Optional, Tuple, Union, cast
+from typing import Any, Dict, Optional, Union, cast
+from solders.rpc.requests import Body
 
 import httpx
 import requests
 
 from .._utils.encoding import FriendlyJsonSerde
-from ..types import URI, RPCMethod, RPCResponse
+from ..types import URI, RPCResponse
 
 DEFAULT_TIMEOUT = 10
 
@@ -34,33 +35,17 @@ class _HTTPProviderCore(FriendlyJsonSerde):
         self.timeout = timeout
         self.extra_headers = extra_headers
 
-    def _build_request_kwargs(
-        self, request_id: int, method: RPCMethod, params: Tuple[Any, ...], is_async: bool
-    ) -> Dict[str, Any]:
+    def _build_request_kwargs(self, body: Body, is_async: bool) -> Dict[str, Any]:
         headers = {"Content-Type": "application/json"}
         if self.extra_headers:
             headers.update(self.extra_headers)
-        data = self.json_encode({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
+        data = body.to_json()
         data_kwarg = "content" if is_async else "data"
         return {"url": self.endpoint_uri, "headers": headers, data_kwarg: data}
 
-    def _increment_counter_and_get_id(self) -> int:
-        return next(self._request_counter) + 1
+    def _before_request(self, body: Body, is_async: bool) -> Dict[str, Any]:
+        return self._build_request_kwargs(body=body, is_async=is_async)
 
-    def _before_request(self, method: RPCMethod, params: Tuple[Any, ...], is_async: bool) -> Dict[str, Any]:
-        request_id = self._increment_counter_and_get_id()
-        self.logger.debug(
-            "Making HTTP request. URI: %s, RequestID: %d, Method: %s, Params: %s",
-            self.endpoint_uri,
-            request_id,
-            method,
-            params,
-        )
-        return self._build_request_kwargs(request_id=request_id, method=method, params=params, is_async=is_async)
-
-    def _after_request(self, raw_response: Union[requests.Response, httpx.Response], method: RPCMethod) -> RPCResponse:
+    def _after_request(self, raw_response: Union[requests.Response, httpx.Response]) -> RPCResponse:
         raw_response.raise_for_status()
-        self.logger.debug(
-            "Getting response HTTP. URI: %s, " "Method: %s, Response: %s", self.endpoint_uri, method, raw_response.text
-        )
         return cast(RPCResponse, self.json_decode(raw_response.text))

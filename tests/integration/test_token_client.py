@@ -1,6 +1,7 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
 import pytest
+from solders.signature import Signature
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
@@ -17,7 +18,7 @@ from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    test_http_client.confirm_transaction(resp["result"], commitment=Finalized)
+    test_http_client.confirm_transaction(Signature.from_string(resp["result"]), commitment=Finalized)
     balance = test_http_client.get_balance(stubbed_sender.public_key)
     assert balance["result"]["value"] == AIRDROP_AMOUNT
     expected_decimals = 6
@@ -293,7 +294,7 @@ def test_approve(
     )
     assert_valid_response(resp)
     test_http_client.confirm_transaction(
-        resp["result"],
+        Signature.from_string(resp["result"]),
     )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
@@ -313,7 +314,7 @@ def test_revoke(
     revoke_resp = test_token.revoke(account=stubbed_sender_token_account_pk, owner=stubbed_sender.public_key, opts=OPTS)
     assert_valid_response(revoke_resp)
     test_http_client.confirm_transaction(
-        revoke_resp["result"],
+        Signature.from_string(revoke_resp["result"]),
     )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate is None
@@ -336,7 +337,7 @@ def test_approve_checked(
     )
     assert_valid_response(resp)
     test_http_client.confirm_transaction(
-        resp["result"],
+        Signature.from_string(resp["result"]),
     )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
@@ -351,7 +352,7 @@ def test_freeze_account(
     resp = test_http_client.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(
-        resp["result"],
+        Signature.from_string(resp["result"]),
     )
 
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
@@ -360,7 +361,7 @@ def test_freeze_account(
     freeze_resp = test_token.freeze_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     assert_valid_response(freeze_resp)
     test_http_client.confirm_transaction(
-        freeze_resp["result"],
+        Signature.from_string(freeze_resp["result"]),
     )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
@@ -377,7 +378,7 @@ def test_thaw_account(
     thaw_resp = test_token.thaw_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     assert_valid_response(thaw_resp)
     test_http_client.confirm_transaction(
-        thaw_resp["result"],
+        Signature.from_string(thaw_resp["result"]),
     )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
@@ -404,7 +405,7 @@ def test_close_account(
     )
     assert_valid_response(close_resp)
     test_http_client.confirm_transaction(
-        close_resp["result"],
+        Signature.from_string(close_resp["result"]),
     )
 
     info_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)

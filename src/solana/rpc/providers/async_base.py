@@ -1,13 +1,13 @@
 """Async base RPC Provider."""
-from typing import Any
+from solders.rpc.requests import Body
 
-from ..types import RPCMethod, RPCResponse
+from ..types import RPCResponse
 
 
 class AsyncBaseProvider:
     """Base class for async RPC providers to implement."""
 
-    async def make_request(self, method: RPCMethod, *params: Any) -> RPCResponse:
+    async def make_request(self, body: Body) -> RPCResponse:
         """Make a request ot the rpc endpoint."""
         raise NotImplementedError("Providers must implement this method")
 
