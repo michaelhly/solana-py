@@ -2,16 +2,20 @@
 import itertools
 import logging
 import os
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, Optional, Union, cast, TypeVar, Type
 from solders.rpc.requests import Body
+from solders.rpc.responses import RPCResult as RPCResultType, RpcError
 
 import httpx
 import requests
 
 from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI, RPCResponse
+from ..core import RPCException
 
 DEFAULT_TIMEOUT = 10
+
+T = TypeVar("T", bound=RPCResultType)
 
 
 def get_default_endpoint() -> URI:
@@ -46,6 +50,16 @@ class _HTTPProviderCore(FriendlyJsonSerde):
     def _before_request(self, body: Body, is_async: bool) -> Dict[str, Any]:
         return self._build_request_kwargs(body=body, is_async=is_async)
 
-    def _after_request(self, raw_response: Union[requests.Response, httpx.Response]) -> RPCResponse:
-        raw_response.raise_for_status()
-        return cast(RPCResponse, self.json_decode(raw_response.text))
+
+def _after_request(raw_response: Union[requests.Response, httpx.Response], parser: Type[T]) -> T:
+    text = _after_request_raw(raw_response)
+    # mypy gets confused by the staticmethod usage here
+    parsed = parser.from_json(text)  # type: ignore
+    if isinstance(parsed, RpcError):
+        raise RPCException(parsed)
+    return parsed
+
+
+def _after_request_raw(raw_response: Union[requests.Response, httpx.Response]) -> str:
+    raw_response.raise_for_status()
+    return raw_response.text

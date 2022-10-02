@@ -23,13 +23,13 @@ def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: PublicKey, 
     assert_valid_response(resp)
     test_http_client.confirm_transaction(Signature.from_string(resp["result"]))
     balance = test_http_client.get_balance(stubbed_sender.public_key)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
     # Airdrop to stubbed_receiver
     resp = test_http_client.request_airdrop(stubbed_receiver, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(Signature.from_string(resp["result"]))
     balance = test_http_client.get_balance(stubbed_receiver)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -42,13 +42,13 @@ def test_request_air_drop_prefetched_blockhash(
     assert_valid_response(resp)
     test_http_client.confirm_transaction(Signature.from_string(resp["result"]))
     balance = test_http_client.get_balance(stubbed_sender_prefetched_blockhash.public_key)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
     # Airdrop to stubbed_receiver
     resp = test_http_client.request_airdrop(stubbed_receiver_prefetched_blockhash, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(Signature.from_string(resp["result"]))
     balance = test_http_client.get_balance(stubbed_receiver_prefetched_blockhash)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -62,14 +62,14 @@ def test_request_air_drop_cached_blockhash(
     test_http_client.confirm_transaction(Signature.from_string(resp["result"]))
     assert_valid_response(resp)
     balance = test_http_client.get_balance(stubbed_sender_cached_blockhash.public_key)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
     # Airdrop to stubbed_receiver
     resp = test_http_client.request_airdrop(stubbed_receiver_cached_blockhash, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(Signature.from_string(resp["result"]))
     assert_valid_response(resp)
     balance = test_http_client.get_balance(stubbed_receiver_cached_blockhash)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration

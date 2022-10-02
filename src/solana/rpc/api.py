@@ -4,6 +4,7 @@ from __future__ import annotations
 from time import sleep, time
 from typing import Dict, List, Optional, Union, Sequence
 from solders.signature import Signature
+from solders.rpc.responses import GetBalanceResp, GetAccountInfoResp, GetAccountInfoJsonParsedResp
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
@@ -75,7 +76,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.is_connected()
 
-    def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+    def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
         """Returns the balance of the account of provided Pubkey.
 
         Args:
@@ -85,11 +86,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_balance(PublicKey(1)) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': {'context': {'slot': 228}, 'value': 0}, 'id': 1}
+            >>> solana_client.get_balance(PublicKey(1)).value # doctest: +SKIP
+            4104230290
         """
         body = self._get_balance_body(pubkey, commitment)
-        return self._provider.make_request(body)
+        return self._provider.make_request(body, GetBalanceResp)
 
     def get_account_info(
         self,
@@ -98,13 +99,13 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
     ) -> types.RPCResponse:
-        """Returns all the account info for the specified public key.
+        """Returns all the account info for the specified public key, encoded in either base58 or base64.
 
         Args:
-            pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of account to query.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
-                "jsonParsed". Default is "base64".
+            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
+                Default is "base64".
 
                 - "base58" is limited to Account data of less than 128 bytes.
                 - "base64" will return base64 encoded data for Account data of any size.
@@ -114,6 +115,36 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
             data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
+
+        Example:
+            >>> from solana.publickey import PublicKey
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_account_info(PublicKey(1)).value # doctest: +SKIP
+            Account(
+                Account {
+                    lamports: 4104230290,
+                    data.len: 0,
+                    owner: 11111111111111111111111111111111,
+                    executable: false,
+                    rent_epoch: 371,
+                },
+            )
+        """  # noqa: E501 # pylint: disable=line-too-long
+        body = self._get_account_info_body(
+            pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
+        )
+        return self._provider.make_request(body, GetAccountInfoResp)
+
+    def get_account_info_json_parsed(
+        self,
+        pubkey: PublicKey,
+        commitment: Optional[Commitment] = None,
+    ) -> GetAccountInfoJsonParsedResp:
+        """Returns all the account info for the specified public key in parsed JSON format.
+
+        Args:
+            pubkey: Pubkey of account to query.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -128,10 +159,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                'rentEpoch': 90}},
              'id': 1}
         """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_account_info_body(
-            pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
-        )
-        return self._provider.make_request(body)
+        body = self._get_account_info_body(pubkey=pubkey, commitment=commitment, encoding="jsonParsed", data_slice=None)
+        return self._provider.make_request(body, GetAccountInfoJsonParsedResp)
 
     def get_block_commitment(self, slot: int) -> types.RPCResponse:
         """Fetch the commitment for particular block.
