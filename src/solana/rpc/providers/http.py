@@ -27,25 +27,23 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         if header_opt:
             headers = request_kwargs["headers"]
             data = request_kwargs["data"].encode("utf-8")
-            authorization_value = None
+            authorization_values = []
 
             if "authority_pair" in header_opt:
-
                 data_authority_signature = header_opt["authority_pair"].sign(data)
-                authorization_value = (
+                authorization_values.append(
                     f"authority:{header_opt['authority_pair'].public_key}="
                     f"{b58encode(bytes(data_authority_signature)).decode('utf-8')}"
                 )
 
             if "identity_pair" in header_opt:
-
                 data_identity_signature = header_opt["identity_pair"].sign(data)
-                authorization_value += (
-                    f",identity:{header_opt['identity_pair'].public_key}="
+                authorization_values.append(
+                    f"identity:{header_opt['identity_pair'].public_key}="
                     f"{b58encode(bytes(data_identity_signature)).decode('utf-8')}"
                 )
 
-            headers.update({"authorization": authorization_value})
+            headers.update({"authorization": ",".join(authorization_values)})
 
         raw_response = requests.post(**request_kwargs, timeout=self.timeout)
         if raw_response.status_code == 200:
