@@ -1064,7 +1064,7 @@ python-versions = "*"
 
 [[package]]
 name = "solders"
-version = "0.5.2"
+version = "0.6.0"
 description = "Python binding to the Solana Rust SDK"
 category = "main"
 optional = false
@@ -1115,7 +1115,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.11"
+version = "2.28.11.1"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1206,7 +1206,7 @@ docs = ["jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "jaraco.packaging (>=9)
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "3cb37b63c5c59e1864721c44f35a988b02edd2f4f0c819cfd1c67fc1634ef50f"
+content-hash = "01ee50fbf324783d22a91aca149a56e0539e984978ded4672953de5f23b19c14"
 
 [metadata.files]
 anyio = [
@@ -1919,17 +1919,17 @@ snowballstemmer = [
     {file = "snowballstemmer-2.2.0.tar.gz", hash = "sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1"},
 ]
 solders = [
-    {file = "solders-0.5.2-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:f0a133f0c7e18ed94fc635f88481fe119a1e3b2544ea8ef65ba5f0676b55f537"},
-    {file = "solders-0.5.2-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c34eb59f1a1a75180712e7dc94ed7f71c8077b57309e2049f995e114a9315ad9"},
-    {file = "solders-0.5.2-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:0c4b88660837725d11f1189a79825c4acbf33fe614ba0375f4c8ebf203085041"},
-    {file = "solders-0.5.2-cp37-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:2d76dfa993399b419abfbf86369b26e2f587f57c11400d9f563f71a7abdee21b"},
-    {file = "solders-0.5.2-cp37-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:a9e37af09a8eec4ad6e8a49128b099d9de57571e57e98f90feb3bbb84f29327a"},
-    {file = "solders-0.5.2-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ad0ef5d51ddbf2545d16b981dd78bba03b9cfe178cd27cebd88c287e909df194"},
-    {file = "solders-0.5.2-cp37-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:1f908b6a8a8410d1a40acfaea319b31b9301ebf9d177c6f5161aab897259df9c"},
-    {file = "solders-0.5.2-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:8d7e490c39218c650ee67be3e8674d7cd246695354ab91deb53bd991210c6db5"},
-    {file = "solders-0.5.2-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:1e617560bd88d53f393e1a78d6a6b20c2000d7c6b60d1fc8cf890b06253296ab"},
-    {file = "solders-0.5.2-cp37-abi3-win_amd64.whl", hash = "sha256:75dabf6f489d493860b88b7f5efdbdf417f6c4c05f0f9a6f4be51c447eff6ac2"},
-    {file = "solders-0.5.2.tar.gz", hash = "sha256:e680e27e23908de8a3b465e45b104ab753a1cea8335b7150bfab4d3f4a390391"},
+    {file = "solders-0.6.0-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:b949838fa9295c8ca0e5c93b35620f06ea4e38aae4a51d76d86b39907a7894ac"},
+    {file = "solders-0.6.0-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b2376ab342f88e929f8e9e3b5dccf09c209771f282889e60bac204d19c936847"},
+    {file = "solders-0.6.0-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:b4764e241bcb765e933a1df327a342dae6c687d4e80d29fd3390f78ec1913ded"},
+    {file = "solders-0.6.0-cp37-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:0430f71fcc17319aa13297f6aedd185a6cfd7f23ccb0c98b8447ff91fc96ab2a"},
+    {file = "solders-0.6.0-cp37-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:09179a5754467c70a04da91ceeeabea893da915eca3dd7669d6ab141f177fb7b"},
+    {file = "solders-0.6.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6f076225ef57fc228de23ad135d4395db7b1e2ec90f7cc0be9eee5b455d00ed8"},
+    {file = "solders-0.6.0-cp37-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:9720aedff3455d7539c577f0cae7064aa575e8b8ac9167aa6e6cfbd3319a701a"},
+    {file = "solders-0.6.0-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:d5f0120986f830bbb1d83250130064c9f5e1c4c578b85919391c2df890235663"},
+    {file = "solders-0.6.0-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:9dd9ea5f166d938846fd43b906f0ebf313238271bd07462e9a8999799dfe32c7"},
+    {file = "solders-0.6.0-cp37-abi3-win_amd64.whl", hash = "sha256:4c45193509d4c95d171a30cf9b742a00e69b5056196b1b90f59d3c43c8e31640"},
+    {file = "solders-0.6.0.tar.gz", hash = "sha256:3f7189d98273500f703d6c62ac649d23464aa297f3a72eafaf8124f8f04ddd96"},
 ]
 texttable = [
     {file = "texttable-1.6.4-py2.py3-none-any.whl", hash = "sha256:dd2b0eaebb2a9e167d1cefedab4700e5dcbdb076114eed30b58b97ed6b37d6f2"},
@@ -1980,8 +1980,8 @@ types-cachetools = [
     {file = "types_cachetools-4.2.10-py3-none-any.whl", hash = "sha256:48301115189d4879d0960baac5a8a2b2d31ce6129b2ce3b915000ed337284898"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.11.tar.gz", hash = "sha256:7ee827eb8ce611b02b5117cfec5da6455365b6a575f5e3ff19f655ba603e6b4e"},
-    {file = "types_requests-2.28.11-py3-none-any.whl", hash = "sha256:af5f55e803cabcfb836dad752bd6d8a0fc8ef1cd84243061c0e27dee04ccf4fd"},
+    {file = "types-requests-2.28.11.1.tar.gz", hash = "sha256:02b1806c5b9904edcd87fa29236164aea0e6cdc4d93ea020cd615ef65cb43d65"},
+    {file = "types_requests-2.28.11.1-py3-none-any.whl", hash = "sha256:1ff2c1301f6fe58b5d1c66cdf631ca19734cb3b1a4bbadc878d75557d183291a"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.25.tar.gz", hash = "sha256:5aef0e663724eef924afa8b320b62ffef2c1736c1fa6caecfc9bc6c8ae2c3def"},
