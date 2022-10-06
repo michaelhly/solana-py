@@ -1,4 +1,5 @@
 """Integration test utils."""
+from solders.rpc.responses import RPCResult, RpcError, RpcResponseContext
 
 from solana.rpc.commitment import Processed
 from solana.rpc.types import RPCResponse, TxOpts
@@ -6,11 +7,10 @@ from solana.rpc.types import RPCResponse, TxOpts
 AIRDROP_AMOUNT = 10_000_000_000
 
 
-def assert_valid_response(resp: RPCResponse):
-    """Assert valid RPCResponse."""
-    assert resp["jsonrpc"] == "2.0"
-    assert isinstance(resp["id"], int)
-    assert resp["result"] is not None
+def assert_valid_response(resp: RPCResult):
+    """Assert valid RPCResult."""
+    assert isinstance(resp.context, RpcResponseContext)
+    assert not isinstance(resp, RpcError)
 
 
 def compare_responses_without_ids(left: RPCResponse, right: RPCResponse) -> None:

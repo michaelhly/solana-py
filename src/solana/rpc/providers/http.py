@@ -6,7 +6,7 @@ from solders.rpc.requests import Body
 from ...exceptions import SolanaRpcException, handle_exceptions
 from ..types import RPCResponse
 from .base import BaseProvider
-from .core import _HTTPProviderCore, T, _after_request, _after_request_raw
+from .core import _HTTPProviderCore, T, _after_request, _after_request_raw, Parser
 
 
 class HTTPProvider(BaseProvider, _HTTPProviderCore):
@@ -24,7 +24,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         return _after_request_raw(raw_response=raw_response)
 
     @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
-    def make_request(self, body: Body, parser: Type[T]) -> T:
+    def make_request(self, body: Body, parser: Parser) -> T:
         """Make an HTTP request to an http rpc endpoint."""
         request_kwargs = self._build_request_kwargs(body, is_async=False)
         raw_response = requests.post(**request_kwargs, timeout=self.timeout)
