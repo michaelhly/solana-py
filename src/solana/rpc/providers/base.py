@@ -1,7 +1,6 @@
 """Base RPC Provider."""
-from typing_extensions import Protocol
+from typing_extensions import Type
 from solders.rpc.requests import Body
-from solders.rpc.responses import RpcError
 from .core import T
 
 
@@ -12,7 +11,7 @@ class BaseProvider:
         """Make a request to the rpc endpoint, without parsing the result."""
         raise NotImplementedError("Providers must implement this method")
 
-    def make_request(self, body: Body, parser: Parser) -> T:
+    def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make a request to the rpc endpoint."""
         raise NotImplementedError("Providers must implement this method")
 

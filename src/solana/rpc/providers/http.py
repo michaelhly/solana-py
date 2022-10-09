@@ -1,10 +1,8 @@
 """HTTP RPC Provider."""
-from typing import Type
 import requests
 from solders.rpc.requests import Body
 
 from ...exceptions import SolanaRpcException, handle_exceptions
-from ..types import RPCResponse
 from .base import BaseProvider
 from .core import _HTTPProviderCore, T, _after_request, _after_request_raw, Parser
 
