@@ -1,34 +1,60 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
-from typing import List, Optional, Tuple, Union, cast, Sequence
+from typing import List, Optional, Sequence, Tuple, Union, cast
 
 try:
     from typing import Literal  # type: ignore
 except ImportError:
     from typing_extensions import Literal  # type: ignore
 
+from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
+from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
+from solders.rpc.config import (
+    RpcAccountInfoConfig,
+    RpcBlockConfig,
+    RpcContextConfig,
+    RpcEpochConfig,
+    RpcGetVoteAccountsConfig,
+    RpcLargestAccountsFilter,
+    RpcLeaderScheduleConfig,
+    RpcProgramAccountsConfig,
+    RpcRequestAirdropConfig,
+    RpcSendTransactionConfig,
+    RpcSignaturesForAddressConfig,
+    RpcSignatureStatusConfig,
+    RpcSimulateTransactionConfig,
+    RpcSupplyConfig,
+    RpcTokenAccountsFilterMint,
+    RpcTokenAccountsFilterProgramId,
+    RpcTransactionConfig,
+)
+from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
-    GetBalance,
     GetAccountInfo,
+    GetBalance,
+    GetBlock,
     GetBlockCommitment,
+    GetBlockHeight,
+    GetBlocks,
     GetBlockTime,
     GetClusterNodes,
-    GetBlock,
-    GetBlockHeight,
-    GetRecentPerformanceSamples,
-    GetBlocks,
-    GetSignaturesForAddress,
-    GetTransaction,
     GetEpochInfo,
+    GetEpochSchedule,
     GetFeeForMessage,
+    GetFirstAvailableBlock,
+    GetGenesisHash,
+    GetIdentity,
     GetInflationGovernor,
+    GetInflationRate,
     GetLargestAccounts,
+    GetLatestBlockhash,
     GetLeaderSchedule,
     GetMinimumBalanceForRentExemption,
     GetMultipleAccounts,
     GetProgramAccounts,
-    GetLatestBlockhash,
+    GetRecentPerformanceSamples,
+    GetSignaturesForAddress,
     GetSignatureStatuses,
     GetSlot,
     GetSlotLeader,
@@ -39,45 +65,19 @@ from solders.rpc.requests import (
     GetTokenAccountsByOwner,
     GetTokenLargestAccounts,
     GetTokenSupply,
+    GetTransaction,
     GetTransactionCount,
+    GetVersion,
     GetVoteAccounts,
+    MinimumLedgerSlot,
     RequestAirdrop,
     SendTransaction,
     SimulateTransaction,
-    GetVersion,
-    GetEpochSchedule,
-    GetFirstAvailableBlock,
-    GetGenesisHash,
-    GetIdentity,
-    GetInflationRate,
-    MinimumLedgerSlot,
     ValidatorExit,
 )
-from solders.rpc.config import (
-    RpcContextConfig,
-    RpcAccountInfoConfig,
-    RpcBlockConfig,
-    RpcSignaturesForAddressConfig,
-    RpcTransactionConfig,
-    RpcLargestAccountsFilter,
-    RpcLeaderScheduleConfig,
-    RpcProgramAccountsConfig,
-    RpcSignatureStatusConfig,
-    RpcEpochConfig,
-    RpcSupplyConfig,
-    RpcTokenAccountsFilterMint,
-    RpcTokenAccountsFilterProgramId,
-    RpcGetVoteAccountsConfig,
-    RpcRequestAirdropConfig,
-    RpcSendTransactionConfig,
-    RpcSimulateTransactionConfig,
-)
-from solders.rpc.filter import Memcmp
-from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
-from solders.transaction_status import UiTransactionEncoding
 from solders.signature import Signature
-from solders.commitment_config import CommitmentLevel
 from solders.transaction import Transaction as SoldersTx
+from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.message import Message
@@ -85,7 +85,7 @@ from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
-from .commitment import Commitment, Finalized, Confirmed, Processed
+from .commitment import Commitment, Confirmed, Finalized, Processed
 
 _COMMITMENT_TO_SOLDERS = {
     Finalized: CommitmentLevel.Finalized,
@@ -227,11 +227,19 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return GetSignaturesForAddress(address.to_solders(), config)
 
     def _get_transaction_body(
-        self, tx_sig: Signature, encoding: str = "json", commitment: Commitment = None
+        self,
+        tx_sig: Signature,
+        encoding: str = "json",
+        commitment: Commitment = None,
+        max_supported_transaction_version: Optional[int] = None,
     ) -> GetTransaction:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         encoding_to_use = _TX_ENCODING_TO_SOLDERS[encoding]
-        config = RpcTransactionConfig(encoding=encoding_to_use, commitment=commitment_to_use)
+        config = RpcTransactionConfig(
+            encoding=encoding_to_use,
+            commitment=commitment_to_use,
+            max_supported_transaction_version=max_supported_transaction_version,
+        )
         return GetTransaction(tx_sig, config)
 
     def _get_epoch_info_body(self, commitment: Optional[Commitment]) -> GetEpochInfo:
