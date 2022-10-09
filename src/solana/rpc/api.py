@@ -215,6 +215,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         slot: int,
         encoding: str = "json",
+        max_supported_transaction_version: int = None,
     ) -> types.RPCResponse:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
@@ -222,6 +223,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             slot: Slot, as u64 integer.
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            max_supported_transaction_version: (optional) The max transaction version to return in
+                responses. If the requested transaction is a higher version, an error will be returned
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -267,7 +270,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                  'base64']}]},
              'id': 10}
         """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_block_body(slot, encoding)
+        body = self._get_block_body(slot, encoding, max_supported_transaction_version)
         return self._provider.make_request(body)
 
     def get_recent_performance_samples(self, limit: Optional[int] = None) -> types.RPCResponse:

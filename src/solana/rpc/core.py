@@ -195,9 +195,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return GetBlockTime(slot)
 
     @staticmethod
-    def _get_block_body(slot: int, encoding: str) -> GetBlock:
+    def _get_block_body(slot: int, encoding: str, max_supported_transaction_version: Optional[int]) -> GetBlock:
         encoding_to_use = _TX_ENCODING_TO_SOLDERS[encoding]
-        config = RpcBlockConfig(encoding=encoding_to_use)
+        config = RpcBlockConfig(
+            encoding=encoding_to_use, max_supported_transaction_version=max_supported_transaction_version
+        )
         return GetBlock(slot=slot, config=config)
 
     def _get_block_height_body(self, commitment: Optional[Commitment]) -> GetBlockHeight:
