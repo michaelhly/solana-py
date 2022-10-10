@@ -7,7 +7,7 @@ from solders.rpc.requests import Body
 from ...exceptions import SolanaRpcException, handle_async_exceptions
 from ..types import RPCResponse
 from .async_base import AsyncBaseProvider
-from .core import DEFAULT_TIMEOUT, _HTTPProviderCore, T
+from .core import DEFAULT_TIMEOUT, _HTTPProviderCore, T, _after_request
 
 
 class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
@@ -32,7 +32,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body, is_async=True)
         raw_response = await self.session.post(**request_kwargs)
-        return self._after_request(raw_response=raw_response, parser=parser)
+        return _after_request(raw_response=raw_response, parser=parser)
 
     async def is_connected(self) -> bool:
         """Health check."""

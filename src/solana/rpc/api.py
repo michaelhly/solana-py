@@ -43,6 +43,8 @@ from solders.rpc.responses import (
     GetTokenAccountBalanceResp,
     GetTokenAccountsByDelegateResp,
     GetTokenAccountsByOwnerResp,
+    GetTokenAccountsByDelegateJsonParsedResp,
+    GetTokenAccountsByOwnerJsonParsedResp,
     GetTokenLargestAccountsResp,
     GetTokenSupplyResp,
     GetTransactionCountResp,
@@ -751,10 +753,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
                 - "base58" is limited to Account data of less than 128 bytes.
                 - "base64" will return base64 encoded data for Account data of any size.
-                - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
-
-                If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
-                detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
             data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
@@ -796,7 +794,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkeys: List[PublicKey],
         commitment: Optional[Commitment] = None,
-        data_slice: Optional[types.DataSliceOpts] = None,
     ) -> GetMultipleAccountsMaybeJsonParsedResp:
         """Returns all the account info for a list of public keys, in jsonParsed format if possible.
 
@@ -805,8 +802,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
-                `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -838,7 +833,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             }
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_multiple_accounts_body(
-            pubkeys=pubkeys, commitment=commitment, encoding="jsonParsed", data_slice=data_slice
+            pubkeys=pubkeys,
+            commitment=commitment,
+            encoding="jsonParsed",
+            data_slice=None,
         )
         return self._provider.make_request(body, GetMultipleAccountsMaybeJsonParsedResp)
 
@@ -892,7 +890,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkey: PublicKey,
         commitment: Optional[Commitment] = None,
-        data_slice: Optional[types.DataSliceOpts] = None,
         filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
     ) -> GetProgramAccountsMaybeJsonParsedResp:
         """Returns all accounts owned by the provided program Pubkey.
@@ -900,8 +897,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
-            `   length`: <usize> fields; only available for "base58" or "base64" encoding.
             filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
                 Note: an int entry is converted to a `dataSize` filter.
 
@@ -927,7 +922,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             pubkey=pubkey,
             commitment=commitment,
             encoding="jsonParsed",
-            data_slice=data_slice,
+            data_slice=None,
             filters=filters,
         )
         return self._provider.make_request(body, GetProgramAccountsMaybeJsonParsedResp)
@@ -1097,6 +1092,22 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_token_accounts_by_delegate_body(delegate, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByDelegateResp)
 
+    def get_token_accounts_by_delegate_json_parsed(
+        self,
+        delegate: PublicKey,
+        opts: types.TokenAccountOpts,
+        commitment: Optional[Commitment] = None,
+    ) -> GetTokenAccountsByDelegateJsonParsedResp:
+        """Returns all SPL Token accounts by approved delegate in JSON format (UNSTABLE).
+
+        Args:
+            delegate: Public key of the delegate owner to query.
+            opts: Token account option specifying at least one of `mint` or `program_id`.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        """
+        body = self._get_token_accounts_by_delegate_json_parsed_body(delegate, opts, commitment)
+        return self._provider.make_request(body, GetTokenAccountsByDelegateResp)
+
     def get_token_accounts_by_owner(
         self,
         owner: PublicKey,
@@ -1108,9 +1119,25 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             owner: Public key of the account owner to query.
             opts: Token account option specifying at least one of `mint` or `program_id`.
-            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".            
         """
         body = self._get_token_accounts_by_owner_body(owner, opts, commitment)
+        return self._provider.make_request(body, GetTokenAccountsByOwnerResp)
+
+    def get_token_accounts_by_owner_json_parsed(
+        self,
+        owner: PublicKey,
+        opts: types.TokenAccountOpts,
+        commitment: Optional[Commitment] = None,
+    ) -> GetTokenAccountsByOwnerJsonParsedResp:
+        """Returns all SPL Token accounts by token owner in JSON format (UNSTABLE).
+
+        Args:
+            owner: Public key of the account owner to query.
+            opts: Token account option specifying at least one of `mint` or `program_id`.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+        """
+        body = self._get_token_accounts_by_owner_json_parsed_body(owner, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByOwnerResp)
 
     def get_token_largest_accounts(

@@ -53,7 +53,7 @@ class _HTTPProviderCore(FriendlyJsonSerde):
 
 def _after_request(raw_response: Union[requests.Response, httpx.Response], parser: Type[T]) -> T:
     text = _after_request_raw(raw_response)
-    parsed = parser.from_json(text)
+    parsed = parser.from_json(text)  # type: ignore
     if isinstance(parsed, RpcError):
         raise RPCException(parsed)
     return parsed

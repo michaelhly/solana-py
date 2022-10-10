@@ -65,13 +65,7 @@ class TokenAccountOpts(NamedTuple):
     program_id: Optional[PublicKey] = None
     """Public key of the Token program ID that owns the accounts."""
     encoding: str = "base64"
-    """Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
-
-    Parsed-JSON encoding attempts to use program-specific state parsers to return more
-    human-readable and explicit account state data. If parsed-JSON is requested but a
-    valid mint cannot be found for a particular account, that account will be filtered out
-    from results. jsonParsed encoding is UNSTABLE.
-    """
+    """Encoding for Account data, either "base58" (slow) or "base64"."""
     data_slice: Optional[DataSliceOpts] = None
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 

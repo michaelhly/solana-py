@@ -76,31 +76,9 @@ from solders.rpc.requests import (
     ValidatorExit,
 )
 from solders.rpc.responses import SendTransactionResp, GetLatestBlockhashResp
-from solders.rpc.config import (
-    RpcContextConfig,
-    RpcAccountInfoConfig,
-    RpcBlockConfig,
-    RpcSignaturesForAddressConfig,
-    RpcTransactionConfig,
-    RpcLargestAccountsFilter,
-    RpcLeaderScheduleConfig,
-    RpcProgramAccountsConfig,
-    RpcSignatureStatusConfig,
-    RpcEpochConfig,
-    RpcSupplyConfig,
-    RpcTokenAccountsFilterMint,
-    RpcTokenAccountsFilterProgramId,
-    RpcGetVoteAccountsConfig,
-    RpcRequestAirdropConfig,
-    RpcSendTransactionConfig,
-    RpcSimulateTransactionConfig,
-)
-from solders.rpc.filter import Memcmp
-from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.transaction_status import UiTransactionEncoding
 from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
-from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.message import Message
@@ -410,6 +388,20 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
 
+    def _get_token_accounts_by_delegate_json_parsed_body(
+        self, delegate: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+    ) -> GetTokenAccountsByDelegate:
+        opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
+        pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts_to_use, commitment)
+        return GetTokenAccountsByDelegate(pubkey, filter_, config)
+
+    def _get_token_accounts_by_owner_json_parsed_body(
+        self, owner: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+    ) -> GetTokenAccountsByOwner:
+        opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
+        pubkey, filter_, config = self._get_token_accounts_convert(owner, opts_to_use, commitment)
+        return GetTokenAccountsByOwner(pubkey, filter_, config)
+
     def _get_token_largest_accounts_body(
         self, pubkey: PublicKey, commitment: Optional[Commitment]
     ) -> GetTokenLargestAccounts:
@@ -467,14 +459,14 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
-        if not resp.result:
+        if not resp.value:
             raise RPCNoResultException("Failed to send transaction")
         return resp
 
     @staticmethod
     def parse_recent_blockhash(blockhash_resp: GetLatestBlockhashResp) -> Blockhash:
         """Extract blockhash from JSON RPC result."""
-        return Blockhash(blockhash_resp.value.blockhash)
+        return Blockhash(str(blockhash_resp.value.blockhash))
 
     def _process_blockhash_resp(self, blockhash_resp: GetLatestBlockhashResp, used_immediately: bool) -> Blockhash:
         recent_blockhash = self.parse_recent_blockhash(blockhash_resp)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple, Type, Union
+from solders.rpc.responses import GetAccountInfoResp
 
 import solana.system_program as sp
 import spl.token.instructions as spl_token
@@ -339,14 +340,15 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         )
         return txn, signers, opts
 
-    def _create_mint_info(self, info: RPCResponse) -> MintInfo:
-        if not info:
+    def _create_mint_info(self, info: GetAccountInfoResp) -> MintInfo:
+        value = info.value
+        if value is None:
             raise ValueError("Failed to find mint account")
-        owner = info["result"]["value"]["owner"]
-        if owner != str(self.program_id):
+        owner = value.owner
+        if owner != self.program_id.to_solders():
             raise AttributeError(f"Invalid mint owner: {owner}")
 
-        bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+        bytes_data = value.data
         if len(bytes_data) != MINT_LAYOUT.sizeof():
             raise ValueError("Invalid mint size")
 
@@ -368,14 +370,14 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
         return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
 
-    def _create_account_info(self, info: RPCResponse) -> AccountInfo:
-        if not info:
+    def _create_account_info(self, info: GetAccountInfoResp) -> AccountInfo:
+        value = info.value
+        if value is None:
             raise ValueError("Invalid account owner")
-
-        if info["result"]["value"]["owner"] != str(self.program_id):
+        if value.owner != self.program_id.to_solders():
             raise AttributeError("Invalid account owner")
 
-        bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+        bytes_data = value.data
         if len(bytes_data) != ACCOUNT_LAYOUT.sizeof():
             raise ValueError("Invalid account size")
 
