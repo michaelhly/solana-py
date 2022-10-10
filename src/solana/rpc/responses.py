@@ -241,6 +241,7 @@ class VoteItem:
     hash: str
     slots: List[int]
     timestamp: Optional[int]
+    signature: str
 
 
 @dataclass

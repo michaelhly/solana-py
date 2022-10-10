@@ -4,20 +4,20 @@ import pytest
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
+from solana.rpc.commitment import Finalized
 from solana.utils.helpers import decode_byte_string
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response, OPTS
+from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 @pytest.fixture(scope="module")
 async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -> AsyncToken:
     """Test create mint."""
     resp = await test_http_client_async.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    await test_http_client_async.confirm_transaction(resp["result"])
+    await test_http_client_async.confirm_transaction(resp["result"], commitment=Finalized)
     assert_valid_response(resp)
 
     expected_decimals = 6
@@ -48,7 +48,6 @@ async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 @pytest.fixture(scope="module")
 async def stubbed_sender_token_account_pk(
     stubbed_sender, test_token  # pylint: disable=redefined-outer-name
@@ -58,7 +57,6 @@ async def stubbed_sender_token_account_pk(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 @pytest.fixture(scope="module")
 async def async_stubbed_receiver_token_account_pk(
     async_stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
@@ -68,7 +66,6 @@ async def async_stubbed_receiver_token_account_pk(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_new_account(stubbed_sender, test_http_client_async, test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
     token_account_pk = await test_token.create_account(stubbed_sender.public_key)
@@ -91,7 +88,6 @@ async def test_new_account(stubbed_sender, test_http_client_async, test_token): 
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new associated token account."""
     new_acct = PublicKey(0)
@@ -104,7 +100,6 @@ async def test_new_associated_account(test_token):  # pylint: disable=redefined-
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_get_account_info(
     stubbed_sender, stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
@@ -123,7 +118,6 @@ async def test_get_account_info(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_get_mint_info(stubbed_sender, freeze_authority, test_token):  # pylint: disable=redefined-outer-name
     """Test get token mint info."""
     mint_info = await test_token.get_mint_info()
@@ -135,7 +129,6 @@ async def test_get_mint_info(stubbed_sender, freeze_authority, test_token):  # p
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_mint_to(
     stubbed_sender, stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
@@ -156,7 +149,6 @@ async def test_mint_to(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_transfer(
     stubbed_sender, async_stubbed_receiver_token_account_pk, stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
@@ -178,7 +170,6 @@ async def test_transfer(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_burn(
     stubbed_sender, stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
@@ -203,7 +194,6 @@ async def test_burn(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_mint_to_checked(
     stubbed_sender,
     stubbed_sender_token_account_pk,
@@ -232,7 +222,6 @@ async def test_mint_to_checked(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_transfer_checked(
     stubbed_sender, async_stubbed_receiver_token_account_pk, stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
@@ -260,7 +249,6 @@ async def test_transfer_checked(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_burn_checked(
     stubbed_sender, stubbed_sender_token_account_pk, test_token
 ):  # pylint: disable=redefined-outer-name
@@ -286,7 +274,6 @@ async def test_burn_checked(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
     """Test get token accounts."""
     resp = await test_token.get_accounts(stubbed_sender.public_key)
@@ -299,7 +286,6 @@ async def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=rede
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_approve(
     stubbed_sender,
     async_stubbed_receiver,
@@ -324,7 +310,6 @@ async def test_approve(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_revoke(
     stubbed_sender,
     async_stubbed_receiver,
@@ -349,7 +334,6 @@ async def test_revoke(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_approve_checked(
     stubbed_sender,
     async_stubbed_receiver,
@@ -375,7 +359,6 @@ async def test_approve_checked(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_freeze_account(
     stubbed_sender_token_account_pk, freeze_authority, test_token, test_http_client_async
 ):  # pylint: disable=redefined-outer-name
@@ -395,7 +378,6 @@ async def test_freeze_account(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_thaw_account(
     stubbed_sender_token_account_pk, freeze_authority, test_token, test_http_client_async
 ):  # pylint: disable=redefined-outer-name
@@ -411,7 +393,6 @@ async def test_thaw_account(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_close_account(
     stubbed_sender,
     stubbed_sender_token_account_pk,
@@ -439,7 +420,6 @@ async def test_close_account(
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_create_multisig(
     stubbed_sender, async_stubbed_receiver, test_token, test_http_client
 ):  # pylint: disable=redefined-outer-name

@@ -7,13 +7,19 @@ from warnings import warn
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
-# from solana.account import Account
+from solana.message import Message
 from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
 from .commitment import COMMITMENT_RANKS, Commitment, Finalized
-from .core import RPCException, UnconfirmedTxError, _ClientCore
+from .core import (
+    RPCException,
+    TransactionExpiredBlockheightExceededError,
+    TransactionUncompiledError,
+    UnconfirmedTxError,
+    _ClientCore,
+)
 from .providers import http
 
 
@@ -63,22 +69,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
         blockhash_cache: Union[BlockhashCache, bool] = False,
-        timeout: float = 60,
+        timeout: float = 10,
     ):
         """Init API client."""
         super().__init__(commitment, blockhash_cache)
         self._provider = http.HTTPProvider(endpoint, timeout=timeout)
-
-    @property
-    def request(self):
-        if getattr(self, '_provider'):
-            request_raw = self._provider.content
-            return self._provider.json_decode(request_raw)
-        return None
-
-    @property
-    def response_headers(self):
-        return self._provider.response_headers if getattr(self, '_provider') else None
 
     def is_connected(self) -> bool:
         """Health check.
@@ -104,7 +99,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -656,6 +650,31 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_fee_calculator_for_blockhash_args(blockhash, commitment)
         return self._provider.make_request(*args)
 
+    def get_fee_for_message(self, message: Message, commitment: Optional[Commitment] = None) -> types.RPCResponse:
+        """Returns the fee for a message.
+
+        Args:
+            message: Message that the fee is requested for.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+
+        Example:
+            >>> from solana.keypair import Keypair
+            >>> from solana.system_program import TransferParams, transfer
+            >>> from solana.transaction import Transaction
+            >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
+            >>> txn = Transaction().add(transfer(TransferParams(
+            ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_fee_for_message(txn.compile_message()) # doctest: +SKIP
+            {'jsonrpc': '2.0',
+             'result': { 'context': { 'slot': 5068 }, 'value': 5000 },
+             'id': 4}
+        """  # noqa: E501 # pylint: disable=line-too-long
+        if isinstance(message, Transaction):
+            raise TransactionUncompiledError("Transaction uncompiled, please compile to message first.")
+        args = self._get_fee_for_message_args(message, commitment)
+        return self._provider.make_request(*args)
+
     def get_fee_rate_governor(self) -> types.RPCResponse:
         """Returns the fee rate governor information from the root bank.
 
@@ -936,7 +955,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 detectable when the data field is type. (jsonParsed encoding is UNSTABLE).
             data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -988,33 +1006,35 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         min_context_slot: Optional[int] = None,
     ) -> types.RPCResponse:
         """Returns all accounts owned by the provided program Pubkey.
- 
-        :param pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
-        :param commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-        :param encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
-            "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
-        :param data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
-            `length`: <usize> fields; only available for "base58" or "base64" encoding.
-        :param data_size: (optional) Option to compare the program account data length with the provided data size.
-        :param memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
-        :param with_context: (optional ) Option to wrap the result in an RpcResponse JSON object.
-        :param min_context_slot: (optional ) set the minimum slot that the request can be evaluated at
 
-        >>> solana_client = Client("http://localhost:8899")
-        >>> memcmp_opts = [
-        ...     MemcmpOpt(offset=4, bytes="3Mc6vR"),
-        ... ]
-        >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", data_size=17, memcmp_opts=memcmp_opts) # doctest: +SKIP
-        {'jsonrpc': "2.0",
-         'result' :[{
-            'account' :{
-                 'data' :'2R9jLfiAQ9bgdcw6h8s44439',
-                 'executable' :false,
-                 'lamports' :15298080,
-                 'owner' :'4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T',
-                 'rentEpoch' :28},
-            'pubkey' :'CxELquR1gPP8wHe33gZ4QxqGB3sZ9RSwsJ2KshVewkFY'}],
-         'id' :1}
+        Args:
+            pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
+                "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
+            `   length`: <usize> fields; only available for "base58" or "base64" encoding.
+            data_size: (optional) Option to compare the program account data length with the provided data size.
+            memcmp_opts: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
+            with_context: (optional ) Option to wrap the result in an RpcResponse JSON object.
+            min_context_slot: (optional ) set the minimum slot that the request can be evaluated at
+        
+        Example:
+            >>> solana_client = Client("http://localhost:8899")
+            >>> memcmp_opts = [
+            ...     MemcmpOpt(offset=4, bytes="3Mc6vR"),
+            ... ]
+            >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", data_size=17, memcmp_opts=memcmp_opts) # doctest: +SKIP
+            {'jsonrpc': "2.0",
+             'result' :[{
+                'account' :{
+                     'data' :'2R9jLfiAQ9bgdcw6h8s44439',
+                     'executable' :false,
+                     'lamports' :15298080,
+                     'owner' :'4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T',
+                     'rentEpoch' :28},
+                'pubkey' :'CxELquR1gPP8wHe33gZ4QxqGB3sZ9RSwsJ2KshVewkFY'}],
+             'id' :1}
         """  # noqa: E501 # pylint: disable=line-too-long
         args = self._get_program_accounts_args(
             pubkey=pubkey,
@@ -1083,7 +1103,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns a recent block hash from the ledger.
 
         Response also includes a fee schedule that can be used to compute the cost
-        of submitting a transaction using it.
+        of submitting a transaction using it. Deprecated, please use get_latest_blockhash() instead.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
@@ -1100,22 +1120,25 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         args = self._get_recent_blockhash_args(commitment)
         return self._provider.make_request(*args)
 
-    def get_latest_blockhash(
-        self,
-        commitment: Optional[Commitment] = None,
-        min_context_slot: Optional[int] = None,
-    ) -> types.RPCResponse:
-        """Returns the latest blockhash
-            NEW: This method is only available in solana-core v1.9 or newer.
-            Please use getRecentBlockhash for solana-core v1.8
+    def get_latest_blockhash(self,
+                             commitment: Optional[Commitment] = None,
+                             min_context_slot: Optional[int] = None,
+                             ) -> types.RPCResponse:
+        """Returns the latest block hash from the ledger.
+
+        Response also includes the last valid block height.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
-            solana_client = Client("http://localhost:8899")
-            solana_client.get_latest_blockhash()
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_latest_blockhash() # doctest: +SKIP
+            {'jsonrpc': '2.0',
+             'result': {'context': {'slot': 1637},
+              'value': {'blockhash': 'EALChog1mXQ9nEgEUQpWAtmA5UueUZvZiL16ZivmR7eb',
+               'lastValidBlockHeight': 3090}},
+             'id': 2}
         """
         args = self._get_latest_blockhash_args(commitment, min_context_slot)
         return self._provider.make_request(*args)
@@ -1281,7 +1304,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1300,7 +1322,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1326,7 +1347,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
                 defaults to current epoch.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1386,7 +1406,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_token_accounts_by_delegate(
         self,
         delegate: PublicKey,
-        opts: Optional[types.TokenAccountOpts] = None,
+        opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> types.RPCResponse:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
@@ -1448,7 +1468,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1591,9 +1610,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         txn: Transaction,
         *signers: Keypair,
-        # opts: types.TxOpts = types.TxOpts(),
-
-        # *signers: Keypair,
         opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> types.RPCResponse:
@@ -1621,23 +1637,30 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'result': '236zSA5w4NaVuLXXHK1mqiBuBxkNBu84X6cfLBh1v6zjPrLfyECz4zdedofBaZFhs4gdwzSmij9VkaSo2tR5LTgG',
              'id': 12}
         """
-        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        last_valid_block_height = None
         if recent_blockhash is None:
             if self.blockhash_cache:
                 try:
                     recent_blockhash = self.blockhash_cache.get()
                 except ValueError:
-                    blockhash_resp = self.get_recent_blockhash(Finalized)
+                    blockhash_resp = self.get_latest_blockhash(Finalized)
                     recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
+                    last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
+
             else:
-                blockhash_resp = self.get_recent_blockhash(Finalized)
+                blockhash_resp = self.get_latest_blockhash(Finalized)
                 recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
+                last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
+
         txn.recent_blockhash = recent_blockhash
 
-        # if all([type(signer) is Account for signer in signers]):
-        #     signers = tuple([Keypair(signer.key) for signer in signers])
-
         txn.sign(*signers)
+        opts_to_use = (
+            types.TxOpts(preflight_commitment=self._commitment, last_valid_block_height=last_valid_block_height)
+            if opts is None
+            else opts
+        )
+
         txn_resp = self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
         if self.blockhash_cache:
             blockhash_resp = self.get_recent_blockhash(Finalized)
@@ -1658,7 +1681,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 The transaction must have a valid blockhash, but is not required to be signed.
             sig_verify: If true the transaction signatures will be verified (default: false).
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1706,7 +1728,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(self._validator_exit)
 
-    def __post_send_with_confirm(self, resp: types.RPCResponse, conf_comm: Commitment) -> types.RPCResponse:
+    def __post_send_with_confirm(
+        self, resp: types.RPCResponse, conf_comm: Commitment, last_valid_block_height: Optional[int]
+    ) -> types.RPCResponse:
         resp = self._post_send(resp)
         self._provider.logger.info(
             "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
@@ -1715,7 +1739,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return resp
 
     def confirm_transaction(
-        self, tx_sig: str, commitment: Optional[Commitment] = None, sleep_seconds: float = 0.5
+        self,
+        tx_sig: str,
+        commitment: Optional[Commitment] = None,
+        sleep_seconds: float = 0.5,
+        last_valid_block_height: Optional[int] = None,
     ) -> types.RPCResponse:
         """Confirm the transaction identified by the specified signature.
 
@@ -1724,25 +1752,46 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
-        timeout = time() + 900
+        timeout = time() + 30
         commitment_to_use = self._commitment if commitment is None else commitment
         commitment_rank = COMMITMENT_RANKS[commitment_to_use]
-
-        while time() < timeout:
-            resp = self.get_signature_statuses([tx_sig])
-            maybe_rpc_error = resp.get("error")
-            if maybe_rpc_error is not None:
-                raise RPCException(maybe_rpc_error)
-            resp_value = resp["result"]["value"][0]
-            if resp_value is not None:
-                confirmation_status = resp_value["confirmationStatus"]
-                confirmation_rank = COMMITMENT_RANKS[confirmation_status]
-                if confirmation_rank >= commitment_rank:
-                    break
-            sleep(sleep_seconds)
+        if last_valid_block_height:  # pylint: disable=no-else-return
+            current_blockheight = (self.get_block_height(commitment))["result"]
+            while current_blockheight <= last_valid_block_height:
+                resp = self.get_signature_statuses([tx_sig])
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                resp_value = resp["result"]["value"][0]
+                if resp_value is not None:
+                    confirmation_status = resp_value["confirmationStatus"]
+                    confirmation_rank = COMMITMENT_RANKS[confirmation_status]
+                    if confirmation_rank >= commitment_rank:
+                        break
+                current_blockheight = (self.get_block_height(commitment))["result"]
+                sleep(sleep_seconds)
+            else:
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
+            return resp
         else:
-            maybe_rpc_error = resp.get("error")
-            if maybe_rpc_error is not None:
-                raise RPCException(maybe_rpc_error)
-            raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
-        return resp
+            while time() < timeout:
+                resp = self.get_signature_statuses([tx_sig])
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                resp_value = resp["result"]["value"][0]
+                if resp_value is not None:
+                    confirmation_status = resp_value["confirmationStatus"]
+                    confirmation_rank = COMMITMENT_RANKS[confirmation_status]
+                    if confirmation_rank >= commitment_rank:
+                        break
+                sleep(sleep_seconds)
+            else:
+                maybe_rpc_error = resp.get("error")
+                if maybe_rpc_error is not None:
+                    raise RPCException(maybe_rpc_error)
+                raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
+            return resp

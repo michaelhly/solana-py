@@ -86,7 +86,7 @@ from asyncstdlib import enumerate
 from solana.rpc.websocket_api import connect
 
 async def main():
-    async with connect("ws://api.devnet.solana.com") as websocket:
+    async with connect("wss://api.devnet.solana.com") as websocket:
         await websocket.logs_subscribe()
         first_resp = await websocket.recv()
         subscription_id = first_resp.result
@@ -95,7 +95,7 @@ async def main():
         await websocket.logs_unsubscribe(subscription_id)
 
     # Alternatively, use the client as an infinite asynchronous iterator:
-    async with connect("ws://api.devnet.solana.com") as websocket:
+    async with connect("wss://api.devnet.solana.com") as websocket:
         await websocket.logs_subscribe()
         first_resp = await websocket.recv()
         subscription_id = first_resp.result
