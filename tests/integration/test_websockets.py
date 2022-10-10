@@ -90,7 +90,7 @@ async def program_subscribed(
     program = Keypair()
     owned = Keypair()
     airdrop_resp = await test_http_client_async.request_airdrop(owned.public_key, AIRDROP_AMOUNT)
-    await test_http_client_async.confirm_transaction(Signature.from_string(airdrop_resp["result"]))
+    await test_http_client_async.confirm_transaction(airdrop_resp.value)
     await websocket.program_subscribe(program.public_key)
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
@@ -105,7 +105,7 @@ async def signature_subscribed(
     """Setup signature subscription."""
     recipient = Keypair()
     airdrop_resp = await test_http_client_async.request_airdrop(recipient.public_key, AIRDROP_AMOUNT)
-    await websocket.signature_subscribe(Signature.from_string(airdrop_resp["result"]))
+    await websocket.signature_subscribe(airdrop_resp.value)
     first_resp = await websocket.recv()
     subscription_id = first_resp.result
     yield
@@ -166,7 +166,7 @@ async def test_multiple_subscriptions(
         if idx == len(multiple_subscriptions) - 1:
             break
     balance = await test_http_client_async.get_balance(stubbed_sender.public_key, Finalized)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration

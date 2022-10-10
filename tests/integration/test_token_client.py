@@ -18,9 +18,9 @@ from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    test_http_client.confirm_transaction(Signature.from_string(resp["result"]), commitment=Finalized)
+    test_http_client.confirm_transaction(resp.value, commitment=Finalized)
     balance = test_http_client.get_balance(stubbed_sender.public_key)
-    assert balance["result"]["value"] == AIRDROP_AMOUNT
+    assert balance.value == AIRDROP_AMOUNT
     expected_decimals = 6
     token_client = Token.create_mint(
         test_http_client,
@@ -37,9 +37,9 @@ def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
 
     resp = test_http_client.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
-    assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
+    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
 
-    mint_data = layouts.MINT_LAYOUT.parse(decode_byte_string(resp["result"]["value"]["data"][0]))
+    mint_data = layouts.MINT_LAYOUT.parse(decode_byte_string(resp.value["data"][0]))
     assert mint_data.is_initialized
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
@@ -70,9 +70,9 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     token_account_pk = test_token.create_account(stubbed_sender.public_key)
     resp = test_http_client.get_account_info(token_account_pk)
     assert_valid_response(resp)
-    assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
+    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
 
-    account_data = layouts.ACCOUNT_LAYOUT.parse(decode_byte_string(resp["result"]["value"]["data"][0]))
+    account_data = layouts.ACCOUNT_LAYOUT.parse(decode_byte_string(resp.value["data"][0]))
     assert account_data.state
     assert not account_data.amount
     assert (
@@ -135,7 +135,7 @@ def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  
         test_token.mint_to(dest=stubbed_sender_token_account_pk, mint_authority=stubbed_sender, amount=1000, opts=OPTS)
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
-    balance_info = resp["result"]["value"]
+    balance_info = resp.value
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == 6
     assert balance_info["uiAmount"] == 0.001
@@ -157,7 +157,7 @@ def test_transfer(
         )
     )
     resp = test_token.get_balance(stubbed_receiver_token_account_pk)
-    balance_info = resp["result"]["value"]
+    balance_info = resp.value
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == 6
     assert balance_info["uiAmount"] == 0.0005
@@ -183,7 +183,7 @@ def test_burn(
         )
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
-    balance_info = resp["result"]["value"]
+    balance_info = resp.value
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == 6
     assert balance_info["uiAmount"] == 0.0003
@@ -209,7 +209,7 @@ def test_mint_to_checked(
         )
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
-    balance_info = resp["result"]["value"]
+    balance_info = resp.value
     assert balance_info["amount"] == str(expected_amount)
     assert balance_info["decimals"] == expected_decimals
     assert balance_info["uiAmount"] == 0.001
@@ -236,7 +236,7 @@ def test_transfer_checked(
         )
     )
     resp = test_token.get_balance(stubbed_receiver_token_account_pk)
-    balance_info = resp["result"]["value"]
+    balance_info = resp.value
     assert balance_info["amount"] == str(total_amount)
     assert balance_info["decimals"] == expected_decimals
     assert balance_info["uiAmount"] == 0.001
@@ -261,7 +261,7 @@ def test_burn_checked(
         )
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
-    balance_info = resp["result"]["value"]
+    balance_info = resp.value
     assert balance_info["amount"] == str(0)
     assert balance_info["decimals"] == expected_decimals
     assert balance_info["uiAmount"] == 0.0
@@ -272,8 +272,8 @@ def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-
     """Test get token accounts."""
     resp = test_token.get_accounts(stubbed_sender.public_key)
     assert_valid_response(resp)
-    assert len(resp["result"]["value"]) == 2
-    for resp_data in resp["result"]["value"]:
+    assert len(resp.value) == 2
+    for resp_data in resp.value:
         assert PublicKey(resp_data["pubkey"])
         parsed_data = resp_data["account"]["data"]["parsed"]["info"]
         assert parsed_data["owner"] == str(stubbed_sender.public_key)
@@ -294,7 +294,7 @@ def test_approve(
     )
     assert_valid_response(resp)
     test_http_client.confirm_transaction(
-        Signature.from_string(resp["result"]),
+        resp.value,
     )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
@@ -313,9 +313,7 @@ def test_revoke(
 
     revoke_resp = test_token.revoke(account=stubbed_sender_token_account_pk, owner=stubbed_sender.public_key, opts=OPTS)
     assert_valid_response(revoke_resp)
-    test_http_client.confirm_transaction(
-        Signature.from_string(revoke_resp["result"]),
-    )
+    test_http_client.confirm_transaction(revoke_resp.value)
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate is None
     assert account_info.delegated_amount == 0
@@ -337,7 +335,7 @@ def test_approve_checked(
     )
     assert_valid_response(resp)
     test_http_client.confirm_transaction(
-        Signature.from_string(resp["result"]),
+        resp.value,
     )
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.delegate == stubbed_receiver
@@ -352,7 +350,7 @@ def test_freeze_account(
     resp = test_http_client.request_airdrop(freeze_authority.public_key, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(
-        Signature.from_string(resp["result"]),
+        resp.value,
     )
 
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
@@ -360,9 +358,7 @@ def test_freeze_account(
 
     freeze_resp = test_token.freeze_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     assert_valid_response(freeze_resp)
-    test_http_client.confirm_transaction(
-        Signature.from_string(freeze_resp["result"]),
-    )
+    test_http_client.confirm_transaction(freeze_resp.value)
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
 
@@ -377,9 +373,7 @@ def test_thaw_account(
 
     thaw_resp = test_token.thaw_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     assert_valid_response(thaw_resp)
-    test_http_client.confirm_transaction(
-        Signature.from_string(thaw_resp["result"]),
-    )
+    test_http_client.confirm_transaction(thaw_resp.value)
     account_info = test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
@@ -395,7 +389,7 @@ def test_close_account(
     """Test closing a token account."""
     create_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(create_resp)
-    assert create_resp["result"]["value"]["data"]
+    assert create_resp.value["data"]
 
     close_resp = test_token.close_account(
         account=stubbed_sender_token_account_pk,
@@ -404,13 +398,10 @@ def test_close_account(
         opts=OPTS,
     )
     assert_valid_response(close_resp)
-    test_http_client.confirm_transaction(
-        Signature.from_string(close_resp["result"]),
-    )
-
+    test_http_client.confirm_transaction(close_resp.value)
     info_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(info_resp)
-    assert info_resp["result"]["value"] is None
+    assert info_resp.value is None
 
 
 @pytest.mark.integration
@@ -422,9 +413,9 @@ def test_create_multisig(
     multisig_pubkey = test_token.create_multisig(min_signers, [stubbed_sender.public_key, stubbed_receiver], opts=OPTS)
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
-    assert resp["result"]["value"]["owner"] == str(TOKEN_PROGRAM_ID)
+    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
 
-    multisig_data = layouts.MULTISIG_LAYOUT.parse(decode_byte_string(resp["result"]["value"]["data"][0]))
+    multisig_data = layouts.MULTISIG_LAYOUT.parse(decode_byte_string(resp.value["data"][0]))
     assert multisig_data.is_initialized
     assert multisig_data.m == min_signers
     assert PublicKey(multisig_data.signer1) == stubbed_sender.public_key
