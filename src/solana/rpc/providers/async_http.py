@@ -5,7 +5,6 @@ import httpx
 from solders.rpc.requests import Body
 
 from ...exceptions import SolanaRpcException, handle_async_exceptions
-from ..types import RPCResponse
 from .async_base import AsyncBaseProvider
 from .core import DEFAULT_TIMEOUT, T, _after_request, _HTTPProviderCore
 

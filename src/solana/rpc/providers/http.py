@@ -6,7 +6,7 @@ from solders.rpc.requests import Body
 
 from ...exceptions import SolanaRpcException, handle_exceptions
 from .base import BaseProvider
-from .core import T, _after_request, _after_request_raw, _HTTPProviderCore
+from .core import T, _after_request, _HTTPProviderCore
 
 
 class HTTPProvider(BaseProvider, _HTTPProviderCore):

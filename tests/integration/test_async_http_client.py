@@ -1,6 +1,5 @@
 """Tests for the HTTP API Client."""
 import pytest
-from solders.signature import Signature
 
 import solana.system_program as sp
 from solana.blockhash import Blockhash

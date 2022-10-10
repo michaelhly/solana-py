@@ -19,7 +19,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.commitment import Commitment
-from solana.rpc.types import RPCResponse, TxOpts
+from solana.rpc.types import TxOpts
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
 from spl.token.core import AccountInfo, MintInfo, _TokenCore
 

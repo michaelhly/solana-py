@@ -1,6 +1,5 @@
 """Tests for the Memo program."""
 import pytest
-from solders.signature import Signature
 from solders.transaction_status import UiTransaction
 
 from solana.keypair import Keypair
