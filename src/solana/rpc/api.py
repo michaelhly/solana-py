@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from time import sleep, time
-from typing import Dict, List, Optional, Union, Sequence
+from typing import Dict, List, Optional, Sequence, Union
+
 from solders.signature import Signature
 from solders.rpc.responses import (
     RpcError,
@@ -293,6 +294,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         slot: int,
         encoding: str = "json",
+        max_supported_transaction_version: int = None,
     ) -> GetBlockResp:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
@@ -300,6 +302,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             slot: Slot, as u64 integer.
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
+            max_supported_transaction_version: (optional) The max transaction version to return in
+                responses. If the requested transaction is a higher version, an error will be returned
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -345,7 +349,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                  'base64']}]},
              'id': 10}
         """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_block_body(slot, encoding)
+        body = self._get_block_body(slot, encoding, max_supported_transaction_version)
         return self._provider.make_request(body, GetBlockResp)
 
     def get_recent_performance_samples(self, limit: Optional[int] = None) -> GetRecentPerformanceSamplesResp:
@@ -455,7 +459,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetSignaturesForAddressResp)
 
     def get_transaction(
-        self, tx_sig: Signature, encoding: str = "json", commitment: Optional[Commitment] = None
+        self,
+        tx_sig: Signature,
+        encoding: str = "json",
+        commitment: Optional[Commitment] = None,
+        max_supported_transaction_version: Optional[int] = None,
     ) -> GetTransactionResp:
         """Returns transaction details for a confirmed transaction.
 
@@ -466,6 +474,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            max_supported_transaction_version: (optional) The max transaction version to return in responses.
+                If the requested transaction is a higher version, an error will be returned
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -490,7 +500,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                    'signatures': ['3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy']}},
                  'id': 4}
         """  # noqa: E501 # pylint: disable=line-too-long
-        body = self._get_transaction_body(tx_sig, encoding, commitment)
+        body = self._get_transaction_body(tx_sig, encoding, commitment, max_supported_transaction_version)
         return self._provider.make_request(body, GetTransactionResp)
 
     def get_epoch_info(self, commitment: Optional[Commitment] = None) -> GetEpochInfoResp:
