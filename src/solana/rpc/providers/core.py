@@ -9,7 +9,6 @@ from solders.rpc.responses import RPCResult as RPCResultType, RpcError
 import httpx
 import requests
 
-from .._utils.encoding import FriendlyJsonSerde
 from ..types import URI
 from ..core import RPCException
 
@@ -23,7 +22,7 @@ def get_default_endpoint() -> URI:
     return URI(os.environ.get("SOLANARPC_HTTP_URI", "http://localhost:8899"))
 
 
-class _HTTPProviderCore(FriendlyJsonSerde):
+class _HTTPProviderCore:
     logger = logging.getLogger("solanaweb3.rpc.httprpc.HTTPClient")
 
     def __init__(
