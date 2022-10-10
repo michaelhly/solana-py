@@ -396,7 +396,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            max_supported_transaction_version: The max transaction version to return in responses.
+            max_supported_transaction_version: (optional) The max transaction version to return in responses.
                 If the requested transaction is a higher version, an error will be returned
 
         Example:
