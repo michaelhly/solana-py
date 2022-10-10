@@ -1106,7 +1106,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         body = self._get_token_accounts_by_delegate_json_parsed_body(delegate, opts, commitment)
-        return self._provider.make_request(body, GetTokenAccountsByDelegateResp)
+        return self._provider.make_request(body, GetTokenAccountsByDelegateJsonParsedResp)
 
     def get_token_accounts_by_owner(
         self,
@@ -1138,7 +1138,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         body = self._get_token_accounts_by_owner_json_parsed_body(owner, opts, commitment)
-        return self._provider.make_request(body, GetTokenAccountsByOwnerResp)
+        return self._provider.make_request(body, GetTokenAccountsByOwnerJsonParsedResp)
 
     def get_token_largest_accounts(
         self, pubkey: PublicKey, commitment: Optional[Commitment] = None

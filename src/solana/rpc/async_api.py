@@ -1114,7 +1114,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         body = self._get_token_accounts_by_delegate_json_parsed_body(delegate, opts, commitment)
-        return await self._provider.make_request(body, GetTokenAccountsByDelegateResp)
+        return await self._provider.make_request(body, GetTokenAccountsByDelegateJsonParsedResp)
 
     async def get_token_accounts_by_owner_json_parsed(
         self,
@@ -1130,7 +1130,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         body = self._get_token_accounts_by_owner_json_parsed_body(owner, opts, commitment)
-        return await self._provider.make_request(body, GetTokenAccountsByOwnerResp)
+        return await self._provider.make_request(body, GetTokenAccountsByOwnerJsonParsedResp)
 
     async def get_token_accounts_by_owner(
         self,
