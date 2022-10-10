@@ -201,15 +201,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_account_info(PublicKey(1)) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 33265073},
-              'value': {'data': '',
-               'executable': False,
-               'lamports': 4459816188034584,
-               'owner': '11111111111111111111111111111111',
-               'rentEpoch': 90}},
-             'id': 1}
+            >>> solana_client.get_account_info_json_parsed(PublicKey(1)).value.owner # doctest: +SKIP
+            Pubkey(
+                11111111111111111111111111111111,
+            )
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_account_info_body(pubkey=pubkey, commitment=commitment, encoding="jsonParsed", data_slice=None)
         return self._provider.make_request(body, GetAccountInfoMaybeJsonParsedResp)
@@ -222,42 +217,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_block_commitment(0) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'commitment': [0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               497717120],
-              'totalStake': 497717120},
-              'id': 1}}
+            >>> solana_client.get_block_commitment(0).total_stake # doctest: +SKIP
+            497717120
         """
         body = self._get_block_commitment_body(slot)
         return self._provider.make_request(body, GetBlockCommitmentResp)
@@ -270,8 +231,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_block_time(5) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1598400007, 'id': 1}
+            >>> solana_client.get_block_time(5).value # doctest: +SKIP
+            1598400007
         """
         body = self._get_block_time_body(slot)
         return self._provider.make_request(body, GetBlockTimeResp)
@@ -281,14 +242,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_cluster_nodes() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': [{'gossip': '127.0.0.1:8001',
-               'pubkey': 'LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
-               'rpc': '127.0.0.1:8899',
-               'tpu': '127.0.0.1:8003',
-               'version': '1.4.0 5332fcad'}],
-             'id': 1}
+            >>> solana_client.get_cluster_nodes().value[0].tpu # doctest: +SKIP
+            '139.178.65.155:8004'
         """
         return self._provider.make_request(self._get_cluster_nodes, GetClusterNodesResp)
 
@@ -406,7 +361,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_block_height() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1233, 'id': 1}
+            1233
         """
         body = self._get_block_height_body(commitment)
         return self._provider.make_request(body, GetBlockHeightResp)
@@ -421,7 +376,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_blocks(5, 10) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
+            [5, 6, 7, 8, 9, 10]
         """
         body = self._get_blocks_body(start_slot, end_slot)
         return self._provider.make_request(body, GetBlocksResp)
@@ -571,8 +526,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fees() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1, 'id': 2}
+            >>> solana_client.get_fees().value # doctest: +SKIP
+            1
         """
         return self._provider.make_request(self._get_first_available_block, GetFirstAvailableBlockResp)
 
@@ -581,10 +536,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_genesis_hash() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-             'id': 3}
+            >>> solana_client.get_genesis_hash().value # doctest: +SKIP
+            Hash(
+                EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG,
+            )
         """
         return self._provider.make_request(self._get_genesis_hash, GetGenesisHashResp)
 
@@ -593,10 +548,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_identity() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'identity': 'LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk'},
-             'id': 4}
+            >>> solana_client.get_identity().value.identity # doctest: +SKIP
+            Pubkey(
+                2LVtX3Wq5bhqAYYaUYBRknWaYrsfYiXLQBHTxtHWD2mv,
+            )
         """
         return self._provider.make_request(self._get_identity, GetIdentityResp)
 
@@ -732,7 +687,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_minimum_balance_for_rent_exemption(50) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1238880, 'id': 7}
+            1238880, 'id': 7}
         """
         body = self._get_minimum_balance_for_rent_exemption_body(usize, commitment)
         return self._provider.make_request(body, GetMinimumBalanceForRentExemptionResp)
@@ -989,7 +944,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_slot() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 7515, 'id': 1}
+            7515
         """
         body = self._get_slot_body(commitment)
         return self._provider.make_request(body, GetSlotResp)
@@ -1024,7 +979,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_stake_activation() # doctest: +SKIP
-            {'jsonrpc': '2.0','result': {'active': 124429280, 'inactive': 73287840, 'state': 'activating'}, 'id': 1}}
+            {'jsonrpc': '2.0','result': {'active': 124429280, 'inactive': 73287840, 'state': 'activating'}}
         """
         body = self._get_stake_activation_body(pubkey, epoch, commitment)
         return self._provider.make_request(body, GetStakeActivationResp)
@@ -1160,8 +1115,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_transaction_count() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 4554, 'id': 1}
+            >>> solana_client.get_transaction_count().value # doctest: +SKIP
+            4554
         """
         body = self._get_transaction_count_body(commitment)
         return self._provider.make_request(body, GetTransactionCountResp)
@@ -1173,8 +1128,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_minimum_ledger_slot() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1234, 'id': 1}
+            >>> solana_client.get_minimum_ledger_slot().value # doctest: +SKIP
+            1234
         """
         return self._provider.make_request(self._minimum_ledger_slot, MinimumLedgerSlotResp)
 
@@ -1184,7 +1139,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_version() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': {'solana-core': '1.4.0 5332fcad'}, 'id': 1}
+            {'solana-core': '1.4.0 5332fcad'}
         """
         return self._provider.make_request(self._get_version, GetVersionResp)
 
@@ -1389,7 +1344,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.validator_exit() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': true, 'id': 1}
+            True
         """
         return self._provider.make_request(self._validator_exit, ValidatorExitResp)
 

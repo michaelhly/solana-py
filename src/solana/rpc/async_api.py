@@ -146,8 +146,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_balance(PublicKey(1))) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': {'context': {'slot': 228}, 'value': 0}, 'id': 1}
+            >>> (await solana_client.get_balance(PublicKey(1))).value # doctest: +SKIP
+            0
         """
         body = self._get_balance_body(pubkey, commitment)
         return await self._provider.make_request(body, GetBalanceResp)
@@ -179,15 +179,16 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_account_info(PublicKey(1))) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 33265073},
-              'value': {'data': '',
-               'executable': False,
-               'lamports': 4459816188034584,
-               'owner': '11111111111111111111111111111111',
-               'rentEpoch': 90}},
-             'id': 1}
+            >>> (await solana_client.get_account_info(PublicKey(1))).value # doctest: +SKIP
+            Account(
+                Account {
+                    lamports: 4104230290,
+                    data.len: 0,
+                    owner: 11111111111111111111111111111111,
+                    executable: false,
+                    rent_epoch: 371,
+                },
+            )
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_account_info_body(
             pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
@@ -208,15 +209,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_account_info_json_parsed(PublicKey(1))) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 33265073},
-              'value': {'data': '',
-               'executable': False,
-               'lamports': 4459816188034584,
-               'owner': '11111111111111111111111111111111',
-               'rentEpoch': 90}},
-             'id': 1}
+            >>> (await solana_client.get_account_info_json_parsed(PublicKey(1))).value.owner # doctest: +SKIP
+            Pubkey(
+                11111111111111111111111111111111,
+            )
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_account_info_body(pubkey=pubkey, commitment=commitment, encoding="jsonParsed", data_slice=None)
         return await self._provider.make_request(body, GetAccountInfoMaybeJsonParsedResp)
@@ -229,42 +225,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_block_commitment(0)) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'commitment': [0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               0,
-               497717120],
-              'totalStake': 497717120},
-              'id': 1}}
+            >>> (await solana_client.get_block_commitment(0)).total_stake # doctest: +SKIP
+            497717120
         """
         body = self._get_block_commitment_body(slot)
         return await self._provider.make_request(body, GetBlockCommitmentResp)
@@ -277,8 +239,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_block_time(5)) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1598400007, 'id': 1}
+            >>> (await solana_client.get_block_time(5)).value # doctest: +SKIP
+            1598400007
         """
         body = self._get_block_time_body(slot)
         return await self._provider.make_request(body, GetBlockTimeResp)
@@ -288,14 +250,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_cluster_nodes()) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': [{'gossip': '127.0.0.1:8001',
-               'pubkey': 'LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
-               'rpc': '127.0.0.1:8899',
-               'tpu': '127.0.0.1:8003',
-               'version': '1.4.0 5332fcad'}],
-             'id': 1}
+            >>> (await solana_client.get_cluster_nodes()).value[0].tpu # doctest: +SKIP
+            '139.178.65.155:8004'
         """
         return await self._provider.make_request(self._get_cluster_nodes, GetClusterNodesResp)
 
@@ -413,7 +369,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_block_height()) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1233, 'id': 1}
+            1233, 'id': 1}
         """
         body = self._get_block_height_body(commitment)
         return await self._provider.make_request(body, GetBlockHeightResp)
@@ -428,7 +384,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_blocks(5, 10)) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': [5, 6, 7, 8, 9, 10], 'id': 1}
+            [5, 6, 7, 8, 9, 10], 'id': 1}
         """
         body = self._get_blocks_body(start_slot, end_slot)
         return await self._provider.make_request(body, GetBlocksResp)
@@ -581,7 +537,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_fees()) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1, 'id': 2}
+            1, 'id': 2}
         """
         return await self._provider.make_request(self._get_first_available_block, GetFirstAvailableBlockResp)
 
@@ -590,10 +546,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_genesis_hash()) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-             'id': 3}
+            >>> (await solana_client.get_genesis_hash()).value # doctest: +SKIP
+            Hash(
+                EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG,
+            )
         """
         return await self._provider.make_request(self._get_genesis_hash, GetGenesisHashResp)
 
@@ -602,10 +558,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_identity()) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'identity': 'LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk'},
-             'id': 4}
+            >>> (await solana_client.get_identity()).value.identity # doctest: +SKIP
+            Pubkey(
+                2LVtX3Wq5bhqAYYaUYBRknWaYrsfYiXLQBHTxtHWD2mv,
+            )
         """
         return await self._provider.make_request(self._get_identity, GetIdentityResp)
 
@@ -741,7 +697,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_minimum_balance_for_rent_exemption(50)) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1238880, 'id': 7}
+            1238880, 'id': 7}
         """
         body = self._get_minimum_balance_for_rent_exemption_body(usize, commitment)
         return await self._provider.make_request(body, GetMinimumBalanceForRentExemptionResp)
@@ -997,7 +953,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_slot()) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 7515, 'id': 1}
+            7515, 'id': 1}
         """
         body = self._get_slot_body(commitment)
         return await self._provider.make_request(body, GetSlotResp)
@@ -1168,8 +1124,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_transaction_count()) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 4554, 'id': 1}
+            >>> (await solana_client.get_transaction_count()).value # doctest: +SKIP
+            4554
         """
         body = self._get_transaction_count_body(commitment)
         return await self._provider.make_request(body, GetTransactionCountResp)
@@ -1181,8 +1137,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_minimum_ledger_slot()) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': 1234, 'id': 1}
+            >>> (await solana_client.get_minimum_ledger_slot()).value # doctest: +SKIP
+            1234, 'id': 1}
         """
         return await self._provider.make_request(self._minimum_ledger_slot, MinimumLedgerSlotResp)
 
@@ -1192,7 +1148,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> asyncio.run(solana_client.get_version()) # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': {'solana-core': '1.4.0 5332fcad'}, 'id': 1}
+            {'solana-core': '1.4.0 5332fcad'}, 'id': 1}
         """
         return await self._provider.make_request(self._get_version, GetVersionResp)
 
@@ -1395,7 +1351,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> solana_client.validator_exit() # doctest: +SKIP
-            {'jsonrpc': '2.0', 'result': true, 'id': 1}
+            true, 'id': 1}
         """
         return await self._provider.make_request(self._validator_exit, ValidatorExitResp)
 
