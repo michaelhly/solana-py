@@ -1,4 +1,5 @@
 """Integration test utils."""
+from typing import get_args
 from solders.rpc.responses import RPCResult, RpcError, RpcResponseContext
 
 from solana.rpc.commitment import Processed
@@ -6,11 +7,13 @@ from solana.rpc.types import RPCResponse, TxOpts
 
 AIRDROP_AMOUNT = 10_000_000_000
 
+RPC_RESULT_TYPES = get_args(RPCResult)
+
 
 def assert_valid_response(resp: RPCResult):
     """Assert valid RPCResult."""
     assert hasattr(resp, "value")
-    assert isinstance(resp.context, RpcResponseContext)
+    assert type(resp) in RPC_RESULT_TYPES
     assert not isinstance(resp, RpcError)
 
 
