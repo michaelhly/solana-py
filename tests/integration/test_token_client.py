@@ -1,7 +1,8 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
-import pytest
 from json import loads
+
+import pytest
 from solders.signature import Signature
 
 import spl.token._layouts as layouts

@@ -3,13 +3,13 @@ import pytest
 from solders.signature import Signature
 
 import solana.system_program as sp
-from solana.keypair import Keypair
 from solana.blockhash import Blockhash
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Finalized, Processed, Confirmed
+from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import TransactionExpiredBlockheightExceededError
-from solana.rpc.types import TxOpts, DataSliceOpts
+from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
@@ -258,9 +258,7 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     )
     assert_valid_response(resp)
     # Confirm transaction
-    resp = await test_http_client_async.confirm_transaction(
-        resp.value, last_valid_block_height=last_valid_block_height
-    )
+    resp = await test_http_client_async.confirm_transaction(resp.value, last_valid_block_height=last_valid_block_height)
     # Check balances
     resp = await test_http_client_async.get_balance(async_stubbed_sender.public_key)
     assert_valid_response(resp)

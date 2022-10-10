@@ -4,21 +4,16 @@ from __future__ import annotations
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 
-from solders.signature import Signature
 from solders.rpc.responses import (
-    RpcError,
-    GetBalanceResp,
-    GetAccountInfoResp,
-    GetBlockCommitmentResp,
-    GetBlockTimeResp,
-    GetBlockResp,
-    GetClusterNodesResp,
-    GetRecentPerformanceSamplesResp,
     GetAccountInfoMaybeJsonParsedResp,
+    GetAccountInfoResp,
+    GetBalanceResp,
+    GetBlockCommitmentResp,
     GetBlockHeightResp,
+    GetBlockResp,
     GetBlocksResp,
-    GetSignaturesForAddressResp,
-    GetTransactionResp,
+    GetBlockTimeResp,
+    GetClusterNodesResp,
     GetEpochInfoResp,
     GetEpochScheduleResp,
     GetFeeForMessageResp,
@@ -28,34 +23,39 @@ from solders.rpc.responses import (
     GetInflationGovernorResp,
     GetInflationRateResp,
     GetLargestAccountsResp,
+    GetLatestBlockhashResp,
     GetLeaderScheduleResp,
     GetMinimumBalanceForRentExemptionResp,
-    GetMultipleAccountsResp,
     GetMultipleAccountsMaybeJsonParsedResp,
-    GetProgramAccountsResp,
+    GetMultipleAccountsResp,
     GetProgramAccountsMaybeJsonParsedResp,
-    GetLatestBlockhashResp,
+    GetProgramAccountsResp,
+    GetRecentPerformanceSamplesResp,
+    GetSignaturesForAddressResp,
     GetSignatureStatusesResp,
-    GetSlotResp,
     GetSlotLeaderResp,
+    GetSlotResp,
     GetStakeActivationResp,
     GetSupplyResp,
     GetTokenAccountBalanceResp,
-    GetTokenAccountsByDelegateResp,
-    GetTokenAccountsByOwnerResp,
     GetTokenAccountsByDelegateJsonParsedResp,
+    GetTokenAccountsByDelegateResp,
     GetTokenAccountsByOwnerJsonParsedResp,
+    GetTokenAccountsByOwnerResp,
     GetTokenLargestAccountsResp,
     GetTokenSupplyResp,
     GetTransactionCountResp,
-    MinimumLedgerSlotResp,
+    GetTransactionResp,
     GetVersionResp,
     GetVoteAccountsResp,
+    MinimumLedgerSlotResp,
     RequestAirdropResp,
+    RpcError,
     SendTransactionResp,
     SimulateTransactionResp,
     ValidatorExitResp,
 )
+from solders.signature import Signature
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
@@ -66,12 +66,12 @@ from solana.transaction import Transaction
 
 from .commitment import Commitment, Finalized
 from .core import (
+    _COMMITMENT_TO_SOLDERS,
     RPCException,
     TransactionExpiredBlockheightExceededError,
     TransactionUncompiledError,
     UnconfirmedTxError,
     _ClientCore,
-    _COMMITMENT_TO_SOLDERS,
 )
 from .providers import http
 
@@ -1119,7 +1119,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             owner: Public key of the account owner to query.
             opts: Token account option specifying at least one of `mint` or `program_id`.
-            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".            
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         body = self._get_token_accounts_by_owner_body(owner, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByOwnerResp)

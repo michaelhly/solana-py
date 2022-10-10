@@ -1,21 +1,25 @@
 # pylint: disable=unused-argument,redefined-outer-name
 """Tests for the Websocket Client."""
-from typing import List, Tuple, AsyncGenerator
+from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib
 import pytest
-from websockets.legacy.client import WebSocketClientProtocol
-from solders.rpc.requests import (
-    AccountSubscribe,
-    AccountUnsubscribe,
-    LogsSubscribe,
-    LogsUnsubscribe,
-    Body,
-)
-from solders.rpc.responses import VoteNotification, RootNotification, SlotUpdateNotification, SlotNotification, SignatureNotification, ProgramNotification, LogsNotification, AccountNotification, SubscriptionResult
-from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.rpc.config import RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
+from solders.rpc.requests import AccountSubscribe, AccountUnsubscribe, Body, LogsSubscribe, LogsUnsubscribe
+from solders.rpc.responses import (
+    AccountNotification,
+    LogsNotification,
+    ProgramNotification,
+    RootNotification,
+    SignatureNotification,
+    SlotNotification,
+    SlotUpdateNotification,
+    SubscriptionResult,
+    VoteNotification,
+)
 from solders.signature import Signature
+from solders.system_program import ID as SYS_PROGRAM_ID
+from websockets.legacy.client import WebSocketClientProtocol
 
 from solana import system_program as sp
 from solana.keypair import Keypair
@@ -36,7 +40,9 @@ async def websocket(test_http_client_async: AsyncClient) -> AsyncGenerator[WebSo
 
 
 @pytest.fixture
-async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> AsyncGenerator[List[Body], None]:
+async def multiple_subscriptions(
+    stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
+) -> AsyncGenerator[List[Body], None]:
     """Setup multiple subscriptions."""
     reqs: List[Body] = [
         LogsSubscribe(filter_=RpcTransactionLogsFilter.All, id=websocket.increment_counter_and_get_id()),
@@ -58,7 +64,9 @@ async def multiple_subscriptions(stubbed_sender: Keypair, websocket: SolanaWsCli
 
 
 @pytest.fixture
-async def account_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> AsyncGenerator[PublicKey, None]:
+async def account_subscribed(
+    stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
+) -> AsyncGenerator[PublicKey, None]:
     """Setup account subscription."""
     recipient = Keypair()
     await websocket.account_subscribe(recipient.public_key)
@@ -83,7 +91,9 @@ async def logs_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProt
 
 
 @pytest.fixture
-async def logs_subscribed_mentions_filter(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> AsyncGenerator[None, None]:
+async def logs_subscribed_mentions_filter(
+    stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
+) -> AsyncGenerator[None, None]:
     """Setup logs subscription with a mentions filter."""
     await websocket.logs_subscribe(RpcTransactionLogsFilterMentions(SYS_PROGRAM_ID))
     first_resp = await websocket.recv()

@@ -7,9 +7,9 @@ from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
-from solana.rpc.commitment import Finalized, Processed, Confirmed
+from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import TransactionExpiredBlockheightExceededError
-from solana.rpc.types import TxOpts, DataSliceOpts
+from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
@@ -233,9 +233,7 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     )
     assert_valid_response(resp)
     # Confirm transaction
-    test_http_client.confirm_transaction(
-        resp.value, last_valid_block_height=last_valid_block_height
-    )
+    test_http_client.confirm_transaction(resp.value, last_valid_block_height=last_valid_block_height)
     # Check balances
     resp = test_http_client.get_balance(stubbed_sender.public_key)
     assert_valid_response(resp)
@@ -266,9 +264,7 @@ def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http
     assert_valid_response(tx_resp)
     # Confirm transaction
     with pytest.raises(TransactionExpiredBlockheightExceededError) as exc_info:
-        test_http_client.confirm_transaction(
-            tx_resp.value, Finalized, last_valid_block_height=last_valid_block_height
-        )
+        test_http_client.confirm_transaction(tx_resp.value, Finalized, last_valid_block_height=last_valid_block_height)
     err_object = exc_info.value.args[0]
     assert "block height exceeded" in err_object
 

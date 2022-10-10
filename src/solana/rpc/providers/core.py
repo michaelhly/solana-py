@@ -2,15 +2,16 @@
 import itertools
 import logging
 import os
-from typing import Any, Dict, Optional, Union, TypeVar, Type
-from solders.rpc.requests import Body
-from solders.rpc.responses import RPCResult as RPCResultType, RpcError
+from typing import Any, Dict, Optional, Type, TypeVar, Union
 
 import httpx
 import requests
+from solders.rpc.requests import Body
+from solders.rpc.responses import RpcError
+from solders.rpc.responses import RPCResult as RPCResultType
 
-from ..types import URI
 from ..core import RPCException
+from ..types import URI
 
 DEFAULT_TIMEOUT = 10
 

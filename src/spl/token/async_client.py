@@ -3,7 +3,15 @@
 from __future__ import annotations
 
 from typing import List, Optional, Union, cast
-from solders.rpc.responses import SendTransactionResp, GetTokenAccountBalanceResp, GetTokenAccountsByOwnerResp, GetTokenAccountsByOwnerJsonParsedResp, GetTokenAccountsByDelegateResp, GetTokenAccountsByDelegateJsonParsedResp
+
+from solders.rpc.responses import (
+    GetTokenAccountBalanceResp,
+    GetTokenAccountsByDelegateJsonParsedResp,
+    GetTokenAccountsByDelegateResp,
+    GetTokenAccountsByOwnerJsonParsedResp,
+    GetTokenAccountsByOwnerResp,
+    SendTransactionResp,
+)
 
 import spl.token.instructions as spl_token
 from solana.blockhash import Blockhash
@@ -144,7 +152,9 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         )
         return await self._conn.get_token_accounts_by_delegate_json_parsed(*args)
 
-    async def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> GetTokenAccountBalanceResp:
+    async def get_balance(
+        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
+    ) -> GetTokenAccountBalanceResp:
         """Get the balance of the provided token account.
 
         Args:

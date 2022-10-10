@@ -1,16 +1,25 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
-from json import loads, dumps
-from typing import Any, List, Optional, Union, cast, Sequence, Dict, cast
 import itertools
+from json import dumps, loads
+from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from apischema import deserialize
 from jsonrpcclient import Error, Ok, parse
 from jsonrpcserver.dispatcher import create_request
-from websockets.legacy.client import WebSocketClientProtocol
-from websockets.legacy.client import connect as ws_connect
+from solders.account_decoder import UiDataSliceConfig
+from solders.rpc.config import (
+    RpcAccountInfoConfig,
+    RpcProgramAccountsConfig,
+    RpcSignatureSubscribeConfig,
+    RpcTransactionLogsConfig,
+    RpcTransactionLogsFilter,
+    RpcTransactionLogsFilterMentions,
+)
+from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
     AccountSubscribe,
     AccountUnsubscribe,
+    Body,
     LogsSubscribe,
     LogsUnsubscribe,
     ProgramSubscribe,
@@ -25,26 +34,20 @@ from solders.rpc.requests import (
     SlotUnsubscribe,
     VoteSubscribe,
     VoteUnsubscribe,
-    Body,
     batch_to_json,
 )
-from solders.rpc.config import (
-    RpcAccountInfoConfig,
-    RpcTransactionLogsFilter,
-    RpcTransactionLogsFilterMentions,
-    RpcTransactionLogsConfig,
-    RpcSignatureSubscribeConfig,
-    RpcProgramAccountsConfig,
-)
-from solders.rpc.filter import Memcmp
+from solders.rpc.responses import Notification
+from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
+from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
-from solders.account_decoder import UiDataSliceConfig
-from solders.rpc.responses import parse_websocket_message, Notification, SubscriptionResult, SubscriptionError as SoldersSubscriptionError
+from websockets.legacy.client import WebSocketClientProtocol
+from websockets.legacy.client import connect as ws_connect
 
 from solana.publickey import PublicKey
 from solana.rpc import types
-from solana.rpc.core import _COMMITMENT_TO_SOLDERS, _ACCOUNT_ENCODING_TO_SOLDERS
 from solana.rpc.commitment import Commitment
+from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS
+
 
 class SubscriptionError(Exception):
     """Raise when subscribing to an RPC feed fails."""
