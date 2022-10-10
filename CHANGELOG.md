@@ -13,6 +13,8 @@
     - **Breaking change**: RPC methods that can return `jsonParsed` data now have their own dedicated Python
         method you should use. For example, instead of `client.get_account_info(..., encoding="jsonParsed")`
         you should do `client.get_account_info_json_parsed(...)`. This is done for the sake of static typing.
+    - **Breaking change**: The `get_accounts` method on the SPL Token client has been split into four separate methods:
+        `get_accounts_by_delegate`, `get_accounts_by_owner`, `get_accounts_by_delegate_json_parsed`, and `get_accounts_by_owner_json_parsed`.
 
 - Use Solders for building RPC requests:
     - **Breaking change**: Removed deprecated RPC methods.
