@@ -21,6 +21,55 @@ from .core import (
     _COMMITMENT_TO_SOLDERS,
 )
 from .providers import async_http
+from solders.rpc.responses import (
+    RpcError,
+    GetBalanceResp,
+    GetAccountInfoResp,
+    GetBlockCommitmentResp,
+    GetBlockTimeResp,
+    GetBlockResp,
+    GetClusterNodesResp,
+    GetRecentPerformanceSamplesResp,
+    GetAccountInfoMaybeJsonParsedResp,
+    GetBlockHeightResp,
+    GetBlocksResp,
+    GetSignaturesForAddressResp,
+    GetTransactionResp,
+    GetEpochInfoResp,
+    GetEpochScheduleResp,
+    GetFeeForMessageResp,
+    GetFirstAvailableBlockResp,
+    GetGenesisHashResp,
+    GetIdentityResp,
+    GetInflationGovernorResp,
+    GetInflationRateResp,
+    GetLargestAccountsResp,
+    GetLeaderScheduleResp,
+    GetMinimumBalanceForRentExemptionResp,
+    GetMultipleAccountsResp,
+    GetMultipleAccountsMaybeJsonParsedResp,
+    GetProgramAccountsResp,
+    GetProgramAccountsMaybeJsonParsedResp,
+    GetLatestBlockhashResp,
+    GetSignatureStatusesResp,
+    GetSlotResp,
+    GetSlotLeaderResp,
+    GetStakeActivationResp,
+    GetSupplyResp,
+    GetTokenAccountBalanceResp,
+    GetTokenAccountsByDelegateResp,
+    GetTokenAccountsByOwnerResp,
+    GetTokenLargestAccountsResp,
+    GetTokenSupplyResp,
+    GetTransactionCountResp,
+    MinimumLedgerSlotResp,
+    GetVersionResp,
+    GetVoteAccountsResp,
+    RequestAirdropResp,
+    SendTransactionResp,
+    SimulateTransactionResp,
+    ValidatorExitResp,
+)
 
 
 class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
@@ -100,7 +149,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             {'jsonrpc': '2.0', 'result': {'context': {'slot': 228}, 'value': 0}, 'id': 1}
         """
         body = self._get_balance_body(pubkey, commitment)
-        return await self._provider.make_request(body)
+        return await self._provider.make_request(body, GetBalanceResp)
 
     async def get_account_info(
         self,
@@ -142,7 +191,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_account_info_body(
             pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
         )
-        return await self._provider.make_request(body)
+        return await self._provider.make_request(body, GetAccountInfoResp)
 
     async def get_block_commitment(self, slot: int) -> types.RPCResponse:
         """Fetch the commitment for particular block.
