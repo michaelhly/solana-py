@@ -9,6 +9,7 @@ AIRDROP_AMOUNT = 10_000_000_000
 
 def assert_valid_response(resp: RPCResult):
     """Assert valid RPCResult."""
+    assert hasattr(resp, "value")
     assert isinstance(resp.context, RpcResponseContext)
     assert not isinstance(resp, RpcError)
 

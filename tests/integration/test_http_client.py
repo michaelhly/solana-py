@@ -85,12 +85,12 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
     # Confirm transaction
     test_http_client.confirm_transaction(resp.value)
     # Check balances
-    resp = test_http_client.get_balance(stubbed_sender.public_key)
-    assert_valid_response(resp)
-    assert resp.value == 9999994000
-    resp = test_http_client.get_balance(stubbed_receiver)
-    assert_valid_response(resp)
-    assert resp.value == 10000001000
+    bal_resp = test_http_client.get_balance(stubbed_sender.public_key)
+    assert_valid_response(bal_resp)
+    assert bal_resp.value == 9999994000
+    bal_resp2 = test_http_client.get_balance(stubbed_receiver)
+    assert_valid_response(bal_resp2)
+    assert bal_resp2.value == 10000001000
 
 
 @pytest.mark.integration
@@ -196,17 +196,17 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
     # Sign transaction
     transfer_tx.sign(stubbed_sender)
     # Send raw transaction
-    resp = test_http_client.send_raw_transaction(transfer_tx.serialize())
-    assert_valid_response(resp)
+    tx_resp = test_http_client.send_raw_transaction(transfer_tx.serialize())
+    assert_valid_response(tx_resp)
     # Confirm transaction
-    test_http_client.confirm_transaction(resp.value)
+    test_http_client.confirm_transaction(tx_resp.value)
     # Check balances
-    resp = test_http_client.get_balance(stubbed_sender.public_key)
-    assert_valid_response(resp)
-    assert resp.value == 9999988000
-    bal_resp = test_http_client.get_balance(stubbed_receiver)
+    bal_resp = test_http_client.get_balance(stubbed_sender.public_key)
     assert_valid_response(bal_resp)
-    assert bal_resp.value == 10000002000
+    assert bal_resp.value == 9999988000
+    bal_resp2 = test_http_client.get_balance(stubbed_receiver)
+    assert_valid_response(bal_resp2)
+    assert bal_resp2.value == 10000002000
 
 
 @pytest.mark.integration

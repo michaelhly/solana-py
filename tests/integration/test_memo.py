@@ -1,6 +1,7 @@
 """Tests for the Memo program."""
 import pytest
 from solders.signature import Signature
+from solders.transaction_status import UiTransaction
 
 from solana.keypair import Keypair
 from solana.rpc.api import Client
@@ -36,7 +37,13 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     # Txn needs to be finalized in order to parse the logs.
     test_http_client.confirm_transaction(txn_id, commitment=Finalized)
     resp2 = test_http_client.get_transaction(txn_id, commitment=Finalized, encoding="jsonParsed")
-    log_message = resp2["result"]["meta"]["logMessages"][2].split('"')
+    resp2_val = resp2.value
+    assert resp2_val is not None
+    resp2_transaction = resp2_val.transaction
+    ui_transaction = resp2_val.transaction
+    assert isinstance(resp2_transaction, UiTransaction)
+    log_message = resp2_transaction.meta.log_messages[2].split('"')
     assert log_message[1] == raw_message
-    assert resp2["result"]["transaction"]["message"]["instructions"][0]["parsed"] == raw_message
-    assert resp2["result"]["transaction"]["message"]["instructions"][0]["programId"] == str(MEMO_PROGRAM_ID)
+    ix = ui_transaction.message.instructions[0]
+    assert ix.parsed == raw_message
+    assert ix.program_id == MEMO_PROGRAM_ID.to_solders()
