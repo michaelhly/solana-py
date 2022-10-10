@@ -162,7 +162,7 @@ async def test_multiple_subscriptions(
     """Test subscribing to multiple feeds."""
     await test_http_client_async.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
     async for idx, message in asyncstdlib.enumerate(websocket):
-        assert message.result is not None
+        assert message[0].result is not None
         if idx == len(multiple_subscriptions) - 1:
             break
     balance = await test_http_client_async.get_balance(stubbed_sender.public_key, Finalized)
@@ -176,7 +176,7 @@ async def test_account_subscribe(
     """Test account subscription."""
     await test_http_client_async.request_airdrop(account_subscribed, AIRDROP_AMOUNT)
     main_resp = await websocket.recv()
-    assert main_resp.result.value.lamports == AIRDROP_AMOUNT
+    assert main_resp[0].result.value.lamports == AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
@@ -189,7 +189,7 @@ async def test_logs_subscribe(
     recipient = Keypair().public_key
     await test_http_client_async.request_airdrop(recipient, AIRDROP_AMOUNT)
     main_resp = await websocket.recv()
-    assert main_resp.result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
+    assert main_resp[0].result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
 
 
 @pytest.mark.integration
@@ -202,7 +202,7 @@ async def test_logs_subscribe_mentions_filter(
     recipient = Keypair().public_key
     await test_http_client_async.request_airdrop(recipient, AIRDROP_AMOUNT)
     main_resp = await websocket.recv()
-    assert main_resp.result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
+    assert main_resp[0].result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
 
 
 @pytest.mark.integration
@@ -218,7 +218,7 @@ async def test_program_subscribe(
     transaction.add(instruction)
     await test_http_client_async.send_transaction(transaction, owned)
     main_resp = await websocket.recv()
-    assert main_resp.result.value.pubkey == owned.public_key
+    assert main_resp[0].result.value.pubkey == owned.public_key
 
 
 @pytest.mark.integration
@@ -228,7 +228,7 @@ async def test_signature_subscribe(
 ):
     """Test signature subscription."""
     main_resp = await websocket.recv()
-    assert main_resp.result.value.err is None
+    assert main_resp[0].result.value.err is None
 
 
 @pytest.mark.integration
@@ -238,7 +238,7 @@ async def test_slot_subscribe(
 ):
     """Test slot subscription."""
     main_resp = await websocket.recv()
-    assert main_resp.result.root >= 0
+    assert main_resp[0].result.root >= 0
 
 
 @pytest.mark.integration
@@ -248,7 +248,7 @@ async def test_slots_updates_subscribe(
 ):
     """Test slots updates subscription."""
     async for idx, resp in asyncstdlib.enumerate(websocket):
-        assert resp.result.slot > 0
+        assert resp[0].result.slot > 0
         if idx == 40:
             break
 
@@ -260,7 +260,7 @@ async def test_root_subscribe(
 ):
     """Test root subscription."""
     main_resp = await websocket.recv()
-    assert main_resp.result >= 0
+    assert main_resp[0].result >= 0
 
 
 @pytest.mark.integration
@@ -270,4 +270,4 @@ async def test_vote_subscribe(
 ):
     """Test vote subscription."""
     main_resp = await websocket.recv()
-    assert main_resp.result.slots
+    assert main_resp[0].result.slots

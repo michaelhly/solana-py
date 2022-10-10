@@ -1,6 +1,6 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
 from json import loads, dumps
-from typing import Any, List, Optional, Union, cast, Sequence, Dict
+from typing import Any, List, Optional, Union, cast, Sequence, Dict, cast
 import itertools
 
 from apischema import deserialize
@@ -97,16 +97,13 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
 
     async def recv(  # type: ignore
         self,
-    ) -> Union[List[Union[Notification, SubscriptionResult]], Notification, SubscriptionResult]:
+    ) -> List[Union[Notification, SubscriptionResult]]:
         """Receive the next message.
 
         Basically `.recv` from `websockets` with extra parsing.
         """
         data = await super().recv()
-        as_json = loads(data)
-        if isinstance(as_json, list):
-            ret: List[Union[Notification, SubscriptionResult]] = [self._process_rpc_response(dumps(item)) for item in as_json]
-        return self._process_rpc_response(dumps(as_json))
+        return self._process_rpc_response(cast(str, data))
 
     async def account_subscribe(
         self, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
@@ -337,16 +334,16 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         await self.send_data(req)
         del self.subscriptions[subscription]
 
-    def _process_rpc_response(self, raw: str) -> Union[Notification, SubscriptionResult]:
+    def _process_rpc_response(self, raw: str) -> List[Union[Notification, SubscriptionResult]]:
         parsed = parse_websocket_message(raw)
-        if isinstance(parsed, SoldersSubscriptionError):
-            subscription = self.sent_subscriptions[parsed.id]
-            self.failed_subscriptions[parsed.id] = subscription
-            raise SubscriptionError(parsed, subscription)
-        parsed_result = parsed.result
-        if type(parsed_result) is int and type(parsed) is SubscriptionResult:  # pylint: disable=unidiomatic-typecheck
-            self.subscriptions[parsed_result] = self.sent_subscriptions[parsed.id]
-        return parsed
+        for item in parsed:
+            if isinstance(item, SoldersSubscriptionError):
+                subscription = self.sent_subscriptions[item.id]
+                self.failed_subscriptions[item.id] = subscription
+                raise SubscriptionError(item, subscription)
+            if isinstance(item, SubscriptionResult):
+                self.subscriptions[item.result] = self.sent_subscriptions[item.id]
+        return cast(List[Union[Notification, SubscriptionResult]], parsed)
 
 
 class connect(ws_connect):  # pylint: disable=invalid-name,too-few-public-methods
