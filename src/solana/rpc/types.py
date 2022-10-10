@@ -1,7 +1,7 @@
 """RPC types."""
-from typing import Any, NamedTuple, NewType, Optional, Union
+from typing import NamedTuple, NewType, Optional
 
-from typing_extensions import Literal, TypedDict  # noqa: F401
+from typing_extensions import TypedDict  # noqa: F401
 
 from solana.publickey import PublicKey
 

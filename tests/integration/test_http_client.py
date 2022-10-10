@@ -1,6 +1,5 @@
 """Tests for the HTTP API Client."""
 import pytest
-from solders.signature import Signature
 
 import solana.system_program as sp
 from solana.blockhash import Blockhash
@@ -282,8 +281,8 @@ def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_cli
     )
     # get fee for transaction
     fee_resp = test_http_client.get_fee_for_message(transfer_tx.compile_message())
-    assert_valid_response(resp)
-    assert resp.value is not None
+    assert_valid_response(fee_resp)
+    assert fee_resp.value is not None
 
 
 @pytest.mark.integration

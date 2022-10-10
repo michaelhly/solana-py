@@ -17,7 +17,6 @@ from solders.rpc.responses import (
     SubscriptionResult,
     VoteNotification,
 )
-from solders.signature import Signature
 from solders.system_program import ID as SYS_PROGRAM_ID
 from websockets.legacy.client import WebSocketClientProtocol
 

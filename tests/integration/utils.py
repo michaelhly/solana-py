@@ -1,7 +1,7 @@
 """Integration test utils."""
 from typing import get_args
 
-from solders.rpc.responses import RpcError, RpcResponseContext, RPCResult
+from solders.rpc.responses import RpcError, RPCResult
 
 from solana.rpc.commitment import Processed
 from solana.rpc.types import TxOpts

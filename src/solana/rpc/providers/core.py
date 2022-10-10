@@ -23,7 +23,7 @@ def get_default_endpoint() -> URI:
     return URI(os.environ.get("SOLANARPC_HTTP_URI", "http://localhost:8899"))
 
 
-class _HTTPProviderCore:
+class _HTTPProviderCore:  # pylint: disable=too-few-public-methods
     logger = logging.getLogger("solanaweb3.rpc.httprpc.HTTPClient")
 
     def __init__(

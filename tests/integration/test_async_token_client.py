@@ -3,7 +3,6 @@
 from json import loads
 
 import pytest
-from solders.signature import Signature
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
