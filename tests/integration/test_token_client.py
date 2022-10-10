@@ -1,6 +1,7 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
 import pytest
+from json import loads
 from solders.signature import Signature
 
 import spl.token._layouts as layouts
@@ -39,7 +40,7 @@ def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     assert_valid_response(resp)
     assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
 
-    mint_data = layouts.MINT_LAYOUT.parse(decode_byte_string(resp.value["data"][0]))
+    mint_data = layouts.MINT_LAYOUT.parse(resp.value.data)
     assert mint_data.is_initialized
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
@@ -72,7 +73,7 @@ def test_new_account(stubbed_sender, test_http_client, test_token):  # pylint: d
     assert_valid_response(resp)
     assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
 
-    account_data = layouts.ACCOUNT_LAYOUT.parse(decode_byte_string(resp.value["data"][0]))
+    account_data = layouts.ACCOUNT_LAYOUT.parse(resp.value.data)
     assert account_data.state
     assert not account_data.amount
     assert (
@@ -136,9 +137,9 @@ def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
     balance_info = resp.value
-    assert balance_info["amount"] == str(expected_amount)
-    assert balance_info["decimals"] == 6
-    assert balance_info["uiAmount"] == 0.001
+    assert balance_info.amount == str(expected_amount)
+    assert balance_info.decimals == 6
+    assert balance_info.ui_amount == 0.001
 
 
 @pytest.mark.integration
@@ -158,9 +159,9 @@ def test_transfer(
     )
     resp = test_token.get_balance(stubbed_receiver_token_account_pk)
     balance_info = resp.value
-    assert balance_info["amount"] == str(expected_amount)
-    assert balance_info["decimals"] == 6
-    assert balance_info["uiAmount"] == 0.0005
+    assert balance_info.amount == str(expected_amount)
+    assert balance_info.decimals == 6
+    assert balance_info.ui_amount == 0.0005
 
 
 @pytest.mark.integration
@@ -184,9 +185,9 @@ def test_burn(
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
     balance_info = resp.value
-    assert balance_info["amount"] == str(expected_amount)
-    assert balance_info["decimals"] == 6
-    assert balance_info["uiAmount"] == 0.0003
+    assert balance_info.amount == str(expected_amount)
+    assert balance_info.decimals == 6
+    assert balance_info.ui_amount == 0.0003
 
 
 @pytest.mark.integration
@@ -210,9 +211,9 @@ def test_mint_to_checked(
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
     balance_info = resp.value
-    assert balance_info["amount"] == str(expected_amount)
-    assert balance_info["decimals"] == expected_decimals
-    assert balance_info["uiAmount"] == 0.001
+    assert balance_info.amount == str(expected_amount)
+    assert balance_info.decimals == expected_decimals
+    assert balance_info.ui_amount == 0.001
 
 
 @pytest.mark.integration
@@ -237,9 +238,9 @@ def test_transfer_checked(
     )
     resp = test_token.get_balance(stubbed_receiver_token_account_pk)
     balance_info = resp.value
-    assert balance_info["amount"] == str(total_amount)
-    assert balance_info["decimals"] == expected_decimals
-    assert balance_info["uiAmount"] == 0.001
+    assert balance_info.amount == str(total_amount)
+    assert balance_info.decimals == expected_decimals
+    assert balance_info.ui_amount == 0.001
 
 
 @pytest.mark.integration
@@ -262,20 +263,20 @@ def test_burn_checked(
     )
     resp = test_token.get_balance(stubbed_sender_token_account_pk)
     balance_info = resp.value
-    assert balance_info["amount"] == str(0)
-    assert balance_info["decimals"] == expected_decimals
-    assert balance_info["uiAmount"] == 0.0
+    assert balance_info.amount == str(0)
+    assert balance_info.decimals == expected_decimals
+    assert balance_info.ui_amount == 0.0
 
 
 @pytest.mark.integration
 def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
     """Test get token accounts."""
-    resp = test_token.get_accounts(stubbed_sender.public_key)
+    resp = test_token.get_accounts_by_owner_json_parsed(stubbed_sender.public_key)
     assert_valid_response(resp)
     assert len(resp.value) == 2
     for resp_data in resp.value:
-        assert PublicKey(resp_data["pubkey"])
-        parsed_data = resp_data["account"]["data"]["parsed"]["info"]
+        assert PublicKey(resp_data.pubkey)
+        parsed_data = loads(resp_data.account.data.parsed)["info"]
         assert parsed_data["owner"] == str(stubbed_sender.public_key)
 
 
@@ -389,7 +390,7 @@ def test_close_account(
     """Test closing a token account."""
     create_resp = test_http_client.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(create_resp)
-    assert create_resp.value["data"]
+    assert create_resp.value.data
 
     close_resp = test_token.close_account(
         account=stubbed_sender_token_account_pk,
@@ -415,7 +416,7 @@ def test_create_multisig(
     assert_valid_response(resp)
     assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
 
-    multisig_data = layouts.MULTISIG_LAYOUT.parse(decode_byte_string(resp.value["data"][0]))
+    multisig_data = layouts.MULTISIG_LAYOUT.parse(resp.value.data)
     assert multisig_data.is_initialized
     assert multisig_data.m == min_signers
     assert PublicKey(multisig_data.signer1) == stubbed_sender.public_key
