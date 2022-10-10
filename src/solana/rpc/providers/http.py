@@ -16,13 +16,6 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         return f"HTTP RPC connection {self.endpoint_uri}"
 
     @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
-    def make_request_raw(self, body: Body) -> str:
-        """Make an HTTP request to an http rpc endpoint."""
-        request_kwargs = self._build_request_kwargs(body, is_async=False)
-        raw_response = requests.post(**request_kwargs, timeout=self.timeout)
-        return _after_request_raw(raw_response=raw_response)
-
-    @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
     def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make an HTTP request to an http rpc endpoint."""
         request_kwargs = self._build_request_kwargs(body, is_async=False)
