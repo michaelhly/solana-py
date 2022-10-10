@@ -12,7 +12,6 @@ RPC_RESULT_TYPES = get_args(RPCResult)
 
 def assert_valid_response(resp: RPCResult):
     """Assert valid RPCResult."""
-    assert hasattr(resp, "value")
     assert type(resp) in RPC_RESULT_TYPES
     assert not isinstance(resp, RpcError)
 
