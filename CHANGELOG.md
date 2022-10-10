@@ -1,8 +1,18 @@
 # Changelog
 
-## [0.26.0] - 2022-09-28
+
+## [0.26.0] - Unreleased
 
 ## Changed
+
+- Use solders for parsing RPC requests:
+    - **Breaking change**: Every RPC method now returns a strongly typed object instead of a dictionary.
+        For example, `client.get_balance` returns `GetBalanceResp`.
+    - **Breaking change**: RPC methods now raise `RPCException` if the RPC returns an error result.
+        Previously only the transaction sending methods did this.
+    - **Breaking change**: RPC methods that can return `jsonParsed` data now have their own dedicated Python
+        method you should use. For example, instead of `client.get_account_info(..., encoding="jsonParsed")`
+        you should do `client.get_account_info_json_parsed(...)`. This is done for the sake of static typing.
 
 - Use Solders for building RPC requests:
     - **Breaking change**: Removed deprecated RPC methods.
