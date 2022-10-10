@@ -5,6 +5,7 @@ from time import sleep, time
 from typing import Dict, List, Optional, Union, Sequence
 from solders.signature import Signature
 from solders.rpc.responses import (
+    RpcError,
     GetBalanceResp,
     GetAccountInfoResp,
     GetBlockCommitmentResp,
@@ -49,6 +50,8 @@ from solders.rpc.responses import (
     GetVoteAccountsResp,
     RequestAirdropResp,
     SendTransactionResp,
+    SimulateTransactionResp,
+    ValidatorExitResp,
 )
 
 from solana.blockhash import Blockhash, BlockhashCache
@@ -58,13 +61,14 @@ from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
-from .commitment import COMMITMENT_RANKS, Commitment, Finalized
+from .commitment import Commitment, Finalized
 from .core import (
     RPCException,
     TransactionExpiredBlockheightExceededError,
     TransactionUncompiledError,
     UnconfirmedTxError,
     _ClientCore,
+    _COMMITMENT_TO_SOLDERS,
 )
 from .providers import http
 
@@ -1256,7 +1260,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         *signers: Keypair,
         opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> types.RPCResponse:
+    ) -> SendTransactionResp:
         """Send a transaction.
 
         Args:
@@ -1289,12 +1293,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 except ValueError:
                     blockhash_resp = self.get_latest_blockhash(Finalized)
                     recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
-                    last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
+                    last_valid_block_height = blockhash_resp.value.last_valid_block_height
 
             else:
                 blockhash_resp = self.get_latest_blockhash(Finalized)
                 recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
-                last_valid_block_height = blockhash_resp["result"]["value"]["lastValidBlockHeight"]
+                last_valid_block_height = blockhash_resp.value.last_valid_block_height
 
         txn.recent_blockhash = recent_blockhash
 
@@ -1313,7 +1317,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def simulate_transaction(
         self, txn: Transaction, sig_verify: bool = False, commitment: Optional[Commitment] = None
-    ) -> types.RPCResponse:
+    ) -> SimulateTransactionResp:
         """Simulate sending a transaction.
 
         Args:
@@ -1338,9 +1342,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
              'id':1}
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._simulate_transaction_body(txn, sig_verify, commitment)
-        return self._provider.make_request(body)
+        return self._provider.make_request(body, SimulateTransactionResp)
 
-    def validator_exit(self) -> types.RPCResponse:
+    def validator_exit(self) -> ValidatorExitResp:
         """Request to have the validator exit.
 
         Validator must have booted with RPC exit enabled (`--enable-rpc-exit` parameter).
@@ -1350,18 +1354,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.validator_exit() # doctest: +SKIP
             {'jsonrpc': '2.0', 'result': true, 'id': 1}
         """
-        return self._provider.make_request(self._validator_exit)
+        return self._provider.make_request(self._validator_exit, ValidatorExitResp)
 
     def __post_send_with_confirm(
-        self, resp: types.RPCResponse, conf_comm: Commitment, last_valid_block_height: Optional[int]
-    ) -> types.RPCResponse:
+        self, resp: SendTransactionResp, conf_comm: Commitment, last_valid_block_height: Optional[int]
+    ) -> SendTransactionResp:
         resp = self._post_send(resp)
-        self._provider.logger.info(
-            "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
-        )
-        self.confirm_transaction(
-            Signature.from_string(resp["result"]), conf_comm, last_valid_block_height=last_valid_block_height
-        )
+        sig = resp.value
+        self._provider.logger.info("Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, sig)
+        self.confirm_transaction(sig, conf_comm, last_valid_block_height=last_valid_block_height)
         return resp
 
     def confirm_transaction(
@@ -1370,7 +1371,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         sleep_seconds: float = 0.5,
         last_valid_block_height: Optional[int] = None,
-    ) -> types.RPCResponse:
+    ) -> GetSignatureStatusesResp:
         """Confirm the transaction identified by the specified signature.
 
         Args:
@@ -1380,45 +1381,39 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             last_valid_block_height: The block height by which the transaction would become invalid.
         """
         timeout = time() + 30
-        commitment_to_use = self._commitment if commitment is None else commitment
-        commitment_rank = COMMITMENT_RANKS[commitment_to_use]
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        commitment_rank = int(commitment_to_use)
         if last_valid_block_height:  # pylint: disable=no-else-return
-            current_blockheight = (self.get_block_height(commitment))["result"]
+            current_blockheight = (self.get_block_height(commitment)).value
             while current_blockheight <= last_valid_block_height:
                 resp = self.get_signature_statuses([tx_sig])
-                maybe_rpc_error = resp.get("error")
-                if maybe_rpc_error is not None:
-                    raise RPCException(maybe_rpc_error)
-                resp_value = resp["result"]["value"][0]
+                if isinstance(resp, RpcError):
+                    raise RPCException(resp)
+                resp_value = resp.value[0]
                 if resp_value is not None:
-                    confirmation_status = resp_value["confirmationStatus"]
-                    confirmation_rank = COMMITMENT_RANKS[confirmation_status]
-                    if confirmation_rank >= commitment_rank:
-                        break
-                current_blockheight = (self.get_block_height(commitment))["result"]
+                    confirmation_status = resp_value.confirmation_status
+                    if confirmation_status is not None:
+                        confirmation_rank = int(confirmation_status)
+                        if confirmation_rank >= commitment_rank:
+                            break
+                current_blockheight = (self.get_block_height(commitment)).value
                 sleep(sleep_seconds)
             else:
-                maybe_rpc_error = resp.get("error")
-                if maybe_rpc_error is not None:
-                    raise RPCException(maybe_rpc_error)
+                if isinstance(resp, RpcError):
+                    raise RPCException(resp)
                 raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             return resp
         else:
             while time() < timeout:
                 resp = self.get_signature_statuses([tx_sig])
-                maybe_rpc_error = resp.get("error")
-                if maybe_rpc_error is not None:
-                    raise RPCException(maybe_rpc_error)
-                resp_value = resp["result"]["value"][0]
+                resp_value = resp.value[0]
                 if resp_value is not None:
-                    confirmation_status = resp_value["confirmationStatus"]
-                    confirmation_rank = COMMITMENT_RANKS[confirmation_status]
-                    if confirmation_rank >= commitment_rank:
-                        break
+                    confirmation_status = resp_value.confirmation_status
+                    if confirmation_status is not None:
+                        confirmation_rank = int(confirmation_status)
+                        if confirmation_rank >= commitment_rank:
+                            break
                 sleep(sleep_seconds)
             else:
-                maybe_rpc_error = resp.get("error")
-                if maybe_rpc_error is not None:
-                    raise RPCException(maybe_rpc_error)
                 raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
             return resp

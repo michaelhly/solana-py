@@ -3,7 +3,6 @@ import itertools
 import logging
 import os
 from typing import Any, Dict, Optional, Union, TypeVar, Type
-from typing_extensions import Protocol
 from solders.rpc.requests import Body
 from solders.rpc.responses import RPCResult as RPCResultType, RpcError
 
