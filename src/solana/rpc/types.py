@@ -23,19 +23,6 @@ class RPCError(TypedDict):
     """Error message."""
 
 
-class RPCResponse(TypedDict, total=False):
-    """RPC Response."""
-
-    error: Union[RPCError, str]
-    """RPC error."""
-    id: int
-    """Request ID."""
-    jsonrpc: Literal["2.0"]
-    """Protocol."""
-    result: Any
-    """Response results."""
-
-
 class DataSliceOpts(NamedTuple):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
