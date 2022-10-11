@@ -436,7 +436,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fees().value # doctest: +SKIP
+            >>> solana_client.get_first_available_block().value # doctest: +SKIP
             1
         """
         return self._provider.make_request(self._get_first_available_block, GetFirstAvailableBlockResp)
@@ -473,14 +473,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_inflation_governor() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'foundation': 0.05,
-              'foundationTerm': 7.0,
-              'initial': 0.15,
-              'taper': 0.15,
-              'terminal': 0.015},
-             'id': 5}
+            >>> solana_client.get_inflation_governor().value.foundation # doctest: +SKIP
+            0.05
         """
         body = self._get_inflation_governor_body(commitment)
         return self._provider.make_request(body, GetInflationGovernorResp)
@@ -490,13 +484,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_inflation_rate() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'epoch': 1,
-              'foundation': 0.007499746885736559,
-              'total': 0.14999493771473116,
-              'validator': 0.1424951908289946},
-             'id': 1}
+            >>> solana_client.get_inflation_rate().value.epoch # doctest: +SKIP
+            1
         """
         return self._provider.make_request(self._get_inflation_rate, GetInflationRateResp)
 
@@ -511,50 +500,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_largest_accounts() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 8890},
-              'value': [{'address': '95L7AsBCLRsqghsi6ksZkzjNbs6rqDgHCzKaGZ7bJi75',
-                'lamports': 500000000000000000},
-               {'address': 'APnSR52EC1eH676m7qTBHUJ1nrGpHYpV7XKPxgRDD8gX',
-                'lamports': 164511033098290000},
-               {'address': '13LeFbG6m2EP1fqCj9k66fcXsoTHMMtgr7c78AivUrYD',
-                'lamports': 153333632446109120},
-               {'address': 'GK2zqSsXLA2rwVZk347RYhh6jJpRsCA69FjLW93ZGi3B',
-                'lamports': 57499999036109120},
-               {'address': '8HVqyX9jebh31Q9Hp8t5sMVJs665979ZeEr3eCfzitUe',
-                'lamports': 30301031036109120},
-               {'address': 'HbZ5FfmKWNHC7uwk6TF1hVi6TCs7dtYfdjEcuPGgzFAg',
-                'lamports': 14999999036109120},
-               {'address': '14FUT96s9swbmH7ZjpDvfEDywnAYy9zaNhv4xvezySGu',
-                'lamports': 4999999036109120},
-               {'address': '9huDUZfxoJ7wGMTffUE7vh1xePqef7gyrLJu9NApncqA',
-                'lamports': 4999999036109120},
-               {'address': 'C7C8odR8oashR5Feyrq2tJKaXL18id1dSj2zbkDGL2C2',
-                'lamports': 4999999036109120},
-               {'address': 'AYgECURrvuX6GtFe4tX7aAj87Xc5r5Znx96ntNk1nCv',
-                'lamports': 2499999518054560},
-               {'address': 'AogcwQ1ubM76EPMhSD5cw1ES4W5econvQCFmBL6nTW1',
-                'lamports': 2499999518054560},
-               {'address': 'gWgqQ4udVxE3uNxRHEwvftTHwpEmPHAd8JR9UzaHbR2',
-                'lamports': 2499999518054560},
-               {'address': '3D91zLQPRLamwJfGR5ZYMKQb4C18gsJNaSdmB6b2wLhw',
-                'lamports': 2499999518054560},
-               {'address': '3bHbMa5VW3np5AJazuacidrN4xPZgwhcXigmjwHmBg5e',
-                'lamports': 2499999518054560},
-               {'address': '4U3RFq7X5kLG6tZ9kcksFL8oXeGNjtuUN1YfkVKXbs5x',
-                'lamports': 2499999518054560},
-               {'address': '5cBVGBKY6kBaiTVmsQpxThJ2oqitBYuCAX9Zm2zMuV4y',
-                'lamports': 2499999518054560},
-               {'address': '8PjJTv657aeN9p5R2WoM6pPSz385chvTTytUWaEjSjkq',
-                'lamports': 2499999518054560},
-               {'address': 'AHB94zKUASftTdqgdfiDSdnPJHkEFp7zX3yMrcSxABsv',
-                'lamports': 2499999518054560},
-               {'address': 'Hc36Wh1ZqYGzGAnsJWNT9r2gY3h9n89uDpxZPsmEsiE3',
-                'lamports': 2499999518054560},
-               {'address': 'GxyRKP2eVKACaSSnso4VLSAjZKmHsFXHWUfS3A5CtiMA',
-                'lamports': 1940147018054560}]},
-             'id': 2}
+            >>> solana_client.get_largest_accounts().value[0].lamports # doctest: +SKIP
+            500000000000000000
         """
         body = self._get_largest_accounts_body(filter_opt, commitment)
         return self._provider.make_request(body, GetLargestAccountsResp)
@@ -571,16 +518,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_leader_schedule() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'EWj2cuEuVhi7RX81cnAY3TzpyFwnHzzVwvuTyfmxmhs3': [0,
-               1,
-               2,
-               3,
-               4,
-               5,
-               ...]},
-             'id': 6}
+            >>> list(solana_client.get_leader_schedule().value.items())[0]
+            (Pubkey(
+                HMU77m6WSL9Xew9YvVCgz1hLuhzamz74eD9avi4XPdr,
+            ), [346448, 346449, 346450, 346451, 369140, 369141, 369142, 369143, 384204, 384205, 384206, 384207])
         """
         body = self._get_leader_schedule_body(epoch, commitment)
         return self._provider.make_request(body, GetLeaderScheduleResp)
@@ -596,8 +537,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_minimum_balance_for_rent_exemption(50) # doctest: +SKIP
-            1238880, 'id': 7}
+            >>> solana_client.get_minimum_balance_for_rent_exemption(50).value # doctest: +SKIP
+            1238880
         """
         body = self._get_minimum_balance_for_rent_exemption_body(usize, commitment)
         return self._provider.make_request(body, GetMinimumBalanceForRentExemptionResp)
