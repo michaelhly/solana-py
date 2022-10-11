@@ -975,7 +975,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> full_signed_tx_hex = (
-            ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc
+            ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc'
             ...     '72fa113f731ecbd0215e88edc0309d6f0a010001031398f62c6d1a457c51ba6a4b5f3dbd2f69fca93216218dc8997e41'
             ...     '6bd17d93ca68ab4677ffb1f2894dd0a6153c231d45ec436ae53ae60149dbe15f32e4b8703f0000000000000000000000'
             ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'
@@ -1066,7 +1066,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> full_signed_tx_hex = (
-            ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc
+            ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc'
             ...     '72fa113f731ecbd0215e88edc0309d6f0a010001031398f62c6d1a457c51ba6a4b5f3dbd2f69fca93216218dc8997e41'
             ...     '6bd17d93ca68ab4677ffb1f2894dd0a6153c231d45ec436ae53ae60149dbe15f32e4b8703f0000000000000000000000'
             ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'

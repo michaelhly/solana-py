@@ -965,7 +965,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> full_signed_tx_hex = (
-            ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc
+            ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc'
             ...     '72fa113f731ecbd0215e88edc0309d6f0a010001031398f62c6d1a457c51ba6a4b5f3dbd2f69fca93216218dc8997e41'
             ...     '6bd17d93ca68ab4677ffb1f2894dd0a6153c231d45ec436ae53ae60149dbe15f32e4b8703f0000000000000000000000'
             ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'
@@ -1058,12 +1058,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> tx_str = (
-            ...     "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BF"
-            ...     "ggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8"
-            ...     "TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2t"
+            >>> full_signed_tx_hex = (
+            ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc'
+            ...     '72fa113f731ecbd0215e88edc0309d6f0a010001031398f62c6d1a457c51ba6a4b5f3dbd2f69fca93216218dc8997e41'
+            ...     '6bd17d93ca68ab4677ffb1f2894dd0a6153c231d45ec436ae53ae60149dbe15f32e4b8703f0000000000000000000000'
+            ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'
+            ...     '1851a106901020200010c0200000040420f0000000000'
             ... )
-            >>> solana_client.simulate_transaction(tx_str).value.logs  # doctest: +SKIP
+            >>> tx = Transaction.deserialize(bytes.fromhex(full_signed_tx_hex))
+            >>> solana_client.simulate_transaction(tx).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._simulate_transaction_body(txn, sig_verify, commitment)
