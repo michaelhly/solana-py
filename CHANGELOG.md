@@ -5,7 +5,7 @@
 
 ## Changed
 
-- Use solders for parsing RPC requests:
+- Use solders for parsing RPC requests [(#302)](https://github.com/michaelhly/solana-py/pull/302):
     - **Breaking change**: Every RPC method now returns a strongly typed object instead of a dictionary.
         For example, `client.get_balance` returns `GetBalanceResp`.
     - **Breaking change**: RPC methods now raise `RPCException` if the RPC returns an error result.
