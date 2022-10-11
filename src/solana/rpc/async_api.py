@@ -402,14 +402,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_epoch_info()) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'absoluteSlot': 5150,
-              'blockHeight': 5150,
-              'epoch': 0,
-              'slotIndex': 5150,
-              'slotsInEpoch': 8192},
-             'id': 5}
+            >>> (await solana_client.get_epoch_info()).value.epoch # doctest: +SKIP
+            0
         """
         body = self._get_epoch_info_body(commitment)
         return await self._provider.make_request(body, GetEpochInfoResp)
@@ -419,14 +413,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_epoch_schedule()) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'firstNormalEpoch': 0,
-              'firstNormalSlot': 0,
-              'leaderScheduleSlotOffset': 8192,
-              'slotsPerEpoch': 8192,
-              'warmup': False},
-             'id': 6}
+            >>> (await solana_client.get_epoch_schedule()).value.slots_per_epoch # doctest: +SKIP
+            8192
         """
         return await self._provider.make_request(self._get_epoch_schedule, GetEpochScheduleResp)
 
@@ -447,10 +435,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> txn = Transaction().add(transfer(TransferParams(
             ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> asyncio.run(solana_client.get_fee_for_message(txn.compile_message())) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': { 'context': { 'slot': 5068 }, 'value': 5000 },
-             'id': 4}
+            >>> (await solana_client.get_fee_for_message(txn.compile_message())).value # doctest: +SKIP
+            5000
         """  # noqa: E501 # pylint: disable=line-too-long
         if isinstance(message, Transaction):
             raise TransactionUncompiledError("Transaction uncompiled, please compile to message first.")
