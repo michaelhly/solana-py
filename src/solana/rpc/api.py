@@ -75,6 +75,17 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         super().__init__(commitment, blockhash_cache)
         self._provider = http.HTTPProvider(endpoint, timeout=timeout)
 
+    @property
+    def request(self):
+        if getattr(self, '_provider'):
+            request_raw = self._provider.content
+            return self._provider.json_decode(request_raw)
+        return None
+
+    @property
+    def response_headers(self):
+        return self._provider.response_headers if getattr(self, '_provider') else None
+
     def is_connected(self) -> bool:
         """Health check.
 
@@ -99,6 +110,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> from solana.publickey import PublicKey
@@ -1347,6 +1359,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
                 defaults to current epoch.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: set the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1406,7 +1419,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_token_accounts_by_delegate(
         self,
         delegate: PublicKey,
-        opts: types.TokenAccountOpts,
+        opts: Optional[types.TokenAccountOpts] = None,
         commitment: Optional[Commitment] = None,
     ) -> types.RPCResponse:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
@@ -1752,7 +1765,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             sleep_seconds: The number of seconds to sleep when polling the signature status.
         """
-        timeout = time() + 30
+        timeout = time() + 90
         commitment_to_use = self._commitment if commitment is None else commitment
         commitment_rank = COMMITMENT_RANKS[commitment_to_use]
         if last_valid_block_height:  # pylint: disable=no-else-return
