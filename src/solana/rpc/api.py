@@ -566,30 +566,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
             >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
-            >>> solana_client.get_multiple_accounts(pubkeys) # doctest: +SKIP
-            {
-                "jsonrpc": "2.0",
-                "result": {
-                    "context": {"slot": 97531946},
-                    "value": [
-                        {
-                            "data": ["", "base64"],
-                            "executable": False,
-                            "lamports": 1,
-                            "owner": "11111111111111111111111111111111",
-                            "rentEpoch": 225,
-                        },
-                        {
-                            "data": ["", "base64"],
-                            "executable": False,
-                            "lamports": 809441127,
-                            "owner": "11111111111111111111111111111111",
-                            "rentEpoch": 225,
-                        },
-                    ],
-                },
-                "id": 1,
-            }
+            >>> solana_client.get_multiple_accounts(pubkeys).value[0].lamports # doctest: +SKIP
+            1
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_multiple_accounts_body(
             pubkeys=pubkeys, commitment=commitment, encoding=encoding, data_slice=data_slice
@@ -613,30 +591,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
             >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
-            >>> solana_client.get_multiple_accounts_json_parsed(pubkeys) # doctest: +SKIP
-            {
-                "jsonrpc": "2.0",
-                "result": {
-                    "context": {"slot": 97531946},
-                    "value": [
-                        {
-                            "data": ["", "base64"],
-                            "executable": False,
-                            "lamports": 1,
-                            "owner": "11111111111111111111111111111111",
-                            "rentEpoch": 225,
-                        },
-                        {
-                            "data": ["", "base64"],
-                            "executable": False,
-                            "lamports": 809441127,
-                            "owner": "11111111111111111111111111111111",
-                            "rentEpoch": 225,
-                        },
-                    ],
-                },
-                "id": 1,
-            }
+            >>> solana_client.get_multiple_accounts_json_parsed(pubkeys).value[0].lamports # doctest: +SKIP
+            1
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_multiple_accounts_body(
             pubkeys=pubkeys,
@@ -671,17 +627,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> memcmp_opts = [
             ...     MemcmpOpts(offset=4, bytes="3Mc6vR"),
             ... ]
-            >>> solana_client.get_program_accounts("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", filters=[17, memcmp_opts]) # doctest: +SKIP
-            {'jsonrpc': "2.0",
-             'result' :[{
-                'account' :{
-                     'data' :'2R9jLfiAQ9bgdcw6h8s44439',
-                     'executable' :false,
-                     'lamports' :15298080,
-                     'owner' :'4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T',
-                     'rentEpoch' :28},
-                'pubkey' :'CxELquR1gPP8wHe33gZ4QxqGB3sZ9RSwsJ2KshVewkFY'}],
-             'id' :1}
+            >>> pubkey = PublicKey(4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T)
+            >>> filters = [17, memcmp_opts]
+            >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
+            1
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_program_accounts_body(
             pubkey=pubkey,
@@ -712,17 +661,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> memcmp_opts = [
             ...     MemcmpOpts(offset=4, bytes="3Mc6vR"),
             ... ]
-            >>> solana_client.get_program_accounts_json_parsed("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T", filters=[17, memcmp_opts]) # doctest: +SKIP
-            {'jsonrpc': "2.0",
-             'result' :[{
-                'account' :{
-                     'data' :'2R9jLfiAQ9bgdcw6h8s44439',
-                     'executable' :false,
-                     'lamports' :15298080,
-                     'owner' :'4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T',
-                     'rentEpoch' :28},
-                'pubkey' :'CxELquR1gPP8wHe33gZ4QxqGB3sZ9RSwsJ2KshVewkFY'}],
-             'id' :1}
+            >>> pubkey = PublicKey(4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T)
+            >>> filters = [17, memcmp_opts]
+            >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
+            1
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_program_accounts_body(
             pubkey=pubkey,
@@ -743,12 +685,13 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_latest_blockhash() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'context': {'slot': 1637},
-              'value': {'blockhash': 'EALChog1mXQ9nEgEUQpWAtmA5UueUZvZiL16ZivmR7eb',
-               'lastValidBlockHeight': 3090}},
-             'id': 2}
+            >>> solana_client.get_latest_blockhash().value # doctest: +SKIP
+            RpcBlockhash {
+                blockhash: Hash(
+                    4TLzN2RAACFnd5TYpHcUi76pC3V1qkggRF29HWk2VLeT,
+                ),
+                last_valid_block_height: 158286487,
+            }
         """
         body = self._get_latest_blockhash_body(commitment)
         return self._provider.make_request(body, GetLatestBlockhashResp)
@@ -769,19 +712,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> signatures = [
+            >>> raw_sigs = [
             ...     "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
             ...     "5j7s6NiJS3JAkvgkoc18WVAsiSaci2pxB2A6ueCJP4tprA2TFg9wSyTLeYouxPBJEMzJinENTkpA52YStRW5Dia7"]
-            >>> solana_client.get_signature_statuses(signatures) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {
-                'context': {'slot':82},
-                'value': [{
-                    'slot': 72,
-                    'confirmations': 10,
-                    'err': null,
-                    'status': {'Ok': null}}, null]},
-             'id': 1}
+            >>> sigs = [Signature.from_string(sig) for sig in raw_sigs]
+            >>> solana_client.get_signature_statuses(sigs).value[0].confirmations # doctest: +SKIP
+            10
         """
         body = self._get_signature_statuses_body(signatures, search_transaction_history)
         return self._provider.make_request(body, GetSignatureStatusesResp)
@@ -794,7 +730,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_slot() # doctest: +SKIP
+            >>> solana_client.get_slot().value # doctest: +SKIP
             7515
         """
         body = self._get_slot_body(commitment)
@@ -808,10 +744,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_slot_leader() # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': 'EWj2cuEuVhi7RX81cnAY3TzpyFwnHzzVwvuTyfmxmhs3',
-             'id': 1}
+            >>> solana_client.get_slot_leader().value # doctest: +SKIP
+            Pubkey(
+                dv2eQHeP4RFrJZ6UeiZWoc3XTtmtZCUKxxCApCDcRNV,
+            )
         """
         body = self._get_slot_leader_body(commitment)
         return self._provider.make_request(body, GetSlotLeaderResp)
