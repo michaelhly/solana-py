@@ -515,7 +515,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> list(solana_client.get_leader_schedule().value.items())[0]
+            >>> list(solana_client.get_leader_schedule().value.items())[0] # doctest: +SKIP
             (Pubkey(
                 HMU77m6WSL9Xew9YvVCgz1hLuhzamz74eD9avi4XPdr,
             ), [346448, 346449, 346450, 346451, 369140, 369141, 369142, 369143, 384204, 384205, 384206, 384207])
@@ -624,7 +624,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> memcmp_opts = [
             ...     MemcmpOpts(offset=4, bytes="3Mc6vR"),
             ... ]
-            >>> pubkey = PublicKey(4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T)
+            >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
             >>> filters = [17, memcmp_opts]
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
@@ -658,7 +658,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> memcmp_opts = [
             ...     MemcmpOpts(offset=4, bytes="3Mc6vR"),
             ... ]
-            >>> pubkey = PublicKey(4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T)
+            >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
             >>> filters = [17, memcmp_opts]
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
