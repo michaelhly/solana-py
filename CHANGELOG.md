@@ -16,6 +16,7 @@
     - **Breaking change**: The `get_accounts` method on the SPL Token client has been split into four separate methods:
         `get_accounts_by_delegate`, `get_accounts_by_owner`, `get_accounts_by_delegate_json_parsed`, and `get_accounts_by_owner_json_parsed`.
     - **Breaking change**: `solana.rpc.responses` has been removed and supplanted by `solders.rpc.responses`.
+- Remove unused deps: `apischema`, `based58`, `jsonrpcclient`, `jsonrpcserver`.
 
 - Use Solders for building RPC requests:
     - **Breaking change**: Removed deprecated RPC methods.
