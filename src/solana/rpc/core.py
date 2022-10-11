@@ -129,10 +129,6 @@ class TransactionExpiredBlockheightExceededError(Exception):
     """Raise when confirming an expired transaction that exceeded the blockheight."""
 
 
-class TransactionUncompiledError(Exception):
-    """Raise when transaction is not compiled to a message."""
-
-
 class _ClientCore:  # pylint: disable=too-few-public-methods
     _comm_key = "commitment"
     _encoding_key = "encoding"
