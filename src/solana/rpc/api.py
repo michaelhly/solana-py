@@ -428,8 +428,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_fee_for_message(txn.compile_message()).value # doctest: +SKIP
             5000
         """  # noqa: E501 # pylint: disable=line-too-long
-        if isinstance(message, Transaction):
-            raise TransactionUncompiledError("Transaction uncompiled, please compile to message first.")
         body = self._get_fee_for_message_body(message, commitment)
         return self._provider.make_request(body, GetFeeForMessageResp)
 
