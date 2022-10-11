@@ -264,47 +264,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_block(1) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'blockTime': None,
-              'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-              'parentSlot': 0,
-              'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-              'rewards': [],
-              'transactions': [{'meta': {'err': None,
-                 'fee': 0,
-                 'postBalances': [500000000000, 26858640, 1, 1, 1],
-                 'preBalances': [500000000000, 26858640, 1, 1, 1],
-                 'status': {'Ok': None}},
-                'transaction': {'message': {'accountKeys': ['LjvEBM78ufAikBfxqtj4RNiAECUi7Xqtz9k3QM3DzPk',
-                   'EKAar3bMQUZvGSonq7vcPF2nPaCYowbnat44FPafW8Po',
-                   'SysvarS1otHashes111111111111111111111111111',
-                   'SysvarC1ock11111111111111111111111111111111',
-                   'Vote111111111111111111111111111111111111111'],
-                  'header': {'numReadonlySignedAccounts': 0,
-                   'numReadonlyUnsignedAccounts': 3,
-                   'numRequiredSignatures': 1},
-                  'instructions': [{'accounts': [1, 2, 3, 0],
-                    'data': '37u9WtQpcm6ULa3VmTgTKEBCtYMxq84mk82tRvKdFEwj3rALiptAzuMJ1yoVSFAMARMZYp7q',
-                    'programIdIndex': 4}],
-                  'recentBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2'},
-                 'signatures': ['63jnpMCs7TNnCjnTqUrX7Mvqc5CbJMtVkLxBjPHUQkjXyZrQuZpfhjvzA7A29D9tMqVaiQC3UNP1NeaZKFFHJyQE']}}]},
-             'id': 9}
-            >>> solana_client.get_block(1, encoding="base64") # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': {'blockTime': None,
-              'blockhash': '39pJzWsPn59k2PuHqhB7xNYBNGFXcFVkXLertHPBV4Tj',
-              'parentSlot': 0,
-              'previousBlockhash': 'EwF9gtehrrvPUoNticgmiEadAWzn4XeN8bNaNVBkS6S2',
-              'rewards': [],
-              'transactions': [{'meta': {'err': None,
-                 'fee': 0,
-                 'postBalances': [500000000000, 26858640, 1, 1, 1],
-                 'preBalances': [500000000000, 26858640, 1, 1, 1],
-                 'status': {'Ok': None}},
-                'transaction': ['AfxyKHmHIjXWjkyHODGeAbVxmfQWPj1ydS9nF+ynJHo8I1vCPDp2P9Cj5aA6W1CAHEHCqY0B1FDKomCzRo3qrAsBAAMFBQ6QBWfhQF7rG02xhuEsmmrUtz3AUjBtJKkqaHPJEmvFzziDX0C0robPrl9RbOyXHoc9/Dxa0zoGL6cEjvCjLgan1RcZLwqvxvJl4/t3zHragsUp0L47E24tAFUgAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAHYUgdNXR0u3xNdiTr072z2DVec9EQQ/wNo1OAAAAAAM8NSv7ISDPN9E9XNL9vX7h8LuJHWlopUcX39DxsDx23AQQEAQIDADUCAAAAAQAAAAAAAAAAAAAAAAAAAIWWp5Il3Kg312pzVk6Jt61iyFhTbtmkh/ORbj3JUQRbAA==',
-                 'base64']}]},
-             'id': 10}
+            >>> solana_client.get_block(1).value.blockhash # doctest: +SKIP
+            Hash(
+                EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG,
+            )
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_block_body(slot, encoding, max_supported_transaction_version)
         return self._provider.make_request(body, GetBlockResp)
@@ -319,35 +282,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Examples:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_recent_performance_samples(4) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-            'result': [
-                {
-                'numSlots': 126,
-                'numTransactions': 126,
-                'samplePeriodSecs': 60,
-                'slot': 348125
+            >>> solana_client.get_recent_performance_samples(1).value[0] # doctest: +SKIP
+            RpcPerfSample(
+                RpcPerfSample {
+                    slot: 168036172,
+                    num_transactions: 7159,
+                    num_slots: 158,
+                    sample_period_secs: 60,
                 },
-                {
-                'numSlots': 126,
-                'numTransactions': 126,
-                'samplePeriodSecs': 60,
-                'slot': 347999
-                },
-                {
-                'numSlots': 125,
-                'numTransactions': 125,
-                'samplePeriodSecs': 60,
-                'slot': 347873
-                },
-                {
-                'numSlots': 125,
-                'numTransactions': 125,
-                'samplePeriodSecs': 60,
-                'slot': 347748
-                }
-            ],
-            'id': 1}
+            )
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_recent_performance_samples_body(limit)
         return self._provider.make_request(body, GetRecentPerformanceSamplesResp)
@@ -360,7 +303,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_block_height() # doctest: +SKIP
+            >>> solana_client.get_block_height().value # doctest: +SKIP
             1233
         """
         body = self._get_block_height_body(commitment)
@@ -375,7 +318,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_blocks(5, 10) # doctest: +SKIP
+            >>> solana_client.get_blocks(5, 10).value # doctest: +SKIP
             [5, 6, 7, 8, 9, 10]
         """
         body = self._get_blocks_body(start_slot, end_slot)
@@ -404,13 +347,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_signatures_for_address("Vote111111111111111111111111111111111111111", limit=1) # doctest: +SKIP
-            {'jsonrpc': '2.0',
-             'result': [{'err': None,
-               'memo': None,
-               'signature': 'v1BK8XcaPBzAGd7TB1K53pMdi6TBGe5CLCgx8cmZ4Bj63ZNvA6ca2QaxFpBFdvmpoFQ51VorBjifkBGLTDhwpqN',
-               'slot': 4290}],
-             'id': 2}
+            >>> from solana.publickey import PublicKey
+            >>> pubkey = PublicKey("Vote111111111111111111111111111111111111111")
+            >>> solana_client.get_signatures_for_address(pubkey, limit=1).value[0].signature # doctest: +SKIP
+            Signature(
+                1111111111111111111111111111111111111111111111111111111111111111,
+            )
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
         return self._provider.make_request(body, GetSignaturesForAddressResp)
@@ -436,26 +378,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_transaction("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy") # doctest: +SKIP
-                {'jsonrpc': '2.0',
-                 'result': {'meta': {'err': None,
-                   'fee': 5000, 'rewards': [],
-                   'postBalances': [498449233720610510, 1000001001987940, 1],
-                   'preBalances': [498449233721615510, 1000001000987940, 1],
-                   'status': {'Ok': None}},
-                  'slot': 1659335,
-                  'transaction': {'message': {'accountKeys': ['9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g',
-                     '2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1',
-                     '11111111111111111111111111111111'],
-                    'header': {'numReadonlySignedAccounts': 0,
-                     'numReadonlyUnsignedAccounts': 1,
-                     'numRequiredSignatures': 1},
-                    'instructions': [{'accounts': [0, 1],
-                      'data': '3Bxs4Bc3VYuGVB19',
-                      'programIdIndex': 2}],
-                    'recentBlockhash': 'FwcsKNptGtMLccXAA9YgnivVFK95mKzECLT1DNPi3SDr'},
-                   'signatures': ['3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy']}},
-                 'id': 4}
+            >>> from solders.signature import Signature
+            >>> sig = Signature.from_string("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy")
+            >>> solana_client.get_transaction(sig).value.block_time # doctest: +SKIP
+            1234
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_transaction_body(tx_sig, encoding, commitment, max_supported_transaction_version)
         return self._provider.make_request(body, GetTransactionResp)
