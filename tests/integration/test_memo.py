@@ -1,7 +1,6 @@
 """Tests for the Memo program."""
-import pytest
 from json import loads
-from solders.transaction_status import UiTransaction
+import pytest
 
 from solana.keypair import Keypair
 from solana.rpc.api import Client
