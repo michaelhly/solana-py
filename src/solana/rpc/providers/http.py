@@ -48,14 +48,12 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         raw = self.make_request_unparsed(body)
         return _parse_raw(raw, parser=parser)
 
-    @handle_exceptions(SolanaRpcException, Exception)
     def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body, is_async=False)
         raw_response = requests.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
-    @handle_exceptions(SolanaRpcException, Exception)
     def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_batch_request(reqs, is_async=False)
@@ -86,7 +84,6 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
         ...
 
-    @handle_exceptions(SolanaRpcException, Exception)
     def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint.
 

@@ -59,14 +59,12 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         raw = await self.make_request_unparsed(body)
         return _parse_raw(raw, parser=parser)
 
-    @handle_async_exceptions(SolanaRpcException, Exception)
     async def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body, is_async=True)
         raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
-    @handle_async_exceptions(SolanaRpcException, Exception)
     async def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_batch_request(reqs, is_async=True)
@@ -74,30 +72,29 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         return _after_request_unparsed(raw_response)
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup:
+    async def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup:  # noqa: D102
         ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1:
+    async def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1:  # noqa: D102
         ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2:
+    async def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2:  # noqa: D102
         ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3:
+    async def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3:  # noqa: D102
         ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4:
+    async def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4:  # noqa: D102
         ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
+    async def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:  # noqa: D102
         ...
 
-    @handle_async_exceptions(SolanaRpcException, Exception)
     async def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make an async HTTP batch request to an http rpc endpoint.
 
