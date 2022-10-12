@@ -1,12 +1,39 @@
 """Async HTTP RPC Provider."""
-from typing import Dict, Optional, Type
+from typing import Dict, Optional, Type, overload, Tuple
 
 import httpx
 from solders.rpc.requests import Body
+from solders.rpc.responses import RPCResult
 
 from ...exceptions import SolanaRpcException, handle_async_exceptions
 from .async_base import AsyncBaseProvider
-from .core import DEFAULT_TIMEOUT, T, _after_request, _HTTPProviderCore
+from .core import (
+    DEFAULT_TIMEOUT,
+    T,
+    _after_request_unparsed,
+    _HTTPProviderCore,
+    _parse_raw,
+    _parse_raw_batch,
+    _Tup,
+    _Tup1,
+    _Tup2,
+    _Tup3,
+    _Tup4,
+    _Tup5,
+    _Tuples,
+    _RespTup,
+    _RespTup1,
+    _RespTup2,
+    _RespTup3,
+    _RespTup4,
+    _RespTup5,
+    _BodiesTup,
+    _BodiesTup1,
+    _BodiesTup2,
+    _BodiesTup3,
+    _BodiesTup4,
+    _BodiesTup5,
+)
 
 
 class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
@@ -29,9 +56,52 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     @handle_async_exceptions(SolanaRpcException, Exception)
     async def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make an async HTTP request to an http rpc endpoint."""
+        raw = await self.make_request_unparsed(body)
+        return _parse_raw(raw, parser=parser)
+
+    @handle_async_exceptions(SolanaRpcException, Exception)
+    async def make_request_unparsed(self, body: Body) -> str:
+        """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body, is_async=True)
         raw_response = await self.session.post(**request_kwargs)
-        return _after_request(raw_response=raw_response, parser=parser)
+        return _after_request_unparsed(raw_response)
+
+    @handle_async_exceptions(SolanaRpcException, Exception)
+    async def make_batch_request_unparsed(self, bodies: Tuple[Body, ...]) -> str:
+        """Make an async HTTP request to an http rpc endpoint."""
+        request_kwargs = self._before_batch_request(bodies, is_async=True)
+        raw_response = await self.session.post(**request_kwargs)
+        return _after_request_unparsed(raw_response)
+
+    @overload
+    def make_batch_request(self, bodies: _BodiesTup, parsers: _Tup) -> _RespTup:
+        ...
+
+    @overload
+    def make_batch_request(self, bodies: _BodiesTup1, parsers: _Tup1) -> _RespTup1:
+        ...
+
+    @overload
+    def make_batch_request(self, bodies: _BodiesTup2, parsers: _Tup2) -> _RespTup2:
+        ...
+
+    @overload
+    def make_batch_request(self, bodies: _BodiesTup3, parsers: _Tup3) -> _RespTup3:
+        ...
+
+    @overload
+    def make_batch_request(self, bodies: _BodiesTup4, parsers: _Tup4) -> _RespTup4:
+        ...
+
+    @overload
+    def make_batch_request(self, bodies: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
+        ...
+
+    @handle_async_exceptions(SolanaRpcException, Exception)
+    async def make_batch_request(self, bodies: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
+        """Make an async HTTP batch request to an http rpc endpoint."""
+        raw = await self.make_batch_request_unparsed(bodies)
+        return _parse_raw_batch(raw, parsers)
 
     async def is_connected(self) -> bool:
         """Health check."""
