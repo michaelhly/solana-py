@@ -1,5 +1,9 @@
 """Tests for the HTTP API Client."""
+from typing import Tuple
 import pytest
+
+from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
+from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
 
 import solana.system_program as sp
 from solana.blockhash import Blockhash
@@ -499,3 +503,17 @@ def test_get_vote_accounts(test_http_client: Client):
     """Test get vote accounts."""
     resp = test_http_client.get_vote_accounts()
     assert_valid_response(resp)
+
+
+@pytest.mark.integration
+def test_batch_request(test_http_client: Client):
+    """Test get vote accounts."""
+    reqs = (GetBlockHeight(), GetFirstAvailableBlock())
+    parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
+    resp: Tuple[
+        Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]
+    ] = test_http_client._provider.make_batch_request(  # pylint: disable=protected-access
+        reqs, parsers
+    )
+    assert_valid_response(resp[0])
+    assert_valid_response(resp[1])
