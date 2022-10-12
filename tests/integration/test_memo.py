@@ -2,6 +2,8 @@
 from json import loads
 import pytest
 
+from solders.transaction_status import ParsedInstruction
+
 from solana.keypair import Keypair
 from solana.rpc.api import Client
 from solana.rpc.commitment import Finalized
@@ -39,8 +41,13 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     resp2_val = resp2.value
     assert resp2_val is not None
     resp2_transaction = resp2_val.transaction
-    log_message = resp2_transaction.meta.log_messages[2].split('"')
+    meta = resp2_transaction.meta
+    assert meta is not None
+    messages = meta.log_messages
+    assert messages is not None
+    log_message = messages[2].split('"')
     assert log_message[1] == raw_message
     ixn = resp2_transaction.transaction.message.instructions[0]
+    assert isinstance(ixn, ParsedInstruction)
     assert loads(ixn.parsed) == raw_message
     assert ixn.program_id == MEMO_PROGRAM_ID.to_solders()
