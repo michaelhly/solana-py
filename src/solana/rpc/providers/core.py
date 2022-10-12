@@ -84,16 +84,16 @@ class _HTTPProviderCore:  # pylint: disable=too-few-public-methods
         data = body.to_json()
         return {**common_kwargs, data_kwarg: data}
 
-    def _build_batch_request_kwargs(self, bodies: Tuple[Body, ...], is_async: bool) -> Dict[str, Any]:
+    def _build_batch_request_kwargs(self, reqs: Tuple[Body, ...], is_async: bool) -> Dict[str, Any]:
         common_kwargs, data_kwarg = self._build_common_request_kwargs(is_async)
-        data = batch_req_json(bodies)
+        data = batch_req_json(reqs)
         return {**common_kwargs, data_kwarg: data}
 
     def _before_request(self, body: Body, is_async: bool) -> Dict[str, Any]:
         return self._build_request_kwargs(body=body, is_async=is_async)
 
-    def _before_batch_request(self, bodies: Tuple[Body, ...], is_async: bool) -> Dict[str, Any]:
-        return self._build_batch_request_kwargs(bodies, is_async=is_async)
+    def _before_batch_request(self, reqs: Tuple[Body, ...], is_async: bool) -> Dict[str, Any]:
+        return self._build_batch_request_kwargs(reqs, is_async=is_async)
 
 
 def _parse_raw(raw: str, parser: Type[T]) -> T:

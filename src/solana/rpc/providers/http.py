@@ -56,40 +56,40 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         return _after_request_unparsed(raw_response)
 
     @handle_exceptions(SolanaRpcException, Exception)
-    def make_batch_request_unparsed(self, bodies: Tuple[Body, ...]) -> str:
+    def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_batch_request(bodies, is_async=True)
+        request_kwargs = self._before_batch_request(reqs, is_async=False)
         raw_response = requests.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     @overload
-    def make_batch_request(self, bodies: _BodiesTup, parsers: _Tup) -> _RespTup:
+    def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup:
         ...
 
     @overload
-    def make_batch_request(self, bodies: _BodiesTup1, parsers: _Tup1) -> _RespTup1:
+    def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1:
         ...
 
     @overload
-    def make_batch_request(self, bodies: _BodiesTup2, parsers: _Tup2) -> _RespTup2:
+    def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2:
         ...
 
     @overload
-    def make_batch_request(self, bodies: _BodiesTup3, parsers: _Tup3) -> _RespTup3:
+    def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3:
         ...
 
     @overload
-    def make_batch_request(self, bodies: _BodiesTup4, parsers: _Tup4) -> _RespTup4:
+    def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4:
         ...
 
     @overload
-    def make_batch_request(self, bodies: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
+    def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
         ...
 
     @handle_exceptions(SolanaRpcException, Exception)
-    def make_batch_request(self, bodies: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
+    def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint."""
-        raw = self.make_batch_request_unparsed(bodies)
+        raw = self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
 
     def is_connected(self) -> bool:
