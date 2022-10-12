@@ -28,17 +28,14 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
         signer=stubbed_sender.public_key,
         message=message,
     )
-    # Create memo instruction
-    memo_ix = create_memo(memo_params)
     # Create transfer tx to add memo to transaction from stubbed sender
-    transfer_tx = Transaction().add(memo_ix)
+    transfer_tx = Transaction().add(create_memo(memo_params))
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
     txn_id = resp.value
     # Txn needs to be finalized in order to parse the logs.
     test_http_client.confirm_transaction(txn_id, commitment=Finalized)
-    resp2 = test_http_client.get_transaction(txn_id, commitment=Finalized, encoding="jsonParsed")
-    resp2_val = resp2.value
+    resp2_val = test_http_client.get_transaction(txn_id, commitment=Finalized, encoding="jsonParsed").value
     assert resp2_val is not None
     resp2_transaction = resp2_val.transaction
     meta = resp2_transaction.meta
