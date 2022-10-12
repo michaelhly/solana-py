@@ -88,7 +88,27 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
 
     @handle_exceptions(SolanaRpcException, Exception)
     def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
-        """Make a HTTP batch request to an http rpc endpoint."""
+        """Make a HTTP batch request to an http rpc endpoint.
+
+        Args:
+            reqs: A tuple of request objects from ``solders.rpc.requests``.
+            parsers: A tuple of response classes from ``solders.rpc.responses``.
+                Note: ``parsers`` should line up with ``reqs``.
+
+        Example:
+            >>> from solana.rpc.providers.http import HTTPProvider
+            >>> from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
+            >>> from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp
+            >>> provider = HTTPProvider("https://api.devnet.solana.com")
+            >>> reqs = (GetBlockHeight(), GetFirstAvailableBlock())
+            >>> parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
+            >>> provider.make_batch_request(reqs, parsers) # doctest: +SKIP
+            (GetBlockHeightResp(
+                158613909,
+            ), GetFirstAvailableBlockResp(
+                86753592,
+            ))
+        """
         raw = self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
 

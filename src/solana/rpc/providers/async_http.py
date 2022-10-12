@@ -99,7 +99,27 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
 
     @handle_async_exceptions(SolanaRpcException, Exception)
     async def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
-        """Make an async HTTP batch request to an http rpc endpoint."""
+        """Make an async HTTP batch request to an http rpc endpoint.
+
+        Args:
+            reqs: A tuple of request objects from ``solders.rpc.requests``.
+            parsers: A tuple of response classes from ``solders.rpc.responses``.
+                Note: ``parsers`` should line up with ``reqs``.
+
+        Example:
+            >>> from solana.rpc.providers.async_http import AsyncHTTPProvider
+            >>> from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
+            >>> from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp
+            >>> provider = AsyncHTTPProvider("https://api.devnet.solana.com")
+            >>> reqs = (GetBlockHeight(), GetFirstAvailableBlock())
+            >>> parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
+            >>> await provider.make_batch_request(reqs, parsers) # doctest: +SKIP
+            (GetBlockHeightResp(
+                158613909,
+            ), GetFirstAvailableBlockResp(
+                86753592,
+            ))
+        """
         raw = await self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
 
