@@ -4,13 +4,22 @@ from __future__ import annotations
 
 from typing import List, Optional, Union, cast
 
+from solders.rpc.responses import (
+    GetTokenAccountBalanceResp,
+    GetTokenAccountsByDelegateJsonParsedResp,
+    GetTokenAccountsByDelegateResp,
+    GetTokenAccountsByOwnerJsonParsedResp,
+    GetTokenAccountsByOwnerResp,
+    SendTransactionResp,
+)
+
 import spl.token.instructions as spl_token
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.commitment import Commitment
-from solana.rpc.types import RPCResponse, TxOpts
+from solana.rpc.types import TxOpts
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
 from spl.token.core import AccountInfo, MintInfo, _TokenCore
 
@@ -34,7 +43,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
             Number of lamports required.
         """
         resp = conn.get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
-        return resp["result"]
+        return resp.value
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_mint(conn: Client) -> int:
@@ -47,7 +56,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
             Number of lamports required.
         """
         resp = conn.get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
-        return resp["result"]
+        return resp.value
 
     @staticmethod
     def get_min_balance_rent_for_exempt_for_multisig(conn: Client) -> int:
@@ -59,23 +68,78 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         Return: Number of lamports required.
         """
         resp = conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
-        return resp["result"]
+        return resp.value
 
-    def get_accounts(
+    def get_accounts_by_owner(
         self,
         owner: PublicKey,
-        is_delegate: bool = False,
         commitment: Optional[Commitment] = None,
-        encoding: str = "jsonParsed",
-    ) -> RPCResponse:
-        """Get token accounts of the provided owner by the token's mint.
+        encoding: str = "base64",
+    ) -> GetTokenAccountsByOwnerResp:
+        """Get token accounts of the provided owner.
 
         Args:
             owner: Public Key of the token account owner.
-            is_delegate: (optional) Flag specifying if the `owner` public key is a delegate.
             commitment: (optional) Bank state to query.
-            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
+            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
+        """
+        args = self._get_accounts_args(
+            owner, commitment, encoding, self._conn.commitment  # pylint: disable=protected-access
+        )
+        return self._conn.get_token_accounts_by_owner(*args)
 
+    def get_accounts_by_owner_json_parsed(
+        self,
+        owner: PublicKey,
+        commitment: Optional[Commitment] = None,
+    ) -> GetTokenAccountsByOwnerJsonParsedResp:
+        """Get token accounts of the provided owner by the token's mint, in JSON format.
+
+        Args:
+            owner: Public Key of the token account owner.
+            commitment: (optional) Bank state to query.
+
+
+        Parsed-JSON encoding attempts to use program-specific state parsers to return more
+        human-readable and explicit account state data. If parsed-JSON is requested but a
+        valid mint cannot be found for a particular account, that account will be filtered out
+        from results. jsonParsed encoding is UNSTABLE.
+        """
+        args = self._get_accounts_args(
+            owner, commitment, "jsonParsed", self._conn.commitment  # pylint: disable=protected-access
+        )
+        return self._conn.get_token_accounts_by_owner_json_parsed(*args)
+
+    def get_accounts_by_delegate(
+        self,
+        owner: PublicKey,
+        commitment: Optional[Commitment] = None,
+        encoding: str = "base64",
+    ) -> GetTokenAccountsByDelegateResp:
+        """Get token accounts of the provided delegate.
+
+        Args:
+            owner: Public Key of the delegate account.
+            commitment: (optional) Bank state to query.
+            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
+        """
+        args = self._get_accounts_args(
+            owner, commitment, encoding, self._conn.commitment  # pylint: disable=protected-access
+        )
+        return self._conn.get_token_accounts_by_delegate(*args)
+
+    def get_accounts_by_delegate_json_parsed(
+        self,
+        owner: PublicKey,
+        commitment: Optional[Commitment] = None,
+        encoding: str = "base64",
+    ) -> GetTokenAccountsByDelegateJsonParsedResp:
+        """Get token accounts of the provided delegate, in JSON format.
+
+        Args:
+            owner: Public Key of the delegate account.
+            commitment: (optional) Bank state to query.
+            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
 
         Parsed-JSON encoding attempts to use program-specific state parsers to return more
         human-readable and explicit account state data. If parsed-JSON is requested but a
@@ -85,13 +149,9 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         args = self._get_accounts_args(
             owner, commitment, encoding, self._conn.commitment  # pylint: disable=protected-access
         )
-        return (
-            self._conn.get_token_accounts_by_delegate(*args)
-            if is_delegate
-            else self._conn.get_token_accounts_by_owner(*args)
-        )
+        return self._conn.get_token_accounts_by_delegate_json_parsed(*args)
 
-    def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> RPCResponse:
+    def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> GetTokenAccountBalanceResp:
         """Get the balance of the provided token account.
 
         Args:
@@ -284,7 +344,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Transfer tokens to another account.
 
         Args:
@@ -309,7 +369,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
         Args:
@@ -332,7 +392,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Revoke transfer authority for a given account.
 
         Args:
@@ -355,7 +415,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Assign a new authority to the account.
 
         Args:
@@ -381,7 +441,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Mint new tokens.
 
         Args:
@@ -407,7 +467,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Burn tokens.
 
         Args:
@@ -430,7 +490,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Remove approval for the transfer of any remaining tokens.
 
         Args:
@@ -452,7 +512,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Freeze account.
 
         Args:
@@ -473,7 +533,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Thaw account.
 
         Args:
@@ -497,7 +557,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Transfer tokens to another account, asserting the token mint and decimals.
 
         Args:
@@ -526,7 +586,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
         This method also asserts the token mint and decimals.
@@ -556,7 +616,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Mint new tokens, asserting the token mint and decimals.
 
         Args:
@@ -583,7 +643,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Burn tokens, asserting the token mint and decimals.
 
         Args:

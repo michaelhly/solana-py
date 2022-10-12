@@ -1,16 +1,21 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
-from json import loads
-from typing import Any, List, Optional, Union, cast, Sequence
 import itertools
+from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
-from apischema import deserialize
-from jsonrpcclient import Error, Ok, parse
-from jsonrpcserver.dispatcher import create_request
-from websockets.legacy.client import WebSocketClientProtocol
-from websockets.legacy.client import connect as ws_connect
+from solders.account_decoder import UiDataSliceConfig
+from solders.rpc.config import (
+    RpcAccountInfoConfig,
+    RpcProgramAccountsConfig,
+    RpcSignatureSubscribeConfig,
+    RpcTransactionLogsConfig,
+    RpcTransactionLogsFilter,
+    RpcTransactionLogsFilterMentions,
+)
+from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
     AccountSubscribe,
     AccountUnsubscribe,
+    Body,
     LogsSubscribe,
     LogsUnsubscribe,
     ProgramSubscribe,
@@ -25,53 +30,25 @@ from solders.rpc.requests import (
     SlotUnsubscribe,
     VoteSubscribe,
     VoteUnsubscribe,
-    Body,
     batch_to_json,
 )
-from solders.rpc.config import (
-    RpcAccountInfoConfig,
-    RpcTransactionLogsFilter,
-    RpcTransactionLogsFilterMentions,
-    RpcTransactionLogsConfig,
-    RpcSignatureSubscribeConfig,
-    RpcProgramAccountsConfig,
-)
-from solders.rpc.filter import Memcmp
+from solders.rpc.responses import Notification
+from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
+from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
-from solders.account_decoder import UiDataSliceConfig
+from websockets.legacy.client import WebSocketClientProtocol
+from websockets.legacy.client import connect as ws_connect
 
 from solana.publickey import PublicKey
 from solana.rpc import types
-from solana.rpc.core import _COMMITMENT_TO_SOLDERS, _ACCOUNT_ENCODING_TO_SOLDERS
 from solana.rpc.commitment import Commitment
-from solana.rpc.responses import (
-    AccountNotification,
-    LogsNotification,
-    ProgramNotification,
-    RootNotification,
-    SignatureNotification,
-    SlotNotification,
-    SlotsUpdatesNotification,
-    SubscriptionNotification,
-    VoteNotification,
-)
-
-_NOTIFICATION_MAP = {
-    "accountNotification": AccountNotification,
-    "logsNotification": LogsNotification,
-    "programNotification": ProgramNotification,
-    "signatureNotification": SignatureNotification,
-    "slotNotification": SlotNotification,
-    "rootNotification": RootNotification,
-    "slotsUpdatesNotification": SlotsUpdatesNotification,
-    "voteNotification": VoteNotification,
-}
+from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS
 
 
 class SubscriptionError(Exception):
     """Raise when subscribing to an RPC feed fails."""
 
-    def __init__(self, err: Error, subscription: dict) -> None:
+    def __init__(self, err: SoldersSubscriptionError, subscription: Body) -> None:
         """Init.
 
         Args:
@@ -79,8 +56,8 @@ class SubscriptionError(Exception):
             subscription: The subscription message that caused the error.
 
         """
-        self.code = err.code
-        self.msg = err.message
+        self.code = err.error.code
+        self.msg = err.error.message
         self.subscription = subscription
         super().__init__(f"{self.code}: {self.msg}\n Caused by subscription: {subscription}")
 
@@ -91,8 +68,8 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
     def __init__(self, *args, **kwargs):
         """Init. Args and kwargs are passed to `websockets.WebSocketClientProtocol`."""
         super().__init__(*args, **kwargs)
-        self.subscriptions = {}
-        self.sent_subscriptions = {}
+        self.subscriptions: Dict[int, Body] = {}
+        self.sent_subscriptions: Dict[int, Body] = {}
         self.failed_subscriptions = {}
         self.request_counter = itertools.count()
 
@@ -119,16 +96,13 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
 
     async def recv(  # type: ignore
         self,
-    ) -> Union[List[Union[SubscriptionNotification, Error, Ok]], SubscriptionNotification, Error, Ok]:
+    ) -> List[Union[Notification, SubscriptionResult]]:
         """Receive the next message.
 
         Basically `.recv` from `websockets` with extra parsing.
         """
         data = await super().recv()
-        as_json = loads(data)
-        if isinstance(as_json, list):
-            return [self._process_rpc_response(item) for item in as_json]
-        return self._process_rpc_response(as_json)
+        return self._process_rpc_response(cast(str, data))
 
     async def account_subscribe(
         self, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
@@ -359,25 +333,16 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         await self.send_data(req)
         del self.subscriptions[subscription]
 
-    def _process_rpc_response(self, data: dict) -> Union[SubscriptionNotification, Error, Ok]:
-        parsed = _parse_rpc_response(data)
-        if isinstance(parsed, Error):
-            subscription = self.sent_subscriptions[parsed.id]
-            self.failed_subscriptions[parsed.id] = subscription
-            raise SubscriptionError(parsed, subscription)
-        parsed_result = parsed.result
-        if type(parsed_result) is int and type(parsed) is Ok:  # pylint: disable=unidiomatic-typecheck
-            self.subscriptions[parsed_result] = self.sent_subscriptions[parsed.id]
-        return parsed
-
-
-def _parse_rpc_response(data: dict) -> Union[SubscriptionNotification, Error, Ok]:
-    if "params" in data:
-        req = create_request(data)
-        dtype = _NOTIFICATION_MAP[req.method]
-        res: SubscriptionNotification = deserialize(dtype, req.params)
-        return res
-    return cast(Union[Ok, Error], parse(data))
+    def _process_rpc_response(self, raw: str) -> List[Union[Notification, SubscriptionResult]]:
+        parsed = parse_websocket_message(raw)
+        for item in parsed:
+            if isinstance(item, SoldersSubscriptionError):
+                subscription = self.sent_subscriptions[item.id]
+                self.failed_subscriptions[item.id] = subscription
+                raise SubscriptionError(item, subscription)
+            if isinstance(item, SubscriptionResult):
+                self.subscriptions[item.result] = self.sent_subscriptions[item.id]
+        return cast(List[Union[Notification, SubscriptionResult]], parsed)
 
 
 class connect(ws_connect):  # pylint: disable=invalid-name,too-few-public-methods

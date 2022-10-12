@@ -1,8 +1,22 @@
 # Changelog
 
-## [0.26.0] - 2022-09-28
+
+## [0.26.0] - Unreleased
 
 ## Changed
+
+- Use solders for parsing RPC requests [(#302)](https://github.com/michaelhly/solana-py/pull/302):
+    - **Breaking change**: Every RPC method now returns a strongly typed object instead of a dictionary.
+        For example, `client.get_balance` returns `GetBalanceResp`.
+    - **Breaking change**: RPC methods now raise `RPCException` if the RPC returns an error result.
+        Previously only the transaction sending methods did this.
+    - **Breaking change**: RPC methods that can return `jsonParsed` data now have their own dedicated Python
+        method you should use. For example, instead of `client.get_account_info(..., encoding="jsonParsed")`
+        you should do `client.get_account_info_json_parsed(...)`. This is done for the sake of static typing.
+    - **Breaking change**: The `get_accounts` method on the SPL Token client has been split into four separate methods:
+        `get_accounts_by_delegate`, `get_accounts_by_owner`, `get_accounts_by_delegate_json_parsed`, and `get_accounts_by_owner_json_parsed`.
+    - **Breaking change**: `solana.rpc.responses` has been removed and supplanted by `solders.rpc.responses`.
+- Remove unused deps: `apischema`, `based58`, `jsonrpcclient`, `jsonrpcserver`.
 
 - Use Solders for building RPC requests:
     - **Breaking change**: Removed deprecated RPC methods.

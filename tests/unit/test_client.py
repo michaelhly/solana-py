@@ -1,12 +1,12 @@
 from unittest.mock import patch
 
 import pytest
-from solders.rpc.requests import GetSignaturesForAddress
-from solders.rpc.config import RpcSignaturesForAddressConfig
+from requests.exceptions import ReadTimeout
 from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
+from solders.rpc.config import RpcSignaturesForAddressConfig
+from solders.rpc.requests import GetSignaturesForAddress
 from solders.signature import Signature
-from requests.exceptions import ReadTimeout
 
 from solana.exceptions import SolanaRpcException
 from solana.publickey import PublicKey

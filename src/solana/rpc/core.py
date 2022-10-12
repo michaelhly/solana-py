@@ -75,6 +75,7 @@ from solders.rpc.requests import (
     SimulateTransaction,
     ValidatorExit,
 )
+from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
 from solders.transaction_status import UiTransactionEncoding
@@ -126,10 +127,6 @@ class UnconfirmedTxError(Exception):
 
 class TransactionExpiredBlockheightExceededError(Exception):
     """Raise when confirming an expired transaction that exceeded the blockheight."""
-
-
-class TransactionUncompiledError(Exception):
-    """Raise when transaction is not compiled to a message."""
 
 
 class _ClientCore:  # pylint: disable=too-few-public-methods
@@ -387,6 +384,20 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
 
+    def _get_token_accounts_by_delegate_json_parsed_body(
+        self, delegate: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+    ) -> GetTokenAccountsByDelegate:
+        opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
+        pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts_to_use, commitment)
+        return GetTokenAccountsByDelegate(pubkey, filter_, config)
+
+    def _get_token_accounts_by_owner_json_parsed_body(
+        self, owner: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+    ) -> GetTokenAccountsByOwner:
+        opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
+        pubkey, filter_, config = self._get_token_accounts_convert(owner, opts_to_use, commitment)
+        return GetTokenAccountsByOwner(pubkey, filter_, config)
+
     def _get_token_largest_accounts_body(
         self, pubkey: PublicKey, commitment: Optional[Commitment]
     ) -> GetTokenLargestAccounts:
@@ -427,8 +438,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _send_raw_transaction_post_send_args(
-        resp: types.RPCResponse, opts: types.TxOpts
-    ) -> Tuple[types.RPCResponse, Commitment, Optional[int]]:
+        resp: SendTransactionResp, opts: types.TxOpts
+    ) -> Tuple[SendTransactionResp, Commitment, Optional[int]]:
         return resp, opts.preflight_commitment, opts.last_valid_block_height
 
     def _simulate_transaction_body(
@@ -443,24 +454,19 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return SimulateTransaction(txn.to_solders(), config)
 
     @staticmethod
-    def _post_send(resp: types.RPCResponse) -> types.RPCResponse:
-        error = resp.get("error")
-        if error:
-            raise RPCException(error)
-        if not resp.get("result"):
+    def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
+        if not resp.value:
             raise RPCNoResultException("Failed to send transaction")
         return resp
 
     @staticmethod
-    def parse_recent_blockhash(blockhash_resp: types.RPCResponse) -> Blockhash:
+    def parse_recent_blockhash(blockhash_resp: GetLatestBlockhashResp) -> Blockhash:
         """Extract blockhash from JSON RPC result."""
-        if not blockhash_resp.get("result"):
-            raise RuntimeError("failed to get recent blockhash")
-        return Blockhash(blockhash_resp["result"]["value"]["blockhash"])
+        return Blockhash(str(blockhash_resp.value.blockhash))
 
-    def _process_blockhash_resp(self, blockhash_resp: types.RPCResponse, used_immediately: bool) -> Blockhash:
+    def _process_blockhash_resp(self, blockhash_resp: GetLatestBlockhashResp, used_immediately: bool) -> Blockhash:
         recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
         if self.blockhash_cache:
-            slot = blockhash_resp["result"]["context"]["slot"]
+            slot = blockhash_resp.context.slot
             self.blockhash_cache.set(recent_blockhash, slot, used_immediately=used_immediately)
         return recent_blockhash
