@@ -3,6 +3,11 @@
 
 ## [0.26.0] - Unreleased
 
+## Added
+
+- Added batch request methods `(Async)HTTPProvider.make_batch_request(_unparsed)` [(#304)](https://github.com/michaelhly/solana-py/pull/304)
+- Added `make_request_unparsed` to `(Async)HTTPProvider` [(#304)](https://github.com/michaelhly/solana-py/pull/304)
+
 ## Changed
 
 - Use solders for parsing RPC requests [(#302)](https://github.com/michaelhly/solana-py/pull/302):

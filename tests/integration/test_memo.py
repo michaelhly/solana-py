@@ -2,6 +2,8 @@
 from json import loads
 import pytest
 
+from solders.transaction_status import ParsedInstruction
+
 from solana.keypair import Keypair
 from solana.rpc.api import Client
 from solana.rpc.commitment import Finalized
@@ -26,21 +28,23 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
         signer=stubbed_sender.public_key,
         message=message,
     )
-    # Create memo instruction
-    memo_ix = create_memo(memo_params)
     # Create transfer tx to add memo to transaction from stubbed sender
-    transfer_tx = Transaction().add(memo_ix)
+    transfer_tx = Transaction().add(create_memo(memo_params))
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
     txn_id = resp.value
     # Txn needs to be finalized in order to parse the logs.
     test_http_client.confirm_transaction(txn_id, commitment=Finalized)
-    resp2 = test_http_client.get_transaction(txn_id, commitment=Finalized, encoding="jsonParsed")
-    resp2_val = resp2.value
+    resp2_val = test_http_client.get_transaction(txn_id, commitment=Finalized, encoding="jsonParsed").value
     assert resp2_val is not None
     resp2_transaction = resp2_val.transaction
-    log_message = resp2_transaction.meta.log_messages[2].split('"')
+    meta = resp2_transaction.meta
+    assert meta is not None
+    messages = meta.log_messages
+    assert messages is not None
+    log_message = messages[2].split('"')
     assert log_message[1] == raw_message
     ixn = resp2_transaction.transaction.message.instructions[0]
+    assert isinstance(ixn, ParsedInstruction)
     assert loads(ixn.parsed) == raw_message
     assert ixn.program_id == MEMO_PROGRAM_ID.to_solders()

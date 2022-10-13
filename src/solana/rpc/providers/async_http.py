@@ -1,12 +1,39 @@
 """Async HTTP RPC Provider."""
-from typing import Dict, Optional, Type
+from typing import Dict, Optional, Type, overload, Tuple
 
 import httpx
 from solders.rpc.requests import Body
+from solders.rpc.responses import RPCResult
 
 from ...exceptions import SolanaRpcException, handle_async_exceptions
 from .async_base import AsyncBaseProvider
-from .core import DEFAULT_TIMEOUT, T, _after_request, _HTTPProviderCore
+from .core import (
+    DEFAULT_TIMEOUT,
+    T,
+    _after_request_unparsed,
+    _HTTPProviderCore,
+    _parse_raw,
+    _parse_raw_batch,
+    _Tup,
+    _Tup1,
+    _Tup2,
+    _Tup3,
+    _Tup4,
+    _Tup5,
+    _Tuples,
+    _RespTup,
+    _RespTup1,
+    _RespTup2,
+    _RespTup3,
+    _RespTup4,
+    _RespTup5,
+    _BodiesTup,
+    _BodiesTup1,
+    _BodiesTup2,
+    _BodiesTup3,
+    _BodiesTup4,
+    _BodiesTup5,
+)
 
 
 class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
@@ -29,9 +56,69 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     @handle_async_exceptions(SolanaRpcException, Exception)
     async def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make an async HTTP request to an http rpc endpoint."""
+        raw = await self.make_request_unparsed(body)
+        return _parse_raw(raw, parser=parser)
+
+    async def make_request_unparsed(self, body: Body) -> str:
+        """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body, is_async=True)
         raw_response = await self.session.post(**request_kwargs)
-        return _after_request(raw_response=raw_response, parser=parser)
+        return _after_request_unparsed(raw_response)
+
+    async def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
+        """Make an async HTTP request to an http rpc endpoint."""
+        request_kwargs = self._before_batch_request(reqs, is_async=True)
+        raw_response = await self.session.post(**request_kwargs)
+        return _after_request_unparsed(raw_response)
+
+    @overload
+    async def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup:  # noqa: D102
+        ...
+
+    @overload
+    async def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1:  # noqa: D102
+        ...
+
+    @overload
+    async def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2:  # noqa: D102
+        ...
+
+    @overload
+    async def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3:  # noqa: D102
+        ...
+
+    @overload
+    async def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4:  # noqa: D102
+        ...
+
+    @overload
+    async def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:  # noqa: D102
+        ...
+
+    async def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
+        """Make an async HTTP batch request to an http rpc endpoint.
+
+        Args:
+            reqs: A tuple of request objects from ``solders.rpc.requests``.
+            parsers: A tuple of response classes from ``solders.rpc.responses``.
+                Note: ``parsers`` should line up with ``reqs``.
+
+        Example:
+            >>> from solana.rpc.providers.async_http import AsyncHTTPProvider
+            >>> from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
+            >>> from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp
+            >>> provider = AsyncHTTPProvider("https://api.devnet.solana.com")
+            >>> reqs = (GetBlockHeight(), GetFirstAvailableBlock())
+            >>> parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
+            >>> await provider.make_batch_request(reqs, parsers) # doctest: +SKIP
+            (GetBlockHeightResp(
+                158613909,
+            ), GetFirstAvailableBlockResp(
+                86753592,
+            ))
+        """
+        raw = await self.make_batch_request_unparsed(reqs)
+        return _parse_raw_batch(raw, parsers)
 
     async def is_connected(self) -> bool:
         """Health check."""
