@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [0.26.0] - Unreleased
+## [0.26.0] - 2022-10-13
 
 ## Added
 
