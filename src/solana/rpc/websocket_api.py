@@ -56,10 +56,10 @@ class SubscriptionError(Exception):
             subscription: The subscription message that caused the error.
 
         """
-        self.code = err.error.code
-        self.msg = err.error.message
+        self.type = err.error.__class__
+        self.msg: str = err.error.message  # type: ignore #  TODO: narrow this union type
         self.subscription = subscription
-        super().__init__(f"{self.code}: {self.msg}\n Caused by subscription: {subscription}")
+        super().__init__(f"{self.type.__name__}: {self.msg}\n Caused by subscription: {subscription}")
 
 
 class SolanaWsClientProtocol(WebSocketClientProtocol):

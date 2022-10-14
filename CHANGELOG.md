@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.27.0] - 2022-10-14
+
+## Changed
+
+- Replace SubscriptionError.code with SubscriptionError.type [(#309)](https://github.com/michaelhly/solana-py/pull/309)
+
+## Fixed 
+
+- Fix parsing of RPC error messages [(#309)](https://github.com/michaelhly/solana-py/pull/309)
+- Correctly filter by program_id in _get_token_accounts_convert [(#308)](https://github.com/michaelhly/solana-py/pull/308)
+
 
 ## [0.26.0] - 2022-10-13
 
