@@ -97,6 +97,37 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
 
 
 @pytest.mark.integration
+def test_send_bad_transaction(stubbed_receiver: Keypair, test_http_client: Client):
+    """Test sending a transaction that errors."""
+    poor_account = Keypair()
+    airdrop_amount = 1000000
+    airdrop_resp = test_http_client.request_airdrop(poor_account.public_key, airdrop_amount)
+    assert_valid_response(airdrop_resp)
+    test_http_client.confirm_transaction(airdrop_resp.value)
+    balance = test_http_client.get_balance(poor_account.public_key)
+    assert balance.value == airdrop_amount
+    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=poor_account.public_key, to_pubkey=stubbed_receiver, lamports=airdrop_amount + 1
+            )
+        )
+    )
+    resp = test_http_client.send_transaction(transfer_tx, poor_account)
+    assert_valid_response(resp)
+    # Confirm transaction
+    test_http_client.confirm_transaction(resp.value)
+    # Check balances
+    bal_resp = test_http_client.get_balance(poor_account.public_key)
+    assert_valid_response(bal_resp)
+    assert bal_resp.value == 9999994000
+    bal_resp2 = test_http_client.get_balance(stubbed_receiver)
+    assert_valid_response(bal_resp2)
+    assert bal_resp2.value == 10000001000
+
+
+@pytest.mark.integration
 def test_send_transaction_prefetched_blockhash(
     stubbed_sender_prefetched_blockhash, stubbed_receiver_prefetched_blockhash, test_http_client
 ):
