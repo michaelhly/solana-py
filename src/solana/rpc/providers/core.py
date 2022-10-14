@@ -9,7 +9,7 @@ import requests
 from solders.rpc.requests import Body, batch_to_json as batch_req_json
 from solders.rpc.responses import (
     Resp,
-    RpcError,
+    RPCError,
     batch_from_json as batch_resp_json,
     RPCResult,
 )
@@ -98,7 +98,7 @@ class _HTTPProviderCore:  # pylint: disable=too-few-public-methods
 
 def _parse_raw(raw: str, parser: Type[T]) -> T:
     parsed = parser.from_json(raw)  # type: ignore
-    if isinstance(parsed, RpcError):
+    if isinstance(parsed, RPCError.__args__):
         raise RPCException(parsed)
     return parsed
 

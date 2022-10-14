@@ -50,7 +50,7 @@ from solders.rpc.responses import (
     GetVoteAccountsResp,
     MinimumLedgerSlotResp,
     RequestAirdropResp,
-    RpcError,
+    RPCError,
     SendTransactionResp,
     SimulateTransactionResp,
     ValidatorExitResp,
@@ -1115,7 +1115,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             current_blockheight = (self.get_block_height(commitment)).value
             while current_blockheight <= last_valid_block_height:
                 resp = self.get_signature_statuses([tx_sig])
-                if isinstance(resp, RpcError):
+                if isinstance(resp, RPCError.__args__):
                     raise RPCException(resp)
                 resp_value = resp.value[0]
                 if resp_value is not None:
@@ -1127,7 +1127,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 current_blockheight = (self.get_block_height(commitment)).value
                 sleep(sleep_seconds)
             else:
-                if isinstance(resp, RpcError):
+                if isinstance(resp, RPCError.__args__):
                     raise RPCException(resp)
                 raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             return resp
