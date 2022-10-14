@@ -53,7 +53,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         """String definition for HTTPProvider."""
         return f"Async HTTP RPC connection {self.endpoint_uri}"
 
-    @handle_async_exceptions(SolanaRpcException, Exception)
+    @handle_async_exceptions(SolanaRpcException, httpx.HTTPError)
     async def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make an async HTTP request to an http rpc endpoint."""
         raw = await self.make_request_unparsed(body)
