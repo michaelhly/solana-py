@@ -361,10 +361,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         )
         maybe_mint = opts.mint
         maybe_program_id = opts.program_id
+        filter_to_use: Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId]
         if maybe_mint is not None:
             filter_to_use = RpcTokenAccountsFilterMint(maybe_mint.to_solders())
         elif maybe_program_id is not None:
-            filter_to_use = RpcTokenAccountsFilterMint(maybe_program_id.to_solders())
+            filter_to_use = RpcTokenAccountsFilterProgramId(maybe_program_id.to_solders())
         else:
             raise ValueError("Please provide one of mint or program_id")
         config = RpcAccountInfoConfig(
