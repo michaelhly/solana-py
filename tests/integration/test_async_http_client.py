@@ -4,6 +4,7 @@ import pytest
 
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
+from solders.rpc.errors import SendTransactionPreflightFailureMessage
 
 import solana.system_program as sp
 from solana.blockhash import Blockhash
@@ -11,7 +12,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
-from solana.rpc.core import TransactionExpiredBlockheightExceededError
+from solana.rpc.core import TransactionExpiredBlockheightExceededError, RPCException
 from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
@@ -108,6 +109,31 @@ async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stub
     resp = await test_http_client_async.get_balance(async_stubbed_receiver)
     assert_valid_response(resp)
     assert resp.value == 10000001000
+
+
+@pytest.mark.integration
+async def test_send_bad_transaction(stubbed_receiver: Keypair, test_http_client_async: AsyncClient):
+    """Test sending a transaction that errors."""
+    poor_account = Keypair()
+    airdrop_amount = 1000000
+    airdrop_resp = await test_http_client_async.request_airdrop(poor_account.public_key, airdrop_amount)
+    assert_valid_response(airdrop_resp)
+    await test_http_client_async.confirm_transaction(airdrop_resp.value)
+    balance = await test_http_client_async.get_balance(poor_account.public_key)
+    assert balance.value == airdrop_amount
+    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    transfer_tx = Transaction().add(
+        sp.transfer(
+            sp.TransferParams(
+                from_pubkey=poor_account.public_key, to_pubkey=stubbed_receiver, lamports=airdrop_amount + 1
+            )
+        )
+    )
+    with pytest.raises(RPCException) as exc_info:
+        await test_http_client_async.send_transaction(transfer_tx, poor_account)
+    err = exc_info.value.args[0]
+    assert isinstance(err, SendTransactionPreflightFailureMessage)
+    assert err.data.logs
 
 
 @pytest.mark.integration
