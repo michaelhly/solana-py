@@ -30,7 +30,7 @@ typing-extensions = ">=4.2.0"
 cachetools = "^4.2.2"
 types-cachetools = "^4.2.4"
 websockets = "^10.3"
-solders = "^0.9.1"
+solders = "^0.9.2"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"
