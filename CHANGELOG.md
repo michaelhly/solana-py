@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.27.1] - 2022-10-14
+
+## Fixed
+
+- Fix incorrect `encoding` arg in `_simulate_transaction_body` [(#311)](https://github.com/michaelhly/solana-py/pull/311)
+
 ## [0.27.0] - 2022-10-14
 
 ## Changed
