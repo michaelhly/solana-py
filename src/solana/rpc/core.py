@@ -449,9 +449,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         if txn.recent_blockhash is None:
             raise ValueError("transaction must have a valid blockhash")
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcSimulateTransactionConfig(
-            sig_verify=sig_verify, commitment=commitment_to_use, encoding=UiTransactionEncoding.Base64
-        )
+        config = RpcSimulateTransactionConfig(sig_verify=sig_verify, commitment=commitment_to_use)
         return SimulateTransaction(txn.to_solders(), config)
 
     @staticmethod
