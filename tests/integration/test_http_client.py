@@ -4,6 +4,7 @@ import pytest
 
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
+from solders.rpc.errors import SendTransactionPreflightFailureMessage
 
 import solana.system_program as sp
 from solana.blockhash import Blockhash
@@ -11,7 +12,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed, Finalized, Processed
-from solana.rpc.core import TransactionExpiredBlockheightExceededError
+from solana.rpc.core import TransactionExpiredBlockheightExceededError, RPCException
 from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
@@ -114,17 +115,11 @@ def test_send_bad_transaction(stubbed_receiver: Keypair, test_http_client: Clien
             )
         )
     )
-    resp = test_http_client.send_transaction(transfer_tx, poor_account)
-    assert_valid_response(resp)
-    # Confirm transaction
-    test_http_client.confirm_transaction(resp.value)
-    # Check balances
-    bal_resp = test_http_client.get_balance(poor_account.public_key)
-    assert_valid_response(bal_resp)
-    assert bal_resp.value == 9999994000
-    bal_resp2 = test_http_client.get_balance(stubbed_receiver)
-    assert_valid_response(bal_resp2)
-    assert bal_resp2.value == 10000001000
+    with pytest.raises(RPCException) as exc_info:
+        test_http_client.send_transaction(transfer_tx, poor_account)
+    err = exc_info.value.args[0]
+    assert isinstance(err, SendTransactionPreflightFailureMessage)
+    assert err.data.logs
 
 
 @pytest.mark.integration
