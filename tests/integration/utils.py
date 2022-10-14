@@ -14,7 +14,7 @@ RPC_RESULT_TYPES = get_args(RPCResult)
 def assert_valid_response(resp: RPCResult):
     """Assert valid RPCResult."""
     assert type(resp) in RPC_RESULT_TYPES
-    assert not isinstance(resp, RPCError.__args__)
+    assert not isinstance(resp, RPCError.__args__)  # type: ignore
 
 
 OPTS = TxOpts(skip_confirmation=False, preflight_commitment=Processed)
