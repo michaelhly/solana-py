@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.26.1] - 2022-10-14
+## [0.27.0] - 2022-10-14
+
+## Changed
+
+- Replace SubscriptionError.code with SubscriptionError.type [(#309)](https://github.com/michaelhly/solana-py/pull/309)
 
 ## Fixed 
 
