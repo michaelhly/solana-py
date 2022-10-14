@@ -111,7 +111,7 @@ def test_send_bad_transaction(stubbed_receiver: Keypair, test_http_client: Clien
     transfer_tx = Transaction().add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=poor_account.public_key, to_pubkey=stubbed_receiver, lamports=airdrop_amount + 1
+                from_pubkey=poor_account.public_key, to_pubkey=stubbed_receiver.public_key, lamports=airdrop_amount + 1
             )
         )
     )
