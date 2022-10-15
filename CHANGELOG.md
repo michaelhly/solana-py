@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.27.3] - 2022-10-15
+
+## Changed
+
+- Use latest `solders` [(#313)](https://github.com/michaelhly/solana-py/pull/313)
+
 ## [0.27.2] - 2022-10-15
 
 ## Changed
