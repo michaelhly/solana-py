@@ -53,6 +53,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     _limit_rpc_config_key = "limit"
     _until_rpc_config_key = "until"
     _min_slot_key = "minContextSlot"
+    _rewards = "rewards"
+    _transaction_details = "transactionDetails"
+    _max_support_transaction_version = "maxSupportedTransactionVersion"
 
     _get_cluster_nodes = types.RPCMethod("getClusterNodes")
     _get_epoch_schedule = types.RPCMethod("getEpochSchedule")
@@ -123,9 +126,27 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_confirmed_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
         return types.RPCMethod("getConfirmedBlock"), slot, encoding
 
-    @staticmethod
-    def _get_block_args(slot: int, encoding: str) -> Tuple[types.RPCMethod, int, str]:
-        return types.RPCMethod("getBlock"), slot, encoding
+    def _get_block_args(
+            self,
+            slot: int,
+            encoding: str,
+            commitment: Optional[Commitment] = None,
+            rewards: Optional[bool] = None,
+            transaction_details: Optional[str] = None,
+            max_support_transaction_version: Optional[int] = None,
+    ) -> Tuple[
+        types.RPCMethod,
+        int,
+        Dict[str, Optional[str], Optional[bool], Commitment, Optional[int]]
+    ]:
+        opts = {
+            self._encoding_key: encoding,
+            self._transaction_details: transaction_details,
+            self._rewards: rewards,
+            self._comm_key: commitment,
+            self._max_support_transaction_version: max_support_transaction_version,
+        }
+        return types.RPCMethod("getBlock"), slot, opts
 
     def _get_block_height_args(
         self,
@@ -222,13 +243,29 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return types.RPCMethod("getConfirmedTransaction"), tx_sig, encoding
 
     def _get_transaction_args(
-        self, tx_sig: str, encoding: str = "json", commitment: Commitment = None
-    ) -> Tuple[types.RPCMethod, str, Dict[str, Union[str, Commitment]]]:
+            self,
+            tx_sig: str,
+            encoding: str = "json",
+            commitment: Commitment = None,
+            max_support_transaction_version: Optional[int] = None,
+    ) -> Tuple[
+        types.RPCMethod,
+        str,
+        Dict[
+            str,
+            Union[str, Commitment],
+            Optional[int]
+        ]
+    ]:
 
         return (
             types.RPCMethod("getTransaction"),
             tx_sig,
-            {self._encoding_key: encoding, self._comm_key: commitment or self._commitment},
+            {
+                self._encoding_key: encoding,
+                self._comm_key: commitment or self._commitment,
+                self._max_support_transaction_version: max_support_transaction_version
+            },
         )
 
     def _get_epoch_info_args(
