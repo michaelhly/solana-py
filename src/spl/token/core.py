@@ -490,22 +490,23 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(authority, Keypair):
             authority_pubkey = authority.public_key
-            signers = [authority]
+            base_signers = [authority]
         else:
             authority_pubkey = authority
-            signers = multi_signers if multi_signers else []
-
-        txn = Transaction(fee_payer=self.payer.public_key).add(
+            base_signers = multi_signers if multi_signers else []
+        fee_payer_keypair = self.payer
+        txn = Transaction(fee_payer=fee_payer_keypair.public_key).add(
             spl_token.freeze_account(
                 spl_token.FreezeAccountParams(
                     program_id=self.program_id,
                     account=account,
                     mint=self.pubkey,
                     authority=authority_pubkey,
-                    multi_signers=[signer.public_key for signer in signers],
+                    multi_signers=[signer.public_key for signer in base_signers],
                 )
             )
         )
+        signers = list(set(base_signers) | {fee_payer_keypair})
         return txn, signers, opts
 
     def _thaw_account_args(
@@ -517,22 +518,23 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(authority, Keypair):
             authority_pubkey = authority.public_key
-            signers = [authority]
+            base_signers = [authority]
         else:
             authority_pubkey = authority
-            signers = multi_signers if multi_signers else []
-
-        txn = Transaction(fee_payer=self.payer.public_key).add(
+            base_signers = multi_signers if multi_signers else []
+        fee_payer_keypair = self.payer
+        txn = Transaction(fee_payer=fee_payer_keypair.public_key).add(
             spl_token.thaw_account(
                 spl_token.ThawAccountParams(
                     program_id=self.program_id,
                     account=account,
                     mint=self.pubkey,
                     authority=authority_pubkey,
-                    multi_signers=[signer.public_key for signer in signers],
+                    multi_signers=[signer.public_key for signer in base_signers],
                 )
             )
         )
+        signers = list(set(base_signers) | {fee_payer_keypair})
         return txn, signers, opts
 
     def _close_account_args(
