@@ -6,7 +6,6 @@ import pytest
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
-from solana.rpc.commitment import Finalized
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
@@ -18,7 +17,7 @@ from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -> AsyncToken:
     """Test create mint."""
     resp = await test_http_client_async.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    await test_http_client_async.confirm_transaction(resp.value, commitment=Finalized)
+    await test_http_client_async.confirm_transaction(resp.value)
     assert_valid_response(resp)
 
     expected_decimals = 6

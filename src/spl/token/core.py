@@ -113,7 +113,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         mint_keypair = Keypair()
         token = cls(conn, mint_keypair.public_key, program_id, payer)  # type: ignore
         # Construct transaction
-        txn = Transaction()
+        txn = Transaction(fee_payer=payer.public_key)
         txn.add(
             sp.create_account(
                 sp.CreateAccountParams(
@@ -155,7 +155,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         # Allocate memory for the account
 
         # Construct transaction
-        txn = Transaction()
+        txn = Transaction(fee_payer=self.payer.public_key)
         txn.add(
             sp.create_account(
                 sp.CreateAccountParams(
@@ -190,7 +190,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[PublicKey, Transaction, Keypair, TxOpts]:
 
         # Construct transaction
-        txn = Transaction()
+        txn = Transaction(fee_payer=self.payer.public_key)
         create_txn = spl_token.create_associated_token_account(
             payer=self.payer.public_key, owner=owner, mint=self.pubkey
         )
@@ -215,7 +215,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         new_keypair = Keypair()
         # Allocate memory for the account
         # Construct transaction
-        txn = Transaction()
+        txn = Transaction(fee_payer=payer.public_key)
         txn.add(
             sp.create_account(
                 sp.CreateAccountParams(
@@ -266,7 +266,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = owner
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.transfer(
                 spl_token.TransferParams(
                     program_id=self.program_id,
@@ -296,7 +296,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             current_authority_pubkey = current_authority
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.set_authority(
                 spl_token.SetAuthorityParams(
                     program_id=self.program_id,
@@ -326,7 +326,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = mint_authority
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.mint_to(
                 spl_token.MintToParams(
                     program_id=self.program_id,
@@ -441,7 +441,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = owner
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.approve(
                 spl_token.ApproveParams(
                     program_id=self.program_id,
@@ -469,7 +469,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = owner
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.revoke(
                 spl_token.RevokeParams(
                     program_id=self.program_id,
@@ -490,22 +490,23 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(authority, Keypair):
             authority_pubkey = authority.public_key
-            signers = [authority]
+            base_signers = [authority]
         else:
             authority_pubkey = authority
-            signers = multi_signers if multi_signers else []
-
-        txn = Transaction().add(
+            base_signers = multi_signers if multi_signers else []
+        fee_payer_keypair = self.payer
+        txn = Transaction(fee_payer=fee_payer_keypair.public_key).add(
             spl_token.freeze_account(
                 spl_token.FreezeAccountParams(
                     program_id=self.program_id,
                     account=account,
                     mint=self.pubkey,
                     authority=authority_pubkey,
-                    multi_signers=[signer.public_key for signer in signers],
+                    multi_signers=[signer.public_key for signer in base_signers],
                 )
             )
         )
+        signers = list(set(base_signers) | {fee_payer_keypair})
         return txn, signers, opts
 
     def _thaw_account_args(
@@ -517,22 +518,23 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
         if isinstance(authority, Keypair):
             authority_pubkey = authority.public_key
-            signers = [authority]
+            base_signers = [authority]
         else:
             authority_pubkey = authority
-            signers = multi_signers if multi_signers else []
-
-        txn = Transaction().add(
+            base_signers = multi_signers if multi_signers else []
+        fee_payer_keypair = self.payer
+        txn = Transaction(fee_payer=fee_payer_keypair.public_key).add(
             spl_token.thaw_account(
                 spl_token.ThawAccountParams(
                     program_id=self.program_id,
                     account=account,
                     mint=self.pubkey,
                     authority=authority_pubkey,
-                    multi_signers=[signer.public_key for signer in signers],
+                    multi_signers=[signer.public_key for signer in base_signers],
                 )
             )
         )
+        signers = list(set(base_signers) | {fee_payer_keypair})
         return txn, signers, opts
 
     def _close_account_args(
@@ -550,7 +552,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             authority_pubkey = authority
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.close_account(
                 spl_token.CloseAccountParams(
                     program_id=self.program_id,
@@ -578,7 +580,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = owner
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.burn(
                 spl_token.BurnParams(
                     program_id=self.program_id,
@@ -600,7 +602,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[Transaction, Keypair, Keypair]:
         multisig_keypair = Keypair()
 
-        txn = Transaction()
+        txn = Transaction(fee_payer=self.payer.public_key)
         txn.add(
             sp.create_account(
                 sp.CreateAccountParams(
@@ -642,7 +644,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = owner
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.transfer_checked(
                 spl_token.TransferCheckedParams(
                     program_id=self.program_id,
@@ -674,7 +676,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = mint_authority
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.mint_to_checked(
                 spl_token.MintToCheckedParams(
                     program_id=self.program_id,
@@ -705,7 +707,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = owner
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.burn_checked(
                 spl_token.BurnCheckedParams(
                     program_id=self.program_id,
@@ -737,7 +739,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             owner_pubkey = owner
             signers = multi_signers if multi_signers else []
 
-        txn = Transaction().add(
+        txn = Transaction(fee_payer=self.payer.public_key).add(
             spl_token.approve_checked(
                 spl_token.ApproveCheckedParams(
                     program_id=self.program_id,
