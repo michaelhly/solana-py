@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.27.3] - Unreleased
+
+## Changed
+
+- Remove `requests` dependency [(#315)](https://github.com/michaelhly/solana-py/pull/315)
+
+## Fixed
+
+- Fix flakiness in token client transactions [(#314)](https://github.com/michaelhly/solana-py/pull/314)
+
 ## [0.27.2] - 2022-10-15
 
 ## Changed
