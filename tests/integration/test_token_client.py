@@ -6,7 +6,6 @@ import pytest
 
 import spl.token._layouts as layouts
 from solana.publickey import PublicKey
-from solana.rpc.commitment import Finalized
 from spl.token.client import Token
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
@@ -18,7 +17,7 @@ from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
     """Test create mint."""
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
-    test_http_client.confirm_transaction(resp.value, commitment=Finalized)
+    test_http_client.confirm_transaction(resp.value)
     balance = test_http_client.get_balance(stubbed_sender.public_key)
     assert balance.value == AIRDROP_AMOUNT
     expected_decimals = 6
