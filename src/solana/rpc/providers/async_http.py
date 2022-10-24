@@ -61,13 +61,13 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
 
     async def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_request(body=body, is_async=True)
+        request_kwargs = self._before_request(body=body)
         raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     async def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_batch_request(reqs, is_async=True)
+        request_kwargs = self._before_batch_request(reqs)
         raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
