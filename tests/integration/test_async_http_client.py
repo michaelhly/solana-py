@@ -459,6 +459,14 @@ async def test_get_inflation_rate(test_http_client_async):
 
 
 @pytest.mark.integration
+async def test_get_inflation_reward(test_http_client_async):
+    """Test get inflation reward."""
+    resp = await test_http_client_async.get_inflation_reward(
+        [PublicKey("Vote111111111111111111111111111111111111111")], commitment=Confirmed)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
 async def test_get_largest_accounts(test_http_client_async):
     """Test get largest accounts."""
     resp = await test_http_client_async.get_largest_accounts()

@@ -439,6 +439,14 @@ def test_get_inflation_rate(test_http_client: Client):
 
 
 @pytest.mark.integration
+def test_get_inflation_reward(test_http_client: Client):
+    """Test get inflation reward."""
+    resp = test_http_client.get_inflation_reward(
+        [PublicKey("Vote111111111111111111111111111111111111111")], commitment=Confirmed)
+    assert_valid_response(resp)
+
+
+@pytest.mark.integration
 def test_get_largest_accounts(test_http_client: Client):
     """Test get largest accounts."""
     resp = test_http_client.get_largest_accounts()
