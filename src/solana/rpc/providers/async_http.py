@@ -1,5 +1,5 @@
 """Async HTTP RPC Provider."""
-from typing import Dict, Optional, Type, overload, Tuple
+from typing import Dict, Optional, Tuple, Type, overload
 
 import httpx
 from solders.rpc.requests import Body
@@ -11,9 +11,21 @@ from .core import (
     DEFAULT_TIMEOUT,
     T,
     _after_request_unparsed,
+    _BodiesTup,
+    _BodiesTup1,
+    _BodiesTup2,
+    _BodiesTup3,
+    _BodiesTup4,
+    _BodiesTup5,
     _HTTPProviderCore,
     _parse_raw,
     _parse_raw_batch,
+    _RespTup,
+    _RespTup1,
+    _RespTup2,
+    _RespTup3,
+    _RespTup4,
+    _RespTup5,
     _Tup,
     _Tup1,
     _Tup2,
@@ -21,18 +33,6 @@ from .core import (
     _Tup4,
     _Tup5,
     _Tuples,
-    _RespTup,
-    _RespTup1,
-    _RespTup2,
-    _RespTup3,
-    _RespTup4,
-    _RespTup5,
-    _BodiesTup,
-    _BodiesTup1,
-    _BodiesTup2,
-    _BodiesTup3,
-    _BodiesTup4,
-    _BodiesTup5,
 )
 
 
@@ -61,13 +61,13 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
 
     async def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_request(body=body, is_async=True)
+        request_kwargs = self._before_request(body=body)
         raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     async def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_batch_request(reqs, is_async=True)
+        request_kwargs = self._before_batch_request(reqs)
         raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 

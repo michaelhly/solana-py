@@ -1,7 +1,7 @@
 """HTTP RPC Provider."""
-from typing import Type, overload, Tuple
+from typing import Tuple, Type, overload
 
-import requests
+import httpx
 from solders.rpc.requests import Body
 from solders.rpc.responses import RPCResult
 
@@ -10,9 +10,21 @@ from .base import BaseProvider
 from .core import (
     T,
     _after_request_unparsed,
+    _BodiesTup,
+    _BodiesTup1,
+    _BodiesTup2,
+    _BodiesTup3,
+    _BodiesTup4,
+    _BodiesTup5,
     _HTTPProviderCore,
     _parse_raw,
     _parse_raw_batch,
+    _RespTup,
+    _RespTup1,
+    _RespTup2,
+    _RespTup3,
+    _RespTup4,
+    _RespTup5,
     _Tup,
     _Tup1,
     _Tup2,
@@ -20,18 +32,6 @@ from .core import (
     _Tup4,
     _Tup5,
     _Tuples,
-    _RespTup,
-    _RespTup1,
-    _RespTup2,
-    _RespTup3,
-    _RespTup4,
-    _RespTup5,
-    _BodiesTup,
-    _BodiesTup1,
-    _BodiesTup2,
-    _BodiesTup3,
-    _BodiesTup4,
-    _BodiesTup5,
 )
 
 
@@ -42,7 +42,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         """String definition for HTTPProvider."""
         return f"HTTP RPC connection {self.endpoint_uri}"
 
-    @handle_exceptions(SolanaRpcException, requests.exceptions.RequestException)
+    @handle_exceptions(SolanaRpcException, httpx.HTTPError)
     def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make an HTTP request to an http rpc endpoint."""
         raw = self.make_request_unparsed(body)
@@ -50,14 +50,14 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
 
     def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_request(body=body, is_async=False)
-        raw_response = requests.post(**request_kwargs)
+        request_kwargs = self._before_request(body=body)
+        raw_response = httpx.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        request_kwargs = self._before_batch_request(reqs, is_async=False)
-        raw_response = requests.post(**request_kwargs)
+        request_kwargs = self._before_batch_request(reqs)
+        raw_response = httpx.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     @overload
@@ -112,10 +112,10 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     def is_connected(self) -> bool:
         """Health check."""
         try:
-            response = requests.get(self.health_uri)
+            response = httpx.get(self.health_uri)
             response.raise_for_status()
-        except (IOError, requests.HTTPError) as err:
+        except (IOError, httpx.HTTPError) as err:
             self.logger.error("Health check failed with error: %s", str(err))
             return False
 
-        return response.ok
+        return response.status_code == httpx.codes.OK

@@ -1,7 +1,7 @@
 """Tests for the Memo program."""
 from json import loads
-import pytest
 
+import pytest
 from solders.transaction_status import ParsedInstruction
 
 from solana.keypair import Keypair
