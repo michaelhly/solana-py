@@ -17,7 +17,7 @@ def test_client_http_exception(unit_test_http_client):
     """Test AsyncClient raises native Solana-py exceptions."""
 
     with patch("httpx.post") as post_mock:
-        post_mock.side_effect = ReadTimeout()
+        post_mock.side_effect = ReadTimeout("placeholder")
         with pytest.raises(SolanaRpcException) as exc_info:
             unit_test_http_client.get_epoch_info()
         assert exc_info.type == SolanaRpcException
