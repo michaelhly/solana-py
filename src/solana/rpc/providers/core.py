@@ -2,16 +2,13 @@
 import itertools
 import logging
 import os
-from typing import Any, Dict, Optional, Type, TypeVar, Union, Tuple, overload
+from typing import Any, Dict, Optional, Tuple, Type, TypeVar, Union, overload
 
 import httpx
-from solders.rpc.requests import Body, batch_to_json as batch_req_json
-from solders.rpc.responses import (
-    Resp,
-    RPCError,
-    batch_from_json as batch_resp_json,
-    RPCResult,
-)
+from solders.rpc.requests import Body
+from solders.rpc.requests import batch_to_json as batch_req_json
+from solders.rpc.responses import Resp, RPCError, RPCResult
+from solders.rpc.responses import batch_from_json as batch_resp_json
 
 from ..core import RPCException
 from ..types import URI
@@ -170,8 +167,6 @@ def _after_batch_request(raw_response: httpx.Response, parsers: _Tup5) -> _RespT
     ...
 
 
-def _after_batch_request(
-    raw_response: httpx.Response, parsers: _Tuples
-) -> Tuple[RPCResult, ...]:
+def _after_batch_request(raw_response: httpx.Response, parsers: _Tuples) -> Tuple[RPCResult, ...]:
     text = _after_request_unparsed(raw_response)
     return _parse_raw_batch(text, parsers)  # type: ignore

@@ -21,10 +21,7 @@ def test_client_http_exception(unit_test_http_client):
         with pytest.raises(SolanaRpcException) as exc_info:
             unit_test_http_client.get_epoch_info()
         assert exc_info.type == SolanaRpcException
-        assert (
-            exc_info.value.error_msg
-            == "<class 'httpx.ReadTimeout'> raised in \"GetEpochInfo\" endpoint request"
-        )
+        assert exc_info.value.error_msg == "<class 'httpx.ReadTimeout'> raised in \"GetEpochInfo\" endpoint request"
 
 
 def test_client_address_sig_args_no_commitment(unit_test_http_client):
