@@ -1,9 +1,10 @@
 # Changelog
 
-## [0.27.3] - Unreleased
+## [0.28.0] - 2022-10-31
 
 ## Changed
 
+- Use latest `solders` [(#318)](https://github.com/michaelhly/solana-py/pull/318)
 - Remove `requests` dependency [(#315)](https://github.com/michaelhly/solana-py/pull/315)
 
 ## Fixed
