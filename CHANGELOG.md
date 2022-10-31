@@ -4,7 +4,7 @@
 
 ## Changed
 
-- Use latest `solders` [(#318)](https://github.com/michaelhly/solana-py/pull/318)
+- Use latest `solders`. Note that the parsed fields of jsonParsed responses are now dicts rather than strings. [(#318)](https://github.com/michaelhly/solana-py/pull/318)
 - Remove `requests` dependency [(#315)](https://github.com/michaelhly/solana-py/pull/315)
 
 ## Fixed
