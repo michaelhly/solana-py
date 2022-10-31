@@ -1,7 +1,5 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
-from json import loads
-
 import pytest
 
 import spl.token._layouts as layouts
@@ -281,7 +279,7 @@ async def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=rede
     assert len(resp.value) == 2
     for resp_data in resp.value:
         assert resp_data.pubkey
-        parsed_data = loads(resp_data.account.data.parsed)["info"]
+        parsed_data = resp_data.account.data.parsed["info"]
         assert parsed_data["owner"] == str(stubbed_sender.public_key)
 
 
