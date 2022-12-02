@@ -29,6 +29,7 @@ from solders.rpc.config import (
     RpcTokenAccountsFilterProgramId,
     RpcTransactionConfig,
 )
+from solders.rpc.errors import InvalidParamsMessage
 from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
     GetAccountInfo,
@@ -454,6 +455,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
+
+        if isinstance(resp, InvalidParamsMessage):
+            raise RPCNoResultException(resp.message)
+
         if not resp.value:
             raise RPCNoResultException("Failed to send transaction")
         return resp
