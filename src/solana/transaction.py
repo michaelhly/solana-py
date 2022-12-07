@@ -8,10 +8,12 @@ from solders import instruction
 from solders.hash import Hash
 from solders.instruction import AccountMeta as SoldersAccountMeta
 from solders.instruction import Instruction
-from solders.message import Message as SoldersMessage
+from solders.message import MessageV0 as SoldersMessage
+from solders.message import Message as LegacyMessage
 from solders.presigner import Presigner
 from solders.signature import Signature
-from solders.transaction import Transaction as SoldersTx
+from solders.transaction import VersionedTransaction as SoldersTx
+from solders.address_lookup_table_account import AddressLookupTableAccount
 from solders.transaction import TransactionError
 
 from solana.blockhash import Blockhash
@@ -48,7 +50,11 @@ class AccountMeta:
         Returns:
             The `solana-py` AccountMeta.
         """
-        return cls(pubkey=PublicKey.from_solders(meta.pubkey), is_signer=meta.is_signer, is_writable=meta.is_writable)
+        return cls(
+            pubkey=PublicKey.from_solders(meta.pubkey),
+            is_signer=meta.is_signer,
+            is_writable=meta.is_writable,
+        )
 
     def to_solders(self) -> instruction.AccountMeta:
         """Convert to a `solders` AccountMeta.
@@ -57,7 +63,9 @@ class AccountMeta:
             The `solders` AccountMeta.
         """
         return instruction.AccountMeta(
-            pubkey=self.pubkey.to_solders(), is_signer=self.is_signer, is_writable=self.is_writable
+            pubkey=self.pubkey.to_solders(),
+            is_signer=self.is_signer,
+            is_writable=self.is_writable,
         )
 
 
@@ -94,7 +102,9 @@ class TransactionInstruction(NamedTuple):
             The `solders` instruction.
         """
         accounts = [key.to_solders() for key in self.keys]
-        return instruction.Instruction(program_id=self.program_id.to_solders(), data=self.data, accounts=accounts)
+        return instruction.Instruction(
+            program_id=self.program_id.to_solders(), data=self.data, accounts=accounts
+        )
 
 
 class NonceInformation(NamedTuple):
@@ -119,10 +129,16 @@ def _build_solders_tx(
     nonce_info: Optional[NonceInformation] = None,
     fee_payer: Optional[PublicKey] = None,
     instructions: Optional[Sequence[TransactionInstruction]] = None,
+    address_lookup_table: Optional[Sequence[AddressLookupTableAccount]] = None,
+    signers: Sequence[Keypair] = [],
 ) -> SoldersTx:
-    core_instructions = [] if instructions is None else [ixn.to_solders() for ixn in instructions]
+    core_instructions = (
+        [] if instructions is None else [ixn.to_solders() for ixn in instructions]
+    )
     underlying_instructions = (
-        core_instructions if nonce_info is None else [nonce_info.nonce_instruction.to_solders(), *core_instructions]
+        core_instructions
+        if nonce_info is None
+        else [nonce_info.nonce_instruction.to_solders(), *core_instructions]
     )
     underlying_blockhash_str: Optional[str]
     if nonce_info is not None:
@@ -133,10 +149,20 @@ def _build_solders_tx(
         underlying_blockhash_str = None
     underlying_fee_payer = None if fee_payer is None else fee_payer.to_solders()
     underlying_blockhash = (
-        Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
+        Hash.default()
+        if underlying_blockhash_str is None
+        else Hash.from_string(underlying_blockhash_str)
     )
-    msg = SoldersMessage.new_with_blockhash(underlying_instructions, underlying_fee_payer, underlying_blockhash)
-    return SoldersTx.new_unsigned(msg)
+    if underlying_fee_payer is not None:
+        msg = SoldersMessage.try_compile(
+            underlying_fee_payer,
+            underlying_instructions,
+            address_lookup_table,
+            underlying_blockhash,
+        )
+        txn = SoldersTx(msg, signers)
+        return txn
+    return SoldersTx.default()
 
 
 def _decompile_instructions(msg: SoldersMessage) -> List[TransactionInstruction]:
@@ -145,10 +171,16 @@ def _decompile_instructions(msg: SoldersMessage) -> List[TransactionInstruction]
     for compiled_ix in msg.instructions:
         program_id = account_keys[compiled_ix.program_id_index]
         account_metas = [
-            SoldersAccountMeta(account_keys[idx], is_signer=msg.is_signer(idx), is_writable=msg.is_writable(idx))
+            SoldersAccountMeta(
+                account_keys[idx],
+                is_signer=msg.is_signer(idx),
+                is_writable=msg.is_writable(idx),
+            )
             for idx in compiled_ix.accounts
         ]
-        decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
+        decompiled_instructions.append(
+            Instruction(program_id, compiled_ix.data, account_metas)
+        )
     return [TransactionInstruction.from_solders(ixn) for ixn in decompiled_instructions]
 
 
@@ -172,10 +204,19 @@ class Transaction:
         nonce_info: Optional[NonceInformation] = None,
         fee_payer: Optional[PublicKey] = None,
         instructions: Optional[Sequence[TransactionInstruction]] = None,
+        address_lookup_table: Optional[Sequence[AddressLookupTableAccount]] = None,
     ) -> None:
+        self.address_lookup_table = []
+        self.instructions = []
+        self.sg = []
         """Init transaction object."""
         self._solders = _build_solders_tx(
-            recent_blockhash=recent_blockhash, nonce_info=nonce_info, fee_payer=fee_payer, instructions=instructions
+            recent_blockhash=recent_blockhash,
+            nonce_info=nonce_info,
+            fee_payer=fee_payer,
+            instructions=instructions,
+            address_lookup_table=address_lookup_table,
+            signers=self.sg,
         )
 
     @classmethod
@@ -214,7 +255,12 @@ class Transaction:
     @recent_blockhash.setter
     def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:
         self._solders = _build_solders_tx(
-            recent_blockhash=blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=self.instructions
+            recent_blockhash=blockhash,
+            nonce_info=None,
+            fee_payer=self.fee_payer,
+            instructions=self.instructions,
+            address_lookup_table=self.address_lookup_table,
+            signers=self.sg,
         )
 
     @property
@@ -226,19 +272,12 @@ class Transaction:
     @fee_payer.setter
     def fee_payer(self, payer: Optional[PublicKey]) -> None:
         self._solders = _build_solders_tx(
-            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=payer, instructions=self.instructions
-        )
-
-    @property
-    def instructions(self) -> Tuple[TransactionInstruction, ...]:
-        """Tuple[TransactionInstruction]: The instructions contained in this transaction."""
-        msg = self._solders.message
-        return tuple(_decompile_instructions(msg))
-
-    @instructions.setter
-    def instructions(self, ixns: Sequence[TransactionInstruction]) -> None:
-        self._solders = _build_solders_tx(
-            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=ixns
+            recent_blockhash=self.recent_blockhash,
+            nonce_info=None,
+            fee_payer=payer,
+            instructions=self.instructions,
+            address_lookup_table=self.address_lookup_table,
+            signers=self.sg,
         )
 
     @property
@@ -274,6 +313,12 @@ class Transaction:
 
         return self
 
+    def add_lookup_table(self, *args: AddressLookupTableAccount) -> Transaction:
+        for arg in args:
+            self.address_lookup_table = (*self.address_lookup_table, arg)
+
+        return self
+
     def compile_message(self) -> Message:  # pylint: disable=too-many-locals
         """Compile transaction data.
 
@@ -296,7 +341,9 @@ class Transaction:
         All the caveats from the `sign` method apply to `sign_partial`
         """
         underlying_signers = [signer.to_solders() for signer in partial_signers]
-        self._solders.partial_sign(underlying_signers, self._solders.message.recent_blockhash)
+        self._solders.partial_sign(
+            underlying_signers, self._solders.message.recent_blockhash
+        )
 
     def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.
@@ -310,8 +357,15 @@ class Transaction:
 
         The Transaction must be assigned a valid `recent_blockhash` before invoking this method.
         """
-        underlying_signers = [signer.to_solders() for signer in signers]
-        self._solders.sign(underlying_signers, self._solders.message.recent_blockhash)
+        self.sg = [signer.to_solders() for signer in signers]
+        self._solders = _build_solders_tx(
+            recent_blockhash=self.recent_blockhash,
+            nonce_info=None,
+            fee_payer=self.fee_payer,
+            instructions=self.instructions,
+            address_lookup_table=self.address_lookup_table,
+            signers=self.sg,
+        )
 
     def add_signature(self, pubkey: PublicKey, signature: Signature) -> None:
         """Add an externally created signature to a transaction.

@@ -5,8 +5,8 @@ from typing import List, NamedTuple
 
 from solders.hash import Hash
 from solders.instruction import CompiledInstruction
-from solders.message import Message as SoldersMessage
-from solders.message import MessageHeader
+from solders.message import MessageV0 as SoldersMessage
+from solders.message import MessageHeader, MessageAddressTableLookup
 from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash
@@ -24,6 +24,7 @@ class MessageArgs(NamedTuple):
     """The hash of a recent ledger block."""
     instructions: List[CompiledInstruction]
     """Instructions that will be executed in sequence and committed in one atomic transaction if all succeed."""
+    address_table_lookup: List[MessageAddressTableLookup]
 
 
 class Message:
@@ -38,13 +39,12 @@ class Message:
         header = args.header
         blockhash = Hash.from_string(args.recent_blockhash)
         account_keys = [Pubkey.from_string(key) for key in args.account_keys]
-        self._solders = SoldersMessage.new_with_compiled_instructions(
-            num_required_signatures=header.num_required_signatures,
-            num_readonly_signed_accounts=header.num_readonly_signed_accounts,
-            num_readonly_unsigned_accounts=header.num_readonly_unsigned_accounts,
-            account_keys=account_keys,
-            recent_blockhash=blockhash,
-            instructions=args.instructions,
+        self._solders = SoldersMessage(
+            header,
+            account_keys,
+            blockhash,
+            args.instructions,
+            args.address_table_lookup,
         )
 
     @classmethod
@@ -140,7 +140,9 @@ class Message:
         return bytes(self._solders)
 
     @classmethod
-    def deserialize(cls, raw_message: bytes) -> Message:  # pylint: disable=too-many-locals
+    def deserialize(
+        cls, raw_message: bytes
+    ) -> Message:  # pylint: disable=too-many-locals
         """Deserialize raw message bytes.
 
         Example:
