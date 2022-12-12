@@ -5,8 +5,8 @@ from typing import List, NamedTuple
 
 from solders.hash import Hash
 from solders.instruction import CompiledInstruction
+from solders.message import MessageAddressTableLookup, MessageHeader
 from solders.message import MessageV0 as SoldersMessage
-from solders.message import MessageHeader, MessageAddressTableLookup
 from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash
