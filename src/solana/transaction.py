@@ -9,7 +9,6 @@ from solders.hash import Hash
 from solders.instruction import AccountMeta as SoldersAccountMeta
 from solders.instruction import Instruction
 from solders.message import MessageV0 as SoldersMessage
-from solders.message import Message as LegacyMessage
 from solders.presigner import Presigner
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction as SoldersTx
@@ -102,9 +101,7 @@ class TransactionInstruction(NamedTuple):
             The `solders` instruction.
         """
         accounts = [key.to_solders() for key in self.keys]
-        return instruction.Instruction(
-            program_id=self.program_id.to_solders(), data=self.data, accounts=accounts
-        )
+        return instruction.Instruction(program_id=self.program_id.to_solders(), data=self.data, accounts=accounts)
 
 
 class NonceInformation(NamedTuple):
@@ -132,13 +129,9 @@ def _build_solders_tx(
     address_lookup_table: Optional[Sequence[AddressLookupTableAccount]] = None,
     signers: Sequence[Keypair] = [],
 ) -> SoldersTx:
-    core_instructions = (
-        [] if instructions is None else [ixn.to_solders() for ixn in instructions]
-    )
+    core_instructions = [] if instructions is None else [ixn.to_solders() for ixn in instructions]
     underlying_instructions = (
-        core_instructions
-        if nonce_info is None
-        else [nonce_info.nonce_instruction.to_solders(), *core_instructions]
+        core_instructions if nonce_info is None else [nonce_info.nonce_instruction.to_solders(), *core_instructions]
     )
     underlying_blockhash_str: Optional[str]
     if nonce_info is not None:
@@ -149,9 +142,7 @@ def _build_solders_tx(
         underlying_blockhash_str = None
     underlying_fee_payer = None if fee_payer is None else fee_payer.to_solders()
     underlying_blockhash = (
-        Hash.default()
-        if underlying_blockhash_str is None
-        else Hash.from_string(underlying_blockhash_str)
+        Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
     )
     if underlying_fee_payer is not None:
         msg = SoldersMessage.try_compile(
@@ -178,9 +169,7 @@ def _decompile_instructions(msg: SoldersMessage) -> List[TransactionInstruction]
             )
             for idx in compiled_ix.accounts
         ]
-        decompiled_instructions.append(
-            Instruction(program_id, compiled_ix.data, account_metas)
-        )
+        decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
     return [TransactionInstruction.from_solders(ixn) for ixn in decompiled_instructions]
 
 
@@ -341,9 +330,7 @@ class Transaction:
         All the caveats from the `sign` method apply to `sign_partial`
         """
         underlying_signers = [signer.to_solders() for signer in partial_signers]
-        self._solders.partial_sign(
-            underlying_signers, self._solders.message.recent_blockhash
-        )
+        self._solders.partial_sign(underlying_signers, self._solders.message.recent_blockhash)
 
     def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.
