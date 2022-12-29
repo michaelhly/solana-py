@@ -306,7 +306,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             encoding=encoding_to_use, commitment=commitment_to_use, data_slice=data_slice_to_use
         )
         filters_to_use: Optional[List[Union[int, Memcmp]]] = (
-            None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
+            None
+            if filters is None
+            else [x if isinstance(x, int) else Memcmp(offset=x.offset, bytes_=x.bytes) for x in filters]
         )
         config = RpcProgramAccountsConfig(account_config, filters_to_use)
         return GetProgramAccounts(pubkey.to_solders(), config)
