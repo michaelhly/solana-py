@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.28.1] - 2022-12-29
+
+## Fixed
+
+Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://github.com/michaelhly/solana-py/pull/328)
+
 ## [0.28.0] - 2022-10-31
 
 ## Changed
