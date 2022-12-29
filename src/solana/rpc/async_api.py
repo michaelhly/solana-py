@@ -626,12 +626,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
+            >>> from typing import List, Union
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> memcmp_opts = [
-            ...     types.MemcmpOpts(offset=4, bytes="3Mc6vR"),
-            ... ]
+            >>> memcmp_opts = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
             >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
-            >>> filters = [17, memcmp_opts]
+            >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -659,12 +658,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
+            >>> from typing import List, Union
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> memcmp_opts = [
-            ...     types.MemcmpOpts(offset=4, bytes="3Mc6vR"),
-            ... ]
+            >>> memcmp_opts = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
             >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
-            >>> filters = [17, memcmp_opts]
+            >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
