@@ -701,7 +701,8 @@ def create_account(params: CreateAccountParams) -> TransactionInstruction:
     Example:
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
-        >>> from_account, new_account, program_id = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2]), Pubkey(leading_zeros + [3])
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(3)]
+        >>> from_account, new_account, program_id = pubkeys
         >>> instruction = create_account(
         ...     CreateAccountParams(
         ...         from_pubkey=from_account, new_account_pubkey=new_account,
