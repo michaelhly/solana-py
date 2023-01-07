@@ -120,7 +120,7 @@ class Message:
             >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
             >>> leading_zeros = [0] * 31
-            >>> account_keys = [str(Pubkey(bytes(leading_zeroes + [i + 1]))) for i in range(5)]
+            >>> account_keys = [str(Pubkey(leading_zeroes + [i + 1])) for i in range(5)]
             >>> msg = Message(
             ...     MessageArgs(
             ...         account_keys=account_keys,
