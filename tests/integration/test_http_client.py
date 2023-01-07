@@ -368,7 +368,7 @@ def test_get_blocks(test_http_client: Client):
 def test_get_signatures_for_address(test_http_client: Client):
     """Test get signatures for addresses."""
     resp = test_http_client.get_signatures_for_address(
-        PublicKey("Vote111111111111111111111111111111111111111"), limit=1, commitment=Confirmed
+        Pubkey.from_string("Vote111111111111111111111111111111111111111"), limit=1, commitment=Confirmed
     )
     assert_valid_response(resp)
 

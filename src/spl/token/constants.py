@@ -11,13 +11,13 @@ ACCOUNT_LEN: int = 165
 MULTISIG_LEN: int = 355
 """Data length of a multisig token account."""
 
-ASSOCIATED_TOKEN_PROGRAM_ID = PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
+ASSOCIATED_TOKEN_PROGRAM_ID = Pubkey.from_string("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
 """Program ID for the associated token account program."""
 
-TOKEN_PROGRAM_ID: PublicKey = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+TOKEN_PROGRAM_ID: PublicKey = Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 """Public key that identifies the SPL token program."""
 
-WRAPPED_SOL_MINT: PublicKey = PublicKey("So11111111111111111111111111111111111111112")
+WRAPPED_SOL_MINT: PublicKey = Pubkey.from_string("So11111111111111111111111111111111111111112")
 """Public key of the "Native Mint" for wrapping SOL to SPL token.
 
 The Token Program can be used to wrap native SOL. Doing so allows native SOL to be treated like any

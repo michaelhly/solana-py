@@ -41,37 +41,37 @@ def stubbed_blockhash() -> Blockhash:
 @pytest.fixture(scope="session")
 def stubbed_receiver() -> PublicKey:
     """Arbitrary known public key to be used as receiver."""
-    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
+    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
 
 
 @pytest.fixture(scope="session")
 def stubbed_receiver_prefetched_blockhash() -> PublicKey:
     """Arbitrary known public key to be used as receiver."""
-    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97")
+    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97")
 
 
 @pytest.fixture(scope="session")
 def stubbed_receiver_cached_blockhash() -> PublicKey:
     """Arbitrary known public key to be used as receiver."""
-    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i95")
+    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i95")
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_receiver() -> PublicKey:
     """Arbitrary known public key to be used as receiver."""
-    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98")
+    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98")
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_receiver_prefetched_blockhash() -> PublicKey:
     """Arbitrary known public key to be used as receiver."""
-    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96")
+    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96")
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_receiver_cached_blockhash() -> PublicKey:
     """Arbitrary known public key to be used as receiver."""
-    return PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i94")
+    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i94")
 
 
 @pytest.fixture(scope="session")

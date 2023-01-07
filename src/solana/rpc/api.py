@@ -345,7 +345,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = Client("http://localhost:8899")
             >>> from solana.publickey import PublicKey
-            >>> pubkey = PublicKey("Vote111111111111111111111111111111111111111")
+            >>> pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
             >>> solana_client.get_signatures_for_address(pubkey, limit=1).value[0].signature # doctest: +SKIP
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
@@ -562,7 +562,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> solana_client.get_multiple_accounts(pubkeys).value[0].lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -587,7 +587,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> solana_client.get_multiple_accounts_json_parsed(pubkeys).value[0].lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -623,7 +623,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
-            >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
+            >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
             >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
@@ -656,7 +656,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
-            >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
+            >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
             >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
@@ -791,7 +791,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkey = PublicKey("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7")
+            >>> pubkey = Pubkey.from_string("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7")
             >>> solana_client.get_token_account_balance(pubkey).value.amount  # noqa: E501 # pylint: disable=line-too-long # doctest: +SKIP
             '9864'
         """

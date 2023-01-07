@@ -7,7 +7,7 @@ from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, Instruct
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, TransactionInstruction
 
-VOTE_PROGRAM_ID: PublicKey = PublicKey("Vote111111111111111111111111111111111111111")
+VOTE_PROGRAM_ID: PublicKey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
 """Public key that identifies the Vote program."""
 
 
