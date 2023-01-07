@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
+from solders.pubkey import Pubkey
+
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, TransactionInstruction
