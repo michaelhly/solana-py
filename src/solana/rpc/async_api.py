@@ -427,7 +427,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solana.keypair import Keypair
             >>> from solana.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
-            >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
+            >>> leading_zeros = [0] * 31
+            >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> txn = Transaction().add(transfer(TransferParams(
             ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
             >>> solana_client = AsyncClient("http://localhost:8899")
@@ -1009,7 +1010,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solana.keypair import Keypair
             >>> from solana.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
-            >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
+            >>> leading_zeros = [0] * 31
+            >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> txn = Transaction().add(transfer(TransferParams(
             ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
             >>> solana_client = AsyncClient("http://localhost:8899")
