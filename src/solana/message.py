@@ -10,7 +10,6 @@ from solders.message import MessageHeader
 from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash
-from solana.publickey import PublicKey
 
 
 class MessageArgs(NamedTuple):
@@ -83,13 +82,13 @@ class Message:
         return self._solders.header
 
     @property
-    def account_keys(self) -> List[PublicKey]:
+    def account_keys(self) -> List[Pubkey]:
         """All the account keys used by this transaction.
 
         Returns:
             The account keys.
         """
-        return [PublicKey.from_solders(pubkey) for pubkey in self._solders.account_keys]
+        return self._solders.account_keys
 
     @property
     def recent_blockhash(self) -> Blockhash:
@@ -119,7 +118,9 @@ class Message:
         Example:
 
             >>> from solana.blockhash import Blockhash
-            >>> account_keys = [str(PublicKey(i + 1)) for i in range(5)]
+            >>> from solders.pubkey import Pubkey
+            >>> leading_zeros = [0] * 31
+            >>> account_keys = [str(Pubkey(bytes(leading_zeroes + [i + 1]))) for i in range(5)]
             >>> msg = Message(
             ...     MessageArgs(
             ...         account_keys=account_keys,
