@@ -13,11 +13,11 @@ from solders.presigner import Presigner
 from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
+from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.message import Message
-from solana.publickey import PublicKey
 
 TransactionSignature = NewType("TransactionSignature", str)
 """Type for TransactionSignature."""
@@ -31,7 +31,7 @@ SIG_LENGTH = 64
 class AccountMeta:
     """Account metadata dataclass."""
 
-    pubkey: PublicKey
+    pubkey: Pubkey
     """An account's public key."""
     is_signer: bool
     """True if an instruction requires a transaction signature matching `pubkey`"""
@@ -48,7 +48,7 @@ class AccountMeta:
         Returns:
             The `solana-py` AccountMeta.
         """
-        return cls(pubkey=PublicKey.from_solders(meta.pubkey), is_signer=meta.is_signer, is_writable=meta.is_writable)
+        return cls(pubkey=meta.pubkey, is_signer=meta.is_signer, is_writable=meta.is_writable)
 
     def to_solders(self) -> instruction.AccountMeta:
         """Convert to a `solders` AccountMeta.
@@ -68,7 +68,7 @@ class TransactionInstruction(NamedTuple):
     """Public keys to include in this transaction Boolean represents whether this
     pubkey needs to sign the transaction.
     """
-    program_id: PublicKey
+    program_id: Pubkey
     """Program Id to execute."""
     data: bytes = bytes(0)
     """Program input."""
@@ -84,7 +84,7 @@ class TransactionInstruction(NamedTuple):
             The `solana-py` instruction.
         """
         keys = [AccountMeta.from_solders(am) for am in ixn.accounts]
-        program_id = PublicKey.from_solders(ixn.program_id)
+        program_id = ixn.program_id
         return cls(keys=keys, program_id=program_id, data=ixn.data)
 
     def to_solders(self) -> instruction.Instruction:
@@ -110,14 +110,14 @@ class NonceInformation(NamedTuple):
 class SigPubkeyPair:
     """Pair of signature and corresponding public key."""
 
-    pubkey: PublicKey
+    pubkey: Pubkey
     signature: Optional[bytes] = None
 
 
 def _build_solders_tx(
     recent_blockhash: Optional[Blockhash] = None,
     nonce_info: Optional[NonceInformation] = None,
-    fee_payer: Optional[PublicKey] = None,
+    fee_payer: Optional[Pubkey] = None,
     instructions: Optional[Sequence[TransactionInstruction]] = None,
 ) -> SoldersTx:
     core_instructions = [] if instructions is None else [ixn.to_solders() for ixn in instructions]
@@ -170,7 +170,7 @@ class Transaction:
         self,
         recent_blockhash: Optional[Blockhash] = None,
         nonce_info: Optional[NonceInformation] = None,
-        fee_payer: Optional[PublicKey] = None,
+        fee_payer: Optional[Pubkey] = None,
         instructions: Optional[Sequence[TransactionInstruction]] = None,
     ) -> None:
         """Init transaction object."""
@@ -218,13 +218,13 @@ class Transaction:
         )
 
     @property
-    def fee_payer(self) -> Optional[PublicKey]:
-        """Optional[PublicKey]: The transaction fee payer."""
+    def fee_payer(self) -> Optional[Pubkey]:
+        """Optional[Pubkey]: The transaction fee payer."""
         account_keys = self._solders.message.account_keys
-        return PublicKey.from_solders(account_keys[0]) if account_keys else None
+        return account_keys[0] if account_keys else None
 
     @fee_payer.setter
-    def fee_payer(self, payer: Optional[PublicKey]) -> None:
+    def fee_payer(self, payer: Optional[Pubkey]) -> None:
         self._solders = _build_solders_tx(
             recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=payer, instructions=self.instructions
         )
@@ -313,7 +313,7 @@ class Transaction:
         underlying_signers = [signer.to_solders() for signer in signers]
         self._solders.sign(underlying_signers, self._solders.message.recent_blockhash)
 
-    def add_signature(self, pubkey: PublicKey, signature: Signature) -> None:
+    def add_signature(self, pubkey: Pubkey, signature: Signature) -> None:
         """Add an externally created signature to a transaction.
 
         Args:
@@ -348,12 +348,14 @@ class Transaction:
 
             >>> from solana.keypair import Keypair
             >>> from solana.blockhash import Blockhash
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
+            >>> from solders.hash import Hash
             >>> from solana.system_program import transfer, TransferParams
-            >>> seed = bytes(PublicKey(1))
-            >>> sender, receiver = Keypair.from_seed(seed), PublicKey(2)
+            >>> leading_zeros = [0] * 31
+            >>> seed = bytes(leading_zeros + [1])
+            >>> sender, receiver = Keypair.from_seed(seed), Pubkey(leading_zeros + [2])
             >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.public_key, to_pubkey=receiver, lamports=1000)))
-            >>> transfer_tx.recent_blockhash = Blockhash(str(PublicKey(3)))
+            >>> transfer_tx.recent_blockhash = Blockhash(str(Hash(leading_zeros + [3])))
             >>> transfer_tx.sign(sender)
             >>> transfer_tx.serialize().hex()
             '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000'
