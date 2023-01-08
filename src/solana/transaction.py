@@ -129,7 +129,7 @@ def _build_solders_tx(
         underlying_blockhash_str = recent_blockhash
     else:
         underlying_blockhash_str = None
-    underlying_fee_payer = None if fee_payer is None else fee_payer.to_solders()
+    underlying_fee_payer = None if fee_payer is None else fee_payer
     underlying_blockhash = (
         Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
     )

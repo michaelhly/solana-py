@@ -221,7 +221,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> GetSignaturesForAddress:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcSignaturesForAddressConfig(before=before, until=until, limit=limit, commitment=commitment_to_use)
-        return GetSignaturesForAddress(address.to_solders(), config)
+        return GetSignaturesForAddress(address, config)
 
     def _get_transaction_body(
         self,
@@ -365,7 +365,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         maybe_program_id = opts.program_id
         filter_to_use: Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId]
         if maybe_mint is not None:
-            filter_to_use = RpcTokenAccountsFilterMint(maybe_mint.to_solders())
+            filter_to_use = RpcTokenAccountsFilterMint(maybe_mint)
         elif maybe_program_id is not None:
             filter_to_use = RpcTokenAccountsFilterProgramId(maybe_program_id)
         else:
