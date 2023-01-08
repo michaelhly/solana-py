@@ -4,7 +4,8 @@ from __future__ import annotations
 from typing import NamedTuple
 
 from solders.pubkey import Pubkey
-from solana.transaction import AccountMeta, TransactionInstruction
+from solders.instruction import AccountMeta
+from solana.transaction import TransactionInstruction
 
 
 class MemoParams(NamedTuple):

@@ -8,6 +8,7 @@ from solders.message import Message as SoldersMessage
 from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
+from solders.instruction import AccountMeta
 
 import solana.system_program as sp
 import solana.transaction as txlib
@@ -22,9 +23,9 @@ def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> t
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         keys=[
-            txlib.AccountMeta(kp0.public_key, True, True),
-            txlib.AccountMeta(kp1.public_key, True, True),
-            txlib.AccountMeta(kp2.public_key, True, True),
+            AccountMeta(kp0.public_key, True, True),
+            AccountMeta(kp1.public_key, True, True),
+            AccountMeta(kp2.public_key, True, True),
         ],
     )
     return txlib.Transaction(fee_payer=kp0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash)
@@ -55,9 +56,9 @@ def test_sign_partial(stubbed_blockhash):
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         keys=[
-            txlib.AccountMeta(keypair0.public_key, True, True),
-            txlib.AccountMeta(keypair1.public_key, True, True),
-            txlib.AccountMeta(keypair2.public_key, True, True),
+            AccountMeta(keypair0.public_key, True, True),
+            AccountMeta(keypair1.public_key, True, True),
+            AccountMeta(keypair2.public_key, True, True),
         ],
     )
     txn = txlib.Transaction(fee_payer=keypair0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash)

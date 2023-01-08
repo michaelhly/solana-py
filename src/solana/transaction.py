@@ -49,9 +49,8 @@ class TransactionInstruction(NamedTuple):
         Returns:
             The `solana-py` instruction.
         """
-        keys = [AccountMeta.from_solders(am) for am in ixn.accounts]
         program_id = ixn.program_id
-        return cls(keys=keys, program_id=program_id, data=ixn.data)
+        return cls(keys=ixn.accounts, program_id=program_id, data=ixn.data)
 
     def to_solders(self) -> instruction.Instruction:
         """Convert to a `solders` instruction.
@@ -59,8 +58,7 @@ class TransactionInstruction(NamedTuple):
         Returns:
             The `solders` instruction.
         """
-        accounts = [key.to_solders() for key in self.keys]
-        return instruction.Instruction(program_id=self.program_id, data=self.data, accounts=accounts)
+        return instruction.Instruction(program_id=self.program_id, data=self.data, accounts=self.keys)
 
 
 class NonceInformation(NamedTuple):

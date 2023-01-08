@@ -4,9 +4,10 @@ from __future__ import annotations
 from typing import NamedTuple
 
 from solders.pubkey import Pubkey
+from solders.instruction import AccountMeta
 
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
-from solana.transaction import AccountMeta, TransactionInstruction
+from solana.transaction import TransactionInstruction
 
 VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
 """Public key that identifies the Vote program."""
