@@ -45,7 +45,7 @@ async def multiple_subscriptions(
     """Setup multiple subscriptions."""
     reqs: List[Body] = [
         LogsSubscribe(filter_=RpcTransactionLogsFilter.All, id=websocket.increment_counter_and_get_id()),
-        AccountSubscribe(stubbed_sender.public_key.to_solders(), id=websocket.increment_counter_and_get_id()),
+        AccountSubscribe(stubbed_sender.public_key, id=websocket.increment_counter_and_get_id()),
     ]
     await websocket.send_data(reqs)  # None
     first_resp = await websocket.recv()
@@ -265,7 +265,7 @@ async def test_program_subscribe(
     main_resp = await websocket.recv()
     msg = main_resp[0]
     assert isinstance(msg, ProgramNotification)
-    assert msg.result.value.pubkey == owned.public_key.to_solders()
+    assert msg.result.value.pubkey == owned.public_key
 
 
 @pytest.mark.integration
