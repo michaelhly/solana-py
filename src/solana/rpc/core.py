@@ -273,7 +273,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_multiple_accounts_body(
         self,
-        pubkeys: List[PublicKey],
+        pubkeys: List[Pubkey],
         commitment: Optional[Commitment],
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],

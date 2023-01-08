@@ -63,7 +63,7 @@ class InitializeMultisigParams(NamedTuple):
     """New multisig account address."""
     m: int
     """The number of signers (M) required to validate this multisignature account."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Addresses of multisig signers."""
 
 
@@ -80,7 +80,7 @@ class TransferParams(NamedTuple):
     """Owner of the source account."""
     amount: int
     """Number of tokens to transfer."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -97,7 +97,7 @@ class ApproveParams(NamedTuple):
     """Owner of the source account."""
     amount: int
     """Maximum number of tokens the delegate may transfer."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -110,7 +110,7 @@ class RevokeParams(NamedTuple):
     """Source account for which transfer authority is being revoked."""
     owner: Pubkey
     """Owner of the source account."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -125,7 +125,7 @@ class SetAuthorityParams(NamedTuple):
     """The type of authority to update."""
     current_authority: Pubkey
     """Current authority of the specified type."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `current_authority` is a multiSig."""
     new_authority: Optional[Pubkey] = None
     """New authority of the account."""
@@ -144,7 +144,7 @@ class MintToParams(NamedTuple):
     """The mint authority."""
     amount: int
     """Amount to mint."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `mint_authority` is a multiSig."""
 
 
@@ -161,7 +161,7 @@ class BurnParams(NamedTuple):
     """Owner of the account."""
     amount: int
     """Amount to burn."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
 
@@ -176,7 +176,7 @@ class CloseAccountParams(NamedTuple):
     """Address of account to receive the remaining balance of the closed account."""
     owner: Pubkey
     """Owner of the account."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
 
@@ -191,7 +191,7 @@ class FreezeAccountParams(NamedTuple):
     """Public key of the minter account."""
     authority: Pubkey
     """Mint freeze authority"""
-    multi_signers: List[PublicKey] = []
+    multi_signers: List[Pubkey] = []
     """Signing accounts if `authority` is a multiSig"""
 
 
@@ -206,7 +206,7 @@ class ThawAccountParams(NamedTuple):
     """Public key of the minter account."""
     authority: Pubkey
     """Mint freeze authority"""
-    multi_signers: List[PublicKey] = []
+    multi_signers: List[Pubkey] = []
     """Signing accounts if `authority` is a multiSig"""
 
 
@@ -227,7 +227,7 @@ class TransferCheckedParams(NamedTuple):
     """Number of tokens to transfer."""
     decimals: int
     """Amount decimals."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -248,7 +248,7 @@ class ApproveCheckedParams(NamedTuple):
     """Maximum number of tokens the delegate may transfer."""
     decimals: int
     """Amount decimals."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -267,7 +267,7 @@ class MintToCheckedParams(NamedTuple):
     """Amount to mint."""
     decimals: int
     """Amount decimals."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `mint_authority` is a multiSig."""
 
 
@@ -286,7 +286,7 @@ class BurnCheckedParams(NamedTuple):
     """Amount to burn."""
     decimals: int
     """Amount decimals."""
-    signers: List[PublicKey] = []
+    signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
 
@@ -621,7 +621,7 @@ def decode_burn_checked(instruction: TransactionInstruction) -> BurnCheckedParam
     )
 
 
-def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[PublicKey]) -> None:
+def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey]) -> None:
     if signers:
         keys.append(AccountMeta(pubkey=owner, is_signer=False, is_writable=False))
         for signer in signers:

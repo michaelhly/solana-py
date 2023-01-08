@@ -553,7 +553,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
     async def get_multiple_accounts(
         self,
-        pubkeys: List[PublicKey],
+        pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -585,7 +585,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
     async def get_multiple_accounts_json_parsed(
         self,
-        pubkeys: List[PublicKey],
+        pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
     ) -> GetMultipleAccountsMaybeJsonParsedResp:
         """Returns all the account info for a list of public keys.

@@ -301,7 +301,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     async def create_multisig(
         self,
         m: int,
-        multi_signers: List[PublicKey],
+        multi_signers: List[Pubkey],
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> Pubkey:  # pylint: disable=invalid-name

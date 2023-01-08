@@ -597,7 +597,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     def _create_multisig_args(
         self,
         m: int,
-        signers: List[PublicKey],
+        signers: List[Pubkey],
         balance_needed: int,
     ) -> Tuple[Transaction, Keypair, Keypair]:
         multisig_keypair = Keypair()
