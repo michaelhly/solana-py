@@ -39,8 +39,8 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Transac
         >>> instruction = withdraw_from_vote_account(
         ...    WithdrawFromVoteAccountParams(
         ...        vote_account_from_pubkey=vote,
-        ...        to_pubkey=withdrawer,
-        ...        withdrawer=withdrawer,
+        ...        to_pubkey=withdrawer.public_key,
+        ...        withdrawer=withdrawer.public_key,
         ...        lamports=3_000_000_000,
         ...    )
         ... )
