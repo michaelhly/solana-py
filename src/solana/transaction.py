@@ -48,7 +48,7 @@ def _build_solders_tx(
     fee_payer: Optional[Pubkey] = None,
     instructions: Optional[Sequence[Instruction]] = None,
 ) -> SoldersTx:
-    core_instructions = [] if instructions is None else [ixn for ixn in instructions]
+    core_instructions = [] if instructions is None else instructions
     underlying_instructions = (
         core_instructions if nonce_info is None else [nonce_info.nonce_instruction, *core_instructions]
     )
