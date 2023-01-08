@@ -22,7 +22,7 @@ def test_sign_message(stubbed_sender):
     """Test message signing."""
     msg = b"hello"
     signature = stubbed_sender.sign(msg)
-    assert signature.verify(stubbed_sender.public_key.to_solders(), msg)
+    assert signature.verify(stubbed_sender.public_key, msg)
 
 
 def test_create_from_secret_key() -> None:

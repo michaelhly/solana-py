@@ -35,7 +35,7 @@ def test_to_solders(stubbed_blockhash: Blockhash) -> None:
     kp1, kp2 = Keypair(), Keypair()
     transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
     solders_transfer = ssp.transfer(
-        ssp.TransferParams(from_pubkey=kp1.public_key.to_solders(), to_pubkey=kp2.public_key.to_solders(), lamports=123)
+        ssp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123)
     )
     assert transfer.data == solders_transfer.data
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
