@@ -56,9 +56,7 @@ class AccountMeta:
         Returns:
             The `solders` AccountMeta.
         """
-        return instruction.AccountMeta(
-            pubkey=self.pubkey.to_solders(), is_signer=self.is_signer, is_writable=self.is_writable
-        )
+        return instruction.AccountMeta(pubkey=self.pubkey, is_signer=self.is_signer, is_writable=self.is_writable)
 
 
 class TransactionInstruction(NamedTuple):
@@ -320,7 +318,7 @@ class Transaction:
             pubkey: The public key that created the signature.
             signature: The signature to add.
         """
-        presigner = Presigner(pubkey.to_solders(), signature)
+        presigner = Presigner(pubkey, signature)
         self._solders.partial_sign([presigner], self._solders.message.recent_blockhash)
 
     def verify_signatures(self) -> bool:

@@ -52,8 +52,8 @@ class CreateAccountParams(NamedTuple):
             `solders` CreateAccountParams
         """
         return ssp.CreateAccountParams(
-            from_pubkey=self.from_pubkey.to_solders(),
-            to_pubkey=self.new_account_pubkey.to_solders(),
+            from_pubkey=self.from_pubkey,
+            to_pubkey=self.new_account_pubkey,
             lamports=self.lamports,
             space=self.space,
             owner=self.program_id.to_solders(),
@@ -93,8 +93,8 @@ class TransferParams(NamedTuple):
             `solders` TransferParams
         """
         return ssp.TransferParams(
-            from_pubkey=self.from_pubkey.to_solders(),
-            to_pubkey=self.to_pubkey.to_solders(),
+            from_pubkey=self.from_pubkey,
+            to_pubkey=self.to_pubkey,
             lamports=self.lamports,
         )
 
@@ -129,7 +129,7 @@ class AssignParams(NamedTuple):
             `solders` AssignParams
         """
         return ssp.AssignParams(
-            pubkey=self.account_pubkey.to_solders(),
+            pubkey=self.account_pubkey,
             owner=self.program_id.to_solders(),
         )
 
@@ -179,9 +179,9 @@ class CreateAccountWithSeedParams(NamedTuple):
             `solders` CreateAccountWithSeedParams
         """
         return ssp.CreateAccountWithSeedParams(
-            from_pubkey=self.from_pubkey.to_solders(),
-            to_pubkey=self.new_account_pubkey.to_solders(),
-            base=self.base_pubkey.to_solders(),
+            from_pubkey=self.from_pubkey,
+            to_pubkey=self.new_account_pubkey,
+            base=self.base_pubkey,
             seed=self.seed,
             lamports=self.lamports,
             space=self.space,
@@ -249,8 +249,8 @@ class InitializeNonceParams(NamedTuple):
             `solders` InitializeNonceParams
         """
         return ssp.InitializeNonceAccountParams(
-            nonce_pubkey=self.nonce_pubkey.to_solders(),
-            authority=self.authorized_pubkey.to_solders(),
+            nonce_pubkey=self.nonce_pubkey,
+            authority=self.authorized_pubkey,
         )
 
 
@@ -284,8 +284,8 @@ class AdvanceNonceParams(NamedTuple):
             `solders` AdvanceNonceParams
         """
         return ssp.AdvanceNonceAccountParams(
-            nonce_pubkey=self.nonce_pubkey.to_solders(),
-            authorized_pubkey=self.authorized_pubkey.to_solders(),
+            nonce_pubkey=self.nonce_pubkey,
+            authorized_pubkey=self.authorized_pubkey,
         )
 
 
@@ -325,9 +325,9 @@ class WithdrawNonceParams(NamedTuple):
             `solders` WithdrawNonceParams
         """
         return ssp.WithdrawNonceAccountParams(
-            nonce_pubkey=self.nonce_pubkey.to_solders(),
-            authorized_pubkey=self.authorized_pubkey.to_solders(),
-            to_pubkey=self.to_pubkey.to_solders(),
+            nonce_pubkey=self.nonce_pubkey,
+            authorized_pubkey=self.authorized_pubkey,
+            to_pubkey=self.to_pubkey,
             lamports=self.lamports,
         )
 
@@ -365,9 +365,9 @@ class AuthorizeNonceParams(NamedTuple):
             `solders` AuthorizeNonceParams
         """
         return ssp.AuthorizeNonceAccountParams(
-            nonce_pubkey=self.nonce_pubkey.to_solders(),
-            authorized_pubkey=self.authorized_pubkey.to_solders(),
-            new_authority=self.new_authorized_pubkey.to_solders(),
+            nonce_pubkey=self.nonce_pubkey,
+            authorized_pubkey=self.authorized_pubkey,
+            new_authority=self.new_authorized_pubkey,
         )
 
 
@@ -401,7 +401,7 @@ class AllocateParams(NamedTuple):
             `solders` AllocateParams
         """
         return ssp.AllocateParams(
-            pubkey=self.account_pubkey.to_solders(),
+            pubkey=self.account_pubkey,
             space=self.space,
         )
 
@@ -445,8 +445,8 @@ class AllocateWithSeedParams(NamedTuple):
             `solders` AllocateWithSeedParams
         """
         return ssp.AllocateWithSeedParams(
-            address=self.account_pubkey.to_solders(),
-            base=self.base_pubkey.to_solders(),
+            address=self.account_pubkey,
+            base=self.base_pubkey,
             seed=self.seed,
             space=self.space,
             owner=self.program_id.to_solders(),
@@ -489,8 +489,8 @@ class AssignWithSeedParams(NamedTuple):
             `solders` AssignWithSeedParams
         """
         return ssp.AssignWithSeedParams(
-            address=self.account_pubkey.to_solders(),
-            base=self.base_pubkey.to_solders(),
+            address=self.account_pubkey,
+            base=self.base_pubkey,
             seed=self.seed,
             owner=self.program_id.to_solders(),
         )
@@ -790,18 +790,18 @@ def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAcco
     """
     if isinstance(params, CreateNonceAccountParams):
         solders_ixs = ssp.create_nonce_account(
-            from_pubkey=params.from_pubkey.to_solders(),
-            nonce_pubkey=params.nonce_pubkey.to_solders(),
-            authority=params.authorized_pubkey.to_solders(),
+            from_pubkey=params.from_pubkey,
+            nonce_pubkey=params.nonce_pubkey,
+            authority=params.authorized_pubkey,
             lamports=params.lamports,
         )
     else:
         solders_ixs = ssp.create_nonce_account_with_seed(
-            from_pubkey=params.from_pubkey.to_solders(),
-            nonce_pubkey=params.nonce_pubkey.to_solders(),
-            base=params.base_pubkey.to_solders(),
+            from_pubkey=params.from_pubkey,
+            nonce_pubkey=params.nonce_pubkey,
+            base=params.base_pubkey,
             seed=params.seed,
-            authority=params.authorized_pubkey.to_solders(),
+            authority=params.authorized_pubkey,
             lamports=params.lamports,
         )
     create_account_instruction = TransactionInstruction.from_solders(solders_ixs[0])

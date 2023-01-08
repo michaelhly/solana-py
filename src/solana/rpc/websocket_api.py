@@ -122,7 +122,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
             if commitment_to_use is None and encoding_to_use is None
             else RpcAccountInfoConfig(encoding=encoding_to_use, commitment=commitment_to_use)
         )
-        req = AccountSubscribe(pubkey.to_solders(), config, req_id)
+        req = AccountSubscribe(pubkey, config, req_id)
         await self.send_data(req)
 
     async def account_unsubscribe(
