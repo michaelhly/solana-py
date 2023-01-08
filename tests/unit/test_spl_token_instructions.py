@@ -145,7 +145,7 @@ def test_set_authority():
         account=account,
         authority=spl_token.AuthorityType.FREEZE_ACCOUNT,
         current_authority=current_authority,
-        signers=[PublicKey(i) for i in range(3, 10)],
+        signers=[Pubkey([0] * 31 + [i]) for i in range(3, 10)],
     )
     instruction = spl_token.set_authority(multisig_params)
     decoded_params = spl_token.decode_set_authority(instruction)
@@ -171,7 +171,7 @@ def test_mint_to(stubbed_receiver):
         mint=mint,
         dest=stubbed_receiver,
         mint_authority=mint_authority,
-        signers=[PublicKey(i) for i in range(3, 10)],
+        signers=[Pubkey([0] * 31 + [i]) for i in range(3, 10)],
         amount=123,
     )
     instruction = spl_token.mint_to(multisig_params)
@@ -196,7 +196,7 @@ def test_burn(stubbed_receiver):
         mint=mint,
         account=stubbed_receiver,
         owner=owner,
-        signers=[PublicKey(i) for i in range(3, 10)],
+        signers=[Pubkey([0] * 31 + [i]) for i in range(3, 10)],
         amount=123,
     )
     instruction = spl_token.burn(multisig_params)
@@ -243,7 +243,7 @@ def test_freeze_account(stubbed_sender):
         account=token_account,
         mint=mint,
         authority=stubbed_sender.public_key,
-        multi_signers=[PublicKey(i) for i in range(2, 10)],
+        multi_signers=[Pubkey([0] * 31 + [i]) for i in range(2, 10)],
     )
     instruction = spl_token.freeze_account(multisig_params)
     assert spl_token.decode_freeze_account(instruction) == multisig_params
@@ -266,7 +266,7 @@ def test_thaw_account(stubbed_sender):
         account=token_account,
         mint=mint,
         authority=stubbed_sender.public_key,
-        multi_signers=[PublicKey(i) for i in range(2, 10)],
+        multi_signers=[Pubkey([0] * 31 + [i]) for i in range(2, 10)],
     )
     instruction = spl_token.thaw_account(multisig_params)
     assert spl_token.decode_thaw_account(instruction) == multisig_params
@@ -349,7 +349,7 @@ def test_mint_to_checked(stubbed_receiver):
         mint=mint,
         dest=stubbed_receiver,
         mint_authority=mint_authority,
-        signers=[PublicKey(i) for i in range(3, 10)],
+        signers=[Pubkey([0] * 31 + [i]) for i in range(3, 10)],
         amount=123,
         decimals=6,
     )
@@ -376,7 +376,7 @@ def test_burn_checked(stubbed_receiver):
         mint=mint,
         account=stubbed_receiver,
         owner=owner,
-        signers=[PublicKey(i) for i in range(3, 10)],
+        signers=[Pubkey([0] * 31 + [i]) for i in range(3, 10)],
         amount=123,
         decimals=6,
     )

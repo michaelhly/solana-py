@@ -759,7 +759,7 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
     Example:
 
         >>> m = 2   # Two signers
-        >>> signers = [PublicKey(i) for i in range(m)]
+        >>> signers = [Pubkey([0] * 31 + [i]) for i in range(m)]
         >>> leading_zeros = [0] * 31
         >>> multisig_account, token = PublicKey(leading_zeros + [1]), PublicKey(leading_zeros + [2])
         >>> params = InitializeMultisigParams(
