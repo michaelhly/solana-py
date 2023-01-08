@@ -277,7 +277,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],
     ) -> GetMultipleAccounts:
-        accounts = [pubkey for pubkey in pubkeys]
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         data_slice_to_use = (
@@ -286,7 +285,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcAccountInfoConfig(
             encoding=encoding_to_use, commitment=commitment_to_use, data_slice=data_slice_to_use
         )
-        return GetMultipleAccounts(accounts, config)
+        return GetMultipleAccounts(pubkeys, config)
 
     def _get_program_accounts_body(
         self,

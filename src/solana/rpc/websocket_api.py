@@ -36,10 +36,10 @@ from solders.rpc.responses import Notification
 from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
 from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
+from solders.pubkey import Pubkey
 from websockets.legacy.client import WebSocketClientProtocol
 from websockets.legacy.client import connect as ws_connect
 
-from solders.pubkey import Pubkey
 from solana.rpc import types
 from solana.rpc.commitment import Commitment
 from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS

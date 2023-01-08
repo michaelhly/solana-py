@@ -1,3 +1,4 @@
+"""Test async client."""
 from unittest.mock import patch
 
 import pytest
@@ -14,7 +15,6 @@ from solana.rpc.commitment import Finalized
 
 async def test_async_client_http_exception(unit_test_http_client_async):
     """Test AsyncClient raises native Solana-py exceptions."""
-
     with patch("httpx.AsyncClient.post") as post_mock:
         post_mock.side_effect = ReadTimeout("placeholder")
         with pytest.raises(SolanaRpcException) as exc_info:
@@ -24,6 +24,7 @@ async def test_async_client_http_exception(unit_test_http_client_async):
 
 
 def test_client_address_sig_args_no_commitment(unit_test_http_client_async):
+    """Test generating getSignaturesForAddressBody."""
     expected = GetSignaturesForAddress(
         Pubkey.from_string("11111111111111111111111111111111"),
         RpcSignaturesForAddressConfig(

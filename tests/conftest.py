@@ -4,10 +4,10 @@ import time
 from typing import NamedTuple
 
 import pytest
+from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
-from solders.pubkey import Pubkey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
