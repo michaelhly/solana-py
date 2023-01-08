@@ -2,6 +2,7 @@
 from typing import Tuple
 
 import pytest
+from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
@@ -9,7 +10,6 @@ from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp
 import solana.system_program as sp
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
 from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
@@ -21,7 +21,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
-def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: PublicKey, test_http_client: Client):
+def test_request_air_drop(stubbed_sender: Keypair, stubbed_receiver: Pubkey, test_http_client: Client):
     """Test air drop to stubbed_sender and stubbed_receiver."""
     # Airdrop to stubbed_sender
     resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
@@ -98,7 +98,7 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
 
 
 @pytest.mark.integration
-def test_send_bad_transaction(stubbed_receiver: PublicKey, test_http_client: Client):
+def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client: Client):
     """Test sending a transaction that errors."""
     poor_account = Keypair()
     airdrop_amount = 1000000
@@ -368,7 +368,7 @@ def test_get_blocks(test_http_client: Client):
 def test_get_signatures_for_address(test_http_client: Client):
     """Test get signatures for addresses."""
     resp = test_http_client.get_signatures_for_address(
-        PublicKey("Vote111111111111111111111111111111111111111"), limit=1, commitment=Confirmed
+        Pubkey.from_string("Vote111111111111111111111111111111111111111"), limit=1, commitment=Confirmed
     )
     assert_valid_response(resp)
 

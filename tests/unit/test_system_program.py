@@ -1,10 +1,11 @@
 """Unit tests for solana.system_program."""
 import base64
 
+from solders.pubkey import Pubkey
+
 import solana.system_program as sp
 import solana.transaction as txlib
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
 
 
 def test_create_account():
@@ -14,7 +15,7 @@ def test_create_account():
         new_account_pubkey=Keypair().public_key,
         lamports=123,
         space=1,
-        program_id=PublicKey(1),
+        program_id=Pubkey([0] * 31 + [1]),
     )
     assert sp.decode_create_account(sp.create_account(params)) == params
 
@@ -29,7 +30,7 @@ def test_assign():
     """Test creating a transaction for assign."""
     params = sp.AssignParams(
         account_pubkey=Keypair().public_key,
-        program_id=PublicKey(1),
+        program_id=Pubkey([0] * 31 + [1]),
     )
     assert sp.decode_assign(sp.assign(params)) == params
 
@@ -47,10 +48,10 @@ def test_allocate_with_seed():
     """Test creating a transaction for allocate with seed."""
     params = sp.AllocateWithSeedParams(
         account_pubkey=Keypair().public_key,
-        base_pubkey=PublicKey(1),
+        base_pubkey=Pubkey([0] * 31 + [1]),
         seed="gqln",
         space=65537,
-        program_id=PublicKey(2),
+        program_id=Pubkey([0] * 31 + [2]),
     )
     assert sp.decode_allocate_with_seed(sp.allocate(params)) == params
 
@@ -59,12 +60,12 @@ def test_create_account_with_seed():
     """Test creating a an account with seed."""
     params = sp.CreateAccountWithSeedParams(
         from_pubkey=Keypair().public_key,
-        new_account_pubkey=PublicKey(3),
-        base_pubkey=PublicKey(1),
+        new_account_pubkey=Pubkey([0] * 31 + [3]),
+        base_pubkey=Pubkey([0] * 31 + [1]),
         seed="gqln",
         lamports=123,
         space=4,
-        program_id=PublicKey(2),
+        program_id=Pubkey([0] * 31 + [2]),
     )
     assert sp.decode_create_account_with_seed(sp.create_account_with_seed(params)) == params
 

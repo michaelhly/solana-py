@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.29.0] - Unreleased
+
+## Changed
+
+- Remove redundant classes [(#329)](https://github.com/michaelhly/solana-py/pull/329):
+    - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
+    - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
+    - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
+
 ## [0.28.1] - 2022-12-29
 
 ## Fixed

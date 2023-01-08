@@ -4,6 +4,7 @@ from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib
 import pytest
+from solders.pubkey import Pubkey
 from solders.rpc.config import RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
 from solders.rpc.requests import AccountSubscribe, AccountUnsubscribe, Body, LogsSubscribe, LogsUnsubscribe
 from solders.rpc.responses import (
@@ -22,7 +23,6 @@ from websockets.legacy.client import WebSocketClientProtocol
 
 from solana import system_program as sp
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
 from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
@@ -45,7 +45,7 @@ async def multiple_subscriptions(
     """Setup multiple subscriptions."""
     reqs: List[Body] = [
         LogsSubscribe(filter_=RpcTransactionLogsFilter.All, id=websocket.increment_counter_and_get_id()),
-        AccountSubscribe(stubbed_sender.public_key.to_solders(), id=websocket.increment_counter_and_get_id()),
+        AccountSubscribe(stubbed_sender.public_key, id=websocket.increment_counter_and_get_id()),
     ]
     await websocket.send_data(reqs)  # None
     first_resp = await websocket.recv()
@@ -65,7 +65,7 @@ async def multiple_subscriptions(
 @pytest.fixture
 async def account_subscribed(
     stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
-) -> AsyncGenerator[PublicKey, None]:
+) -> AsyncGenerator[Pubkey, None]:
     """Setup account subscription."""
     recipient = Keypair()
     await websocket.account_subscribe(recipient.public_key)
@@ -210,7 +210,7 @@ async def test_multiple_subscriptions(
 
 @pytest.mark.integration
 async def test_account_subscribe(
-    test_http_client_async: AsyncClient, websocket: SolanaWsClientProtocol, account_subscribed: PublicKey
+    test_http_client_async: AsyncClient, websocket: SolanaWsClientProtocol, account_subscribed: Pubkey
 ):
     """Test account subscription."""
     await test_http_client_async.request_airdrop(account_subscribed, AIRDROP_AMOUNT)
@@ -265,7 +265,7 @@ async def test_program_subscribe(
     main_resp = await websocket.recv()
     msg = main_resp[0]
     assert isinstance(msg, ProgramNotification)
-    assert msg.result.value.pubkey == owned.public_key.to_solders()
+    assert msg.result.value.pubkey == owned.public_key
 
 
 @pytest.mark.integration

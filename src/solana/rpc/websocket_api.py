@@ -3,6 +3,7 @@ import itertools
 from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from solders.account_decoder import UiDataSliceConfig
+from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
     RpcProgramAccountsConfig,
@@ -39,7 +40,6 @@ from solders.signature import Signature
 from websockets.legacy.client import WebSocketClientProtocol
 from websockets.legacy.client import connect as ws_connect
 
-from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.rpc.commitment import Commitment
 from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS
@@ -105,7 +105,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         return self._process_rpc_response(cast(str, data))
 
     async def account_subscribe(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
+        self, pubkey: Pubkey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
     ) -> None:
         """Subscribe to an account to receive notifications when the lamports or data change.
 
@@ -122,7 +122,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
             if commitment_to_use is None and encoding_to_use is None
             else RpcAccountInfoConfig(encoding=encoding_to_use, commitment=commitment_to_use)
         )
-        req = AccountSubscribe(pubkey.to_solders(), config, req_id)
+        req = AccountSubscribe(pubkey, config, req_id)
         await self.send_data(req)
 
     async def account_unsubscribe(
@@ -172,7 +172,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
 
     async def program_subscribe(  # pylint: disable=too-many-arguments
         self,
-        program_id: PublicKey,
+        program_id: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -205,7 +205,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
                 None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
             )
             config = RpcProgramAccountsConfig(account_config, filters_to_use)
-        req = ProgramSubscribe(program_id.to_solders(), config, req_id)
+        req = ProgramSubscribe(program_id, config, req_id)
         await self.send_data(req)
 
     async def program_unsubscribe(

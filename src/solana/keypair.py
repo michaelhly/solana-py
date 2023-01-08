@@ -4,9 +4,8 @@ from __future__ import annotations
 from typing import Optional
 
 import solders.keypair
+from solders.pubkey import Pubkey
 from solders.signature import Signature
-
-import solana.publickey
 
 
 class Keypair:
@@ -124,10 +123,9 @@ class Keypair:
         return bytes(self._solders.secret())
 
     @property
-    def public_key(self) -> solana.publickey.PublicKey:
+    def public_key(self) -> Pubkey:
         """The public key for this keypair."""
-        underlying = self._solders.pubkey()
-        return solana.publickey.PublicKey.from_solders(underlying)
+        return self._solders.pubkey()
 
     @property
     def secret_key(self) -> bytes:

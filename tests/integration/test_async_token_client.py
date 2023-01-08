@@ -1,9 +1,9 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
 import pytest
+from solders.pubkey import Pubkey
 
 import spl.token._layouts as layouts
-from solana.publickey import PublicKey
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
@@ -34,22 +34,20 @@ async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -
 
     resp = await test_http_client_async.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
-    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
+    assert resp.value.owner == TOKEN_PROGRAM_ID
 
     mint_data = layouts.MINT_LAYOUT.parse(resp.value.data)
     assert mint_data.is_initialized
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
-    assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key
-    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key
+    assert Pubkey(mint_data.mint_authority) == stubbed_sender.public_key
+    assert Pubkey(mint_data.freeze_authority) == freeze_authority.public_key
     return token_client
 
 
 @pytest.mark.integration
 @pytest.fixture(scope="module")
-async def stubbed_sender_token_account_pk(
-    stubbed_sender, test_token  # pylint: disable=redefined-outer-name
-) -> PublicKey:
+async def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> Pubkey:  # pylint: disable=redefined-outer-name
     """Token account for stubbed sender."""
     return await test_token.create_account(stubbed_sender.public_key)
 
@@ -58,7 +56,7 @@ async def stubbed_sender_token_account_pk(
 @pytest.fixture(scope="module")
 async def async_stubbed_receiver_token_account_pk(
     async_stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
-) -> PublicKey:
+) -> Pubkey:
     """Token account for stubbed receiver."""
     return await test_token.create_account(async_stubbed_receiver)
 
@@ -69,7 +67,7 @@ async def test_new_account(stubbed_sender, test_http_client_async, test_token): 
     token_account_pk = await test_token.create_account(stubbed_sender.public_key)
     resp = await test_http_client_async.get_account_info(token_account_pk)
     assert_valid_response(resp)
-    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
+    assert resp.value.owner == TOKEN_PROGRAM_ID
 
     account_data = layouts.ACCOUNT_LAYOUT.parse(resp.value.data)
     assert account_data.state
@@ -77,18 +75,18 @@ async def test_new_account(stubbed_sender, test_http_client_async, test_token): 
     assert (
         not account_data.delegate_option
         and not account_data.delegated_amount
-        and PublicKey(account_data.delegate) == PublicKey(0)
+        and Pubkey(account_data.delegate) == Pubkey([0] * 31 + [0])
     )
-    assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == PublicKey(0)
+    assert not account_data.close_authority_option and Pubkey(account_data.close_authority) == Pubkey([0] * 31 + [0])
     assert not account_data.is_native_option and not account_data.is_native
-    assert PublicKey(account_data.mint) == test_token.pubkey
-    assert PublicKey(account_data.owner) == stubbed_sender.public_key
+    assert Pubkey(account_data.mint) == test_token.pubkey
+    assert Pubkey(account_data.owner) == stubbed_sender.public_key
 
 
 @pytest.mark.integration
 async def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new associated token account."""
-    new_acct = PublicKey(0)
+    new_acct = Pubkey([0] * 31 + [0])
     token_account_pubkey = await test_token.create_associated_token_account(new_acct)
     expected_token_account_key, _ = new_acct.find_program_address(
         seeds=[bytes(new_acct), bytes(TOKEN_PROGRAM_ID), bytes(test_token.pubkey)],
@@ -428,10 +426,10 @@ async def test_create_multisig(
     )
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
-    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
+    assert resp.value.owner == TOKEN_PROGRAM_ID
 
     multisig_data = layouts.MULTISIG_LAYOUT.parse(resp.value.data)
     assert multisig_data.is_initialized
     assert multisig_data.m == min_signers
-    assert PublicKey(multisig_data.signer1) == stubbed_sender.public_key
-    assert PublicKey(multisig_data.signer2) == async_stubbed_receiver
+    assert Pubkey(multisig_data.signer1) == stubbed_sender.public_key
+    assert Pubkey(multisig_data.signer2) == async_stubbed_receiver

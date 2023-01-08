@@ -4,6 +4,7 @@ from __future__ import annotations
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 
+from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
     GetAccountInfoResp,
@@ -60,7 +61,6 @@ from solders.signature import Signature
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
 from solana.message import Message
-from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
@@ -127,17 +127,17 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.is_connected()
 
-    def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
+    def get_balance(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
         """Returns the balance of the account of provided Pubkey.
 
         Args:
-            pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of account to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_balance(PublicKey(1)).value # doctest: +SKIP
+            >>> solana_client.get_balance(Pubkey([0] * 31 + [1])).value # doctest: +SKIP
             4104230290
         """
         body = self._get_balance_body(pubkey, commitment)
@@ -145,7 +145,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_account_info(
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -164,9 +164,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_account_info(PublicKey(1)).value # doctest: +SKIP
+            >>> solana_client.get_account_info(Pubkey([0] * 31 + [1])).value # doctest: +SKIP
             Account(
                 Account {
                     lamports: 4104230290,
@@ -184,7 +184,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_account_info_json_parsed(
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
     ) -> GetAccountInfoMaybeJsonParsedResp:
         """Returns all the account info for the specified public key in parsed JSON format.
@@ -196,9 +196,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_account_info_json_parsed(PublicKey(1)).value.owner # doctest: +SKIP
+            >>> solana_client.get_account_info_json_parsed(Pubkey([0] * 31 + [1])).value.owner # doctest: +SKIP
             Pubkey(
                 11111111111111111111111111111111,
             )
@@ -323,7 +323,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_signatures_for_address(
         self,
-        account: PublicKey,
+        account: Pubkey,
         before: Optional[Signature] = None,
         until: Optional[Signature] = None,
         limit: Optional[int] = None,
@@ -344,8 +344,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> from solana.publickey import PublicKey
-            >>> pubkey = PublicKey("Vote111111111111111111111111111111111111111")
+            >>> from solders.pubkey import Pubkey
+            >>> pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
             >>> solana_client.get_signatures_for_address(pubkey, limit=1).value[0].signature # doctest: +SKIP
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
@@ -418,7 +418,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solana.keypair import Keypair
             >>> from solana.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
-            >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
+            >>> leading_zeros = [0] * 31
+            >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> txn = Transaction().add(transfer(TransferParams(
             ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
             >>> solana_client = Client("http://localhost:8899")
@@ -542,7 +543,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_multiple_accounts(
         self,
-        pubkeys: List[PublicKey],
+        pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -550,7 +551,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all the account info for a list of public keys.
 
         Args:
-            pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
+            pubkeys: list of Pubkeys to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64". Default is "base64".
 
@@ -560,9 +561,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), Pubkey.from_string("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> solana_client.get_multiple_accounts(pubkeys).value[0].lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -573,7 +574,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_multiple_accounts_json_parsed(
         self,
-        pubkeys: List[PublicKey],
+        pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
     ) -> GetMultipleAccountsMaybeJsonParsedResp:
         """Returns all the account info for a list of public keys, in jsonParsed format if possible.
@@ -581,13 +582,13 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         If a parser cannot be found, the RPC server falls back to base64 encoding,
 
         Args:
-            pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
+            pubkeys: list of Pubkeys to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkeys = [PublicKey("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), Pubkey.from_string("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> solana_client.get_multiple_accounts_json_parsed(pubkeys).value[0].lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -601,7 +602,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -610,7 +611,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all accounts owned by the provided program Pubkey.
 
         Args:
-            pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of program
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for the returned Transaction, either "base58" (slow) or "base64".
             data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
@@ -623,7 +624,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
-            >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
+            >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
             >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
@@ -639,14 +640,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_program_accounts_json_parsed(  # pylint: disable=too-many-arguments
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
     ) -> GetProgramAccountsMaybeJsonParsedResp:
         """Returns all accounts owned by the provided program Pubkey.
 
         Args:
-            pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of program
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
                 Note: an int entry is converted to a `dataSize` filter.
@@ -656,7 +657,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
-            >>> pubkey = PublicKey("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
+            >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
             >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
@@ -748,12 +749,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetSlotLeaderResp)
 
     def get_stake_activation(
-        self, pubkey: PublicKey, epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, epoch: Optional[int] = None, commitment: Optional[Commitment] = None
     ) -> GetStakeActivationResp:
         """Returns epoch activation information for a stake account.
 
         Args:
-            pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of stake account to query
             epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
                 defaults to current epoch.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
@@ -781,17 +782,17 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetSupplyResp)
 
     def get_token_account_balance(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, commitment: Optional[Commitment] = None
     ) -> GetTokenAccountBalanceResp:
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
         Args:
-            pubkey: Pubkey of Token account to query, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of Token account to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkey = PublicKey("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7")
+            >>> pubkey = Pubkey.from_string("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7")
             >>> solana_client.get_token_account_balance(pubkey).value.amount  # noqa: E501 # pylint: disable=line-too-long # doctest: +SKIP
             '9864'
         """
@@ -800,7 +801,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_delegate(
         self,
-        delegate: PublicKey,
+        delegate: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateResp:
@@ -816,7 +817,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_delegate_json_parsed(
         self,
-        delegate: PublicKey,
+        delegate: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateJsonParsedResp:
@@ -832,7 +833,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_owner(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerResp:
@@ -848,7 +849,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_owner_json_parsed(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerJsonParsedResp:
@@ -863,13 +864,13 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetTokenAccountsByOwnerJsonParsedResp)
 
     def get_token_largest_accounts(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, commitment: Optional[Commitment] = None
     ) -> GetTokenLargestAccountsResp:
         """Returns the 20 largest accounts of a particular SPL Token type."""
         body = self._get_token_largest_accounts_body(pubkey, commitment)
         return self._provider.make_request(body, GetTokenLargestAccountsResp)
 
-    def get_token_supply(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> GetTokenSupplyResp:
+    def get_token_supply(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetTokenSupplyResp:
         """Returns the total supply of an SPL Token type."""
         body = self._get_token_supply_body(pubkey, commitment)
         return self._provider.make_request(body, GetTokenSupplyResp)
@@ -925,7 +926,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetVoteAccountsResp)
 
     def request_airdrop(
-        self, pubkey: PublicKey, lamports: int, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, lamports: int, commitment: Optional[Commitment] = None
     ) -> RequestAirdropResp:
         """Requests an airdrop of lamports to a Pubkey.
 
@@ -935,9 +936,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.request_airdrop(PublicKey(1), 10000).value # doctest: +SKIP
+            >>> solana_client.request_airdrop(Pubkey([0] * 31 + [1]), 10000).value # doctest: +SKIP
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
@@ -1000,11 +1001,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> from solana.keypair import Keypair
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> from solana.rpc.api import Client
             >>> from solana.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
-            >>> sender, receiver = Keypair.from_seed(bytes(PublicKey(1))), Keypair.from_seed(bytes(PublicKey(2)))
+            >>> leading_zeros = [0] * 31
+            >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> txn = Transaction().add(transfer(TransferParams(
             ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
             >>> solana_client = Client("http://localhost:8899")

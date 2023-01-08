@@ -83,7 +83,6 @@ from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.message import Message
-from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.transaction import Transaction
 
@@ -163,13 +162,13 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         """The default commitment used for requests."""
         return self._commitment
 
-    def _get_balance_body(self, pubkey: PublicKey, commitment: Optional[Commitment]) -> GetBalance:
+    def _get_balance_body(self, pubkey: Pubkey, commitment: Optional[Commitment]) -> GetBalance:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetBalance(pubkey.to_solders(), RpcContextConfig(commitment=commitment_to_use))
+        return GetBalance(pubkey, RpcContextConfig(commitment=commitment_to_use))
 
     def _get_account_info_body(
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment],
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],
@@ -182,7 +181,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcAccountInfoConfig(
             encoding=encoding_to_use, data_slice=data_slice_to_use, commitment=commitment_to_use
         )
-        return GetAccountInfo(pubkey.to_solders(), config)
+        return GetAccountInfo(pubkey, config)
 
     @staticmethod
     def _get_block_commitment_body(slot: int) -> GetBlockCommitment:
@@ -214,7 +213,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_signatures_for_address_body(
         self,
-        address: PublicKey,
+        address: Pubkey,
         before: Optional[Signature],
         until: Optional[Signature],
         limit: Optional[int],
@@ -222,7 +221,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> GetSignaturesForAddress:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcSignaturesForAddressConfig(before=before, until=until, limit=limit, commitment=commitment_to_use)
-        return GetSignaturesForAddress(address.to_solders(), config)
+        return GetSignaturesForAddress(address, config)
 
     def _get_transaction_body(
         self,
@@ -273,12 +272,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_multiple_accounts_body(
         self,
-        pubkeys: List[PublicKey],
+        pubkeys: List[Pubkey],
         commitment: Optional[Commitment],
         encoding: str,
         data_slice: Optional[types.DataSliceOpts],
     ) -> GetMultipleAccounts:
-        accounts = [pubkey.to_solders() for pubkey in pubkeys]
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         data_slice_to_use = (
@@ -287,11 +285,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcAccountInfoConfig(
             encoding=encoding_to_use, commitment=commitment_to_use, data_slice=data_slice_to_use
         )
-        return GetMultipleAccounts(accounts, config)
+        return GetMultipleAccounts(pubkeys, config)
 
     def _get_program_accounts_body(
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment],
         encoding: Optional[str],
         data_slice: Optional[types.DataSliceOpts],
@@ -311,7 +309,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             else [x if isinstance(x, int) else Memcmp(offset=x.offset, bytes_=x.bytes) for x in filters]
         )
         config = RpcProgramAccountsConfig(account_config, filters_to_use)
-        return GetProgramAccounts(pubkey.to_solders(), config)
+        return GetProgramAccounts(pubkey, config)
 
     def _get_latest_blockhash_body(self, commitment: Optional[Commitment]) -> GetLatestBlockhash:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -334,25 +332,25 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_stake_activation_body(
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         epoch: Optional[int],
         commitment: Optional[Commitment],
     ) -> GetStakeActivation:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetStakeActivation(pubkey.to_solders(), RpcEpochConfig(epoch, commitment_to_use))
+        return GetStakeActivation(pubkey, RpcEpochConfig(epoch, commitment_to_use))
 
     def _get_supply_body(self, commitment: Optional[Commitment]) -> GetSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetSupply(RpcSupplyConfig(commitment=commitment_to_use, exclude_non_circulating_accounts_list=False))
 
     def _get_token_account_balance_body(
-        self, pubkey: PublicKey, commitment: Optional[Commitment]
+        self, pubkey: Pubkey, commitment: Optional[Commitment]
     ) -> GetTokenAccountBalance:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetTokenAccountBalance(pubkey.to_solders(), commitment_to_use)
+        return GetTokenAccountBalance(pubkey, commitment_to_use)
 
     def _get_token_accounts_convert(
-        self, pubkey: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+        self, pubkey: Pubkey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> Tuple[Pubkey, Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId], RpcAccountInfoConfig]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[opts.encoding]
@@ -366,51 +364,51 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         maybe_program_id = opts.program_id
         filter_to_use: Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId]
         if maybe_mint is not None:
-            filter_to_use = RpcTokenAccountsFilterMint(maybe_mint.to_solders())
+            filter_to_use = RpcTokenAccountsFilterMint(maybe_mint)
         elif maybe_program_id is not None:
-            filter_to_use = RpcTokenAccountsFilterProgramId(maybe_program_id.to_solders())
+            filter_to_use = RpcTokenAccountsFilterProgramId(maybe_program_id)
         else:
             raise ValueError("Please provide one of mint or program_id")
         config = RpcAccountInfoConfig(
             encoding=encoding_to_use, commitment=commitment_to_use, data_slice=data_slice_to_use
         )
-        return pubkey.to_solders(), filter_to_use, config
+        return pubkey, filter_to_use, config
 
     def _get_token_accounts_by_delegate_body(
-        self, delegate: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+        self, delegate: Pubkey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> GetTokenAccountsByDelegate:
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts, commitment)
         return GetTokenAccountsByDelegate(pubkey, filter_, config)
 
     def _get_token_accounts_by_owner_body(
-        self, owner: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+        self, owner: Pubkey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> GetTokenAccountsByOwner:
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
 
     def _get_token_accounts_by_delegate_json_parsed_body(
-        self, delegate: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+        self, delegate: Pubkey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> GetTokenAccountsByDelegate:
         opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts_to_use, commitment)
         return GetTokenAccountsByDelegate(pubkey, filter_, config)
 
     def _get_token_accounts_by_owner_json_parsed_body(
-        self, owner: PublicKey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
+        self, owner: Pubkey, opts: types.TokenAccountOpts, commitment: Optional[Commitment]
     ) -> GetTokenAccountsByOwner:
         opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts_to_use, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
 
     def _get_token_largest_accounts_body(
-        self, pubkey: PublicKey, commitment: Optional[Commitment]
+        self, pubkey: Pubkey, commitment: Optional[Commitment]
     ) -> GetTokenLargestAccounts:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetTokenLargestAccounts(pubkey.to_solders(), commitment_to_use)
+        return GetTokenLargestAccounts(pubkey, commitment_to_use)
 
-    def _get_token_supply_body(self, pubkey: PublicKey, commitment: Optional[Commitment]) -> GetTokenSupply:
+    def _get_token_supply_body(self, pubkey: Pubkey, commitment: Optional[Commitment]) -> GetTokenSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetTokenSupply(pubkey.to_solders(), commitment_to_use)
+        return GetTokenSupply(pubkey, commitment_to_use)
 
     def _get_transaction_count_body(self, commitment: Optional[Commitment]) -> GetTransactionCount:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -421,11 +419,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcGetVoteAccountsConfig(commitment=commitment_to_use)
         return GetVoteAccounts(config)
 
-    def _request_airdrop_body(
-        self, pubkey: PublicKey, lamports: int, commitment: Optional[Commitment]
-    ) -> RequestAirdrop:
+    def _request_airdrop_body(self, pubkey: Pubkey, lamports: int, commitment: Optional[Commitment]) -> RequestAirdrop:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return RequestAirdrop(pubkey.to_solders(), lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
+        return RequestAirdrop(pubkey, lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
 
     def _send_raw_transaction_body(self, txn: bytes, opts: types.TxOpts) -> SendTransaction:
         solders_tx = SoldersTx.from_bytes(txn)

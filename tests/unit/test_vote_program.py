@@ -1,10 +1,11 @@
 """Unit tests for solana.vote_program."""
 import base64
 
+from solders.pubkey import Pubkey
+
 import solana.transaction as txlib
 import solana.vote_program as vp
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
 
 
 def test_withdraw_from_vote_account():
@@ -78,8 +79,8 @@ def test_withdraw_from_vote_account():
             ]
         )
     )
-    vote_account_pubkey = PublicKey("CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk")
-    receiver_account_pubkey = PublicKey("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
+    vote_account_pubkey = Pubkey.from_string("CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk")
+    receiver_account_pubkey = Pubkey.from_string("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
 
     txn = txlib.Transaction(fee_payer=withdrawer_keypair.public_key)
     txn.recent_blockhash = "Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH"

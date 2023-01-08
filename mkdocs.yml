@@ -55,7 +55,6 @@ nav:
       - core/blockhash.md
       - core/keypair.md
       - core/message.md
-      - core/publickey.md
       - core/system_program.md
       - core/sysvar.md
       - core/transaction.md
