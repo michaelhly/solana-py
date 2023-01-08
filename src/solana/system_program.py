@@ -513,7 +513,13 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
         ...         lamports=1, space=1, program_id=program_id)
         ... )
         >>> decode_create_account(instruction)
-        CreateAccountParams(from_pubkey=11111111111111111111111111111112, new_account_pubkey=11111111111111111111111111111113, lamports=1, space=1, program_id=11111111111111111111111111111114)
+            CreateAccountParams(from_pubkey=Pubkey(
+                11111111111111111111111111111112,
+            ), new_account_pubkey=Pubkey(
+                11111111111111111111111111111113,
+            ), lamports=1, space=1, program_id=Pubkey(
+                11111111111111111111111111111114,
+            ))
 
     Returns:
         The decoded instruction params.
@@ -536,7 +542,11 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
         ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
         ... )
         >>> decode_transfer(instruction)
-        TransferParams(from_pubkey=11111111111111111111111111111112, to_pubkey=11111111111111111111111111111113, lamports=1000)
+            TransferParams(from_pubkey=Pubkey(
+                11111111111111111111111111111112,
+            ), to_pubkey=Pubkey(
+                11111111111111111111111111111113,
+            ), lamports=1000)
 
     Returns:
         The decoded instruction params.
