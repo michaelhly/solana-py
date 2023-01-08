@@ -6,7 +6,7 @@ from typing import Any, List, NamedTuple, NewType, Optional, Sequence, Tuple, Un
 
 from solders import instruction
 from solders.hash import Hash
-from solders.instruction import AccountMeta as SoldersAccountMeta
+from solders.instruction import AccountMeta
 from solders.instruction import Instruction
 from solders.message import Message as SoldersMessage
 from solders.presigner import Presigner
@@ -25,38 +25,6 @@ PACKET_DATA_SIZE = 1280 - 40 - 8
 """Constant for maximum over-the-wire size of a Transaction."""
 SIG_LENGTH = 64
 """Constant for standard length of a signature."""
-
-
-@dataclass
-class AccountMeta:
-    """Account metadata dataclass."""
-
-    pubkey: Pubkey
-    """An account's public key."""
-    is_signer: bool
-    """True if an instruction requires a transaction signature matching `pubkey`"""
-    is_writable: bool
-    """True if the `pubkey` can be loaded as a read-write account."""
-
-    @classmethod
-    def from_solders(cls, meta: instruction.AccountMeta) -> AccountMeta:
-        """Convert from a `solders` AccountMeta.
-
-        Args:
-            meta: The `solders` AccountMeta.
-
-        Returns:
-            The `solana-py` AccountMeta.
-        """
-        return cls(pubkey=meta.pubkey, is_signer=meta.is_signer, is_writable=meta.is_writable)
-
-    def to_solders(self) -> instruction.AccountMeta:
-        """Convert to a `solders` AccountMeta.
-
-        Returns:
-            The `solders` AccountMeta.
-        """
-        return instruction.AccountMeta(pubkey=self.pubkey, is_signer=self.is_signer, is_writable=self.is_writable)
 
 
 class TransactionInstruction(NamedTuple):
@@ -143,7 +111,7 @@ def _decompile_instructions(msg: SoldersMessage) -> List[TransactionInstruction]
     for compiled_ix in msg.instructions:
         program_id = account_keys[compiled_ix.program_id_index]
         account_metas = [
-            SoldersAccountMeta(account_keys[idx], is_signer=msg.is_signer(idx), is_writable=msg.is_writable(idx))
+            AccountMeta(account_keys[idx], is_signer=msg.is_signer(idx), is_writable=msg.is_writable(idx))
             for idx in compiled_ix.accounts
         ]
         decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
