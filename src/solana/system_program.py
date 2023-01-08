@@ -513,13 +513,13 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
         ...         lamports=1, space=1, program_id=program_id)
         ... )
         >>> decode_create_account(instruction)
-            CreateAccountParams(from_pubkey=Pubkey(
-                11111111111111111111111111111112,
-            ), new_account_pubkey=Pubkey(
-                11111111111111111111111111111113,
-            ), lamports=1, space=1, program_id=Pubkey(
-                11111111111111111111111111111114,
-            ))
+        CreateAccountParams(from_pubkey=Pubkey(
+            11111111111111111111111111111112,
+        ), new_account_pubkey=Pubkey(
+            11111111111111111111111111111113,
+        ), lamports=1, space=1, program_id=Pubkey(
+            11111111111111111111111111111114,
+        ))
 
     Returns:
         The decoded instruction params.
@@ -542,11 +542,11 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
         ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
         ... )
         >>> decode_transfer(instruction)
-            TransferParams(from_pubkey=Pubkey(
-                11111111111111111111111111111112,
-            ), to_pubkey=Pubkey(
-                11111111111111111111111111111113,
-            ), lamports=1000)
+        TransferParams(from_pubkey=Pubkey(
+            11111111111111111111111111111112,
+        ), to_pubkey=Pubkey(
+            11111111111111111111111111111113,
+        ), lamports=1000)
 
     Returns:
         The decoded instruction params.
@@ -569,7 +569,9 @@ def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
         ...     AllocateParams(account_pubkey=allocator,space=65537)
         ... )
         >>> decode_allocate(instruction)
-        AllocateParams(account_pubkey=11111111111111111111111111111112, space=65537)
+        AllocateParams(account_pubkey=Pubkey(
+            11111111111111111111111111111112,
+        ), space=65537)
 
     Returns:
         The decoded instruction params.
@@ -598,7 +600,13 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
         ...     )
         ... )
         >>> decode_allocate_with_seed(instruction)
-        AllocateWithSeedParams(account_pubkey=11111111111111111111111111111112, base_pubkey=11111111111111111111111111111113, seed='gqln', space=65537, program_id=11111111111111111111111111111114)
+        AllocateWithSeedParams(account_pubkey=Pubkey(
+            11111111111111111111111111111112,
+        ), base_pubkey=Pubkey(
+            11111111111111111111111111111113,
+        ), seed='gqln', space=65537, program_id=Pubkey(
+            11111111111111111111111111111114,
+        ))
 
     Returns:
         The decoded instruction params.
@@ -621,7 +629,11 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
         ...     AssignParams(account_pubkey=account, program_id=program_id)
         ... )
         >>> decode_assign(instruction)
-        AssignParams(account_pubkey=11111111111111111111111111111112, program_id=11111111111111111111111111111113)
+        AssignParams(account_pubkey=Pubkey(
+            11111111111111111111111111111112,
+        ), program_id=Pubkey(
+            11111111111111111111111111111113,
+        ))
 
     Returns:
         The decoded instruction params.
