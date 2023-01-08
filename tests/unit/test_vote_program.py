@@ -4,7 +4,7 @@ import base64
 import solana.transaction as txlib
 import solana.vote_program as vp
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 
 def test_withdraw_from_vote_account():

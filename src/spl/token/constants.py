@@ -1,6 +1,6 @@
 """SPL token constants."""
 
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 MINT_LEN: int = 82
 """Data length of a token mint account."""

@@ -9,7 +9,7 @@ from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp
 import solana.system_program as sp
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError

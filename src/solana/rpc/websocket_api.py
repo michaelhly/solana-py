@@ -39,7 +39,7 @@ from solders.signature import Signature
 from websockets.legacy.client import WebSocketClientProtocol
 from websockets.legacy.client import connect as ws_connect
 
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc import types
 from solana.rpc.commitment import Commitment
 from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS

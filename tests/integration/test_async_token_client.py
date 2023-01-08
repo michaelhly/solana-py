@@ -3,7 +3,7 @@
 import pytest
 
 import spl.token._layouts as layouts
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 

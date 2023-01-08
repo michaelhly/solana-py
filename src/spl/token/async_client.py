@@ -16,7 +16,7 @@ from solders.rpc.responses import (
 import spl.token.instructions as spl_token
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 from solana.rpc.types import TxOpts

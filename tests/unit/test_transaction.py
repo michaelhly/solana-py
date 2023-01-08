@@ -14,7 +14,7 @@ import solana.transaction as txlib
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 
 def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> txlib.Transaction:

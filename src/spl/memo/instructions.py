@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.transaction import AccountMeta, TransactionInstruction
 
 

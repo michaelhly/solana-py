@@ -58,7 +58,7 @@ from solders.signature import Signature
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
 from solana.message import Message
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc import types
 from solana.transaction import Transaction
 
@@ -138,7 +138,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_balance(Pubkey([0] * 31 + [1]))).value # doctest: +SKIP
             0
@@ -171,7 +171,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_account_info(Pubkey([0] * 31 + [1]))).value # doctest: +SKIP
             Account(
@@ -203,7 +203,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_account_info_json_parsed(Pubkey([0] * 31 + [1]))).value.owner # doctest: +SKIP
             Pubkey(
@@ -351,7 +351,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
             >>> (await solana_client.get_signatures_for_address(pubkey, limit=1)).value[0].signature # doctest: +SKIP
             Signature(
@@ -572,7 +572,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> (await solana_client.get_multiple_accounts(pubkeys)).value[0].lamports # doctest: +SKIP
@@ -595,7 +595,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> asyncio.run(solana_client.get_multiple_accounts(pubkeys)).value[0].lamports # doctest: +SKIP
@@ -941,7 +941,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.publickey import PublicKey
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.request_airdrop(Pubkey([0] * 31 + [1]), 10000)).value # doctest: +SKIP
             Signature(

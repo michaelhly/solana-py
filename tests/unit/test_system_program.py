@@ -4,7 +4,7 @@ import base64
 import solana.system_program as sp
 import solana.transaction as txlib
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 
 def test_create_account():

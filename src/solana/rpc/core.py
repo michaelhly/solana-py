@@ -83,7 +83,7 @@ from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.message import Message
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc import types
 from solana.transaction import Transaction
 

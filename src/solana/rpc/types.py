@@ -3,7 +3,7 @@ from typing import NamedTuple, NewType, Optional
 
 from typing_extensions import TypedDict  # noqa: F401
 
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 from .commitment import Commitment, Finalized
 

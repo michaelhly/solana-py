@@ -22,7 +22,7 @@ from websockets.legacy.client import WebSocketClientProtocol
 
 from solana import system_program as sp
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
 from solana.rpc.websocket_api import SolanaWsClientProtocol, connect

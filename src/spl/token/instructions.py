@@ -3,7 +3,7 @@
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.system_program import SYS_PROGRAM_ID
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, TransactionInstruction

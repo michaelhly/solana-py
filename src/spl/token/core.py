@@ -9,7 +9,7 @@ from solders.rpc.responses import GetAccountInfoResp
 import solana.system_program as sp
 import spl.token.instructions as spl_token
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment

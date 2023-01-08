@@ -6,7 +6,7 @@ from typing import NamedTuple
 from solders.pubkey import Pubkey
 
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.transaction import AccountMeta, TransactionInstruction
 
 VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
@@ -32,7 +32,7 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Transac
 
     Example:
 
-        >>> from solana.publickey import PublicKey
+        >>> from solders.pubkey import Pubkey
         >>> from solana.keypair import Keypair
         >>> vote = Pubkey([0] * 31 + [1])
         >>> withdrawer = Keypair.from_seed(bytes([0]*32))

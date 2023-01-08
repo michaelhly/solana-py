@@ -9,7 +9,7 @@ from solders.rpc.requests import GetSignaturesForAddress
 from solders.signature import Signature
 
 from solana.exceptions import SolanaRpcException
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.commitment import Finalized
 
 
