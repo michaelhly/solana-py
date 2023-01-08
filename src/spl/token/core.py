@@ -26,13 +26,13 @@ if TYPE_CHECKING:
 class AccountInfo(NamedTuple):
     """Information about an account."""
 
-    mint: PublicKey
+    mint: Pubkey
     """The mint associated with this account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of this account."""
     amount: int
     """Amount of tokens this account holds."""
-    delegate: Optional[PublicKey]
+    delegate: Optional[Pubkey]
     """The delegate for this account."""
     delegated_amount: int
     """The amount of tokens the delegate authorized to the delegate."""
@@ -48,14 +48,14 @@ class AccountInfo(NamedTuple):
     This value logs the rent-exempt reserve which must remain in the balance
     until the account is closed.
     """
-    close_authority: Optional[PublicKey]
+    close_authority: Optional[Pubkey]
     """Optional authority to close the account."""
 
 
 class MintInfo(NamedTuple):
     """Information about the mint."""
 
-    mint_authority: Optional[PublicKey]
+    mint_authority: Optional[Pubkey]
     """"Optional authority used to mint new tokens.
 
     The mint authority may only be provided during mint creation. If no mint
@@ -68,28 +68,28 @@ class MintInfo(NamedTuple):
     """Number of base 10 digits to the right of the decimal place."""
     is_initialized: bool
     """Is this mint initialized."""
-    freeze_authority: Optional[PublicKey]
+    freeze_authority: Optional[Pubkey]
     """ Optional authority to freeze token accounts."""
 
 
 class _TokenCore:  # pylint: disable=too-few-public-methods
 
-    pubkey: PublicKey
+    pubkey: Pubkey
     """The public key identifying this mint."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """Program Identifier for the Token program."""
 
     payer: Keypair
     """Fee payer."""
 
-    def __init__(self, pubkey: PublicKey, program_id: PublicKey, payer: Keypair) -> None:
+    def __init__(self, pubkey: Pubkey, program_id: Pubkey, payer: Keypair) -> None:
         """Initialize a client to a SPL-Token program."""
         self.pubkey, self.program_id, self.payer = pubkey, program_id, payer
 
     def _get_accounts_args(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         commitment: Optional[Commitment],
         encoding,
         default_commitment: Commitment,
@@ -101,10 +101,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     def _create_mint_args(
         conn: Union[Client, AsyncClient],
         payer: Keypair,
-        mint_authority: PublicKey,
+        mint_authority: Pubkey,
         decimals: int,
-        program_id: PublicKey,
-        freeze_authority: Optional[PublicKey],
+        program_id: Pubkey,
+        freeze_authority: Optional[Pubkey],
         skip_confirmation: bool,
         balance_needed: int,
         cls: Union[Type[Token], Type[AsyncToken]],
@@ -146,7 +146,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _create_account_args(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         skip_confirmation: bool,
         balance_needed: int,
         commitment: Commitment,
@@ -184,7 +184,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _create_associated_token_account_args(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         skip_confirmation: bool,
         commitment: Commitment,
     ) -> Tuple[PublicKey, Transaction, Keypair, TxOpts]:
@@ -204,8 +204,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _create_wrapped_native_account_args(
-        program_id: PublicKey,
-        owner: PublicKey,
+        program_id: Pubkey,
+        owner: Pubkey,
         payer: Keypair,
         amount: int,
         skip_confirmation: bool,
@@ -252,8 +252,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _transfer_args(
         self,
-        source: PublicKey,
-        dest: PublicKey,
+        source: Pubkey,
+        dest: Pubkey,
         owner: Union[Keypair, PublicKey],
         amount: int,
         multi_signers: Optional[List[Keypair]],
@@ -282,10 +282,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _set_authority_args(
         self,
-        account: PublicKey,
+        account: Pubkey,
         current_authority: Union[Keypair, PublicKey],
         authority_type: spl_token.AuthorityType,
-        new_authority: Optional[PublicKey],
+        new_authority: Optional[Pubkey],
         multi_signers: Optional[List[Keypair]],
         opts: TxOpts,
     ) -> Tuple[Transaction, Keypair, List[Keypair], TxOpts]:
@@ -313,7 +313,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _mint_to_args(
         self,
-        dest: PublicKey,
+        dest: Pubkey,
         mint_authority: Union[Keypair, PublicKey],
         amount: int,
         multi_signers: Optional[List[Keypair]],
@@ -427,8 +427,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _approve_args(
         self,
-        source: PublicKey,
-        delegate: PublicKey,
+        source: Pubkey,
+        delegate: Pubkey,
         owner: Union[Keypair, PublicKey],
         amount: int,
         multi_signers: Optional[List[Keypair]],
@@ -457,7 +457,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _revoke_args(
         self,
-        account: PublicKey,
+        account: Pubkey,
         owner: Union[Keypair, PublicKey],
         multi_signers: Optional[List[Keypair]],
         opts: TxOpts,
@@ -483,8 +483,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _freeze_account_args(
         self,
-        account: PublicKey,
-        authority: Union[PublicKey, Keypair],
+        account: Pubkey,
+        authority: Union[Pubkey, Keypair],
         multi_signers: Optional[List[Keypair]],
         opts: TxOpts,
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
@@ -511,8 +511,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _thaw_account_args(
         self,
-        account: PublicKey,
-        authority: Union[PublicKey, Keypair],
+        account: Pubkey,
+        authority: Union[Pubkey, Keypair],
         multi_signers: Optional[List[Keypair]],
         opts: TxOpts,
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
@@ -539,9 +539,9 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _close_account_args(
         self,
-        account: PublicKey,
-        dest: PublicKey,
-        authority: Union[PublicKey, Keypair],
+        account: Pubkey,
+        dest: Pubkey,
+        authority: Union[Pubkey, Keypair],
         multi_signers: Optional[List[Keypair]],
         opts: TxOpts,
     ) -> Tuple[Transaction, List[Keypair], TxOpts]:
@@ -567,8 +567,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _burn_args(
         self,
-        account: PublicKey,
-        owner: Union[PublicKey, Keypair],
+        account: Pubkey,
+        owner: Union[Pubkey, Keypair],
         amount: int,
         multi_signers: Optional[List[Keypair]],
         opts: TxOpts,
@@ -629,8 +629,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _transfer_checked_args(
         self,
-        source: PublicKey,
-        dest: PublicKey,
+        source: Pubkey,
+        dest: Pubkey,
         owner: Union[Keypair, PublicKey],
         amount: int,
         decimals: int,
@@ -662,7 +662,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _mint_to_checked_args(
         self,
-        dest: PublicKey,
+        dest: Pubkey,
         mint_authority: Union[Keypair, PublicKey],
         amount: int,
         decimals: int,
@@ -693,7 +693,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _burn_checked_args(
         self,
-        account: PublicKey,
+        account: Pubkey,
         owner: Union[Keypair, PublicKey],
         amount: int,
         decimals: int,
@@ -724,8 +724,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _approve_checked_args(
         self,
-        source: PublicKey,
-        delegate: PublicKey,
+        source: Pubkey,
+        delegate: Pubkey,
         owner: Union[Keypair, PublicKey],
         amount: int,
         decimals: int,

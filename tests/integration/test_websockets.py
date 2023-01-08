@@ -210,7 +210,7 @@ async def test_multiple_subscriptions(
 
 @pytest.mark.integration
 async def test_account_subscribe(
-    test_http_client_async: AsyncClient, websocket: SolanaWsClientProtocol, account_subscribed: PublicKey
+    test_http_client_async: AsyncClient, websocket: SolanaWsClientProtocol, account_subscribed: Pubkey
 ):
     """Test account subscription."""
     await test_http_client_async.request_airdrop(account_subscribed, AIRDROP_AMOUNT)

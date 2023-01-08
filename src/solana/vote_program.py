@@ -9,7 +9,7 @@ from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, Instruct
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, TransactionInstruction
 
-VOTE_PROGRAM_ID: PublicKey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
+VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
 """Public key that identifies the Vote program."""
 
 
@@ -17,13 +17,13 @@ VOTE_PROGRAM_ID: PublicKey = Pubkey.from_string("Vote111111111111111111111111111
 class WithdrawFromVoteAccountParams(NamedTuple):
     """Transfer SOL from vote account to identity."""
 
-    vote_account_from_pubkey: PublicKey
+    vote_account_from_pubkey: Pubkey
     """"""
-    to_pubkey: PublicKey
+    to_pubkey: Pubkey
     """"""
     lamports: int
     """"""
-    withdrawer: PublicKey
+    withdrawer: Pubkey
     """"""
 
 

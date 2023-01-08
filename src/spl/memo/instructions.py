@@ -10,9 +10,9 @@ from solana.transaction import AccountMeta, TransactionInstruction
 class MemoParams(NamedTuple):
     """Create memo transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """Memo program account."""
-    signer: PublicKey
+    signer: Pubkey
     """Signing account."""
     message: bytes
     """Memo message in bytes."""

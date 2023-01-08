@@ -22,7 +22,7 @@ from .utils import AIRDROP_AMOUNT, assert_valid_response
 
 @pytest.mark.integration
 async def test_request_air_drop(
-    async_stubbed_sender: Keypair, async_stubbed_receiver: PublicKey, test_http_client_async: AsyncClient
+    async_stubbed_sender: Keypair, async_stubbed_receiver: Pubkey, test_http_client_async: AsyncClient
 ):
     """Test air drop to async_stubbed_sender and async_stubbed_receiver."""
     # Airdrop to stubbed_sender
@@ -112,7 +112,7 @@ async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stub
 
 
 @pytest.mark.integration
-async def test_send_bad_transaction(stubbed_receiver: PublicKey, test_http_client_async: AsyncClient):
+async def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client_async: AsyncClient):
     """Test sending a transaction that errors."""
     poor_account = Keypair()
     airdrop_amount = 1000000

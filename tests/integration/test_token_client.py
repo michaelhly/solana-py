@@ -47,16 +47,14 @@ def test_token(stubbed_sender, freeze_authority, test_http_client) -> Token:
 
 @pytest.mark.integration
 @pytest.fixture(scope="module")
-def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> PublicKey:  # pylint: disable=redefined-outer-name
+def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> Pubkey:  # pylint: disable=redefined-outer-name
     """Token account for stubbed sender."""
     return test_token.create_account(stubbed_sender.public_key)
 
 
 @pytest.mark.integration
 @pytest.fixture(scope="module")
-def stubbed_receiver_token_account_pk(
-    stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
-) -> PublicKey:
+def stubbed_receiver_token_account_pk(stubbed_receiver, test_token) -> Pubkey:  # pylint: disable=redefined-outer-name
     """Token account for stubbed receiver."""
     return test_token.create_account(stubbed_receiver)
 

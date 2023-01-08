@@ -127,7 +127,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.is_connected()
 
-    def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
+    def get_balance(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
         """Returns the balance of the account of provided Pubkey.
 
         Args:
@@ -145,7 +145,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_account_info(
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -184,7 +184,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_account_info_json_parsed(
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
     ) -> GetAccountInfoMaybeJsonParsedResp:
         """Returns all the account info for the specified public key in parsed JSON format.
@@ -323,7 +323,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_signatures_for_address(
         self,
-        account: PublicKey,
+        account: Pubkey,
         before: Optional[Signature] = None,
         until: Optional[Signature] = None,
         limit: Optional[int] = None,
@@ -602,7 +602,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -640,7 +640,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_program_accounts_json_parsed(  # pylint: disable=too-many-arguments
         self,
-        pubkey: PublicKey,
+        pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
     ) -> GetProgramAccountsMaybeJsonParsedResp:
@@ -749,7 +749,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetSlotLeaderResp)
 
     def get_stake_activation(
-        self, pubkey: PublicKey, epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, epoch: Optional[int] = None, commitment: Optional[Commitment] = None
     ) -> GetStakeActivationResp:
         """Returns epoch activation information for a stake account.
 
@@ -782,7 +782,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetSupplyResp)
 
     def get_token_account_balance(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, commitment: Optional[Commitment] = None
     ) -> GetTokenAccountBalanceResp:
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
@@ -801,7 +801,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_delegate(
         self,
-        delegate: PublicKey,
+        delegate: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateResp:
@@ -817,7 +817,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_delegate_json_parsed(
         self,
-        delegate: PublicKey,
+        delegate: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateJsonParsedResp:
@@ -833,7 +833,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_owner(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerResp:
@@ -849,7 +849,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_token_accounts_by_owner_json_parsed(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerJsonParsedResp:
@@ -864,13 +864,13 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetTokenAccountsByOwnerJsonParsedResp)
 
     def get_token_largest_accounts(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, commitment: Optional[Commitment] = None
     ) -> GetTokenLargestAccountsResp:
         """Returns the 20 largest accounts of a particular SPL Token type."""
         body = self._get_token_largest_accounts_body(pubkey, commitment)
         return self._provider.make_request(body, GetTokenLargestAccountsResp)
 
-    def get_token_supply(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> GetTokenSupplyResp:
+    def get_token_supply(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetTokenSupplyResp:
         """Returns the total supply of an SPL Token type."""
         body = self._get_token_supply_body(pubkey, commitment)
         return self._provider.make_request(body, GetTokenSupplyResp)
@@ -926,7 +926,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetVoteAccountsResp)
 
     def request_airdrop(
-        self, pubkey: PublicKey, lamports: int, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey, lamports: int, commitment: Optional[Commitment] = None
     ) -> RequestAirdropResp:
         """Requests an airdrop of lamports to a Pubkey.
 

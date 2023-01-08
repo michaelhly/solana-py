@@ -31,35 +31,35 @@ class InitializeMintParams(NamedTuple):
 
     decimals: int
     """Number of base 10 digits to the right of the decimal place."""
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    mint_authority: PublicKey
+    mint_authority: Pubkey
     """The authority/multisignature to mint tokens."""
-    freeze_authority: Optional[PublicKey] = None
+    freeze_authority: Optional[Pubkey] = None
     """The freeze authority/multisignature of the mint."""
 
 
 class InitializeAccountParams(NamedTuple):
     """Initialize token account transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    account: PublicKey
+    account: Pubkey
     """Public key of the new account."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the new account."""
 
 
 class InitializeMultisigParams(NamedTuple):
     """Initialize multisig token account transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    multisig: PublicKey
+    multisig: Pubkey
     """New multisig account address."""
     m: int
     """The number of signers (M) required to validate this multisignature account."""
@@ -70,13 +70,13 @@ class InitializeMultisigParams(NamedTuple):
 class TransferParams(NamedTuple):
     """Transfer token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    source: PublicKey
+    source: Pubkey
     """Source account."""
-    dest: PublicKey
+    dest: Pubkey
     """Destination account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the source account."""
     amount: int
     """Number of tokens to transfer."""
@@ -87,13 +87,13 @@ class TransferParams(NamedTuple):
 class ApproveParams(NamedTuple):
     """Approve token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    source: PublicKey
+    source: Pubkey
     """Source account."""
-    delegate: PublicKey
+    delegate: Pubkey
     """Delegate account authorized to perform a transfer of tokens from the source account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the source account."""
     amount: int
     """Maximum number of tokens the delegate may transfer."""
@@ -104,11 +104,11 @@ class ApproveParams(NamedTuple):
 class RevokeParams(NamedTuple):
     """Revoke token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    account: PublicKey
+    account: Pubkey
     """Source account for which transfer authority is being revoked."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the source account."""
     signers: List[PublicKey] = []
     """Signing accounts if `owner` is a multiSig."""
@@ -117,30 +117,30 @@ class RevokeParams(NamedTuple):
 class SetAuthorityParams(NamedTuple):
     """Set token authority transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    account: PublicKey
+    account: Pubkey
     """Public key of the token account."""
     authority: AuthorityType
     """The type of authority to update."""
-    current_authority: PublicKey
+    current_authority: Pubkey
     """Current authority of the specified type."""
     signers: List[PublicKey] = []
     """Signing accounts if `current_authority` is a multiSig."""
-    new_authority: Optional[PublicKey] = None
+    new_authority: Optional[Pubkey] = None
     """New authority of the account."""
 
 
 class MintToParams(NamedTuple):
     """Mint token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    dest: PublicKey
+    dest: Pubkey
     """Public key of the account to mint to."""
-    mint_authority: PublicKey
+    mint_authority: Pubkey
     """The mint authority."""
     amount: int
     """Amount to mint."""
@@ -151,13 +151,13 @@ class MintToParams(NamedTuple):
 class BurnParams(NamedTuple):
     """Burn token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    account: PublicKey
+    account: Pubkey
     """Account to burn tokens from."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the account."""
     amount: int
     """Amount to burn."""
@@ -168,13 +168,13 @@ class BurnParams(NamedTuple):
 class CloseAccountParams(NamedTuple):
     """Close token account transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    account: PublicKey
+    account: Pubkey
     """Address of account to close."""
-    dest: PublicKey
+    dest: Pubkey
     """Address of account to receive the remaining balance of the closed account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the account."""
     signers: List[PublicKey] = []
     """Signing accounts if `owner` is a multiSig"""
@@ -183,13 +183,13 @@ class CloseAccountParams(NamedTuple):
 class FreezeAccountParams(NamedTuple):
     """Freeze token account transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    account: PublicKey
+    account: Pubkey
     """Account to freeze."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    authority: PublicKey
+    authority: Pubkey
     """Mint freeze authority"""
     multi_signers: List[PublicKey] = []
     """Signing accounts if `authority` is a multiSig"""
@@ -198,13 +198,13 @@ class FreezeAccountParams(NamedTuple):
 class ThawAccountParams(NamedTuple):
     """Thaw token account transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    account: PublicKey
+    account: Pubkey
     """Account to thaw."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    authority: PublicKey
+    authority: Pubkey
     """Mint freeze authority"""
     multi_signers: List[PublicKey] = []
     """Signing accounts if `authority` is a multiSig"""
@@ -213,15 +213,15 @@ class ThawAccountParams(NamedTuple):
 class TransferCheckedParams(NamedTuple):
     """TransferChecked token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    source: PublicKey
+    source: Pubkey
     """Source account."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    dest: PublicKey
+    dest: Pubkey
     """Destination account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the source account."""
     amount: int
     """Number of tokens to transfer."""
@@ -234,15 +234,15 @@ class TransferCheckedParams(NamedTuple):
 class ApproveCheckedParams(NamedTuple):
     """ApproveChecked token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    source: PublicKey
+    source: Pubkey
     """Source account."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    delegate: PublicKey
+    delegate: Pubkey
     """Delegate account authorized to perform a transfer of tokens from the source account."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the source account."""
     amount: int
     """Maximum number of tokens the delegate may transfer."""
@@ -255,13 +255,13 @@ class ApproveCheckedParams(NamedTuple):
 class MintToCheckedParams(NamedTuple):
     """MintToChecked token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    dest: PublicKey
+    dest: Pubkey
     """Public key of the account to mint to."""
-    mint_authority: PublicKey
+    mint_authority: Pubkey
     """The mint authority."""
     amount: int
     """Amount to mint."""
@@ -274,13 +274,13 @@ class MintToCheckedParams(NamedTuple):
 class BurnCheckedParams(NamedTuple):
     """BurnChecked token transaction params."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     """SPL Token program account."""
-    mint: PublicKey
+    mint: Pubkey
     """Public key of the minter account."""
-    account: PublicKey
+    account: Pubkey
     """Account to burn tokens from."""
-    owner: PublicKey
+    owner: Pubkey
     """Owner of the account."""
     amount: int
     """Amount to burn."""
@@ -621,7 +621,7 @@ def decode_burn_checked(instruction: TransactionInstruction) -> BurnCheckedParam
     )
 
 
-def __add_signers(keys: List[AccountMeta], owner: PublicKey, signers: List[PublicKey]) -> None:
+def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[PublicKey]) -> None:
     if signers:
         keys.append(AccountMeta(pubkey=owner, is_signer=False, is_writable=False))
         for signer in signers:
@@ -1144,7 +1144,7 @@ def burn_checked(params: BurnCheckedParams) -> TransactionInstruction:
     return __burn_instruction(params, data)
 
 
-def get_associated_token_address(owner: PublicKey, mint: PublicKey) -> PublicKey:
+def get_associated_token_address(owner: Pubkey, mint: Pubkey) -> Pubkey:
     """Derives the associated token address for the given wallet address and token mint.
 
     Returns:
@@ -1156,7 +1156,7 @@ def get_associated_token_address(owner: PublicKey, mint: PublicKey) -> PublicKey
     return key
 
 
-def create_associated_token_account(payer: PublicKey, owner: PublicKey, mint: PublicKey) -> TransactionInstruction:
+def create_associated_token_account(payer: Pubkey, owner: Pubkey, mint: Pubkey) -> TransactionInstruction:
     """Creates a transaction instruction to create an associated token account.
 
     Returns:

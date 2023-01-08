@@ -47,9 +47,7 @@ async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -
 
 @pytest.mark.integration
 @pytest.fixture(scope="module")
-async def stubbed_sender_token_account_pk(
-    stubbed_sender, test_token  # pylint: disable=redefined-outer-name
-) -> PublicKey:
+async def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> Pubkey:  # pylint: disable=redefined-outer-name
     """Token account for stubbed sender."""
     return await test_token.create_account(stubbed_sender.public_key)
 
@@ -58,7 +56,7 @@ async def stubbed_sender_token_account_pk(
 @pytest.fixture(scope="module")
 async def async_stubbed_receiver_token_account_pk(
     async_stubbed_receiver, test_token  # pylint: disable=redefined-outer-name
-) -> PublicKey:
+) -> Pubkey:
     """Token account for stubbed receiver."""
     return await test_token.create_account(async_stubbed_receiver)
 

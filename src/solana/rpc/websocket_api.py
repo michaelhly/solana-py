@@ -105,7 +105,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         return self._process_rpc_response(cast(str, data))
 
     async def account_subscribe(
-        self, pubkey: PublicKey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
+        self, pubkey: Pubkey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
     ) -> None:
         """Subscribe to an account to receive notifications when the lamports or data change.
 
@@ -172,7 +172,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
 
     async def program_subscribe(  # pylint: disable=too-many-arguments
         self,
-        program_id: PublicKey,
+        program_id: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
         data_slice: Optional[types.DataSliceOpts] = None,

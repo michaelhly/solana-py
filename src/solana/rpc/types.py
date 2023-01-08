@@ -47,9 +47,9 @@ class TokenAccountOpts(NamedTuple):
     Provide one of mint or program_id.
     """
 
-    mint: Optional[PublicKey] = None
+    mint: Optional[Pubkey] = None
     """Public key of the specific token Mint to limit accounts to."""
-    program_id: Optional[PublicKey] = None
+    program_id: Optional[Pubkey] = None
     """Public key of the Token program ID that owns the accounts."""
     encoding: str = "base64"
     """Encoding for Account data, either "base58" (slow) or "base64"."""
