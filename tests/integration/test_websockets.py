@@ -17,12 +17,12 @@ from solders.rpc.responses import (
     SubscriptionResult,
     VoteNotification,
 )
+from solders.pubkey import Pubkey
 from solders.system_program import ID as SYS_PROGRAM_ID
 from websockets.legacy.client import WebSocketClientProtocol
 
 from solana import system_program as sp
 from solana.keypair import Keypair
-from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
 from solana.rpc.websocket_api import SolanaWsClientProtocol, connect

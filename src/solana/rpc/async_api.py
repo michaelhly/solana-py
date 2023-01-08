@@ -54,11 +54,11 @@ from solders.rpc.responses import (
     ValidatorExitResp,
 )
 from solders.signature import Signature
+from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
 from solana.message import Message
-from solders.pubkey import Pubkey
 from solana.rpc import types
 from solana.transaction import Transaction
 

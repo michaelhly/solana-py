@@ -14,11 +14,11 @@ import solana.transaction as txlib
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
-from solders.pubkey import Pubkey
 
 
 def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> txlib.Transaction:
-    ix = txlib.TransactionInstruction(
+    """Example tx for testing."""
+    ixn = txlib.TransactionInstruction(
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         keys=[
@@ -27,7 +27,7 @@ def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> t
             txlib.AccountMeta(kp2.public_key, True, True),
         ],
     )
-    return txlib.Transaction(fee_payer=kp0.public_key, instructions=[ix], recent_blockhash=stubbed_blockhash)
+    return txlib.Transaction(fee_payer=kp0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash)
 
 
 def test_to_solders(stubbed_blockhash: Blockhash) -> None:
@@ -51,7 +51,7 @@ def test_sign_partial(stubbed_blockhash):
     keypair0 = Keypair()
     keypair1 = Keypair()
     keypair2 = Keypair()
-    ix = txlib.TransactionInstruction(
+    ixn = txlib.TransactionInstruction(
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         keys=[
@@ -60,20 +60,21 @@ def test_sign_partial(stubbed_blockhash):
             txlib.AccountMeta(keypair2.public_key, True, True),
         ],
     )
-    tx = txlib.Transaction(fee_payer=keypair0.public_key, instructions=[ix], recent_blockhash=stubbed_blockhash)
-    assert tx._solders.message.header.num_required_signatures == 3
-    tx.sign_partial(keypair0, keypair2)
-    assert not tx._solders.is_signed()
-    tx.sign_partial(keypair1)
-    assert tx._solders.is_signed()
+    txn = txlib.Transaction(fee_payer=keypair0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash)
+    assert txn.to_solders().message.header.num_required_signatures == 3
+    txn.sign_partial(keypair0, keypair2)
+    assert not txn.to_solders().is_signed()
+    txn.sign_partial(keypair1)
+    assert txn.to_solders().is_signed()
     expected_tx = txlib.Transaction(
-        fee_payer=keypair0.public_key, instructions=[ix], recent_blockhash=stubbed_blockhash
+        fee_payer=keypair0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash
     )
     expected_tx.sign(keypair0, keypair1, keypair2)
-    assert tx == expected_tx
+    assert txn == expected_tx
 
 
 def test_recent_blockhash_setter(stubbed_blockhash):
+    """Test the recent_blockhash setter property works."""
     kp0, kp1, kp2 = Keypair(), Keypair(), Keypair()
     tx0 = example_tx(stubbed_blockhash, kp0, kp1, kp2)
     tx1 = example_tx(stubbed_blockhash, kp0, kp1, kp2)
@@ -205,10 +206,7 @@ def test_serialize_unsigned_transaction_without_verifying_signatures(
 
 
 def test_sort_account_metas(stubbed_blockhash):
-    """
-    Test AccountMeta sorting after calling Transaction.compile_message()
-    """
-
+    """Test AccountMeta sorting after calling Transaction.compile_message()."""
     # S6EA7XsNyxg4yx4DJRMm7fP21jgZb1fuzBAUGhgVtkP
     signer_one = Keypair.from_seed(
         bytes(
@@ -450,11 +448,9 @@ def test_sort_account_metas(stubbed_blockhash):
     )
 
     fee_payer = signer_one
-    sorted_signers = sorted([x.public_key for x in [signer_one, signer_two, signer_three]], key=lambda x: str(x))
+    sorted_signers = sorted([x.public_key for x in [signer_one, signer_two, signer_three]], key=str)
     sorted_signers_excluding_fee_payer = [x for x in sorted_signers if str(x) != str(fee_payer.public_key)]
-    sorted_receivers = sorted(
-        [x.public_key for x in [receiver_one, receiver_two, receiver_three]], key=lambda x: str(x)
-    )
+    sorted_receivers = sorted([x.public_key for x in [receiver_one, receiver_two, receiver_three]], key=str)
 
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash)
     txn.fee_payer = fee_payer.public_key

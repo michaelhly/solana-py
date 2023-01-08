@@ -1,9 +1,9 @@
 # pylint: disable=R0401
 """Tests for the SPL Token Client."""
 import pytest
+from solders.pubkey import Pubkey
 
 import spl.token._layouts as layouts
-from solders.pubkey import Pubkey
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 

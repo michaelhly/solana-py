@@ -6,7 +6,6 @@ from typing import NamedTuple
 from solders.pubkey import Pubkey
 
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
-from solders.pubkey import Pubkey
 from solana.transaction import AccountMeta, TransactionInstruction
 
 VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
