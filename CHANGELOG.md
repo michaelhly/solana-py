@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.29.0] - Unreleased
+
+## Changed
+
+- Remove the `publickey` module entirely in favour of Solders. Where previously you used `solana.publickey.PublicKey`, now you will use `solders.pubkey.Pubkey`. The duplication between solana-py and Solders was causing confusion.
+
 ## [0.28.1] - 2022-12-29
 
 ## Fixed
