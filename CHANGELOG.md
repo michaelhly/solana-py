@@ -4,9 +4,10 @@
 
 ## Changed
 
-- Remove the `publickey` module entirely in favour of Solders. Where previously you used `solana.publickey.PublicKey`, now you will use `solders.pubkey.Pubkey`. The duplication between solana-py and Solders was causing confusion.
-- Remove `solana.transaction.AccountMeta` in favour of `solders.instruction.AccountMeta`.
-- Remove `solana.transaction.TransactionInstruction` in favour of `solders.instruction.Instruction`.
+- Remove redundant classes [(#329)](https://github.com/michaelhly/solana-py/pull/329):
+    - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
+    - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
+    - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
 
 ## [0.28.1] - 2022-12-29
 
