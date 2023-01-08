@@ -45,4 +45,4 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     ixn = resp2_transaction.transaction.message.instructions[0]
     assert isinstance(ixn, ParsedInstruction)
     assert ixn.parsed == raw_message
-    assert ixn.program_id == MEMO_PROGRAM_ID.to_solders()
+    assert ixn.program_id == MEMO_PROGRAM_ID

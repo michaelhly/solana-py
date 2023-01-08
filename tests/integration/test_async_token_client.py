@@ -34,7 +34,7 @@ async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -
 
     resp = await test_http_client_async.get_account_info(token_client.pubkey)
     assert_valid_response(resp)
-    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
+    assert resp.value.owner == TOKEN_PROGRAM_ID
 
     mint_data = layouts.MINT_LAYOUT.parse(resp.value.data)
     assert mint_data.is_initialized
@@ -67,7 +67,7 @@ async def test_new_account(stubbed_sender, test_http_client_async, test_token): 
     token_account_pk = await test_token.create_account(stubbed_sender.public_key)
     resp = await test_http_client_async.get_account_info(token_account_pk)
     assert_valid_response(resp)
-    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
+    assert resp.value.owner == TOKEN_PROGRAM_ID
 
     account_data = layouts.ACCOUNT_LAYOUT.parse(resp.value.data)
     assert account_data.state
@@ -426,7 +426,7 @@ async def test_create_multisig(
     )
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
-    assert resp.value.owner == TOKEN_PROGRAM_ID.to_solders()
+    assert resp.value.owner == TOKEN_PROGRAM_ID
 
     multisig_data = layouts.MULTISIG_LAYOUT.parse(resp.value.data)
     assert multisig_data.is_initialized

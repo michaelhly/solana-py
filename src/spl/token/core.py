@@ -345,7 +345,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         if value is None:
             raise ValueError("Failed to find mint account")
         owner = value.owner
-        if owner != self.program_id.to_solders():
+        if owner != self.program_id:
             raise AttributeError(f"Invalid mint owner: {owner}")
 
         bytes_data = value.data
@@ -374,7 +374,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         value = info.value
         if value is None:
             raise ValueError("Invalid account owner")
-        if value.owner != self.program_id.to_solders():
+        if value.owner != self.program_id:
             raise AttributeError("Invalid account owner")
 
         bytes_data = value.data

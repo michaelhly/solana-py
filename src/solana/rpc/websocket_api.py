@@ -205,7 +205,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
                 None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
             )
             config = RpcProgramAccountsConfig(account_config, filters_to_use)
-        req = ProgramSubscribe(program_id.to_solders(), config, req_id)
+        req = ProgramSubscribe(program_id, config, req_id)
         await self.send_data(req)
 
     async def program_unsubscribe(

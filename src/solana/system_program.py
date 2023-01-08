@@ -56,7 +56,7 @@ class CreateAccountParams(NamedTuple):
             to_pubkey=self.new_account_pubkey,
             lamports=self.lamports,
             space=self.space,
-            owner=self.program_id.to_solders(),
+            owner=self.program_id,
         )
 
 
@@ -130,7 +130,7 @@ class AssignParams(NamedTuple):
         """
         return ssp.AssignParams(
             pubkey=self.account_pubkey,
-            owner=self.program_id.to_solders(),
+            owner=self.program_id,
         )
 
 
@@ -185,7 +185,7 @@ class CreateAccountWithSeedParams(NamedTuple):
             seed=self.seed,
             lamports=self.lamports,
             space=self.space,
-            owner=self.program_id.to_solders(),
+            owner=self.program_id,
         )
 
 
@@ -449,7 +449,7 @@ class AllocateWithSeedParams(NamedTuple):
             base=self.base_pubkey,
             seed=self.seed,
             space=self.space,
-            owner=self.program_id.to_solders(),
+            owner=self.program_id,
         )
 
 
@@ -492,7 +492,7 @@ class AssignWithSeedParams(NamedTuple):
             address=self.account_pubkey,
             base=self.base_pubkey,
             seed=self.seed,
-            owner=self.program_id.to_solders(),
+            owner=self.program_id,
         )
 
 

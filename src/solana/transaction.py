@@ -92,7 +92,7 @@ class TransactionInstruction(NamedTuple):
             The `solders` instruction.
         """
         accounts = [key.to_solders() for key in self.keys]
-        return instruction.Instruction(program_id=self.program_id.to_solders(), data=self.data, accounts=accounts)
+        return instruction.Instruction(program_id=self.program_id, data=self.data, accounts=accounts)
 
 
 class NonceInformation(NamedTuple):
