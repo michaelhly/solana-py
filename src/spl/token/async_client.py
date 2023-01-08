@@ -336,7 +336,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         self,
         source: Pubkey,
         dest: Pubkey,
-        owner: Union[Keypair, PublicKey],
+        owner: Union[Keypair, Pubkey],
         amount: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
@@ -406,7 +406,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     async def set_authority(
         self,
         account: Pubkey,
-        current_authority: Union[Keypair, PublicKey],
+        current_authority: Union[Keypair, Pubkey],
         authority_type: spl_token.AuthorityType,
         new_authority: Optional[Pubkey] = None,
         multi_signers: Optional[List[Keypair]] = None,
@@ -433,7 +433,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     async def mint_to(
         self,
         dest: Pubkey,
-        mint_authority: Union[Keypair, PublicKey],
+        mint_authority: Union[Keypair, Pubkey],
         amount: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
