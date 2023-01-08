@@ -19,10 +19,10 @@ from solana.message import CompiledInstruction, Message, MessageArgs, MessageHea
 
 def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> txlib.Transaction:
     """Example tx for testing."""
-    ixn = txlib.TransactionInstruction(
+    ixn = txlib.Instruction(
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
-        keys=[
+        accounts=[
             AccountMeta(kp0.public_key, True, True),
             AccountMeta(kp1.public_key, True, True),
             AccountMeta(kp2.public_key, True, True),
@@ -52,10 +52,10 @@ def test_sign_partial(stubbed_blockhash):
     keypair0 = Keypair()
     keypair1 = Keypair()
     keypair2 = Keypair()
-    ixn = txlib.TransactionInstruction(
+    ixn = txlib.Instruction(
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
-        keys=[
+        accounts=[
             AccountMeta(keypair0.public_key, True, True),
             AccountMeta(keypair1.public_key, True, True),
             AccountMeta(keypair2.public_key, True, True),

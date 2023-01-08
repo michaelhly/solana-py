@@ -4,10 +4,9 @@ from __future__ import annotations
 from typing import NamedTuple
 
 from solders.pubkey import Pubkey
-from solders.instruction import AccountMeta
+from solders.instruction import AccountMeta, Instruction
 
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
-from solana.transaction import TransactionInstruction
 
 VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
 """Public key that identifies the Vote program."""
@@ -27,7 +26,7 @@ class WithdrawFromVoteAccountParams(NamedTuple):
     """"""
 
 
-def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> TransactionInstruction:
+def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Instruction:
     """Generate an instruction that transfers lamports from a vote account to any other.
 
     Example:
@@ -45,7 +44,7 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Transac
         ...    )
         ... )
         >>> type(instruction)
-        <class 'solana.transaction.TransactionInstruction'>
+        <class 'solders.instruction.Instruction'>
 
     Returns:
         The generated instruction.
@@ -54,8 +53,8 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Transac
         dict(instruction_type=InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT, args=dict(lamports=params.lamports))
     )
 
-    return TransactionInstruction(
-        keys=[
+    return Instruction(
+        accounts=[
             AccountMeta(pubkey=params.vote_account_from_pubkey, is_signer=False, is_writable=True),
             AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
             AccountMeta(pubkey=params.withdrawer, is_signer=True, is_writable=True),

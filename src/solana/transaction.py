@@ -4,17 +4,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, List, NamedTuple, NewType, Optional, Sequence, Tuple, Union
 
-from solders import instruction
 from solders.hash import Hash
-from solders.instruction import AccountMeta
-from solders.instruction import Instruction
+from solders.instruction import AccountMeta, Instruction
 from solders.message import Message as SoldersMessage
 from solders.presigner import Presigner
 from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
 from solders.pubkey import Pubkey
-from solders.instruction import Instruction
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair

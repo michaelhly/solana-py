@@ -196,7 +196,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         )
         txn.add(create_txn)
         return (
-            create_txn.keys[1].pubkey,
+            create_txn.accounts[1].pubkey,
             txn,
             self.payer,
             TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),

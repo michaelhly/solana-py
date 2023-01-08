@@ -5,8 +5,9 @@ from typing import NamedTuple, Union
 
 from solders import system_program as ssp
 from solders.pubkey import Pubkey
+from solders.instruction import Instruction
 
-from solana.transaction import Transaction, TransactionInstruction
+from solana.transaction import Transaction
 
 SYS_PROGRAM_ID: Pubkey = ssp.ID
 """Public key that identifies the System program."""
@@ -496,7 +497,7 @@ class AssignWithSeedParams(NamedTuple):
         )
 
 
-def decode_create_account(instruction: TransactionInstruction) -> CreateAccountParams:
+def decode_create_account(instruction: Instruction) -> CreateAccountParams:
     """Decode a create account system instruction and retrieve the instruction params.
 
     Args:
@@ -527,7 +528,7 @@ def decode_create_account(instruction: TransactionInstruction) -> CreateAccountP
     return CreateAccountParams.from_solders(ssp.decode_create_account(instruction.to_solders()))
 
 
-def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
+def decode_transfer(instruction: Instruction) -> TransferParams:
     """Decode a transfer system instruction and retrieve the instruction params.
 
     Args:
@@ -554,7 +555,7 @@ def decode_transfer(instruction: TransactionInstruction) -> TransferParams:
     return TransferParams.from_solders(ssp.decode_transfer(instruction.to_solders()))
 
 
-def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
+def decode_allocate(instruction: Instruction) -> AllocateParams:
     """Decode an allocate system instruction and retrieve the instruction params.
 
     Args:
@@ -579,7 +580,7 @@ def decode_allocate(instruction: TransactionInstruction) -> AllocateParams:
     return AllocateParams.from_solders(ssp.decode_allocate(instruction.to_solders()))
 
 
-def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWithSeedParams:
+def decode_allocate_with_seed(instruction: Instruction) -> AllocateWithSeedParams:
     """Decode an allocate with seed system instruction and retrieve the instruction params.
 
     Args:
@@ -614,7 +615,7 @@ def decode_allocate_with_seed(instruction: TransactionInstruction) -> AllocateWi
     return AllocateWithSeedParams.from_solders(ssp.decode_allocate_with_seed(instruction.to_solders()))
 
 
-def decode_assign(instruction: TransactionInstruction) -> AssignParams:
+def decode_assign(instruction: Instruction) -> AssignParams:
     """Decode an assign system instruction and retrieve the instruction params.
 
     Args:
@@ -641,7 +642,7 @@ def decode_assign(instruction: TransactionInstruction) -> AssignParams:
     return AssignParams.from_solders(ssp.decode_assign(instruction.to_solders()))
 
 
-def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSeedParams:
+def decode_assign_with_seed(instruction: Instruction) -> AssignWithSeedParams:
     """Decode an assign system with seed instruction and retrieve the instruction params.
 
     Args:
@@ -653,7 +654,7 @@ def decode_assign_with_seed(instruction: TransactionInstruction) -> AssignWithSe
     return AssignWithSeedParams.from_solders(ssp.decode_assign_with_seed(instruction.to_solders()))
 
 
-def decode_create_account_with_seed(instruction: TransactionInstruction) -> CreateAccountWithSeedParams:
+def decode_create_account_with_seed(instruction: Instruction) -> CreateAccountWithSeedParams:
     """Decode a create account with seed system instruction and retrieve the instruction params.
 
     Args:
@@ -665,7 +666,7 @@ def decode_create_account_with_seed(instruction: TransactionInstruction) -> Crea
     return CreateAccountWithSeedParams.from_solders(ssp.decode_create_account_with_seed(instruction.to_solders()))
 
 
-def decode_nonce_initialize(instruction: TransactionInstruction) -> InitializeNonceParams:
+def decode_nonce_initialize(instruction: Instruction) -> InitializeNonceParams:
     """Decode a nonce initialize system instruction and retrieve the instruction params.
 
     Args:
@@ -677,7 +678,7 @@ def decode_nonce_initialize(instruction: TransactionInstruction) -> InitializeNo
     return InitializeNonceParams.from_solders(ssp.decode_initialize_nonce_account(instruction.to_solders()))
 
 
-def decode_nonce_advance(instruction: TransactionInstruction) -> AdvanceNonceParams:
+def decode_nonce_advance(instruction: Instruction) -> AdvanceNonceParams:
     """Decode a nonce advance system instruction and retrieve the instruction params.
 
     Args:
@@ -689,7 +690,7 @@ def decode_nonce_advance(instruction: TransactionInstruction) -> AdvanceNoncePar
     return AdvanceNonceParams.from_solders(ssp.decode_advance_nonce_account(instruction.to_solders()))
 
 
-def decode_nonce_withdraw(instruction: TransactionInstruction) -> WithdrawNonceParams:
+def decode_nonce_withdraw(instruction: Instruction) -> WithdrawNonceParams:
     """Decode a nonce withdraw system instruction and retrieve the instruction params.
 
     Args:
@@ -701,7 +702,7 @@ def decode_nonce_withdraw(instruction: TransactionInstruction) -> WithdrawNonceP
     return WithdrawNonceParams.from_solders(ssp.decode_withdraw_nonce_account(instruction.to_solders()))
 
 
-def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonceParams:
+def decode_nonce_authorize(instruction: Instruction) -> AuthorizeNonceParams:
     """Decode a nonce authorize system instruction and retrieve the instruction params.
 
     Args:
@@ -714,7 +715,7 @@ def decode_nonce_authorize(instruction: TransactionInstruction) -> AuthorizeNonc
     return AuthorizeNonceParams.from_solders(ssp.decode_authorize_nonce_account(instruction.to_solders()))
 
 
-def create_account(params: CreateAccountParams) -> TransactionInstruction:
+def create_account(params: CreateAccountParams) -> Instruction:
     """Generate an instruction that creates a new account.
 
     Args:
@@ -731,15 +732,15 @@ def create_account(params: CreateAccountParams) -> TransactionInstruction:
         ...         lamports=1, space=1, program_id=program_id)
         ... )
         >>> type(instruction)
-        <class 'solana.transaction.TransactionInstruction'>
+        <class 'solders.instruction.Instruction'>
 
     Returns:
         The instruction to create the account.
     """
-    return TransactionInstruction.from_solders(ssp.create_account(params.to_solders()))
+    return ssp.create_account(params.to_solders())
 
 
-def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInstruction:
+def assign(params: Union[AssignParams, AssignWithSeedParams]) -> Instruction:
     """Generate an instruction that assigns an account to a program.
 
     Args:
@@ -753,17 +754,16 @@ def assign(params: Union[AssignParams, AssignWithSeedParams]) -> TransactionInst
         ...     AssignParams(account_pubkey=account, program_id=program_id)
         ... )
         >>> type(instruction)
-        <class 'solana.transaction.TransactionInstruction'>
+        <class 'solders.instruction.Instruction'>
     """
-    solders_ix = (
+    return (
         ssp.assign(params.to_solders())
         if isinstance(params, AssignParams)
         else ssp.assign_with_seed(params.to_solders())
     )
-    return TransactionInstruction.from_solders(solders_ix)
 
 
-def transfer(params: TransferParams) -> TransactionInstruction:
+def transfer(params: TransferParams) -> Instruction:
     """Generate an instruction that transfers lamports from one account to another.
 
     Args:
@@ -778,18 +778,18 @@ def transfer(params: TransferParams) -> TransactionInstruction:
         ...     TransferParams(from_pubkey=sender, to_pubkey=receiver, lamports=1000)
         ... )
         >>> type(instruction)
-        <class 'solana.transaction.TransactionInstruction'>
+        <class 'solders.instruction.Instruction'>
 
     Returns:
         The transfer instruction.
 
     """
-    return TransactionInstruction.from_solders(ssp.transfer(params.to_solders()))
+    return ssp.transfer(params.to_solders())
 
 
 def create_account_with_seed(
     params: CreateAccountWithSeedParams,
-) -> TransactionInstruction:
+) -> Instruction:
     """Generate a instruction that creates a new account at an address generated with `from`, a seed, and programId.
 
     Args:
@@ -798,7 +798,7 @@ def create_account_with_seed(
     Returns:
         The instruction to create the account.
     """
-    return TransactionInstruction.from_solders(ssp.create_account_with_seed(params.to_solders()))
+    return ssp.create_account_with_seed(params.to_solders())
 
 
 def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAccountWithSeedParams]) -> Transaction:
@@ -826,12 +826,12 @@ def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAcco
             authority=params.authorized_pubkey,
             lamports=params.lamports,
         )
-    create_account_instruction = TransactionInstruction.from_solders(solders_ixs[0])
-    initialize_nonce_instruction = TransactionInstruction.from_solders(solders_ixs[1])
+    create_account_instruction = solders_ixs[0]
+    initialize_nonce_instruction = solders_ixs[1]
     return Transaction(fee_payer=params.from_pubkey).add(create_account_instruction, initialize_nonce_instruction)
 
 
-def nonce_initialization(params: InitializeNonceParams) -> TransactionInstruction:
+def nonce_initialization(params: InitializeNonceParams) -> Instruction:
     """Generate an instruction to initialize a Nonce account.
 
     Args:
@@ -841,10 +841,10 @@ def nonce_initialization(params: InitializeNonceParams) -> TransactionInstructio
         The instruction to initialize the nonce account.
 
     """
-    return TransactionInstruction.from_solders(ssp.initialize_nonce_account(params.to_solders()))
+    return ssp.initialize_nonce_account(params.to_solders())
 
 
-def nonce_advance(params: AdvanceNonceParams) -> TransactionInstruction:
+def nonce_advance(params: AdvanceNonceParams) -> Instruction:
     """Generate an instruction to advance the nonce in a Nonce account.
 
     Args:
@@ -853,10 +853,10 @@ def nonce_advance(params: AdvanceNonceParams) -> TransactionInstruction:
     Returns:
         The instruction to advance the nonce.
     """
-    return TransactionInstruction.from_solders(ssp.advance_nonce_account(params.to_solders()))
+    return ssp.advance_nonce_account(params.to_solders())
 
 
-def nonce_withdraw(params: WithdrawNonceParams) -> TransactionInstruction:
+def nonce_withdraw(params: WithdrawNonceParams) -> Instruction:
     """Generate an instruction that withdraws lamports from a Nonce account.
 
     Args:
@@ -865,10 +865,10 @@ def nonce_withdraw(params: WithdrawNonceParams) -> TransactionInstruction:
     Returns:
         The instruction to withdraw from the nonce account.
     """
-    return TransactionInstruction.from_solders(ssp.withdraw_nonce_account(params.to_solders()))
+    return ssp.withdraw_nonce_account(params.to_solders())
 
 
-def nonce_authorize(params: AuthorizeNonceParams) -> TransactionInstruction:
+def nonce_authorize(params: AuthorizeNonceParams) -> Instruction:
     """Generate an instruction that authorizes a new pubkey as the authority on a Nonce account.
 
     Args:
@@ -877,10 +877,10 @@ def nonce_authorize(params: AuthorizeNonceParams) -> TransactionInstruction:
     Returns:
         The instruction to grant the new nonce authority.
     """
-    return TransactionInstruction.from_solders(ssp.authorize_nonce_account(params.to_solders()))
+    return ssp.authorize_nonce_account(params.to_solders())
 
 
-def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> TransactionInstruction:
+def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Instruction:
     """Generate an instruction that allocates space in an account without funding.
 
     Args:
@@ -895,7 +895,7 @@ def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Transacti
         ...     AllocateParams(account_pubkey=allocator, space=65537)
         ... )
         >>> type(instruction)
-        <class 'solana.transaction.TransactionInstruction'>
+        <class 'solders.instruction.Instruction'>
 
     Returns:
         The allocate instruction.
@@ -905,4 +905,4 @@ def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Transacti
     else:
         solders_ix = ssp.allocate(params.to_solders())
 
-    return TransactionInstruction.from_solders(solders_ix)
+    return solders_ix

@@ -4,8 +4,7 @@ from __future__ import annotations
 from typing import NamedTuple
 
 from solders.pubkey import Pubkey
-from solders.instruction import AccountMeta
-from solana.transaction import TransactionInstruction
+from solders.instruction import AccountMeta, Instruction
 
 
 class MemoParams(NamedTuple):
@@ -19,7 +18,7 @@ class MemoParams(NamedTuple):
     """Memo message in bytes."""
 
 
-def decode_create_memo(instruction: TransactionInstruction) -> MemoParams:
+def decode_create_memo(instruction: Instruction) -> MemoParams:
     """Decode a create_memo_instruction and retrieve the instruction params.
 
     Args:
@@ -28,10 +27,10 @@ def decode_create_memo(instruction: TransactionInstruction) -> MemoParams:
     Returns:
         The decoded instruction.
     """
-    return MemoParams(signer=instruction.keys[0].pubkey, message=instruction.data, program_id=instruction.program_id)
+    return MemoParams(signer=instruction.accounts[0].pubkey, message=instruction.data, program_id=instruction.program_id)
 
 
-def create_memo(params: MemoParams) -> TransactionInstruction:
+def create_memo(params: MemoParams) -> Instruction:
     """Creates a transaction instruction that creates a memo.
 
     Message need to be encoded in bytes.
@@ -48,7 +47,7 @@ def create_memo(params: MemoParams) -> TransactionInstruction:
         ...     signer=signer
         ... )
         >>> type(create_memo(params))
-        <class 'solana.transaction.TransactionInstruction'>
+        <class 'solders.instruction.Instruction'>
 
     Returns:
         The instruction to create a memo.
@@ -56,8 +55,8 @@ def create_memo(params: MemoParams) -> TransactionInstruction:
     keys = [
         AccountMeta(pubkey=params.signer, is_signer=True, is_writable=True),
     ]
-    return TransactionInstruction(
-        keys=keys,
+    return Instruction(
+        accounts=keys,
         program_id=params.program_id,
         data=params.message,
     )
