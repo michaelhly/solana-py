@@ -131,7 +131,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the balance of the account of provided Pubkey.
 
         Args:
-            pubkey: Pubkey of account to query, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of account to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
@@ -551,7 +551,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all the account info for a list of public keys.
 
         Args:
-            pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
+            pubkeys: list of Pubkeys to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64". Default is "base64".
 
@@ -582,7 +582,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         If a parser cannot be found, the RPC server falls back to base64 encoding,
 
         Args:
-            pubkeys: list of Pubkeys to query, as base-58 encoded string or PublicKey object.
+            pubkeys: list of Pubkeys to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
@@ -611,7 +611,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all accounts owned by the provided program Pubkey.
 
         Args:
-            pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of program
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for the returned Transaction, either "base58" (slow) or "base64".
             data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
@@ -647,7 +647,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns all accounts owned by the provided program Pubkey.
 
         Args:
-            pubkey: Pubkey of program, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of program
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
                 Note: an int entry is converted to a `dataSize` filter.
@@ -754,7 +754,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns epoch activation information for a stake account.
 
         Args:
-            pubkey: Pubkey of stake account to query, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of stake account to query
             epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
                 defaults to current epoch.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
@@ -787,7 +787,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
         Args:
-            pubkey: Pubkey of Token account to query, as base-58 encoded string or PublicKey object.
+            pubkey: Pubkey of Token account to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
