@@ -48,9 +48,9 @@ def _build_solders_tx(
     fee_payer: Optional[Pubkey] = None,
     instructions: Optional[Sequence[Instruction]] = None,
 ) -> SoldersTx:
-    core_instructions = [] if instructions is None else [ixn.to_solders() for ixn in instructions]
+    core_instructions = [] if instructions is None else [ixn for ixn in instructions]
     underlying_instructions = (
-        core_instructions if nonce_info is None else [nonce_info.nonce_instruction.to_solders(), *core_instructions]
+        core_instructions if nonce_info is None else [nonce_info.nonce_instruction, *core_instructions]
     )
     underlying_blockhash_str: Optional[str]
     if nonce_info is not None:
@@ -77,7 +77,7 @@ def _decompile_instructions(msg: SoldersMessage) -> List[Instruction]:
             for idx in compiled_ix.accounts
         ]
         decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
-    return [Instruction.from_solders(ixn) for ixn in decompiled_instructions]
+    return decompiled_instructions
 
 
 class Transaction:
