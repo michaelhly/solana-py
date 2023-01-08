@@ -122,7 +122,7 @@ def test_wire_format_and_desrialize(stubbed_blockhash, stubbed_receiver, stubbed
 
 def test_populate(stubbed_blockhash):
     """Test populating transaction with a message and two signatures."""
-    account_keys = [str(PublicKey(i + 1)) for i in range(5)]
+    account_keys = [str(Pubkey([0] * 31 + [i + 1])) for i in range(5)]
     msg = Message(
         MessageArgs(
             account_keys=account_keys,

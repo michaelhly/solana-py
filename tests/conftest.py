@@ -77,49 +77,49 @@ def async_stubbed_receiver_cached_blockhash() -> Pubkey:
 @pytest.fixture(scope="session")
 def stubbed_sender() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([8] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([8] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def stubbed_sender_prefetched_blockhash() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([9] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([9] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def stubbed_sender_cached_blockhash() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([4] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([4] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def stubbed_sender_for_token() -> Keypair:
     """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([2] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([2] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_sender() -> Keypair:
     """Another arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([7] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([7] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_sender_prefetched_blockhash() -> Keypair:
     """Another arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([5] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([5] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def async_stubbed_sender_cached_blockhash() -> Keypair:
     """Another arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([3] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([3] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
 def freeze_authority() -> Keypair:
     """Arbitrary known account to be used as freeze authority."""
-    return Keypair.from_seed(bytes([6] * PublicKey.LENGTH))
+    return Keypair.from_seed(bytes([6] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
