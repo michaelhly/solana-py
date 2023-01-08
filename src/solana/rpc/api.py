@@ -137,7 +137,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_balance(PublicKey(1)).value # doctest: +SKIP
+            >>> solana_client.get_balance(Pubkey([0] * 31 + [1])).value # doctest: +SKIP
             4104230290
         """
         body = self._get_balance_body(pubkey, commitment)
@@ -166,7 +166,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_account_info(PublicKey(1)).value # doctest: +SKIP
+            >>> solana_client.get_account_info(Pubkey([0] * 31 + [1])).value # doctest: +SKIP
             Account(
                 Account {
                     lamports: 4104230290,
@@ -198,7 +198,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_account_info_json_parsed(PublicKey(1)).value.owner # doctest: +SKIP
+            >>> solana_client.get_account_info_json_parsed(Pubkey([0] * 31 + [1])).value.owner # doctest: +SKIP
             Pubkey(
                 11111111111111111111111111111111,
             )
@@ -938,7 +938,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.request_airdrop(PublicKey(1), 10000).value # doctest: +SKIP
+            >>> solana_client.request_airdrop(Pubkey([0] * 31 + [1]), 10000).value # doctest: +SKIP
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
             )

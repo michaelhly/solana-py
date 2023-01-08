@@ -77,9 +77,9 @@ async def test_new_account(stubbed_sender, test_http_client_async, test_token): 
     assert (
         not account_data.delegate_option
         and not account_data.delegated_amount
-        and PublicKey(account_data.delegate) == PublicKey(0)
+        and PublicKey(account_data.delegate) == Pubkey([0] * 31 + [0])
     )
-    assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == PublicKey(0)
+    assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == Pubkey([0] * 31 + [0])
     assert not account_data.is_native_option and not account_data.is_native
     assert PublicKey(account_data.mint) == test_token.pubkey
     assert PublicKey(account_data.owner) == stubbed_sender.public_key
@@ -88,7 +88,7 @@ async def test_new_account(stubbed_sender, test_http_client_async, test_token): 
 @pytest.mark.integration
 async def test_new_associated_account(test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new associated token account."""
-    new_acct = PublicKey(0)
+    new_acct = Pubkey([0] * 31 + [0])
     token_account_pubkey = await test_token.create_associated_token_account(new_acct)
     expected_token_account_key, _ = new_acct.find_program_address(
         seeds=[bytes(new_acct), bytes(TOKEN_PROGRAM_ID), bytes(test_token.pubkey)],

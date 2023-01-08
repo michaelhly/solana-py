@@ -7,7 +7,7 @@ from spl.token.constants import TOKEN_PROGRAM_ID
 
 def test_initialize_mint(stubbed_sender):
     """Test initialize mint."""
-    mint_authority, freeze_authority = PublicKey(0), PublicKey(1)
+    mint_authority, freeze_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params_with_freeze = spl_token.InitializeMintParams(
         decimals=18,
         program_id=TOKEN_PROGRAM_ID,
@@ -32,7 +32,7 @@ def test_initialize_mint(stubbed_sender):
 
 def test_initialize_account(stubbed_sender):
     """Test initialize account."""
-    new_account, token_mint = PublicKey(0), PublicKey(1)
+    new_account, token_mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params = spl_token.InitializeAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=new_account,
@@ -45,7 +45,7 @@ def test_initialize_account(stubbed_sender):
 
 def test_initialize_multisig():
     """Test initialize multisig."""
-    new_multisig = PublicKey(0)
+    new_multisig = Pubkey([0] * 31 + [0])
     signers = [PublicKey(i + 1) for i in range(3)]
     params = spl_token.InitializeMultisigParams(
         program_id=TOKEN_PROGRAM_ID,
@@ -83,7 +83,7 @@ def test_transfer(stubbed_receiver, stubbed_sender):
 
 def test_approve(stubbed_sender):
     """Test approve."""
-    delegate_account = PublicKey(0)
+    delegate_account = Pubkey([0] * 31 + [0])
     params = spl_token.ApproveParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key,
@@ -108,7 +108,7 @@ def test_approve(stubbed_sender):
 
 def test_revoke(stubbed_sender):
     """Test revoke."""
-    delegate_account = PublicKey(0)
+    delegate_account = Pubkey([0] * 31 + [0])
     params = spl_token.RevokeParams(
         program_id=TOKEN_PROGRAM_ID,
         account=delegate_account,
@@ -129,7 +129,7 @@ def test_revoke(stubbed_sender):
 
 def test_set_authority():
     """Test set authority."""
-    account, new_authority, current_authority = PublicKey(0), PublicKey(1), PublicKey(2)
+    account, new_authority, current_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1]), Pubkey([0] * 31 + [2])
     params = spl_token.SetAuthorityParams(
         program_id=TOKEN_PROGRAM_ID,
         account=account,
@@ -155,7 +155,7 @@ def test_set_authority():
 
 def test_mint_to(stubbed_receiver):
     """Test mint to."""
-    mint, mint_authority = PublicKey(0), PublicKey(1)
+    mint, mint_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params = spl_token.MintToParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,
@@ -180,7 +180,7 @@ def test_mint_to(stubbed_receiver):
 
 def test_burn(stubbed_receiver):
     """Test burn."""
-    mint, owner = PublicKey(0), PublicKey(1)
+    mint, owner = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params = spl_token.BurnParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,
@@ -205,7 +205,7 @@ def test_burn(stubbed_receiver):
 
 def test_close_account(stubbed_sender):
     """Test close account."""
-    token_account = PublicKey(0)
+    token_account = Pubkey([0] * 31 + [0])
     params = spl_token.CloseAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
@@ -228,7 +228,7 @@ def test_close_account(stubbed_sender):
 
 def test_freeze_account(stubbed_sender):
     """Test freeze account."""
-    token_account, mint = PublicKey(0), PublicKey(1)
+    token_account, mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params = spl_token.FreezeAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
@@ -251,7 +251,7 @@ def test_freeze_account(stubbed_sender):
 
 def test_thaw_account(stubbed_sender):
     """Test thaw account."""
-    token_account, mint = PublicKey(0), PublicKey(1)
+    token_account, mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params = spl_token.ThawAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
@@ -274,7 +274,7 @@ def test_thaw_account(stubbed_sender):
 
 def test_transfer_checked(stubbed_receiver, stubbed_sender):
     """Test transfer_checked."""
-    mint = PublicKey(0)
+    mint = Pubkey([0] * 31 + [0])
     params = spl_token.TransferCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key,
@@ -303,7 +303,7 @@ def test_transfer_checked(stubbed_receiver, stubbed_sender):
 
 def test_approve_checked(stubbed_receiver, stubbed_sender):
     """Test approve_checked."""
-    mint = PublicKey(0)
+    mint = Pubkey([0] * 31 + [0])
     params = spl_token.ApproveCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         source=stubbed_sender.public_key,
@@ -332,7 +332,7 @@ def test_approve_checked(stubbed_receiver, stubbed_sender):
 
 def test_mint_to_checked(stubbed_receiver):
     """Test mint_to_checked."""
-    mint, mint_authority = PublicKey(0), PublicKey(1)
+    mint, mint_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params = spl_token.MintToCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,
@@ -359,7 +359,7 @@ def test_mint_to_checked(stubbed_receiver):
 
 def test_burn_checked(stubbed_receiver):
     """Test burn_checked."""
-    mint, owner = PublicKey(0), PublicKey(1)
+    mint, owner = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
     params = spl_token.BurnCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
         mint=mint,

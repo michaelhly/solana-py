@@ -37,7 +37,9 @@ def create_memo(params: MemoParams) -> TransactionInstruction:
 
     Example:
 
-        >>> signer, memo_program = PublicKey(1), PublicKey(2)
+        >>> from solders.pubkey import Pubkey
+        >>> leading_zeros = [0] * 31
+        >>> signer, memo_program = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
         >>> message = bytes("test", encoding="utf8")
         >>> params = MemoParams(
         ...     program_id=memo_program,

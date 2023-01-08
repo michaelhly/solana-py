@@ -140,7 +140,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> (await solana_client.get_balance(PublicKey(1))).value # doctest: +SKIP
+            >>> (await solana_client.get_balance(Pubkey([0] * 31 + [1]))).value # doctest: +SKIP
             0
         """
         body = self._get_balance_body(pubkey, commitment)
@@ -173,7 +173,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> (await solana_client.get_account_info(PublicKey(1))).value # doctest: +SKIP
+            >>> (await solana_client.get_account_info(Pubkey([0] * 31 + [1]))).value # doctest: +SKIP
             Account(
                 Account {
                     lamports: 4104230290,
@@ -205,7 +205,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> (await solana_client.get_account_info_json_parsed(PublicKey(1))).value.owner # doctest: +SKIP
+            >>> (await solana_client.get_account_info_json_parsed(Pubkey([0] * 31 + [1]))).value.owner # doctest: +SKIP
             Pubkey(
                 11111111111111111111111111111111,
             )
@@ -943,7 +943,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solana.publickey import PublicKey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> (await solana_client.request_airdrop(PublicKey(1), 10000)).value # doctest: +SKIP
+            >>> (await solana_client.request_airdrop(Pubkey([0] * 31 + [1]), 10000)).value # doctest: +SKIP
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
             )

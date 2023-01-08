@@ -673,7 +673,10 @@ def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
     Example:
 
         >>> from spl.token.constants import TOKEN_PROGRAM_ID
-        >>> mint_account, mint_authority, freeze_authority, owner = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> from solders.pubkey import Pubkey
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i +1]) for i in range(4)]
+        >>> mint_account, mint_authority, freeze_authority, owner = pubkeys
         >>> params = InitializeMintParams(
         ...     decimals=6,
         ...     freeze_authority=freeze_authority,
@@ -687,7 +690,7 @@ def initialize_mint(params: InitializeMintParams) -> TransactionInstruction:
     Returns:
         The instruction to initialize the mint.
     """  # noqa: E501 # pylint: disable=line-too-long
-    freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (PublicKey(0), 0)
+    freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         dict(
             instruction_type=InstructionType.INITIALIZE_MINT,
@@ -718,7 +721,9 @@ def initialize_account(params: InitializeAccountParams) -> TransactionInstructio
 
     Example:
 
-        >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> account, mint, owner, token = pubkeys
         >>> params = InitializeAccountParams(
         ...     account=account,
         ...     mint=mint,
@@ -755,7 +760,8 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
 
         >>> m = 2   # Two signers
         >>> signers = [PublicKey(i) for i in range(m)]
-        >>> multisig_account, token = PublicKey(1), PublicKey(2)
+        >>> leading_zeros = [0] * 31
+        >>> multisig_account, token = PublicKey(leading_zeros + [1]), PublicKey(leading_zeros + [2])
         >>> params = InitializeMultisigParams(
         ...     m=m,
         ...     multisig=multisig_account,
@@ -786,7 +792,9 @@ def transfer(params: TransferParams) -> TransactionInstruction:
 
     Example:
 
-        >>> dest, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> dest, owner, source, token = pubkeys
         >>> params = TransferParams(
         ...     amount=1000,
         ...     dest=dest,
@@ -815,7 +823,9 @@ def approve(params: ApproveParams) -> TransactionInstruction:
 
     Example:
 
-        >>> delegate, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> delegate, owner, source, token = pubkeys
         >>> params = ApproveParams(
         ...     amount=123,
         ...     delegate=delegate,
@@ -844,7 +854,9 @@ def revoke(params: RevokeParams) -> TransactionInstruction:
 
     Example:
 
-        >>> account, owner, token = PublicKey(1), PublicKey(2), PublicKey(3)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(3)]
+        >>> account, owner, token = pubkeys
         >>> params = RevokeParams(
         ...     account=account, owner=owner, program_id=token
         ... )
@@ -866,9 +878,9 @@ def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
 
     Example:
 
-        >>> account, current_authority, new_authority, token = (
-        ...     PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
-        ... )
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> account, current_authority, new_authority, token = pubkeys
         >>> params = SetAuthorityParams(
         ...     account=account,
         ...     authority=AuthorityType.ACCOUNT_OWNER,
@@ -882,7 +894,7 @@ def set_authority(params: SetAuthorityParams) -> TransactionInstruction:
     Returns:
         The set authority instruction.
     """
-    new_authority, opt = (params.new_authority, 1) if params.new_authority else (PublicKey(0), 0)
+    new_authority, opt = (params.new_authority, 1) if params.new_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         dict(
             instruction_type=InstructionType.SET_AUTHORITY,
@@ -902,7 +914,9 @@ def mint_to(params: MintToParams) -> TransactionInstruction:
 
     Example:
 
-        >>> dest, mint, mint_authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> dest, mint, mint_authority, token = pubkeys
         >>> params = MintToParams(
         ...     amount=123,
         ...     dest=dest,
@@ -925,7 +939,9 @@ def burn(params: BurnParams) -> TransactionInstruction:
 
     Example:
 
-        >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> account, mint, owner, token = pubkeys
         >>> params = BurnParams(
         ...     amount=123, account=account, mint=mint, owner=owner, program_id=token,
         ... )
@@ -946,7 +962,9 @@ def close_account(params: CloseAccountParams) -> TransactionInstruction:
 
     Example:
 
-        >>> account, dest, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> account, dest, owner, token = pubkeys
         >>> params = CloseAccountParams(
         ...     account=account, dest=dest, owner=owner, program_id=token)
         >>> type(close_account(params))
@@ -970,7 +988,9 @@ def freeze_account(params: FreezeAccountParams) -> TransactionInstruction:
 
     Example:
 
-        >>> account, mint, authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> account, mint, authority, token = pubkeys
         >>> params = FreezeAccountParams(
         ...     account=account, mint=mint, authority=authority, program_id=token)
         >>> type(freeze_account(params))
@@ -987,7 +1007,9 @@ def thaw_account(params: ThawAccountParams) -> TransactionInstruction:
 
     Example:
 
-        >>> account, mint, authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> account, mint, authority, token = pubkeys
         >>> params = ThawAccountParams(
         ...     account=account, mint=mint, authority=authority, program_id=token)
         >>> type(thaw_account(params))
@@ -1004,7 +1026,9 @@ def transfer_checked(params: TransferCheckedParams) -> TransactionInstruction:
 
     Example:
 
-        >>> dest, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
+        >>> dest, mint, owner, source, token = pubkeys
         >>> params = TransferCheckedParams(
         ...     amount=1000,
         ...     decimals=6,
@@ -1038,7 +1062,9 @@ def approve_checked(params: ApproveCheckedParams) -> TransactionInstruction:
 
     Example:
 
-        >>> delegate, mint, owner, source, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4), PublicKey(5)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
+        >>> delegate, mint, owner, source, token = pubkeys
         >>> params = ApproveCheckedParams(
         ...     amount=1000,
         ...     decimals=6,
@@ -1072,7 +1098,9 @@ def mint_to_checked(params: MintToCheckedParams) -> TransactionInstruction:
 
     Example:
 
-        >>> dest, mint, mint_authority, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> dest, mint, mint_authority, token = pubkeys
         >>> params = MintToCheckedParams(
         ...     amount=123,
         ...     decimals=6,
@@ -1098,7 +1126,9 @@ def burn_checked(params: BurnCheckedParams) -> TransactionInstruction:
 
     Example:
 
-        >>> account, mint, owner, token = PublicKey(1), PublicKey(2), PublicKey(3), PublicKey(4)
+        >>> leading_zeros = [0] * 31
+        >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
+        >>> account, mint, owner, token = pubkeys
         >>> params = BurnCheckedParams(
         ...     amount=123, account=account, decimals=6, mint=mint, owner=owner, program_id=token,
         ... )
