@@ -2,10 +2,10 @@
 from typing import Tuple
 
 import pytest
+from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
-from solders.pubkey import Pubkey
 
 import solana.system_program as sp
 from solana.blockhash import Blockhash

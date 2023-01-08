@@ -3,6 +3,7 @@ import itertools
 from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from solders.account_decoder import UiDataSliceConfig
+from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
     RpcProgramAccountsConfig,
@@ -36,7 +37,6 @@ from solders.rpc.responses import Notification
 from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
 from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
-from solders.pubkey import Pubkey
 from websockets.legacy.client import WebSocketClientProtocol
 from websockets.legacy.client import connect as ws_connect
 

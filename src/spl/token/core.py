@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple, Type, Union
 
-from solders.rpc.responses import GetAccountInfoResp
 from solders.pubkey import Pubkey
+from solders.rpc.responses import GetAccountInfoResp
 
 import solana.system_program as sp
 import spl.token.instructions as spl_token

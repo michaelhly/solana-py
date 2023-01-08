@@ -3,6 +3,7 @@ import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
 
+from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
     GetAccountInfoResp,
@@ -54,7 +55,6 @@ from solders.rpc.responses import (
     ValidatorExitResp,
 )
 from solders.signature import Signature
-from solders.pubkey import Pubkey
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair

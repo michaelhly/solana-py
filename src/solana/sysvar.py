@@ -1,6 +1,6 @@
 """Synthetic accounts that allow programs to access certain network states."""
-from solders.pubkey import Pubkey
 import solders.sysvar as sv
+from solders.pubkey import Pubkey
 
 SYSVAR_CLOCK_PUBKEY: Pubkey = sv.CLOCK
 """Public key of the synthetic account that serves the current network time."""

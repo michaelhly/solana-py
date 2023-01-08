@@ -4,6 +4,7 @@ from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib
 import pytest
+from solders.pubkey import Pubkey
 from solders.rpc.config import RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
 from solders.rpc.requests import AccountSubscribe, AccountUnsubscribe, Body, LogsSubscribe, LogsUnsubscribe
 from solders.rpc.responses import (
@@ -17,7 +18,6 @@ from solders.rpc.responses import (
     SubscriptionResult,
     VoteNotification,
 )
-from solders.pubkey import Pubkey
 from solders.system_program import ID as SYS_PROGRAM_ID
 from websockets.legacy.client import WebSocketClientProtocol
 

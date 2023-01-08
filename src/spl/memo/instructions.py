@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-from solders.pubkey import Pubkey
 from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey
 
 
 class MemoParams(NamedTuple):
@@ -27,7 +27,9 @@ def decode_create_memo(instruction: Instruction) -> MemoParams:
     Returns:
         The decoded instruction.
     """
-    return MemoParams(signer=instruction.accounts[0].pubkey, message=instruction.data, program_id=instruction.program_id)
+    return MemoParams(
+        signer=instruction.accounts[0].pubkey, message=instruction.data, program_id=instruction.program_id
+    )
 
 
 def create_memo(params: MemoParams) -> Instruction:

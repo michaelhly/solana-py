@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-from solders.pubkey import Pubkey
 from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey
 
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
 

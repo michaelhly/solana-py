@@ -4,8 +4,8 @@ from __future__ import annotations
 from typing import NamedTuple, Union
 
 from solders import system_program as ssp
-from solders.pubkey import Pubkey
 from solders.instruction import Instruction
+from solders.pubkey import Pubkey
 
 from solana.transaction import Transaction
 

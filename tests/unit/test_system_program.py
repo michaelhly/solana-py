@@ -1,10 +1,11 @@
 """Unit tests for solana.system_program."""
 import base64
 
+from solders.pubkey import Pubkey
+
 import solana.system_program as sp
 import solana.transaction as txlib
 from solana.keypair import Keypair
-from solders.pubkey import Pubkey
 
 
 def test_create_account():
