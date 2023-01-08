@@ -93,7 +93,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         commitment: Optional[Commitment],
         encoding,
         default_commitment: Commitment,
-    ) -> Tuple[PublicKey, TokenAccountOpts, Commitment]:
+    ) -> Tuple[Pubkey, TokenAccountOpts, Commitment]:
         commitment_to_use = default_commitment if commitment is None else commitment
         return owner, TokenAccountOpts(mint=self.pubkey, encoding=encoding), commitment_to_use
 
@@ -150,7 +150,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         skip_confirmation: bool,
         balance_needed: int,
         commitment: Commitment,
-    ) -> Tuple[PublicKey, Transaction, Keypair, Keypair, TxOpts]:
+    ) -> Tuple[Pubkey, Transaction, Keypair, Keypair, TxOpts]:
         new_keypair = Keypair()
         # Allocate memory for the account
 
@@ -187,7 +187,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         owner: Pubkey,
         skip_confirmation: bool,
         commitment: Commitment,
-    ) -> Tuple[PublicKey, Transaction, Keypair, TxOpts]:
+    ) -> Tuple[Pubkey, Transaction, Keypair, TxOpts]:
 
         # Construct transaction
         txn = Transaction(fee_payer=self.payer.public_key)
@@ -211,7 +211,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         skip_confirmation: bool,
         balance_needed: int,
         commitment: Commitment,
-    ) -> Tuple[PublicKey, Transaction, Keypair, Keypair, TxOpts]:
+    ) -> Tuple[Pubkey, Transaction, Keypair, Keypair, TxOpts]:
         new_keypair = Keypair()
         # Allocate memory for the account
         # Construct transaction
@@ -358,7 +358,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         if decoded_data.mint_authority_option == 0:
             mint_authority = None
         else:
-            mint_authority = PublicKey(decoded_data.mint_authority)
+            mint_authority = Pubkey(decoded_data.mint_authority)
 
         supply = decoded_data.supply
         is_initialized = decoded_data.is_initialized != 0
@@ -366,7 +366,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         if decoded_data.freeze_authority_option == 0:
             freeze_authority = None
         else:
-            freeze_authority = PublicKey(decoded_data.freeze_authority)
+            freeze_authority = Pubkey(decoded_data.freeze_authority)
 
         return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
 
@@ -383,15 +383,15 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
         decoded_data = ACCOUNT_LAYOUT.parse(bytes_data)
 
-        mint = PublicKey(decoded_data.mint)
-        owner = PublicKey(decoded_data.owner)
+        mint = Pubkey(decoded_data.mint)
+        owner = Pubkey(decoded_data.owner)
         amount = decoded_data.amount
 
         if decoded_data.delegate_option == 0:
             delegate = None
             delegated_amount = 0
         else:
-            delegate = PublicKey(decoded_data.delegate)
+            delegate = Pubkey(decoded_data.delegate)
             delegated_amount = decoded_data.delegated_amount
 
         is_initialized = decoded_data.state != 0
@@ -407,7 +407,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         if decoded_data.close_authority_option == 0:
             close_authority = None
         else:
-            close_authority = PublicKey(decoded_data.owner)
+            close_authority = Pubkey(decoded_data.owner)
 
         if mint != self.pubkey:
             raise AttributeError(f"Invalid account mint: {decoded_data.mint} != {self.pubkey}")

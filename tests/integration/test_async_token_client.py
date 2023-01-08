@@ -40,8 +40,8 @@ async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -
     assert mint_data.is_initialized
     assert mint_data.decimals == expected_decimals
     assert mint_data.supply == 0
-    assert PublicKey(mint_data.mint_authority) == stubbed_sender.public_key
-    assert PublicKey(mint_data.freeze_authority) == freeze_authority.public_key
+    assert Pubkey(mint_data.mint_authority) == stubbed_sender.public_key
+    assert Pubkey(mint_data.freeze_authority) == freeze_authority.public_key
     return token_client
 
 
@@ -75,12 +75,12 @@ async def test_new_account(stubbed_sender, test_http_client_async, test_token): 
     assert (
         not account_data.delegate_option
         and not account_data.delegated_amount
-        and PublicKey(account_data.delegate) == Pubkey([0] * 31 + [0])
+        and Pubkey(account_data.delegate) == Pubkey([0] * 31 + [0])
     )
-    assert not account_data.close_authority_option and PublicKey(account_data.close_authority) == Pubkey([0] * 31 + [0])
+    assert not account_data.close_authority_option and Pubkey(account_data.close_authority) == Pubkey([0] * 31 + [0])
     assert not account_data.is_native_option and not account_data.is_native
-    assert PublicKey(account_data.mint) == test_token.pubkey
-    assert PublicKey(account_data.owner) == stubbed_sender.public_key
+    assert Pubkey(account_data.mint) == test_token.pubkey
+    assert Pubkey(account_data.owner) == stubbed_sender.public_key
 
 
 @pytest.mark.integration
@@ -431,5 +431,5 @@ async def test_create_multisig(
     multisig_data = layouts.MULTISIG_LAYOUT.parse(resp.value.data)
     assert multisig_data.is_initialized
     assert multisig_data.m == min_signers
-    assert PublicKey(multisig_data.signer1) == stubbed_sender.public_key
-    assert PublicKey(multisig_data.signer2) == async_stubbed_receiver
+    assert Pubkey(multisig_data.signer1) == stubbed_sender.public_key
+    assert Pubkey(multisig_data.signer2) == async_stubbed_receiver

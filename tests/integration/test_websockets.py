@@ -65,7 +65,7 @@ async def multiple_subscriptions(
 @pytest.fixture
 async def account_subscribed(
     stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
-) -> AsyncGenerator[PublicKey, None]:
+) -> AsyncGenerator[Pubkey, None]:
     """Setup account subscription."""
     recipient = Keypair()
     await websocket.account_subscribe(recipient.public_key)

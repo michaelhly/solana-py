@@ -315,8 +315,8 @@ def decode_initialize_mint(instruction: TransactionInstruction) -> InitializeMin
         decimals=parsed_data.args.decimals,
         program_id=instruction.program_id,
         mint=instruction.keys[0].pubkey,
-        mint_authority=PublicKey(parsed_data.args.mint_authority),
-        freeze_authority=PublicKey(parsed_data.args.freeze_authority)
+        mint_authority=Pubkey(parsed_data.args.mint_authority),
+        freeze_authority=Pubkey(parsed_data.args.freeze_authority)
         if parsed_data.args.freeze_authority_option
         else None,
     )
@@ -432,7 +432,7 @@ def decode_set_authority(instruction: TransactionInstruction) -> SetAuthorityPar
         program_id=instruction.program_id,
         account=instruction.keys[0].pubkey,
         authority=AuthorityType(parsed_data.args.authority_type),
-        new_authority=PublicKey(parsed_data.args.new_authority) if parsed_data.args.new_authority_option else None,
+        new_authority=Pubkey(parsed_data.args.new_authority) if parsed_data.args.new_authority_option else None,
         current_authority=instruction.keys[1].pubkey,
         signers=[signer.pubkey for signer in instruction.keys[2:]],
     )
@@ -761,7 +761,7 @@ def initialize_multisig(params: InitializeMultisigParams) -> TransactionInstruct
         >>> m = 2   # Two signers
         >>> signers = [Pubkey([0] * 31 + [i]) for i in range(m)]
         >>> leading_zeros = [0] * 31
-        >>> multisig_account, token = PublicKey(leading_zeros + [1]), PublicKey(leading_zeros + [2])
+        >>> multisig_account, token = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
         >>> params = InitializeMultisigParams(
         ...     m=m,
         ...     multisig=multisig_account,
@@ -1150,7 +1150,7 @@ def get_associated_token_address(owner: Pubkey, mint: Pubkey) -> Pubkey:
     Returns:
         The public key of the derived associated token address.
     """
-    key, _ = PublicKey.find_program_address(
+    key, _ = Pubkey.find_program_address(
         seeds=[bytes(owner), bytes(TOKEN_PROGRAM_ID), bytes(mint)], program_id=ASSOCIATED_TOKEN_PROGRAM_ID
     )
     return key

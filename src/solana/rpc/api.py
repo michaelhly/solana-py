@@ -563,7 +563,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), Pubkey.from_string("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> solana_client.get_multiple_accounts(pubkeys).value[0].lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -588,7 +588,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solders.pubkey import Pubkey
             >>> solana_client = Client("http://localhost:8899")
-            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), PublicKey("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
+            >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), Pubkey.from_string("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> solana_client.get_multiple_accounts_json_parsed(pubkeys).value[0].lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long

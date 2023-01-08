@@ -19,7 +19,7 @@ from solders.pubkey import Pubkey
 
 def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> txlib.Transaction:
     ix = txlib.TransactionInstruction(
-        program_id=PublicKey.from_solders(Pubkey.default()),
+        program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         keys=[
             txlib.AccountMeta(kp0.public_key, True, True),
@@ -52,7 +52,7 @@ def test_sign_partial(stubbed_blockhash):
     keypair1 = Keypair()
     keypair2 = Keypair()
     ix = txlib.TransactionInstruction(
-        program_id=PublicKey.from_solders(Pubkey.default()),
+        program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         keys=[
             txlib.AccountMeta(keypair0.public_key, True, True),
@@ -494,7 +494,7 @@ def test_sort_account_metas(stubbed_blockhash):
 
     assert b64encode(tx_msg.serialize()) == js_msg_b64_check
 
-    # Transaction should organize AccountMetas by PublicKey
+    # Transaction should organize AccountMetas by pubkey
     assert tx_msg.account_keys[0] == fee_payer.public_key
     assert tx_msg.account_keys[1] == sorted_signers_excluding_fee_payer[0]
     assert tx_msg.account_keys[2] == sorted_signers_excluding_fee_payer[1]
