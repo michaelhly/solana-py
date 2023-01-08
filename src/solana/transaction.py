@@ -14,6 +14,7 @@ from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
 from solders.pubkey import Pubkey
+from solders.instruction import Instruction
 
 from solana.blockhash import Blockhash
 from solana.keypair import Keypair
@@ -27,46 +28,12 @@ SIG_LENGTH = 64
 """Constant for standard length of a signature."""
 
 
-class TransactionInstruction(NamedTuple):
-    """Transaction Instruction class."""
-
-    keys: List[AccountMeta]
-    """Public keys to include in this transaction Boolean represents whether this
-    pubkey needs to sign the transaction.
-    """
-    program_id: Pubkey
-    """Program Id to execute."""
-    data: bytes = bytes(0)
-    """Program input."""
-
-    @classmethod
-    def from_solders(cls, ixn: instruction.Instruction) -> TransactionInstruction:
-        """Convert from a `solders` instruction.
-
-        Args:
-            ixn: The `solders` instruction.
-
-        Returns:
-            The `solana-py` instruction.
-        """
-        program_id = ixn.program_id
-        return cls(keys=ixn.accounts, program_id=program_id, data=ixn.data)
-
-    def to_solders(self) -> instruction.Instruction:
-        """Convert to a `solders` instruction.
-
-        Returns:
-            The `solders` instruction.
-        """
-        return instruction.Instruction(program_id=self.program_id, data=self.data, accounts=self.keys)
-
-
 class NonceInformation(NamedTuple):
     """NonceInformation to be used to build a Transaction."""
 
     nonce: Blockhash
     """The current Nonce blockhash."""
-    nonce_instruction: TransactionInstruction
+    nonce_instruction: Instruction
     """AdvanceNonceAccount Instruction."""
 
 
@@ -82,7 +49,7 @@ def _build_solders_tx(
     recent_blockhash: Optional[Blockhash] = None,
     nonce_info: Optional[NonceInformation] = None,
     fee_payer: Optional[Pubkey] = None,
-    instructions: Optional[Sequence[TransactionInstruction]] = None,
+    instructions: Optional[Sequence[Instruction]] = None,
 ) -> SoldersTx:
     core_instructions = [] if instructions is None else [ixn.to_solders() for ixn in instructions]
     underlying_instructions = (
@@ -103,7 +70,7 @@ def _build_solders_tx(
     return SoldersTx.new_unsigned(msg)
 
 
-def _decompile_instructions(msg: SoldersMessage) -> List[TransactionInstruction]:
+def _decompile_instructions(msg: SoldersMessage) -> List[Instruction]:
     account_keys = msg.account_keys
     decompiled_instructions: List[Instruction] = []
     for compiled_ix in msg.instructions:
@@ -113,7 +80,7 @@ def _decompile_instructions(msg: SoldersMessage) -> List[TransactionInstruction]
             for idx in compiled_ix.accounts
         ]
         decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
-    return [TransactionInstruction.from_solders(ixn) for ixn in decompiled_instructions]
+    return [Instruction.from_solders(ixn) for ixn in decompiled_instructions]
 
 
 class Transaction:
@@ -135,7 +102,7 @@ class Transaction:
         recent_blockhash: Optional[Blockhash] = None,
         nonce_info: Optional[NonceInformation] = None,
         fee_payer: Optional[Pubkey] = None,
-        instructions: Optional[Sequence[TransactionInstruction]] = None,
+        instructions: Optional[Sequence[Instruction]] = None,
     ) -> None:
         """Init transaction object."""
         self._solders = _build_solders_tx(
@@ -194,13 +161,13 @@ class Transaction:
         )
 
     @property
-    def instructions(self) -> Tuple[TransactionInstruction, ...]:
-        """Tuple[TransactionInstruction]: The instructions contained in this transaction."""
+    def instructions(self) -> Tuple[Instruction, ...]:
+        """Tuple[Instruction]: The instructions contained in this transaction."""
         msg = self._solders.message
         return tuple(_decompile_instructions(msg))
 
     @instructions.setter
-    def instructions(self, ixns: Sequence[TransactionInstruction]) -> None:
+    def instructions(self, ixns: Sequence[Instruction]) -> None:
         self._solders = _build_solders_tx(
             recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=ixns
         )
@@ -218,7 +185,7 @@ class Transaction:
         """
         return self._solders.signatures[0]
 
-    def add(self, *args: Union[Transaction, TransactionInstruction]) -> Transaction:
+    def add(self, *args: Union[Transaction, Instruction]) -> Transaction:
         """Add one or more instructions to this Transaction.
 
         Args:
@@ -231,7 +198,7 @@ class Transaction:
         for arg in args:
             if isinstance(arg, Transaction):
                 self.instructions = self.instructions + arg.instructions
-            elif isinstance(arg, TransactionInstruction):
+            elif isinstance(arg, Instruction):
                 self.instructions = (*self.instructions, arg)
             else:
                 raise ValueError("invalid instruction:", arg)
