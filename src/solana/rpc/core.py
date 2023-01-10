@@ -72,7 +72,6 @@ from solders.rpc.requests import (
     GetVoteAccounts,
     MinimumLedgerSlot,
     RequestAirdrop,
-    SendTransaction,
     SendRawTransaction,
     SimulateTransaction,
     ValidatorExit,
@@ -423,7 +422,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return RequestAirdrop(pubkey, lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
 
-    def _send_raw_transaction_body(self, txn: bytes, opts: types.TxOpts) -> SendTransaction:
+    def _send_raw_transaction_body(self, txn: bytes, opts: types.TxOpts) -> SendRawTransaction:
         preflight_commitment_to_use = _COMMITMENT_TO_SOLDERS[opts.preflight_commitment or self._commitment]
         config = RpcSendTransactionConfig(
             skip_preflight=opts.skip_preflight,
