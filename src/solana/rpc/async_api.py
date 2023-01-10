@@ -1000,7 +1000,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Send a transaction.
 
         Args:
-            txn: Transaction object.
+            txn: Transaction bytes.
             signers: Signers to sign the transaction.
             opts: (optional) Transaction options.
             recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
