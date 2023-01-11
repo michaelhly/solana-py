@@ -950,8 +950,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
-            txn: Fully-signed Transaction object, a fully sign transaction in wire format,
-                or a fully transaction as base-64 encoded string.
+            txn: Transaction bytes.
             opts: (optional) Transaction options.
 
         Before submitting, the following preflight checks are performed (unless disabled with the `skip_preflight` option):

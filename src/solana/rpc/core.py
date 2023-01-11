@@ -72,13 +72,12 @@ from solders.rpc.requests import (
     GetVoteAccounts,
     MinimumLedgerSlot,
     RequestAirdrop,
-    SendTransaction,
+    SendRawTransaction,
     SimulateTransaction,
     ValidatorExit,
 )
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
-from solders.transaction import Transaction as SoldersTx
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
@@ -423,16 +422,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return RequestAirdrop(pubkey, lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
 
-    def _send_raw_transaction_body(self, txn: bytes, opts: types.TxOpts) -> SendTransaction:
-        solders_tx = SoldersTx.from_bytes(txn)
+    def _send_raw_transaction_body(self, txn: bytes, opts: types.TxOpts) -> SendRawTransaction:
         preflight_commitment_to_use = _COMMITMENT_TO_SOLDERS[opts.preflight_commitment or self._commitment]
         config = RpcSendTransactionConfig(
             skip_preflight=opts.skip_preflight,
             preflight_commitment=preflight_commitment_to_use,
             max_retries=opts.max_retries,
         )
-        return SendTransaction(
-            solders_tx,
+        return SendRawTransaction(
+            txn,
             config,
         )
 
