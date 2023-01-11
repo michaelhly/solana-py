@@ -11,7 +11,6 @@
 - Use latest solders [(#332)](https://github.com/michaelhly/solana-py/pull/332)
 - Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
 
-
 ## [0.28.1] - 2022-12-29
 
 ## Fixed
