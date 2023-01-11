@@ -8,7 +8,9 @@
     - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
     - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
     - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
-- Use latest solders [(#331)](https://github.com/michaelhly/solana-py/pull/331)
+- Use latest solders [(#332)](https://github.com/michaelhly/solana-py/pull/332)
+- Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
+
 
 ## [0.28.1] - 2022-12-29
 
