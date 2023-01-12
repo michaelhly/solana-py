@@ -167,6 +167,8 @@ def _after_batch_request(raw_response: httpx.Response, parsers: _Tup5) -> _RespT
     ...
 
 
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tuples) -> Tuple[RPCResult, ...]:
+def _after_batch_request(
+    raw_response: httpx.Response, parsers: _Tuples
+) -> Tuple[RPCResult, ...]:
     text = _after_request_unparsed(raw_response)
     return _parse_raw_batch(text, parsers)  # type: ignore

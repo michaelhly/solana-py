@@ -28,7 +28,9 @@ def decode_create_memo(instruction: Instruction) -> MemoParams:
         The decoded instruction.
     """
     return MemoParams(
-        signer=instruction.accounts[0].pubkey, message=instruction.data, program_id=instruction.program_id
+        signer=instruction.accounts[0].pubkey,
+        message=instruction.data,
+        program_id=instruction.program_id,
     )
 
 

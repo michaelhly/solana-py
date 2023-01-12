@@ -154,7 +154,9 @@ class CreateAccountWithSeedParams(NamedTuple):
     """"""
 
     @classmethod
-    def from_solders(cls, params: ssp.CreateAccountWithSeedParams) -> CreateAccountWithSeedParams:
+    def from_solders(
+        cls, params: ssp.CreateAccountWithSeedParams
+    ) -> CreateAccountWithSeedParams:
         """Convert from `solders` CreateAccountWithSeedParams.
 
         Args:
@@ -229,7 +231,9 @@ class InitializeNonceParams(NamedTuple):
     """"""
 
     @classmethod
-    def from_solders(cls, params: ssp.InitializeNonceAccountParams) -> InitializeNonceParams:
+    def from_solders(
+        cls, params: ssp.InitializeNonceAccountParams
+    ) -> InitializeNonceParams:
         """Convert from `solders` InitializeNonceParams.
 
         Args:
@@ -303,7 +307,9 @@ class WithdrawNonceParams(NamedTuple):
     """"""
 
     @classmethod
-    def from_solders(cls, params: ssp.WithdrawNonceAccountParams) -> WithdrawNonceParams:
+    def from_solders(
+        cls, params: ssp.WithdrawNonceAccountParams
+    ) -> WithdrawNonceParams:
         """Convert from `solders` WithdrawNonceParams.
 
         Args:
@@ -344,7 +350,9 @@ class AuthorizeNonceParams(NamedTuple):
     """"""
 
     @classmethod
-    def from_solders(cls, params: ssp.AuthorizeNonceAccountParams) -> AuthorizeNonceParams:
+    def from_solders(
+        cls, params: ssp.AuthorizeNonceAccountParams
+    ) -> AuthorizeNonceParams:
         """Convert from `solders` AuthorizeNonceParams.
 
         Args:
@@ -608,7 +616,9 @@ def decode_allocate_with_seed(instruction: Instruction) -> AllocateWithSeedParam
     Returns:
         The decoded instruction params.
     """  # pylint: disable=line-too-long # noqa: E501
-    return AllocateWithSeedParams.from_solders(ssp.decode_allocate_with_seed(instruction))
+    return AllocateWithSeedParams.from_solders(
+        ssp.decode_allocate_with_seed(instruction)
+    )
 
 
 def decode_assign(instruction: Instruction) -> AssignParams:
@@ -649,7 +659,9 @@ def decode_assign_with_seed(instruction: Instruction) -> AssignWithSeedParams:
     return AssignWithSeedParams.from_solders(ssp.decode_assign_with_seed(instruction))
 
 
-def decode_create_account_with_seed(instruction: Instruction) -> CreateAccountWithSeedParams:
+def decode_create_account_with_seed(
+    instruction: Instruction,
+) -> CreateAccountWithSeedParams:
     """Decode a create account with seed system instruction and retrieve the instruction params.
 
     Args:
@@ -658,7 +670,9 @@ def decode_create_account_with_seed(instruction: Instruction) -> CreateAccountWi
     Returns:
         The decoded instruction params.
     """
-    return CreateAccountWithSeedParams.from_solders(ssp.decode_create_account_with_seed(instruction))
+    return CreateAccountWithSeedParams.from_solders(
+        ssp.decode_create_account_with_seed(instruction)
+    )
 
 
 def decode_nonce_initialize(instruction: Instruction) -> InitializeNonceParams:
@@ -670,7 +684,9 @@ def decode_nonce_initialize(instruction: Instruction) -> InitializeNonceParams:
     Returns:
         The decoded instruction params.
     """
-    return InitializeNonceParams.from_solders(ssp.decode_initialize_nonce_account(instruction))
+    return InitializeNonceParams.from_solders(
+        ssp.decode_initialize_nonce_account(instruction)
+    )
 
 
 def decode_nonce_advance(instruction: Instruction) -> AdvanceNonceParams:
@@ -682,7 +698,9 @@ def decode_nonce_advance(instruction: Instruction) -> AdvanceNonceParams:
     Returns:
         The decoded instruction params.
     """
-    return AdvanceNonceParams.from_solders(ssp.decode_advance_nonce_account(instruction))
+    return AdvanceNonceParams.from_solders(
+        ssp.decode_advance_nonce_account(instruction)
+    )
 
 
 def decode_nonce_withdraw(instruction: Instruction) -> WithdrawNonceParams:
@@ -694,7 +712,9 @@ def decode_nonce_withdraw(instruction: Instruction) -> WithdrawNonceParams:
     Returns:
         The decoded instruction params.
     """
-    return WithdrawNonceParams.from_solders(ssp.decode_withdraw_nonce_account(instruction))
+    return WithdrawNonceParams.from_solders(
+        ssp.decode_withdraw_nonce_account(instruction)
+    )
 
 
 def decode_nonce_authorize(instruction: Instruction) -> AuthorizeNonceParams:
@@ -707,7 +727,9 @@ def decode_nonce_authorize(instruction: Instruction) -> AuthorizeNonceParams:
         The decoded instruction params.
 
     """
-    return AuthorizeNonceParams.from_solders(ssp.decode_authorize_nonce_account(instruction))
+    return AuthorizeNonceParams.from_solders(
+        ssp.decode_authorize_nonce_account(instruction)
+    )
 
 
 def create_account(params: CreateAccountParams) -> Instruction:
@@ -795,7 +817,9 @@ def create_account_with_seed(
     return ssp.create_account_with_seed(params.to_solders())
 
 
-def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAccountWithSeedParams]) -> Transaction:
+def create_nonce_account(
+    params: Union[CreateNonceAccountParams, CreateNonceAccountWithSeedParams]
+) -> Transaction:
     """Generate a Transaction that creates a new Nonce account.
 
     Args:
@@ -822,7 +846,9 @@ def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAcco
         )
     create_account_instruction = solders_ixs[0]
     initialize_nonce_instruction = solders_ixs[1]
-    return Transaction(fee_payer=params.from_pubkey).add(create_account_instruction, initialize_nonce_instruction)
+    return Transaction(fee_payer=params.from_pubkey).add(
+        create_account_instruction, initialize_nonce_instruction
+    )
 
 
 def nonce_initialization(params: InitializeNonceParams) -> Instruction:

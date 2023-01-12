@@ -41,7 +41,9 @@ def parse_security_txt(data: bytes) -> SecurityTxt:
         The Security Txt.
     """
     if not isinstance(data, bytes):
-        raise TypeError(f"data provided in parse(data) must be bytes, found: {type(data)}")
+        raise TypeError(
+            f"data provided in parse(data) must be bytes, found: {type(data)}"
+        )
 
     s_idx = data.find(bytes(HEADER, "utf-8"))
     e_idx = data.find(bytes(FOOTER, "utf-8"))

@@ -40,7 +40,9 @@ _INITIALIZE_MULTISIG_LAYOUT = cStruct("m" / Int8ul)
 _AMOUNT_LAYOUT = cStruct("amount" / Int64ul)
 
 _SET_AUTHORITY_LAYOUT = cStruct(
-    "authority_type" / Int8ul, "new_authority_option" / Int8ul, "new_authority" / PUBLIC_KEY_LAYOUT
+    "authority_type" / Int8ul,
+    "new_authority_option" / Int8ul,
+    "new_authority" / PUBLIC_KEY_LAYOUT,
 )
 
 _AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimals" / Int8ul)

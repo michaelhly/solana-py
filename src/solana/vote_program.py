@@ -8,7 +8,9 @@ from solders.pubkey import Pubkey
 
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
 
-VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
+VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string(
+    "Vote111111111111111111111111111111111111111"
+)
 """Public key that identifies the Vote program."""
 
 
@@ -49,12 +51,19 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Instruc
         The generated instruction.
     """
     data = VOTE_INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT, "args": {"lamports": params.lamports}}
+        {
+            "instruction_type": InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT,
+            "args": {"lamports": params.lamports},
+        }
     )
 
     return Instruction(
         accounts=[
-            AccountMeta(pubkey=params.vote_account_from_pubkey, is_signer=False, is_writable=True),
+            AccountMeta(
+                pubkey=params.vote_account_from_pubkey,
+                is_signer=False,
+                is_writable=True,
+            ),
             AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
             AccountMeta(pubkey=params.withdrawer, is_signer=True, is_writable=True),
         ],

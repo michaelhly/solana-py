@@ -95,7 +95,9 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     async def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
         ...
 
-    async def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
+    async def make_batch_request(
+        self, reqs: Tuple[Body, ...], parsers: _Tuples
+    ) -> Tuple[RPCResult, ...]:
         """Make an async HTTP batch request to an http rpc endpoint.
 
         Args:

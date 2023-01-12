@@ -5,14 +5,19 @@ from typing import Any, Callable
 class SolanaExceptionBase(Exception):
     """Base class for Solana-py exceptions."""
 
-    def __init__(self, exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any
+    ) -> None:
         """Init."""
         super().__init__()
         self.error_msg = self._build_error_message(exc, func, *args, **kwargs)
 
     @staticmethod
     def _build_error_message(
-        exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any  # pylint: disable=unused-argument
+        exc: Exception,
+        func: Callable[[Any], Any],
+        *args: Any,
+        **kwargs: Any,  # pylint: disable=unused-argument
     ) -> str:
         return f"{type(exc)} raised in {func} invokation"
 
@@ -21,7 +26,9 @@ class SolanaRpcException(SolanaExceptionBase):
     """Class for Solana-py RPC exceptions."""
 
     @staticmethod
-    def _build_error_message(exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> str:
+    def _build_error_message(
+        exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any
+    ) -> str:
         rpc_method = args[1].__class__.__name__
         return f'{type(exc)} raised in "{rpc_method}" endpoint request'
 

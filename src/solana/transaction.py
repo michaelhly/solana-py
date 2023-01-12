@@ -50,7 +50,9 @@ def _build_solders_tx(
 ) -> SoldersTx:
     core_instructions = [] if instructions is None else instructions
     underlying_instructions = (
-        core_instructions if nonce_info is None else [nonce_info.nonce_instruction, *core_instructions]
+        core_instructions
+        if nonce_info is None
+        else [nonce_info.nonce_instruction, *core_instructions]
     )
     underlying_blockhash_str: Optional[str]
     if nonce_info is not None:
@@ -61,9 +63,13 @@ def _build_solders_tx(
         underlying_blockhash_str = None
     underlying_fee_payer = None if fee_payer is None else fee_payer
     underlying_blockhash = (
-        Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
+        Hash.default()
+        if underlying_blockhash_str is None
+        else Hash.from_string(underlying_blockhash_str)
     )
-    msg = SoldersMessage.new_with_blockhash(underlying_instructions, underlying_fee_payer, underlying_blockhash)
+    msg = SoldersMessage.new_with_blockhash(
+        underlying_instructions, underlying_fee_payer, underlying_blockhash
+    )
     return SoldersTx.new_unsigned(msg)
 
 
@@ -73,10 +79,16 @@ def _decompile_instructions(msg: SoldersMessage) -> List[Instruction]:
     for compiled_ix in msg.instructions:
         program_id = account_keys[compiled_ix.program_id_index]
         account_metas = [
-            AccountMeta(account_keys[idx], is_signer=msg.is_signer(idx), is_writable=msg.is_writable(idx))
+            AccountMeta(
+                account_keys[idx],
+                is_signer=msg.is_signer(idx),
+                is_writable=msg.is_writable(idx),
+            )
             for idx in compiled_ix.accounts
         ]
-        decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
+        decompiled_instructions.append(
+            Instruction(program_id, compiled_ix.data, account_metas)
+        )
     return decompiled_instructions
 
 
@@ -103,7 +115,10 @@ class Transaction:
     ) -> None:
         """Init transaction object."""
         self._solders = _build_solders_tx(
-            recent_blockhash=recent_blockhash, nonce_info=nonce_info, fee_payer=fee_payer, instructions=instructions
+            recent_blockhash=recent_blockhash,
+            nonce_info=nonce_info,
+            fee_payer=fee_payer,
+            instructions=instructions,
         )
 
     @classmethod
@@ -142,7 +157,10 @@ class Transaction:
     @recent_blockhash.setter
     def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:
         self._solders = _build_solders_tx(
-            recent_blockhash=blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=self.instructions
+            recent_blockhash=blockhash,
+            nonce_info=None,
+            fee_payer=self.fee_payer,
+            instructions=self.instructions,
         )
 
     @property
@@ -154,7 +172,10 @@ class Transaction:
     @fee_payer.setter
     def fee_payer(self, payer: Optional[Pubkey]) -> None:
         self._solders = _build_solders_tx(
-            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=payer, instructions=self.instructions
+            recent_blockhash=self.recent_blockhash,
+            nonce_info=None,
+            fee_payer=payer,
+            instructions=self.instructions,
         )
 
     @property
@@ -166,7 +187,10 @@ class Transaction:
     @instructions.setter
     def instructions(self, ixns: Sequence[Instruction]) -> None:
         self._solders = _build_solders_tx(
-            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=ixns
+            recent_blockhash=self.recent_blockhash,
+            nonce_info=None,
+            fee_payer=self.fee_payer,
+            instructions=ixns,
         )
 
     @property
@@ -224,7 +248,9 @@ class Transaction:
         All the caveats from the `sign` method apply to `sign_partial`
         """
         underlying_signers = [signer.to_solders() for signer in partial_signers]
-        self._solders.partial_sign(underlying_signers, self._solders.message.recent_blockhash)
+        self._solders.partial_sign(
+            underlying_signers, self._solders.message.recent_blockhash
+        )
 
     def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.

@@ -140,7 +140,9 @@ class Message:
         return bytes(self._solders)
 
     @classmethod
-    def deserialize(cls, raw_message: bytes) -> Message:  # pylint: disable=too-many-locals
+    def deserialize(
+        cls, raw_message: bytes
+    ) -> Message:  # pylint: disable=too-many-locals
         """Deserialize raw message bytes.
 
         Example:
