@@ -85,6 +85,8 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
     transfer_tx = Transaction().add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
     )
+    sim_resp = test_http_client.simulate_transaction(transfer_tx)
+    assert_valid_response(sim_resp)
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
     # Confirm transaction

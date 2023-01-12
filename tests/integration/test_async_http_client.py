@@ -132,6 +132,8 @@ async def test_send_versioned_transaction_and_get_balance(
         recent_blockhash=recent_blockhash,
     )
     transfer_tx = VersionedTransaction(msg, [random_funded_keypair.to_solders()])
+    sim_resp = await test_http_client_async.simulate_transaction(transfer_tx)
+    assert_valid_response(sim_resp)
     resp = await test_http_client_async.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
