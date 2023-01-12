@@ -28,7 +28,9 @@ def decode_create_memo(instruction: Instruction) -> MemoParams:
         The decoded instruction.
     """
     return MemoParams(
-        signer=instruction.accounts[0].pubkey, message=instruction.data, program_id=instruction.program_id
+        signer=instruction.accounts[0].pubkey,
+        message=instruction.data,
+        program_id=instruction.program_id,
     )
 
 
@@ -38,7 +40,6 @@ def create_memo(params: MemoParams) -> Instruction:
     Message need to be encoded in bytes.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> signer, memo_program = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])

@@ -3,14 +3,13 @@ from unittest.mock import patch
 
 import pytest
 from httpx import ReadTimeout
+from solana.exceptions import SolanaRpcException
+from solana.rpc.commitment import Finalized
 from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
 from solders.rpc.config import RpcSignaturesForAddressConfig
 from solders.rpc.requests import GetSignaturesForAddress
 from solders.signature import Signature
-
-from solana.exceptions import SolanaRpcException
-from solana.rpc.commitment import Finalized
 
 
 async def test_async_client_http_exception(unit_test_http_client_async):

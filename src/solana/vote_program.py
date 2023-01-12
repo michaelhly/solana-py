@@ -30,7 +30,6 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Instruc
     """Generate an instruction that transfers lamports from a vote account to any other.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> from solana.keypair import Keypair
         >>> vote = Pubkey([0] * 31 + [1])
@@ -50,12 +49,19 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Instruc
         The generated instruction.
     """
     data = VOTE_INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT, args=dict(lamports=params.lamports))
+        {
+            "instruction_type": InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT,
+            "args": {"lamports": params.lamports},
+        }
     )
 
     return Instruction(
         accounts=[
-            AccountMeta(pubkey=params.vote_account_from_pubkey, is_signer=False, is_writable=True),
+            AccountMeta(
+                pubkey=params.vote_account_from_pubkey,
+                is_signer=False,
+                is_writable=True,
+            ),
             AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
             AccountMeta(pubkey=params.withdrawer, is_signer=True, is_writable=True),
         ],

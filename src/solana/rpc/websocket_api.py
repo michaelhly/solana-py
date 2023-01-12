@@ -33,9 +33,12 @@ from solders.rpc.requests import (
     VoteUnsubscribe,
     batch_to_json,
 )
-from solders.rpc.responses import Notification
+from solders.rpc.responses import (
+    Notification,
+    SubscriptionResult,
+    parse_websocket_message,
+)
 from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
-from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
 from websockets.legacy.client import WebSocketClientProtocol
 from websockets.legacy.client import connect as ws_connect
@@ -105,7 +108,10 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         return self._process_rpc_response(cast(str, data))
 
     async def account_subscribe(
-        self, pubkey: Pubkey, commitment: Optional[Commitment] = None, encoding: Optional[str] = None
+        self,
+        pubkey: Pubkey,
+        commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
     ) -> None:
         """Subscribe to an account to receive notifications when the lamports or data change.
 
@@ -199,7 +205,9 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
                 None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
             )
             account_config = RpcAccountInfoConfig(
-                encoding=encoding_to_use, commitment=commitment_to_use, data_slice=data_slice_to_use
+                encoding=encoding_to_use,
+                commitment=commitment_to_use,
+                data_slice=data_slice_to_use,
             )
             filters_to_use: Optional[List[Union[int, Memcmp]]] = (
                 None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
@@ -353,5 +361,6 @@ class connect(ws_connect):  # pylint: disable=invalid-name,too-few-public-method
 
         Args:
             uri: The websocket endpoint.
+            **kwargs: Keyword arguments for ``websockets.legacy.client.connect``
         """
         super().__init__(uri, **kwargs, create_protocol=SolanaWsClientProtocol)

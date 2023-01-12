@@ -3,13 +3,17 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python.formatting.provider": "black",
-  "python.formatting.blackArgs": ["--check", "--line-length", "120"],
-  "python.linting.pylintEnabled": true,
-  "python.linting.pylintArgs": ["--max-line-length", "120"],
-  "python.linting.pydocstyleEnabled": true,
+  "python.formatting.blackArgs": [
+    "--check",
+    "--line-length",
+    "120"
+  ],
   "editor.formatOnSave": true,
   "python.languageServer": "Jedi",
   "autoDocstring.docstringFormat": "sphinx",
   "python.pythonPath": ".venv/bin/python",
-  "restructuredtext.confPath": "${workspaceFolder}/docs"
+  "restructuredtext.confPath": "${workspaceFolder}/docs",
+  "ruff.args": [
+    "--config=pyproject.toml"
+  ]
 }

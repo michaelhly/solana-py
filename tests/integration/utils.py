@@ -1,10 +1,9 @@
 """Integration test utils."""
 from typing import get_args
 
-from solders.rpc.responses import RPCError, RPCResult
-
 from solana.rpc.commitment import Processed
 from solana.rpc.types import TxOpts
+from solders.rpc.responses import RPCError, RPCResult
 
 AIRDROP_AMOUNT = 10_000_000_000
 

@@ -1,7 +1,6 @@
 """Unit tests for SPL-token instructions."""
-from solders.pubkey import Pubkey
-
 import spl.token.instructions as spl_token
+from solders.pubkey import Pubkey
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 

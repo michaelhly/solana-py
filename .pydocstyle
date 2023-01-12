@@ -1,3 +1,0 @@
-[pydocstyle]
-add-ignore=D203,D213,D401,D404
-convention=google

@@ -504,7 +504,6 @@ def decode_create_account(instruction: Instruction) -> CreateAccountParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> from_account, new_account, program_id = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2]), Pubkey(leading_zeros + [3])
@@ -535,7 +534,6 @@ def decode_transfer(instruction: Instruction) -> TransferParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> sender, receiver = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
@@ -551,7 +549,7 @@ def decode_transfer(instruction: Instruction) -> TransferParams:
 
     Returns:
         The decoded instruction params.
-    """  # pylint: disable=line-too-long # noqa: E501
+    """  # pylint: disable=line-too-long
     return TransferParams.from_solders(ssp.decode_transfer(instruction))
 
 
@@ -562,7 +560,6 @@ def decode_allocate(instruction: Instruction) -> AllocateParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> allocator = Pubkey(leading_zeros + [1])
@@ -576,7 +573,7 @@ def decode_allocate(instruction: Instruction) -> AllocateParams:
 
     Returns:
         The decoded instruction params.
-    """  # pylint: disable=line-too-long # noqa: E501
+    """  # pylint: disable=line-too-long
     return AllocateParams.from_solders(ssp.decode_allocate(instruction))
 
 
@@ -587,7 +584,6 @@ def decode_allocate_with_seed(instruction: Instruction) -> AllocateWithSeedParam
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> allocator, base, program_id = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2]), Pubkey(leading_zeros + [3])
@@ -622,7 +618,6 @@ def decode_assign(instruction: Instruction) -> AssignParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> account, program_id = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
@@ -654,7 +649,9 @@ def decode_assign_with_seed(instruction: Instruction) -> AssignWithSeedParams:
     return AssignWithSeedParams.from_solders(ssp.decode_assign_with_seed(instruction))
 
 
-def decode_create_account_with_seed(instruction: Instruction) -> CreateAccountWithSeedParams:
+def decode_create_account_with_seed(
+    instruction: Instruction,
+) -> CreateAccountWithSeedParams:
     """Decode a create account with seed system instruction and retrieve the instruction params.
 
     Args:
@@ -770,7 +767,6 @@ def transfer(params: TransferParams) -> Instruction:
         params: The transfer params.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> sender, receiver = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
@@ -810,15 +806,15 @@ def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAcco
     Returns:
         The transaction to create the new nonce account.
     """
-    if isinstance(params, CreateNonceAccountParams):
-        solders_ixs = ssp.create_nonce_account(
+    solders_ixs = (
+        ssp.create_nonce_account(
             from_pubkey=params.from_pubkey,
             nonce_pubkey=params.nonce_pubkey,
             authority=params.authorized_pubkey,
             lamports=params.lamports,
         )
-    else:
-        solders_ixs = ssp.create_nonce_account_with_seed(
+        if isinstance(params, CreateNonceAccountParams)
+        else ssp.create_nonce_account_with_seed(
             from_pubkey=params.from_pubkey,
             nonce_pubkey=params.nonce_pubkey,
             base=params.base_pubkey,
@@ -826,6 +822,7 @@ def create_nonce_account(params: Union[CreateNonceAccountParams, CreateNonceAcco
             authority=params.authorized_pubkey,
             lamports=params.lamports,
         )
+    )
     create_account_instruction = solders_ixs[0]
     initialize_nonce_instruction = solders_ixs[1]
     return Transaction(fee_payer=params.from_pubkey).add(create_account_instruction, initialize_nonce_instruction)
@@ -887,7 +884,6 @@ def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Instructi
         params: The allocate params.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> allocator = Pubkey(leading_zeros + [1])
@@ -900,9 +896,10 @@ def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Instructi
     Returns:
         The allocate instruction.
     """
-    if isinstance(params, AllocateWithSeedParams):
-        solders_ix = ssp.allocate_with_seed(params.to_solders())
-    else:
-        solders_ix = ssp.allocate(params.to_solders())
+    solders_ix = (
+        ssp.allocate_with_seed(params.to_solders())
+        if isinstance(params, AllocateWithSeedParams)
+        else ssp.allocate(params.to_solders())
+    )
 
     return solders_ix

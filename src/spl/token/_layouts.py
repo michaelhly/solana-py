@@ -1,9 +1,8 @@
 """Token instruction layouts."""
 from enum import IntEnum
 
-from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass
+from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass, Switch
 from construct import Struct as cStruct
-from construct import Switch
 
 PUBLIC_KEY_LAYOUT = Bytes(32)
 
@@ -41,7 +40,9 @@ _INITIALIZE_MULTISIG_LAYOUT = cStruct("m" / Int8ul)
 _AMOUNT_LAYOUT = cStruct("amount" / Int64ul)
 
 _SET_AUTHORITY_LAYOUT = cStruct(
-    "authority_type" / Int8ul, "new_authority_option" / Int8ul, "new_authority" / PUBLIC_KEY_LAYOUT
+    "authority_type" / Int8ul,
+    "new_authority_option" / Int8ul,
+    "new_authority" / PUBLIC_KEY_LAYOUT,
 )
 
 _AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimals" / Int8ul)

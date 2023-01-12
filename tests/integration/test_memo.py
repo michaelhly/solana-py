@@ -1,11 +1,10 @@
 """Tests for the Memo program."""
 import pytest
-from solders.transaction_status import ParsedInstruction
-
 from solana.keypair import Keypair
 from solana.rpc.api import Client
 from solana.rpc.commitment import Finalized
 from solana.transaction import Transaction
+from solders.transaction_status import ParsedInstruction
 from spl.memo.constants import MEMO_PROGRAM_ID
 from spl.memo.instructions import MemoParams, create_memo
 

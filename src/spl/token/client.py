@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import List, Optional, Union, cast
 
+from solana.blockhash import Blockhash
+from solana.keypair import Keypair
+from solana.rpc.api import Client
+from solana.rpc.commitment import Commitment
+from solana.rpc.types import TxOpts
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetTokenAccountBalanceResp,
@@ -15,11 +20,6 @@ from solders.rpc.responses import (
 )
 
 import spl.token.instructions as spl_token
-from solana.blockhash import Blockhash
-from solana.keypair import Keypair
-from solana.rpc.api import Client
-from solana.rpc.commitment import Commitment
-from solana.rpc.types import TxOpts
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
 from spl.token.core import AccountInfo, MintInfo, _TokenCore
 
@@ -84,7 +84,10 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
             encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
         """
         args = self._get_accounts_args(
-            owner, commitment, encoding, self._conn.commitment  # pylint: disable=protected-access
+            owner,
+            commitment,
+            encoding,
+            self._conn.commitment,  # pylint: disable=protected-access
         )
         return self._conn.get_token_accounts_by_owner(*args)
 
@@ -106,7 +109,10 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         from results. jsonParsed encoding is UNSTABLE.
         """
         args = self._get_accounts_args(
-            owner, commitment, "jsonParsed", self._conn.commitment  # pylint: disable=protected-access
+            owner,
+            commitment,
+            "jsonParsed",
+            self._conn.commitment,  # pylint: disable=protected-access
         )
         return self._conn.get_token_accounts_by_owner_json_parsed(*args)
 
@@ -124,7 +130,10 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
             encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
         """
         args = self._get_accounts_args(
-            owner, commitment, encoding, self._conn.commitment  # pylint: disable=protected-access
+            owner,
+            commitment,
+            encoding,
+            self._conn.commitment,  # pylint: disable=protected-access
         )
         return self._conn.get_token_accounts_by_delegate(*args)
 
@@ -147,7 +156,10 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         from results. jsonParsed encoding is UNSTABLE.
         """
         args = self._get_accounts_args(
-            owner, commitment, encoding, self._conn.commitment  # pylint: disable=protected-access
+            owner,
+            commitment,
+            encoding,
+            self._conn.commitment,  # pylint: disable=protected-access
         )
         return self._conn.get_token_accounts_by_delegate_json_parsed(*args)
 
@@ -220,7 +232,6 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         This account may then be used as a `transfer()` or `approve()` destination.
 
         Args:
-
             owner: User account that will own the new account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
             recent_blockhash: (optional) a prefetched Blockhash for the transaction.
@@ -248,7 +259,6 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """Create an associated token account.
 
         Args:
-
             owner: User account that will own the associated token account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
             recent_blockhash: (optional) a prefetched Blockhash for the transaction.
@@ -279,7 +289,6 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """Create and initialize a new account on the special native token mint.
 
         Args:
-
             conn: RPC connection to a solana cluster.
             program_id: SPL Token program account.
             owner: The owner of the new token account.
@@ -296,8 +305,14 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
-        new_account_public_key, txn, payer, new_account, opts = _TokenCore._create_wrapped_native_account_args(
-            program_id, owner, payer, amount, skip_confirmation, balance_needed, conn.commitment
+        (new_account_public_key, txn, payer, new_account, opts,) = _TokenCore._create_wrapped_native_account_args(
+            program_id,
+            owner,
+            payer,
+            amount,
+            skip_confirmation,
+            balance_needed,
+            conn.commitment,
         )
         conn.send_transaction(txn, payer, new_account, opts=opts, recent_blockhash=recent_blockhash)
         return new_account_public_key
@@ -314,6 +329,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         Args:
             m: Number of required signatures.
             multi_signers: Full set of signers.
+            opts: (optional) Transaction options.
             recent_blockhash: (optional) a prefetched Blockhash for the transaction.
 
         Returns:
@@ -429,7 +445,12 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
         txn, payer, signers, opts = self._set_authority_args(
-            account, current_authority, authority_type, new_authority, multi_signers, opts_to_use
+            account,
+            current_authority,
+            authority_type,
+            new_authority,
+            multi_signers,
+            opts_to_use,
         )
         return self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
 

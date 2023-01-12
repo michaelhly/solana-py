@@ -2,7 +2,7 @@
 from typing import NamedTuple, NewType, Optional
 
 from solders.pubkey import Pubkey
-from typing_extensions import TypedDict  # noqa: F401
+from typing_extensions import TypedDict
 
 from .commitment import Commitment, Finalized
 
@@ -36,7 +36,7 @@ class MemcmpOpts(NamedTuple):
 
     offset: int
     """Offset into program account data to start comparison: <usize>."""
-    bytes: str
+    bytes: str  # noqa: A003
     """Data to match, as base-58 encoded string: <string>."""
 
 

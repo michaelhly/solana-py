@@ -34,11 +34,7 @@ solders = "^0.13.0"
 [tool.poetry.dev-dependencies]
 black = "^22.3"
 pytest = "^7.1.2"
-pylint = "^2.11.1"
 mypy = "^0.910"
-pydocstyle = "^6.1.1"
-flake8 = "^4.0.1"
-isort = "^5.9.3"
 pytest-docker = "^0.12.0"
 bump2version = "^1.0.1"
 pytest-asyncio = "^0.18.3"
@@ -46,8 +42,55 @@ pytest-cov = "^3.0.0"
 asyncstdlib = "^3.10.2"
 mkdocstrings = "^0.18.0"
 mkdocs-material = "^8.2.1"
+ruff = "^0.0.219"
 
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+
+# Enable Pyflakes `E` and `F` codes by default.
+select = ["A", "B", "D", "E", "F", "I", "ARG", "BLE", "C4", "SIM", "PLC", "PLE", "PLR", "PLW", "RUF"]
+ignore = ["D203"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10.
+target-version = "py310"
+
+[tool.ruff.pydocstyle]
+convention = "google" 
+
+[tool.ruff.per-file-ignores]
+"src/solana/blockhash.py" = ["A003"]
+"tests/**/*.py" = ["D100", "D103", "ARG001"]
+
+[tool.black]
+line-length = 120

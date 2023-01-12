@@ -73,7 +73,11 @@ def _decompile_instructions(msg: SoldersMessage) -> List[Instruction]:
     for compiled_ix in msg.instructions:
         program_id = account_keys[compiled_ix.program_id_index]
         account_metas = [
-            AccountMeta(account_keys[idx], is_signer=msg.is_signer(idx), is_writable=msg.is_writable(idx))
+            AccountMeta(
+                account_keys[idx],
+                is_signer=msg.is_signer(idx),
+                is_writable=msg.is_writable(idx),
+            )
             for idx in compiled_ix.accounts
         ]
         decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
@@ -103,7 +107,10 @@ class Transaction:
     ) -> None:
         """Init transaction object."""
         self._solders = _build_solders_tx(
-            recent_blockhash=recent_blockhash, nonce_info=nonce_info, fee_payer=fee_payer, instructions=instructions
+            recent_blockhash=recent_blockhash,
+            nonce_info=nonce_info,
+            fee_payer=fee_payer,
+            instructions=instructions,
         )
 
     @classmethod
@@ -140,9 +147,12 @@ class Transaction:
         return Blockhash(str(self._solders.message.recent_blockhash))
 
     @recent_blockhash.setter
-    def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:
+    def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:  # noqa: D102
         self._solders = _build_solders_tx(
-            recent_blockhash=blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=self.instructions
+            recent_blockhash=blockhash,
+            nonce_info=None,
+            fee_payer=self.fee_payer,
+            instructions=self.instructions,
         )
 
     @property
@@ -152,9 +162,12 @@ class Transaction:
         return account_keys[0] if account_keys else None
 
     @fee_payer.setter
-    def fee_payer(self, payer: Optional[Pubkey]) -> None:
+    def fee_payer(self, payer: Optional[Pubkey]) -> None:  # noqa: D102
         self._solders = _build_solders_tx(
-            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=payer, instructions=self.instructions
+            recent_blockhash=self.recent_blockhash,
+            nonce_info=None,
+            fee_payer=payer,
+            instructions=self.instructions,
         )
 
     @property
@@ -164,9 +177,12 @@ class Transaction:
         return tuple(_decompile_instructions(msg))
 
     @instructions.setter
-    def instructions(self, ixns: Sequence[Instruction]) -> None:
+    def instructions(self, ixns: Sequence[Instruction]) -> None:  # noqa: D102
         self._solders = _build_solders_tx(
-            recent_blockhash=self.recent_blockhash, nonce_info=None, fee_payer=self.fee_payer, instructions=ixns
+            recent_blockhash=self.recent_blockhash,
+            nonce_info=None,
+            fee_payer=self.fee_payer,
+            instructions=ixns,
         )
 
     @property
@@ -273,7 +289,6 @@ class Transaction:
             verify_signatures: a bool indicating to verify the signature or not. Defaults to True
 
         Example:
-
             >>> from solana.keypair import Keypair
             >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
@@ -294,9 +309,8 @@ class Transaction:
         if self.signatures == [Signature.default() for sig in self.signatures]:
             raise AttributeError("transaction has not been signed")
 
-        if verify_signatures:
-            if not self.verify_signatures():
-                raise AttributeError("transaction has not been signed correctly")
+        if verify_signatures and not self.verify_signatures():
+            raise AttributeError("transaction has not been signed correctly")
 
         return bytes(self._solders)
 
@@ -305,7 +319,6 @@ class Transaction:
         """Parse a wire transaction into a Transaction object.
 
         Example:
-
             >>> raw_transaction = bytes.fromhex(
             ...     '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2'
             ...     '75a23ba504674c8fbbb724827b23b42dc8e08019e23'
@@ -331,7 +344,6 @@ class Transaction:
         """Populate Transaction object from message and signatures.
 
         Example:
-
             >>> raw_message = bytes.fromhex(
             ...     '0200030500000000000000000000000000000000000000000000'
             ...     '0000000000000000000100000000000000000000000000000000'
