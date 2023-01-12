@@ -4,23 +4,23 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple, Type, Union
 
-from solders.pubkey import Pubkey
-from solders.rpc.responses import GetAccountInfoResp
-
 import solana.system_program as sp
-import spl.token.instructions as spl_token
 from solana.keypair import Keypair
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 from solana.rpc.types import TokenAccountOpts, TxOpts
 from solana.transaction import Transaction
+from solders.pubkey import Pubkey
+from solders.rpc.responses import GetAccountInfoResp
+
+import spl.token.instructions as spl_token
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 from spl.token.constants import WRAPPED_SOL_MINT
 
 if TYPE_CHECKING:
-    from spl.token.async_client import AsyncToken  # noqa: F401
-    from spl.token.client import Token  # noqa: F401
+    from spl.token.async_client import AsyncToken
+    from spl.token.client import Token
 
 
 class AccountInfo(NamedTuple):
@@ -355,18 +355,12 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         decoded_data = MINT_LAYOUT.parse(bytes_data)
         decimals = decoded_data.decimals
 
-        if decoded_data.mint_authority_option == 0:
-            mint_authority = None
-        else:
-            mint_authority = Pubkey(decoded_data.mint_authority)
+        mint_authority = None if decoded_data.mint_authority_option == 0 else Pubkey(decoded_data.mint_authority)
 
         supply = decoded_data.supply
         is_initialized = decoded_data.is_initialized != 0
 
-        if decoded_data.freeze_authority_option == 0:
-            freeze_authority = None
-        else:
-            freeze_authority = Pubkey(decoded_data.freeze_authority)
+        freeze_authority = None if decoded_data.freeze_authority_option == 0 else Pubkey(decoded_data.freeze_authority)
 
         return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
 
@@ -404,10 +398,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             rent_exempt_reserve = None
             is_native = False
 
-        if decoded_data.close_authority_option == 0:
-            close_authority = None
-        else:
-            close_authority = Pubkey(decoded_data.owner)
+        close_authority = None if decoded_data.close_authority_option == 0 else Pubkey(decoded_data.owner)
 
         if mint != self.pubkey:
             raise AttributeError(f"Invalid account mint: {decoded_data.mint} != {self.pubkey}")

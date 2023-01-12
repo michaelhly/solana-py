@@ -504,7 +504,6 @@ def decode_create_account(instruction: Instruction) -> CreateAccountParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> from_account, new_account, program_id = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2]), Pubkey(leading_zeros + [3])
@@ -535,7 +534,6 @@ def decode_transfer(instruction: Instruction) -> TransferParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> sender, receiver = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
@@ -551,7 +549,7 @@ def decode_transfer(instruction: Instruction) -> TransferParams:
 
     Returns:
         The decoded instruction params.
-    """  # pylint: disable=line-too-long # noqa: E501
+    """  # pylint: disable=line-too-long
     return TransferParams.from_solders(ssp.decode_transfer(instruction))
 
 
@@ -562,7 +560,6 @@ def decode_allocate(instruction: Instruction) -> AllocateParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> allocator = Pubkey(leading_zeros + [1])
@@ -576,7 +573,7 @@ def decode_allocate(instruction: Instruction) -> AllocateParams:
 
     Returns:
         The decoded instruction params.
-    """  # pylint: disable=line-too-long # noqa: E501
+    """  # pylint: disable=line-too-long
     return AllocateParams.from_solders(ssp.decode_allocate(instruction))
 
 
@@ -587,7 +584,6 @@ def decode_allocate_with_seed(instruction: Instruction) -> AllocateWithSeedParam
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> allocator, base, program_id = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2]), Pubkey(leading_zeros + [3])
@@ -622,7 +618,6 @@ def decode_assign(instruction: Instruction) -> AssignParams:
         instruction: The instruction to decode.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> account, program_id = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
@@ -770,7 +765,6 @@ def transfer(params: TransferParams) -> Instruction:
         params: The transfer params.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> sender, receiver = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
@@ -887,7 +881,6 @@ def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Instructi
         params: The allocate params.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> allocator = Pubkey(leading_zeros + [1])

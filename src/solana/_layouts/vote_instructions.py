@@ -1,8 +1,11 @@
 """Byte layouts for vote program instructions."""
 from enum import IntEnum
 
-from construct import Switch  # type: ignore
-from construct import Int32ul, Int64ul
+from construct import (
+    Int32ul,
+    Int64ul,
+    Switch,  # type: ignore
+)
 from construct import Struct as cStruct
 
 

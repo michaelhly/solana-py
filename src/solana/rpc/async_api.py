@@ -209,7 +209,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             Pubkey(
                 11111111111111111111111111111111,
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_account_info_body(pubkey=pubkey, commitment=commitment, encoding="jsonParsed", data_slice=None)
         return await self._provider.make_request(body, GetAccountInfoMaybeJsonParsedResp)
 
@@ -272,7 +272,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             Hash(
                 EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG,
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_block_body(slot, encoding, max_supported_transaction_version)
         return await self._provider.make_request(body, GetBlockResp)
 
@@ -357,7 +357,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
         return await self._provider.make_request(body, GetSignaturesForAddressResp)
 
@@ -434,7 +434,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_fee_for_message(txn.compile_message())).value # doctest: +SKIP
             5000
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_fee_for_message_body(message, commitment)
         return await self._provider.make_request(body, GetFeeForMessageResp)
 
@@ -1070,7 +1070,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> tx = Transaction.deserialize(bytes.fromhex(full_signed_tx_hex))
             >>> (await solana_client.simulate_transaction(tx)).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._simulate_transaction_body(txn, sig_verify, commitment)
         return await self._provider.make_request(body, SimulateTransactionResp)
 

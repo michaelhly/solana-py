@@ -273,7 +273,6 @@ class Transaction:
             verify_signatures: a bool indicating to verify the signature or not. Defaults to True
 
         Example:
-
             >>> from solana.keypair import Keypair
             >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
@@ -305,7 +304,6 @@ class Transaction:
         """Parse a wire transaction into a Transaction object.
 
         Example:
-
             >>> raw_transaction = bytes.fromhex(
             ...     '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2'
             ...     '75a23ba504674c8fbbb724827b23b42dc8e08019e23'
@@ -331,7 +329,6 @@ class Transaction:
         """Populate Transaction object from message and signatures.
 
         Example:
-
             >>> raw_message = bytes.fromhex(
             ...     '0200030500000000000000000000000000000000000000000000'
             ...     '0000000000000000000100000000000000000000000000000000'

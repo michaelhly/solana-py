@@ -3,12 +3,12 @@
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 
-from solders.instruction import AccountMeta, Instruction
-from solders.pubkey import Pubkey
-
 from solana.system_program import SYS_PROGRAM_ID
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
+from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey
+
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
@@ -644,7 +644,7 @@ def __burn_instruction(params: Union[BurnParams, BurnCheckedParams], data: Any) 
 def __freeze_or_thaw_instruction(
     params: Union[FreezeAccountParams, ThawAccountParams], instruction_type: InstructionType
 ) -> Instruction:
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=instruction_type, args=None))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": instruction_type, "args": None})
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
@@ -672,7 +672,6 @@ def initialize_mint(params: InitializeMintParams) -> Instruction:
     Otherwise another party can acquire ownership of the uninitialized account.
 
     Example:
-
         >>> from spl.token.constants import TOKEN_PROGRAM_ID
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
@@ -690,18 +689,18 @@ def initialize_mint(params: InitializeMintParams) -> Instruction:
 
     Returns:
         The instruction to initialize the mint.
-    """  # noqa: E501 # pylint: disable=line-too-long
+    """
     freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
-        dict(
-            instruction_type=InstructionType.INITIALIZE_MINT,
-            args=dict(
-                decimals=params.decimals,
-                mint_authority=bytes(params.mint_authority),
-                freeze_authority_option=opt,
-                freeze_authority=bytes(freeze_authority),
-            ),
-        )
+        {
+            "instruction_type": InstructionType.INITIALIZE_MINT,
+            "args": {
+                "decimals": params.decimals,
+                "mint_authority": bytes(params.mint_authority),
+                "freeze_authority_option": opt,
+                "freeze_authority": bytes(freeze_authority),
+            },
+        }
     )
     return Instruction(
         accounts=[
@@ -721,7 +720,6 @@ def initialize_account(params: InitializeAccountParams) -> Instruction:
     Otherwise another party can acquire ownership of the uninitialized account.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
@@ -737,7 +735,7 @@ def initialize_account(params: InitializeAccountParams) -> Instruction:
     Returns:
         The instruction to initialize the account.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.INITIALIZE_ACCOUNT, args=None))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.INITIALIZE_ACCOUNT, "args": None})
     return Instruction(
         accounts=[
             AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
@@ -758,7 +756,6 @@ def initialize_multisig(params: InitializeMultisigParams) -> Instruction:
     Otherwise another party can acquire ownership of the uninitialized account.
 
     Example:
-
         >>> m = 2   # Two signers
         >>> signers = [Pubkey([0] * 31 + [i]) for i in range(m)]
         >>> leading_zeros = [0] * 31
@@ -775,7 +772,7 @@ def initialize_multisig(params: InitializeMultisigParams) -> Instruction:
     Returns:
         The instruction to initialize the multisig.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.INITIALIZE_MULTISIG, args=dict(m=params.m)))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.INITIALIZE_MULTISIG, "args": {"m": params.m}})
     keys = [
         AccountMeta(pubkey=params.multisig, is_signer=False, is_writable=True),
         AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
@@ -792,7 +789,6 @@ def transfer(params: TransferParams) -> Instruction:
     Either directly or via a delegate.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, owner, source, token = pubkeys
@@ -809,7 +805,7 @@ def transfer(params: TransferParams) -> Instruction:
     Returns:
         The transfer instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.TRANSFER, args=dict(amount=params.amount)))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.TRANSFER, "args": {"amount": params.amount}})
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
@@ -823,7 +819,6 @@ def approve(params: ApproveParams) -> Instruction:
     """Creates a transaction instruction to approve a delegate.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> delegate, owner, source, token = pubkeys
@@ -840,7 +835,7 @@ def approve(params: ApproveParams) -> Instruction:
     Returns:
         The approve instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.APPROVE, args=dict(amount=params.amount)))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.APPROVE, "args": {"amount": params.amount}})
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False),
@@ -854,7 +849,6 @@ def revoke(params: RevokeParams) -> Instruction:
     """Creates a transaction instruction that revokes delegate authority for a given account.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(3)]
         >>> account, owner, token = pubkeys
@@ -867,7 +861,7 @@ def revoke(params: RevokeParams) -> Instruction:
     Returns:
         The revoke instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.REVOKE, args=None))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.REVOKE, "args": None})
     keys = [AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)]
     __add_signers(keys, params.owner, params.signers)
 
@@ -878,7 +872,6 @@ def set_authority(params: SetAuthorityParams) -> Instruction:
     """Creates a transaction instruction to sets a new authority of a mint or account.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, current_authority, new_authority, token = pubkeys
@@ -897,10 +890,10 @@ def set_authority(params: SetAuthorityParams) -> Instruction:
     """
     new_authority, opt = (params.new_authority, 1) if params.new_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
-        dict(
-            instruction_type=InstructionType.SET_AUTHORITY,
-            args=dict(authority_type=params.authority, new_authority_option=opt, new_authority=bytes(new_authority)),
-        )
+        {
+            "instruction_type": InstructionType.SET_AUTHORITY,
+            "args": {"authority_type": params.authority, "new_authority_option": opt, "new_authority": bytes(new_authority)},
+        }
     )
     keys = [AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)]
     __add_signers(keys, params.current_authority, params.signers)
@@ -914,7 +907,6 @@ def mint_to(params: MintToParams) -> Instruction:
     The native mint does not support minting.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, mint, mint_authority, token = pubkeys
@@ -931,7 +923,7 @@ def mint_to(params: MintToParams) -> Instruction:
     Returns:
         The mint-to instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.MINT_TO, args=dict(amount=params.amount)))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.MINT_TO, "args": {"amount": params.amount}})
     return __mint_to_instruction(params, data)
 
 
@@ -939,7 +931,6 @@ def burn(params: BurnParams) -> Instruction:
     """Creates a transaction instruction to burns tokens by removing them from an account.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
@@ -952,7 +943,7 @@ def burn(params: BurnParams) -> Instruction:
     Returns:
         The burn instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.BURN, args=dict(amount=params.amount)))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.BURN, "args": {"amount": params.amount}})
     return __burn_instruction(params, data)
 
 
@@ -962,7 +953,6 @@ def close_account(params: CloseAccountParams) -> Instruction:
     Non-native accounts may only be closed if its token amount is zero.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, dest, owner, token = pubkeys
@@ -974,7 +964,7 @@ def close_account(params: CloseAccountParams) -> Instruction:
     Returns:
         The close-account instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(dict(instruction_type=InstructionType.CLOSE_ACCOUNT, args=None))
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.CLOSE_ACCOUNT, "args": None})
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
@@ -988,7 +978,6 @@ def freeze_account(params: FreezeAccountParams) -> Instruction:
     """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set).
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, authority, token = pubkeys
@@ -1007,7 +996,6 @@ def thaw_account(params: ThawAccountParams) -> Instruction:
     """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set).
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, authority, token = pubkeys
@@ -1026,7 +1014,6 @@ def transfer_checked(params: TransferCheckedParams) -> Instruction:
     """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
         >>> dest, mint, owner, source, token = pubkeys
@@ -1046,7 +1033,7 @@ def transfer_checked(params: TransferCheckedParams) -> Instruction:
         The transfer-checked instruction.
     """
     data = INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.TRANSFER2, args=dict(amount=params.amount, decimals=params.decimals))
+        {"instruction_type": InstructionType.TRANSFER2, "args": {"amount": params.amount, "decimals": params.decimals}}
     )
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
@@ -1062,7 +1049,6 @@ def approve_checked(params: ApproveCheckedParams) -> Instruction:
     """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
         >>> delegate, mint, owner, source, token = pubkeys
@@ -1082,7 +1068,7 @@ def approve_checked(params: ApproveCheckedParams) -> Instruction:
         The approve-checked instruction.
     """
     data = INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.APPROVE2, args=dict(amount=params.amount, decimals=params.decimals))
+        {"instruction_type": InstructionType.APPROVE2, "args": {"amount": params.amount, "decimals": params.decimals}}
     )
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
@@ -1098,7 +1084,6 @@ def mint_to_checked(params: MintToCheckedParams) -> Instruction:
     """This instruction differs from `mint_to` in that the decimals value is asserted by the caller.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, mint, mint_authority, token = pubkeys
@@ -1117,7 +1102,7 @@ def mint_to_checked(params: MintToCheckedParams) -> Instruction:
         The mint-to-checked instruction.
     """
     data = INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.MINT_TO2, args=dict(amount=params.amount, decimals=params.decimals))
+        {"instruction_type": InstructionType.MINT_TO2, "args": {"amount": params.amount, "decimals": params.decimals}}
     )
     return __mint_to_instruction(params, data)
 
@@ -1126,7 +1111,6 @@ def burn_checked(params: BurnCheckedParams) -> Instruction:
     """This instruction differs from `burn` in that the decimals value is asserted by the caller.
 
     Example:
-
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
@@ -1140,7 +1124,7 @@ def burn_checked(params: BurnCheckedParams) -> Instruction:
         The burn-checked instruction.
     """
     data = INSTRUCTIONS_LAYOUT.build(
-        dict(instruction_type=InstructionType.BURN2, args=dict(amount=params.amount, decimals=params.decimals))
+        {"instruction_type": InstructionType.BURN2, "args": {"amount": params.amount, "decimals": params.decimals}}
     )
     return __burn_instruction(params, data)
 

@@ -38,7 +38,6 @@ def create_memo(params: MemoParams) -> Instruction:
     Message need to be encoded in bytes.
 
     Example:
-
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> signer, memo_program = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])

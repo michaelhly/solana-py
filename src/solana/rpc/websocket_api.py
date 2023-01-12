@@ -33,9 +33,8 @@ from solders.rpc.requests import (
     VoteUnsubscribe,
     batch_to_json,
 )
-from solders.rpc.responses import Notification
+from solders.rpc.responses import Notification, SubscriptionResult, parse_websocket_message
 from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
-from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
 from websockets.legacy.client import WebSocketClientProtocol
 from websockets.legacy.client import connect as ws_connect

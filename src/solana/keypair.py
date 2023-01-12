@@ -75,7 +75,6 @@ class Keypair:
         with the `.from_seed` method.
 
         Args:
-
             secret_key: secret key in bytes.
 
         Returns:
@@ -89,7 +88,6 @@ class Keypair:
         """Generate a keypair from a 32 byte seed.
 
         Args:
-
             seed: 32-byte seed.
 
         Returns:
@@ -107,7 +105,6 @@ class Keypair:
             A signed messeged object.
 
         Example:
-
             >>> seed = bytes([1] * 32)
             >>> keypair = Keypair.from_seed(seed)
             >>> msg = b"hello"
@@ -140,7 +137,7 @@ class Keypair:
 
     def __ne__(self, other) -> bool:
         """Implemented by negating __eq__."""
-        return not (self == other)  # pylint: disable=superfluous-parens
+        return not (self == other)  # noqa: SIM201
 
     def __hash__(self) -> int:
         """Returns a unique hash for set operations."""

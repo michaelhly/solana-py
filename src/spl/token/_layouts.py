@@ -1,9 +1,8 @@
 """Token instruction layouts."""
 from enum import IntEnum
 
-from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass
+from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass, Switch
 from construct import Struct as cStruct
-from construct import Switch
 
 PUBLIC_KEY_LAYOUT = Bytes(32)
 

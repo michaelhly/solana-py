@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import List, Optional, Union, cast
 
+from solana.blockhash import Blockhash
+from solana.keypair import Keypair
+from solana.rpc.api import Client
+from solana.rpc.commitment import Commitment
+from solana.rpc.types import TxOpts
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetTokenAccountBalanceResp,
@@ -15,11 +20,6 @@ from solders.rpc.responses import (
 )
 
 import spl.token.instructions as spl_token
-from solana.blockhash import Blockhash
-from solana.keypair import Keypair
-from solana.rpc.api import Client
-from solana.rpc.commitment import Commitment
-from solana.rpc.types import TxOpts
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
 from spl.token.core import AccountInfo, MintInfo, _TokenCore
 
@@ -220,7 +220,6 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         This account may then be used as a `transfer()` or `approve()` destination.
 
         Args:
-
             owner: User account that will own the new account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
             recent_blockhash: (optional) a prefetched Blockhash for the transaction.
@@ -248,7 +247,6 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """Create an associated token account.
 
         Args:
-
             owner: User account that will own the associated token account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
             recent_blockhash: (optional) a prefetched Blockhash for the transaction.
@@ -279,7 +277,6 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """Create and initialize a new account on the special native token mint.
 
         Args:
-
             conn: RPC connection to a solana cluster.
             program_id: SPL Token program account.
             owner: The owner of the new token account.

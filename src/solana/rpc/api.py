@@ -176,7 +176,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                     rent_epoch: 371,
                 },
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_account_info_body(
             pubkey=pubkey, commitment=commitment, encoding=encoding, data_slice=data_slice
         )
@@ -202,7 +202,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             Pubkey(
                 11111111111111111111111111111111,
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_account_info_body(pubkey=pubkey, commitment=commitment, encoding="jsonParsed", data_slice=None)
         return self._provider.make_request(body, GetAccountInfoMaybeJsonParsedResp)
 
@@ -265,7 +265,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             Hash(
                 EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG,
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_block_body(slot, encoding, max_supported_transaction_version)
         return self._provider.make_request(body, GetBlockResp)
 
@@ -350,7 +350,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
         return self._provider.make_request(body, GetSignaturesForAddressResp)
 
@@ -425,7 +425,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.get_fee_for_message(txn.compile_message()).value # doctest: +SKIP
             5000
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._get_fee_for_message_body(message, commitment)
         return self._provider.make_request(body, GetFeeForMessageResp)
 
@@ -1067,7 +1067,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> tx = Transaction.deserialize(bytes.fromhex(full_signed_tx_hex))
             >>> solana_client.simulate_transaction(tx).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """
         body = self._simulate_transaction_body(txn, sig_verify, commitment)
         return self._provider.make_request(body, SimulateTransactionResp)
 

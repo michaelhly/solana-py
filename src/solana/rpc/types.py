@@ -2,7 +2,7 @@
 from typing import NamedTuple, NewType, Optional
 
 from solders.pubkey import Pubkey
-from typing_extensions import TypedDict  # noqa: F401
+from typing_extensions import TypedDict
 
 from .commitment import Commitment, Finalized
 

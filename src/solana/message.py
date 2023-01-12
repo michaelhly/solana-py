@@ -116,7 +116,6 @@ class Message:
         """Serialize message to bytes.
 
         Example:
-
             >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
             >>> leading_zeros = [0] * 31
@@ -137,7 +136,7 @@ class Message:
 
         Returns:
             The serialized message.
-        """  # pylint: disable=line-too-long # noqa: E501
+        """  # pylint: disable=line-too-long
         return bytes(self._solders)
 
     @classmethod
@@ -145,7 +144,6 @@ class Message:
         """Deserialize raw message bytes.
 
         Example:
-
             >>> raw_message = bytes.fromhex(
             ...     '0200030500000000000000000000000000000000000000000000'
             ...     '0000000000000000000100000000000000000000000000000000'
