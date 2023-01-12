@@ -1092,7 +1092,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
     async def simulate_transaction(
         self,
-        txn: Transaction,
+        txn: Union[Transaction, VersionedTransaction],
         sig_verify: bool = False,
         commitment: Optional[Commitment] = None,
     ) -> SimulateTransactionResp:

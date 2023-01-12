@@ -1081,14 +1081,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def simulate_transaction(
         self,
-        txn: Transaction,
+        txn: Union[Transaction, VersionedTransaction],
         sig_verify: bool = False,
         commitment: Optional[Commitment] = None,
     ) -> SimulateTransactionResp:
         """Simulate sending a transaction.
 
         Args:
-            txn: A Transaction object, a transaction in wire format, or a transaction as base-64 encoded string
+            txn: A transaction object.
                 The transaction must have a valid blockhash, but is not required to be signed.
             sig_verify: If true the transaction signatures will be verified (default: false).
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".

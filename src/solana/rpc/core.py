@@ -1,6 +1,6 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
-from typing import List, Optional, Sequence, Tuple, Union, cast
+from typing import List, Optional, Sequence, Tuple, Union, cast, overload
 
 try:
     from typing import Literal  # type: ignore
@@ -74,10 +74,12 @@ from solders.rpc.requests import (
     RequestAirdrop,
     SendRawTransaction,
     SimulateLegacyTransaction,
+    SimulateVersionedTransaction,
     ValidatorExit,
 )
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
+from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
@@ -475,14 +477,28 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[SendTransactionResp, Commitment, Optional[int]]:
         return resp, opts.preflight_commitment, opts.last_valid_block_height
 
+    @overload
     def _simulate_transaction_body(
         self, txn: Transaction, sig_verify: bool, commitment: Optional[Commitment]
     ) -> SimulateLegacyTransaction:
-        if txn.recent_blockhash is None:
-            raise ValueError("transaction must have a valid blockhash")
+        ...
+
+    @overload
+    def _simulate_transaction_body(
+        self, txn: VersionedTransaction, sig_verify: bool, commitment: Optional[Commitment]
+    ) -> SimulateVersionedTransaction:
+        ...
+
+    def _simulate_transaction_body(
+        self, txn: Union[Transaction, VersionedTransaction], sig_verify: bool, commitment: Optional[Commitment]
+    ) -> Union[SimulateLegacyTransaction, SimulateVersionedTransaction]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcSimulateTransactionConfig(sig_verify=sig_verify, commitment=commitment_to_use)
-        return SimulateLegacyTransaction(txn.to_solders(), config)
+        if isinstance(txn, Transaction):
+            if txn.recent_blockhash is None:
+                raise ValueError("transaction must have a valid blockhash")
+            return SimulateLegacyTransaction(txn.to_solders(), config)
+        return SimulateVersionedTransaction(txn, config)
 
     @staticmethod
     def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
