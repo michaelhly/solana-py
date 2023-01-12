@@ -73,7 +73,7 @@ from solders.rpc.requests import (
     MinimumLedgerSlot,
     RequestAirdrop,
     SendRawTransaction,
-    SimulateTransaction,
+    SimulateLegacyTransaction,
     ValidatorExit,
 )
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
@@ -477,12 +477,12 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _simulate_transaction_body(
         self, txn: Transaction, sig_verify: bool, commitment: Optional[Commitment]
-    ) -> SimulateTransaction:
+    ) -> SimulateLegacyTransaction:
         if txn.recent_blockhash is None:
             raise ValueError("transaction must have a valid blockhash")
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcSimulateTransactionConfig(sig_verify=sig_verify, commitment=commitment_to_use)
-        return SimulateTransaction(txn.to_solders(), config)
+        return SimulateLegacyTransaction(txn.to_solders(), config)
 
     @staticmethod
     def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
