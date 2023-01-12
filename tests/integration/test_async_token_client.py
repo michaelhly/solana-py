@@ -6,7 +6,7 @@ from solders.pubkey import Pubkey
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
-from .utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
+from ..utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 
 
 @pytest.mark.integration

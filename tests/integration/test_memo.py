@@ -8,7 +8,7 @@ from solders.transaction_status import ParsedInstruction
 from spl.memo.constants import MEMO_PROGRAM_ID
 from spl.memo.instructions import MemoParams, create_memo
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response
+from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
