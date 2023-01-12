@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from time import sleep, time
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union, overload
 
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
@@ -57,6 +57,7 @@ from solders.rpc.responses import (
     ValidatorExitResp,
 )
 from solders.signature import Signature
+from solders.transaction import VersionedTransaction
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
@@ -991,6 +992,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return self.__post_send_with_confirm(*post_send_args)
 
+    @overload
+    def send_transaction(
+        self,
+        txn: VersionedTransaction,
+        opts: Optional[types.TxOpts] = None,
+    ) -> SendTransactionResp:
+        ...
+
+    @overload
     def send_transaction(
         self,
         txn: Transaction,
@@ -998,14 +1008,24 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> SendTransactionResp:
+        ...
+
+    def send_transaction(
+        self,
+        txn: Union[VersionedTransaction, Transaction],
+        *signers: Keypair,
+        opts: Optional[types.TxOpts] = None,
+        recent_blockhash: Optional[Blockhash] = None,
+    ) -> SendTransactionResp:
         """Send a transaction.
 
         Args:
-            txn: Transaction object.
-            signers: Signers to sign the transaction.
+            txn: transaction object.
+            signers: Signers to sign the transaction. Only supported for legacy Transaction.
             opts: (optional) Transaction options.
             recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
                 skip fetching the recent blockhash or relying on the cache.
+                Only supported for legacy Transaction.
 
         Example:
             >>> from solana.keypair import Keypair
@@ -1023,6 +1043,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
+        if isinstance(txn, VersionedTransaction):
+            versioned_tx_opts = types.TxOpts(preflight_commitment=self._commitment)
+            return self.send_raw_transaction(bytes(txn), opts=versioned_tx_opts)
         last_valid_block_height = None
         if recent_blockhash is None:
             if self.blockhash_cache:
