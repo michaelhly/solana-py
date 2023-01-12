@@ -2,10 +2,10 @@ clean:
 	rm -rf dist build __pycache__ *.egg-info
 
 format:
-	poetry run black --line-length=120 src tests
+	poetry run black src tests
 
 lint:
-	poetry run black --check --diff --line-length=120 src tests
+	poetry run black --check --diff src tests
 	poetry run ruff src tests
 	poetry run mypy src
 
