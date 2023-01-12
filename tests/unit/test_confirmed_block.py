@@ -1,10 +1,9 @@
 """Test get confirmed block."""
 
-from solders.signature import Signature
-
 import solana.transaction as txlib
 from solana.keypair import Keypair
 from solana.system_program import TransferParams, transfer
+from solders.signature import Signature
 
 
 def test_verify_confirmed_block(stubbed_blockhash):
