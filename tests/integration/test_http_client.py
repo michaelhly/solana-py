@@ -11,11 +11,11 @@ from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededE
 from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
 from solders.message import MessageV0
-from solders.transaction import VersionedTransaction
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
+from solders.transaction import VersionedTransaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
