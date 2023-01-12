@@ -2,7 +2,6 @@ clean:
 	rm -rf dist build __pycache__ *.egg-info
 
 format:
-	poetry run isort src tests
 	poetry run black --line-length=120 src tests
 
 lint:
