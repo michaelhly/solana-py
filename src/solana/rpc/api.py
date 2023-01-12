@@ -57,6 +57,7 @@ from solders.rpc.responses import (
     ValidatorExitResp,
 )
 from solders.signature import Signature
+from solders.transaction import VersionedTransaction
 
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
@@ -993,7 +994,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def send_transaction(
         self,
-        txn: Transaction,
+        txn: Union[VersionedTransaction, Transaction],
         *signers: Keypair,
         opts: Optional[types.TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
@@ -1001,11 +1002,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """Send a transaction.
 
         Args:
-            txn: Transaction object.
-            signers: Signers to sign the transaction.
+            txn: transaction object.
+            signers: Signers to sign the transaction. Only supported for legacy Transaction.
             opts: (optional) Transaction options.
             recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
                 skip fetching the recent blockhash or relying on the cache.
+                Only supported for legacy Transaction.
 
         Example:
             >>> from solana.keypair import Keypair
@@ -1023,6 +1025,15 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
+        if isinstance(txn, VersionedTransaction):
+            if signers:
+                msg = "*signers args are not used when sending VersionedTransaction."
+                raise ValueError(msg)
+            if recent_blockhash is not None:
+                msg = "recent_blockhash arg is not used when sending VersionedTransaction."
+                raise ValueError(msg)
+            versioned_tx_opts = types.TxOpts(preflight_commitment=self._commitment)
+            return self.send_raw_transaction(bytes(txn), opts=versioned_tx_opts)
         last_valid_block_height = None
         if recent_blockhash is None:
             if self.blockhash_cache:
@@ -1058,14 +1069,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def simulate_transaction(
         self,
-        txn: Transaction,
+        txn: Union[Transaction, VersionedTransaction],
         sig_verify: bool = False,
         commitment: Optional[Commitment] = None,
     ) -> SimulateTransactionResp:
         """Simulate sending a transaction.
 
         Args:
-            txn: A Transaction object, a transaction in wire format, or a transaction as base-64 encoded string
+            txn: A transaction object.
                 The transaction must have a valid blockhash, but is not required to be signed.
             sig_verify: If true the transaction signatures will be verified (default: false).
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".

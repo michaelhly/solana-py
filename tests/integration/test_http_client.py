@@ -10,13 +10,15 @@ from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
+from solders.transaction import VersionedTransaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response
+from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
@@ -83,6 +85,8 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
     transfer_tx = Transaction().add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=1000))
     )
+    sim_resp = test_http_client.simulate_transaction(transfer_tx)
+    assert_valid_response(sim_resp)
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
     # Confirm transaction
@@ -94,6 +98,35 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
     bal_resp2 = test_http_client.get_balance(stubbed_receiver)
     assert_valid_response(bal_resp2)
     assert bal_resp2.value == 10000001000
+
+
+@pytest.mark.integration
+def test_send_versioned_transaction_and_get_balance(random_funded_keypair: Keypair, test_http_client: Client):
+    """Test sending a transaction to localnet."""
+    receiver = Keypair()
+    amount = 1_000_000
+    transfer_ix = sp.transfer(
+        sp.TransferParams(from_pubkey=random_funded_keypair.public_key, to_pubkey=receiver.public_key, lamports=amount)
+    )
+    recent_blockhash = test_http_client.get_latest_blockhash().value.blockhash
+    msg = MessageV0.try_compile(
+        payer=random_funded_keypair.public_key,
+        instructions=[transfer_ix],
+        address_lookup_table_accounts=[],
+        recent_blockhash=recent_blockhash,
+    )
+    transfer_tx = VersionedTransaction(msg, [random_funded_keypair.to_solders()])
+    resp = test_http_client.send_transaction(transfer_tx)
+    assert_valid_response(resp)
+    # Confirm transaction
+    test_http_client.confirm_transaction(resp.value)
+    # Check balances
+    resp = test_http_client.get_balance(random_funded_keypair.public_key)
+    assert_valid_response(resp)
+    assert resp.value == AIRDROP_AMOUNT - amount - 5000
+    resp = test_http_client.get_balance(receiver.public_key)
+    assert_valid_response(resp)
+    assert resp.value == amount
 
 
 @pytest.mark.integration

@@ -27,7 +27,7 @@ from solders.rpc.responses import (
 from solders.system_program import ID as SYS_PROGRAM_ID
 from websockets.legacy.client import WebSocketClientProtocol
 
-from .utils import AIRDROP_AMOUNT
+from ..utils import AIRDROP_AMOUNT
 
 
 @pytest.fixture

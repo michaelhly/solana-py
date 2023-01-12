@@ -2,13 +2,17 @@
 
 ## [0.29.0] - Unreleased
 
+## Added
+
+- Add VersionedTransaction support to `send_transaction` and `simulate_transaction` methods [(#334)](https://github.com/michaelhly/solana-py/pull/334):
+
 ## Changed
 
 - Remove redundant classes [(#329)](https://github.com/michaelhly/solana-py/pull/329):
     - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
     - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
     - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
-- Use latest solders [(#332)](https://github.com/michaelhly/solana-py/pull/332)
+- Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
 
 ## [0.28.1] - 2022-12-29
