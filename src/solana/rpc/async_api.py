@@ -798,7 +798,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> pubkey = Pubkey.from_string("7fUAJdStEuGbc3sM84cKRL6yYaaSstyLSU4ve5oovLS7")
-            >>> (await solana_client.get_token_account_balance(pubkey)).value.amount  # noqa: E501 # pylint: disable=line-too-long # doctest: +SKIP
+            >>> (await solana_client.get_token_account_balance(pubkey)).value.amount  # noqa: E501 # doctest: +SKIP
             '9864'
         """
         body = self._get_token_account_balance_body(pubkey, commitment)
