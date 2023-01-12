@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from time import sleep, time
-from typing import Dict, List, Optional, Sequence, Union, overload
+from typing import Dict, List, Optional, Sequence, Union
 
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
@@ -992,24 +992,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return self.__post_send_with_confirm(*post_send_args)
 
-    @overload
-    def send_transaction(
-        self,
-        txn: VersionedTransaction,
-        opts: Optional[types.TxOpts] = None,
-    ) -> SendTransactionResp:
-        ...
-
-    @overload
-    def send_transaction(
-        self,
-        txn: Transaction,
-        *signers: Keypair,
-        opts: Optional[types.TxOpts] = None,
-        recent_blockhash: Optional[Blockhash] = None,
-    ) -> SendTransactionResp:
-        ...
-
     def send_transaction(
         self,
         txn: Union[VersionedTransaction, Transaction],
@@ -1044,6 +1026,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             )
         """
         if isinstance(txn, VersionedTransaction):
+            if signers is not None:
+                msg = "*signers args are not used when sending VersionedTransaction."
+                raise ValueError(msg)
+            if recent_blockhash is not None:
+                msg = "recent_blockhash arg is not used when sending VersionedTransaction."
+                raise ValueError(msg)
             versioned_tx_opts = types.TxOpts(preflight_commitment=self._commitment)
             return self.send_raw_transaction(bytes(txn), opts=versioned_tx_opts)
         last_valid_block_height = None
