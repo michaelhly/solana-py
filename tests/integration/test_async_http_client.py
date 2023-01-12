@@ -10,13 +10,15 @@ from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
+from solders.transaction import VersionedTransaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response
+from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
@@ -87,7 +89,9 @@ async def test_request_air_drop_cached_blockhash(
 
 
 @pytest.mark.integration
-async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stubbed_receiver, test_http_client_async):
+async def test_send_transaction_and_get_balance(
+    async_stubbed_sender: Keypair, async_stubbed_receiver: Pubkey, test_http_client_async: AsyncClient
+):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to async_stubbed_receiver
     transfer_tx = Transaction().add(
@@ -108,6 +112,37 @@ async def test_send_transaction_and_get_balance(async_stubbed_sender, async_stub
     resp = await test_http_client_async.get_balance(async_stubbed_receiver)
     assert_valid_response(resp)
     assert resp.value == 10000001000
+
+
+@pytest.mark.integration
+async def test_send_versioned_transaction_and_get_balance(
+    random_funded_keypair: Keypair, test_http_client_async: AsyncClient
+):
+    """Test sending a transaction to localnet."""
+    receiver = Keypair()
+    amount = 1_000_000
+    transfer_ix = sp.transfer(
+        sp.TransferParams(from_pubkey=random_funded_keypair.public_key, to_pubkey=receiver.public_key, lamports=amount)
+    )
+    recent_blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    msg = MessageV0.try_compile(
+        payer=random_funded_keypair.public_key,
+        instructions=[transfer_ix],
+        address_lookup_table_accounts=[],
+        recent_blockhash=recent_blockhash,
+    )
+    transfer_tx = VersionedTransaction(msg, [random_funded_keypair.to_solders()])
+    resp = await test_http_client_async.send_transaction(transfer_tx)
+    assert_valid_response(resp)
+    # Confirm transaction
+    await test_http_client_async.confirm_transaction(resp.value)
+    # Check balances
+    resp = await test_http_client_async.get_balance(random_funded_keypair.public_key)
+    assert_valid_response(resp)
+    assert resp.value == AIRDROP_AMOUNT - amount - 5000
+    resp = await test_http_client_async.get_balance(receiver.public_key)
+    assert_valid_response(resp)
+    assert resp.value == amount
 
 
 @pytest.mark.integration
