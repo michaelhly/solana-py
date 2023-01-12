@@ -1039,7 +1039,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             )
         """
         if isinstance(txn, VersionedTransaction):
-            if signers is not None:
+            if signers:
                 msg = "*signers args are not used when sending VersionedTransaction."
                 raise ValueError(msg)
             if recent_blockhash is not None:
