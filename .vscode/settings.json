@@ -9,7 +9,7 @@
     "120"
   ],
   "editor.formatOnSave": true,
-  "python.languageServer": "Jedi",
+  "python.languageServer": "Pylance",
   "ruff.args": [
     "--config=pyproject.toml"
   ]
