@@ -2,6 +2,10 @@
 
 ## [0.29.0] - Unreleased
 
+## Added
+
+- Add VersionedTransaction support to `send_transaction` and `simulate_transaction` methods.
+
 ## Changed
 
 - Remove redundant classes [(#329)](https://github.com/michaelhly/solana-py/pull/329):
