@@ -50,9 +50,7 @@ def _build_solders_tx(
 ) -> SoldersTx:
     core_instructions = [] if instructions is None else instructions
     underlying_instructions = (
-        core_instructions
-        if nonce_info is None
-        else [nonce_info.nonce_instruction, *core_instructions]
+        core_instructions if nonce_info is None else [nonce_info.nonce_instruction, *core_instructions]
     )
     underlying_blockhash_str: Optional[str]
     if nonce_info is not None:
@@ -63,13 +61,9 @@ def _build_solders_tx(
         underlying_blockhash_str = None
     underlying_fee_payer = None if fee_payer is None else fee_payer
     underlying_blockhash = (
-        Hash.default()
-        if underlying_blockhash_str is None
-        else Hash.from_string(underlying_blockhash_str)
+        Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
     )
-    msg = SoldersMessage.new_with_blockhash(
-        underlying_instructions, underlying_fee_payer, underlying_blockhash
-    )
+    msg = SoldersMessage.new_with_blockhash(underlying_instructions, underlying_fee_payer, underlying_blockhash)
     return SoldersTx.new_unsigned(msg)
 
 
@@ -86,9 +80,7 @@ def _decompile_instructions(msg: SoldersMessage) -> List[Instruction]:
             )
             for idx in compiled_ix.accounts
         ]
-        decompiled_instructions.append(
-            Instruction(program_id, compiled_ix.data, account_metas)
-        )
+        decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
     return decompiled_instructions
 
 
@@ -155,7 +147,7 @@ class Transaction:
         return Blockhash(str(self._solders.message.recent_blockhash))
 
     @recent_blockhash.setter
-    def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:
+    def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:  # noqa: D102
         self._solders = _build_solders_tx(
             recent_blockhash=blockhash,
             nonce_info=None,
@@ -170,7 +162,7 @@ class Transaction:
         return account_keys[0] if account_keys else None
 
     @fee_payer.setter
-    def fee_payer(self, payer: Optional[Pubkey]) -> None:
+    def fee_payer(self, payer: Optional[Pubkey]) -> None:  # noqa: D102
         self._solders = _build_solders_tx(
             recent_blockhash=self.recent_blockhash,
             nonce_info=None,
@@ -185,7 +177,7 @@ class Transaction:
         return tuple(_decompile_instructions(msg))
 
     @instructions.setter
-    def instructions(self, ixns: Sequence[Instruction]) -> None:
+    def instructions(self, ixns: Sequence[Instruction]) -> None:  # noqa: D102
         self._solders = _build_solders_tx(
             recent_blockhash=self.recent_blockhash,
             nonce_info=None,
@@ -248,9 +240,7 @@ class Transaction:
         All the caveats from the `sign` method apply to `sign_partial`
         """
         underlying_signers = [signer.to_solders() for signer in partial_signers]
-        self._solders.partial_sign(
-            underlying_signers, self._solders.message.recent_blockhash
-        )
+        self._solders.partial_sign(underlying_signers, self._solders.message.recent_blockhash)
 
     def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.
@@ -319,9 +309,8 @@ class Transaction:
         if self.signatures == [Signature.default() for sig in self.signatures]:
             raise AttributeError("transaction has not been signed")
 
-        if verify_signatures:
-            if not self.verify_signatures():
-                raise AttributeError("transaction has not been signed correctly")
+        if verify_signatures and not self.verify_signatures():
+            raise AttributeError("transaction has not been signed correctly")
 
         return bytes(self._solders)
 

@@ -78,7 +78,6 @@ exclude = [
     "node_modules",
     "venv",
 ]
-per-file-ignores = {}
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
@@ -86,6 +85,8 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Assume Python 3.10.
 target-version = "py310"
 
-
 [tool.ruff.pydocstyle]
 convention = "google" 
+
+[tool.ruff.per-file-ignores]
+"src/solana/blockhash.py" = ["A003"]
