@@ -84,9 +84,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
         ...
 
-    def make_batch_request(
-        self, reqs: Tuple[Body, ...], parsers: _Tuples
-    ) -> Tuple[RPCResult, ...]:
+    def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint.
 
         Args:

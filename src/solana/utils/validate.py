@@ -15,9 +15,7 @@ def validate_instruction_keys(instruction: Instruction, expected: int) -> None:
         expected: The expected length.
     """
     if len(instruction.accounts) < expected:
-        raise ValueError(
-            f"invalid instruction: found {len(instruction.accounts)} keys, expected at least {expected}"
-        )
+        raise ValueError(f"invalid instruction: found {len(instruction.accounts)} keys, expected at least {expected}")
 
 
 def validate_instruction_type(parsed_data: Any, expected_type: IntEnum) -> None:

@@ -26,9 +26,7 @@ class BlockhashCache:
         self.unused_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
         self.used_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
 
-    def set(
-        self, blockhash: Blockhash, slot: int, used_immediately: bool = False
-    ) -> None:
+    def set(self, blockhash: Blockhash, slot: int, used_immediately: bool = False) -> None:
         """Update the cache.
 
         Args:

@@ -8,9 +8,7 @@ from solders.pubkey import Pubkey
 
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
 
-VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string(
-    "Vote111111111111111111111111111111111111111"
-)
+VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
 """Public key that identifies the Vote program."""
 
 

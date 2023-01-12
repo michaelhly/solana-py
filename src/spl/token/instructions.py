@@ -311,9 +311,7 @@ def decode_initialize_mint(instruction: Instruction) -> InitializeMintParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 2, InstructionType.INITIALIZE_MINT
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.INITIALIZE_MINT)
     return InitializeMintParams(
         decimals=parsed_data.args.decimals,
         program_id=instruction.program_id,
@@ -334,9 +332,7 @@ def decode_initialize_account(instruction: Instruction) -> InitializeAccountPara
     Returns:
         The decoded instruction.
     """
-    _ = __parse_and_validate_instruction(
-        instruction, 4, InstructionType.INITIALIZE_ACCOUNT
-    )
+    _ = __parse_and_validate_instruction(instruction, 4, InstructionType.INITIALIZE_ACCOUNT)
     return InitializeAccountParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
@@ -354,9 +350,7 @@ def decode_initialize_multisig(instruction: Instruction) -> InitializeMultisigPa
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 2, InstructionType.INITIALIZE_MULTISIG
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.INITIALIZE_MULTISIG)
     num_signers = parsed_data.args.m
     validate_instruction_keys(instruction, 2 + num_signers)
     return InitializeMultisigParams(
@@ -376,9 +370,7 @@ def decode_transfer(instruction: Instruction) -> TransferParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 3, InstructionType.TRANSFER
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.TRANSFER)
     return TransferParams(
         program_id=instruction.program_id,
         source=instruction.accounts[0].pubkey,
@@ -398,9 +390,7 @@ def decode_approve(instruction: Instruction) -> ApproveParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 3, InstructionType.APPROVE
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.APPROVE)
     return ApproveParams(
         program_id=instruction.program_id,
         source=instruction.accounts[0].pubkey,
@@ -438,16 +428,12 @@ def decode_set_authority(instruction: Instruction) -> SetAuthorityParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 2, InstructionType.SET_AUTHORITY
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.SET_AUTHORITY)
     return SetAuthorityParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         authority=AuthorityType(parsed_data.args.authority_type),
-        new_authority=Pubkey(parsed_data.args.new_authority)
-        if parsed_data.args.new_authority_option
-        else None,
+        new_authority=Pubkey(parsed_data.args.new_authority) if parsed_data.args.new_authority_option else None,
         current_authority=instruction.accounts[1].pubkey,
         signers=[signer.pubkey for signer in instruction.accounts[2:]],
     )
@@ -462,9 +448,7 @@ def decode_mint_to(instruction: Instruction) -> MintToParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 3, InstructionType.MINT_TO
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MINT_TO)
     return MintToParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -561,9 +545,7 @@ def decode_transfer_checked(instruction: Instruction) -> TransferCheckedParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 4, InstructionType.TRANSFER2
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.TRANSFER2)
     return TransferCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -585,9 +567,7 @@ def decode_approve_checked(instruction: Instruction) -> ApproveCheckedParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 4, InstructionType.APPROVE2
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.APPROVE2)
     return ApproveCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -609,9 +589,7 @@ def decode_mint_to_checked(instruction: Instruction) -> MintToCheckedParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 3, InstructionType.MINT_TO2
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MINT_TO2)
     return MintToCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -632,9 +610,7 @@ def decode_burn_checked(instruction: Instruction) -> BurnCheckedParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(
-        instruction, 3, InstructionType.BURN2
-    )
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.BURN2)
     return BurnCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
@@ -646,9 +622,7 @@ def decode_burn_checked(instruction: Instruction) -> BurnCheckedParams:
     )
 
 
-def __add_signers(
-    keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey]
-) -> None:
+def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey]) -> None:
     if signers:
         keys.append(AccountMeta(pubkey=owner, is_signer=False, is_writable=False))
         for signer in signers:
@@ -657,9 +631,7 @@ def __add_signers(
         keys.append(AccountMeta(pubkey=owner, is_signer=True, is_writable=False))
 
 
-def __burn_instruction(
-    params: Union[BurnParams, BurnCheckedParams], data: Any
-) -> Instruction:
+def __burn_instruction(params: Union[BurnParams, BurnCheckedParams], data: Any) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
@@ -673,9 +645,7 @@ def __freeze_or_thaw_instruction(
     params: Union[FreezeAccountParams, ThawAccountParams],
     instruction_type: InstructionType,
 ) -> Instruction:
-    data = INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": instruction_type, "args": None}
-    )
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": instruction_type, "args": None})
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
@@ -685,9 +655,7 @@ def __freeze_or_thaw_instruction(
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def __mint_to_instruction(
-    params: Union[MintToParams, MintToCheckedParams], data: Any
-) -> Instruction:
+def __mint_to_instruction(params: Union[MintToParams, MintToCheckedParams], data: Any) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
@@ -723,11 +691,7 @@ def initialize_mint(params: InitializeMintParams) -> Instruction:
     Returns:
         The instruction to initialize the mint.
     """
-    freeze_authority, opt = (
-        (params.freeze_authority, 1)
-        if params.freeze_authority
-        else (Pubkey([0] * 31 + [0]), 0)
-    )
+    freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.INITIALIZE_MINT,
@@ -772,9 +736,7 @@ def initialize_account(params: InitializeAccountParams) -> Instruction:
     Returns:
         The instruction to initialize the account.
     """
-    data = INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": InstructionType.INITIALIZE_ACCOUNT, "args": None}
-    )
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.INITIALIZE_ACCOUNT, "args": None})
     return Instruction(
         accounts=[
             AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
@@ -884,9 +846,7 @@ def approve(params: ApproveParams) -> Instruction:
     Returns:
         The approve instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": InstructionType.APPROVE, "args": {"amount": params.amount}}
-    )
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.APPROVE, "args": {"amount": params.amount}})
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.delegate, is_signer=False, is_writable=False),
@@ -912,9 +872,7 @@ def revoke(params: RevokeParams) -> Instruction:
     Returns:
         The revoke instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": InstructionType.REVOKE, "args": None}
-    )
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.REVOKE, "args": None})
     keys = [AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)]
     __add_signers(keys, params.owner, params.signers)
 
@@ -941,11 +899,7 @@ def set_authority(params: SetAuthorityParams) -> Instruction:
     Returns:
         The set authority instruction.
     """
-    new_authority, opt = (
-        (params.new_authority, 1)
-        if params.new_authority
-        else (Pubkey([0] * 31 + [0]), 0)
-    )
+    new_authority, opt = (params.new_authority, 1) if params.new_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.SET_AUTHORITY,
@@ -984,9 +938,7 @@ def mint_to(params: MintToParams) -> Instruction:
     Returns:
         The mint-to instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": InstructionType.MINT_TO, "args": {"amount": params.amount}}
-    )
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.MINT_TO, "args": {"amount": params.amount}})
     return __mint_to_instruction(params, data)
 
 
@@ -1006,9 +958,7 @@ def burn(params: BurnParams) -> Instruction:
     Returns:
         The burn instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": InstructionType.BURN, "args": {"amount": params.amount}}
-    )
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.BURN, "args": {"amount": params.amount}})
     return __burn_instruction(params, data)
 
 
@@ -1029,9 +979,7 @@ def close_account(params: CloseAccountParams) -> Instruction:
     Returns:
         The close-account instruction.
     """
-    data = INSTRUCTIONS_LAYOUT.build(
-        {"instruction_type": InstructionType.CLOSE_ACCOUNT, "args": None}
-    )
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.CLOSE_ACCOUNT, "args": None})
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
@@ -1221,9 +1169,7 @@ def get_associated_token_address(owner: Pubkey, mint: Pubkey) -> Pubkey:
     return key
 
 
-def create_associated_token_account(
-    payer: Pubkey, owner: Pubkey, mint: Pubkey
-) -> Instruction:
+def create_associated_token_account(payer: Pubkey, owner: Pubkey, mint: Pubkey) -> Instruction:
     """Creates a transaction instruction to create an associated token account.
 
     Returns:
@@ -1233,9 +1179,7 @@ def create_associated_token_account(
     return Instruction(
         accounts=[
             AccountMeta(pubkey=payer, is_signer=True, is_writable=True),
-            AccountMeta(
-                pubkey=associated_token_address, is_signer=False, is_writable=True
-            ),
+            AccountMeta(pubkey=associated_token_address, is_signer=False, is_writable=True),
             AccountMeta(pubkey=owner, is_signer=False, is_writable=False),
             AccountMeta(pubkey=mint, is_signer=False, is_writable=False),
             AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),

@@ -145,9 +145,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             txn,
             payer,
             mint_keypair,
-            TxOpts(
-                skip_confirmation=skip_confirmation, preflight_commitment=commitment
-            ),
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
         )
 
     def _create_account_args(
@@ -188,9 +186,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             txn,
             self.payer,
             new_keypair,
-            TxOpts(
-                skip_confirmation=skip_confirmation, preflight_commitment=commitment
-            ),
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
         )
 
     def _create_associated_token_account_args(
@@ -210,9 +206,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             create_txn.accounts[1].pubkey,
             txn,
             self.payer,
-            TxOpts(
-                skip_confirmation=skip_confirmation, preflight_commitment=commitment
-            ),
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
         )
 
     @staticmethod
@@ -267,9 +261,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             txn,
             payer,
             new_keypair,
-            TxOpts(
-                skip_confirmation=skip_confirmation, preflight_commitment=commitment
-            ),
+            TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
         )
 
     def _transfer_args(
@@ -377,24 +369,14 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         decoded_data = MINT_LAYOUT.parse(bytes_data)
         decimals = decoded_data.decimals
 
-        mint_authority = (
-            None
-            if decoded_data.mint_authority_option == 0
-            else Pubkey(decoded_data.mint_authority)
-        )
+        mint_authority = None if decoded_data.mint_authority_option == 0 else Pubkey(decoded_data.mint_authority)
 
         supply = decoded_data.supply
         is_initialized = decoded_data.is_initialized != 0
 
-        freeze_authority = (
-            None
-            if decoded_data.freeze_authority_option == 0
-            else Pubkey(decoded_data.freeze_authority)
-        )
+        freeze_authority = None if decoded_data.freeze_authority_option == 0 else Pubkey(decoded_data.freeze_authority)
 
-        return MintInfo(
-            mint_authority, supply, decimals, is_initialized, freeze_authority
-        )
+        return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
 
     def _create_account_info(self, info: GetAccountInfoResp) -> AccountInfo:
         value = info.value
@@ -430,16 +412,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             rent_exempt_reserve = None
             is_native = False
 
-        close_authority = (
-            None
-            if decoded_data.close_authority_option == 0
-            else Pubkey(decoded_data.owner)
-        )
+        close_authority = None if decoded_data.close_authority_option == 0 else Pubkey(decoded_data.owner)
 
         if mint != self.pubkey:
-            raise AttributeError(
-                f"Invalid account mint: {decoded_data.mint} != {self.pubkey}"
-            )
+            raise AttributeError(f"Invalid account mint: {decoded_data.mint} != {self.pubkey}")
 
         return AccountInfo(
             mint,
