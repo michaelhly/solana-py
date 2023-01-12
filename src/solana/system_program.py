@@ -828,15 +828,15 @@ def create_nonce_account(
     Returns:
         The transaction to create the new nonce account.
     """
-    if isinstance(params, CreateNonceAccountParams):
-        solders_ixs = ssp.create_nonce_account(
+    solders_ixs = (
+        ssp.create_nonce_account(
             from_pubkey=params.from_pubkey,
             nonce_pubkey=params.nonce_pubkey,
             authority=params.authorized_pubkey,
             lamports=params.lamports,
         )
-    else:
-        solders_ixs = ssp.create_nonce_account_with_seed(
+        if isinstance(params, CreateNonceAccountParams)
+        else ssp.create_nonce_account_with_seed(
             from_pubkey=params.from_pubkey,
             nonce_pubkey=params.nonce_pubkey,
             base=params.base_pubkey,
@@ -844,6 +844,7 @@ def create_nonce_account(
             authority=params.authorized_pubkey,
             lamports=params.lamports,
         )
+    )
     create_account_instruction = solders_ixs[0]
     initialize_nonce_instruction = solders_ixs[1]
     return Transaction(fee_payer=params.from_pubkey).add(
@@ -919,9 +920,10 @@ def allocate(params: Union[AllocateParams, AllocateWithSeedParams]) -> Instructi
     Returns:
         The allocate instruction.
     """
-    if isinstance(params, AllocateWithSeedParams):
-        solders_ix = ssp.allocate_with_seed(params.to_solders())
-    else:
-        solders_ix = ssp.allocate(params.to_solders())
+    solders_ix = (
+        ssp.allocate_with_seed(params.to_solders())
+        if isinstance(params, AllocateWithSeedParams)
+        else ssp.allocate(params.to_solders())
+    )
 
     return solders_ix

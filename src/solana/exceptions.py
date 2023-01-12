@@ -25,7 +25,10 @@ class SolanaRpcException(SolanaExceptionBase):
 
     @staticmethod
     def _build_error_message(
-        exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any  # noqa: ARG004
+        exc: Exception,
+        func: Callable[[Any], Any],  # noqa: ARG004
+        *args: Any,
+        **kwargs: Any,  # noqa: ARG004
     ) -> str:
         rpc_method = args[1].__class__.__name__
         return f'{type(exc)} raised in "{rpc_method}" endpoint request'
