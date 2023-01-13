@@ -5,10 +5,10 @@ from typing import NamedTuple
 
 import pytest
 from solana.blockhash import Blockhash
-from solana.keypair import Keypair
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
 from tests.utils import AIRDROP_AMOUNT, assert_valid_response
@@ -200,9 +200,9 @@ def test_http_client_async_cached_blockhash(
 def random_funded_keypair(test_http_client: Client) -> Keypair:
     """A new keypair with some lamports."""
     kp = Keypair()
-    resp = test_http_client.request_airdrop(kp.public_key, AIRDROP_AMOUNT)
+    resp = test_http_client.request_airdrop(kp.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp.value)
-    balance = test_http_client.get_balance(kp.public_key)
+    balance = test_http_client.get_balance(kp.pubkey())
     assert balance.value == AIRDROP_AMOUNT
     return kp

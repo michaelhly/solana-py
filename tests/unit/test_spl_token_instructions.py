@@ -10,7 +10,7 @@ def test_initialize_mint(stubbed_sender):
     params_with_freeze = spl_token.InitializeMintParams(
         decimals=18,
         program_id=TOKEN_PROGRAM_ID,
-        mint=stubbed_sender.public_key,
+        mint=stubbed_sender.pubkey(),
         mint_authority=mint_authority,
         freeze_authority=freeze_authority,
     )
@@ -20,7 +20,7 @@ def test_initialize_mint(stubbed_sender):
     params_no_freeze = spl_token.InitializeMintParams(
         decimals=18,
         program_id=TOKEN_PROGRAM_ID,
-        mint=stubbed_sender.public_key,
+        mint=stubbed_sender.pubkey(),
         mint_authority=mint_authority,
     )
     instruction = spl_token.initialize_mint(params_no_freeze)
@@ -36,7 +36,7 @@ def test_initialize_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=new_account,
         mint=token_mint,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
     )
     instruction = spl_token.initialize_account(params)
     assert spl_token.decode_initialize_account(instruction) == params
@@ -60,9 +60,9 @@ def test_transfer(stubbed_receiver, stubbed_sender):
     """Test transfer."""
     params = spl_token.TransferParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         dest=stubbed_receiver,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         amount=123,
     )
     instruction = spl_token.transfer(params)
@@ -70,9 +70,9 @@ def test_transfer(stubbed_receiver, stubbed_sender):
 
     multisig_params = spl_token.TransferParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         dest=stubbed_receiver,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         signers=[Pubkey([0] * 31 + [i + 1]) for i in range(3)],
         amount=123,
     )
@@ -85,9 +85,9 @@ def test_approve(stubbed_sender):
     delegate_account = Pubkey([0] * 31 + [0])
     params = spl_token.ApproveParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         delegate=delegate_account,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         amount=123,
     )
     instruction = spl_token.approve(params)
@@ -95,9 +95,9 @@ def test_approve(stubbed_sender):
 
     multisig_params = spl_token.ApproveParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         delegate=delegate_account,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         signers=[Pubkey([0] * 31 + [i + 1]) for i in range(3)],
         amount=123,
     )
@@ -111,7 +111,7 @@ def test_revoke(stubbed_sender):
     params = spl_token.RevokeParams(
         program_id=TOKEN_PROGRAM_ID,
         account=delegate_account,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
     )
     instruction = spl_token.revoke(params)
     assert spl_token.decode_revoke(instruction) == params
@@ -119,7 +119,7 @@ def test_revoke(stubbed_sender):
     multisig_params = spl_token.RevokeParams(
         program_id=TOKEN_PROGRAM_ID,
         account=delegate_account,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         signers=[Pubkey([0] * 31 + [i + 1]) for i in range(3)],
     )
     instruction = spl_token.revoke(multisig_params)
@@ -208,8 +208,8 @@ def test_close_account(stubbed_sender):
     params = spl_token.CloseAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
-        dest=stubbed_sender.public_key,
-        owner=stubbed_sender.public_key,
+        dest=stubbed_sender.pubkey(),
+        owner=stubbed_sender.pubkey(),
     )
     instruction = spl_token.close_account(params)
     assert spl_token.decode_close_account(instruction) == params
@@ -217,8 +217,8 @@ def test_close_account(stubbed_sender):
     multisig_params = spl_token.CloseAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
-        dest=stubbed_sender.public_key,
-        owner=stubbed_sender.public_key,
+        dest=stubbed_sender.pubkey(),
+        owner=stubbed_sender.pubkey(),
         signers=[Pubkey([0] * 31 + [i + 1]) for i in range(3)],
     )
     instruction = spl_token.close_account(multisig_params)
@@ -232,7 +232,7 @@ def test_freeze_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        authority=stubbed_sender.public_key,
+        authority=stubbed_sender.pubkey(),
     )
     instruction = spl_token.freeze_account(params)
     assert spl_token.decode_freeze_account(instruction) == params
@@ -241,7 +241,7 @@ def test_freeze_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        authority=stubbed_sender.public_key,
+        authority=stubbed_sender.pubkey(),
         multi_signers=[Pubkey([0] * 31 + [i]) for i in range(2, 10)],
     )
     instruction = spl_token.freeze_account(multisig_params)
@@ -255,7 +255,7 @@ def test_thaw_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        authority=stubbed_sender.public_key,
+        authority=stubbed_sender.pubkey(),
     )
     instruction = spl_token.thaw_account(params)
     assert spl_token.decode_thaw_account(instruction) == params
@@ -264,7 +264,7 @@ def test_thaw_account(stubbed_sender):
         program_id=TOKEN_PROGRAM_ID,
         account=token_account,
         mint=mint,
-        authority=stubbed_sender.public_key,
+        authority=stubbed_sender.pubkey(),
         multi_signers=[Pubkey([0] * 31 + [i]) for i in range(2, 10)],
     )
     instruction = spl_token.thaw_account(multisig_params)
@@ -276,10 +276,10 @@ def test_transfer_checked(stubbed_receiver, stubbed_sender):
     mint = Pubkey([0] * 31 + [0])
     params = spl_token.TransferCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         mint=mint,
         dest=stubbed_receiver,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         amount=123,
         decimals=6,
     )
@@ -288,10 +288,10 @@ def test_transfer_checked(stubbed_receiver, stubbed_sender):
 
     multisig_params = spl_token.TransferCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         mint=mint,
         dest=stubbed_receiver,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         signers=[Pubkey([0] * 31 + [i + 1]) for i in range(3)],
         amount=123,
         decimals=6,
@@ -305,10 +305,10 @@ def test_approve_checked(stubbed_receiver, stubbed_sender):
     mint = Pubkey([0] * 31 + [0])
     params = spl_token.ApproveCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         mint=mint,
         delegate=stubbed_receiver,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         amount=123,
         decimals=6,
     )
@@ -317,10 +317,10 @@ def test_approve_checked(stubbed_receiver, stubbed_sender):
 
     multisig_params = spl_token.ApproveCheckedParams(
         program_id=TOKEN_PROGRAM_ID,
-        source=stubbed_sender.public_key,
+        source=stubbed_sender.pubkey(),
         mint=mint,
         delegate=stubbed_receiver,
-        owner=stubbed_sender.public_key,
+        owner=stubbed_sender.pubkey(),
         signers=[Pubkey([0] * 31 + [i + 1]) for i in range(3)],
         amount=123,
         decimals=6,

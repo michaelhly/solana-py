@@ -9,6 +9,7 @@ except ImportError:
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
+from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
@@ -83,7 +84,6 @@ from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
-from solana.message import Message
 from solana.rpc import types
 from solana.transaction import Transaction
 
@@ -256,7 +256,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_fee_for_message_body(self, message: Message, commitment: Optional[Commitment]) -> GetFeeForMessage:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetFeeForMessage(message.to_solders(), commitment_to_use)
+        return GetFeeForMessage(message, commitment_to_use)
 
     def _get_inflation_governor_body(self, commitment: Optional[Commitment]) -> GetInflationGovernor:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]

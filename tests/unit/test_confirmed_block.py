@@ -1,9 +1,9 @@
 """Test get confirmed block."""
 
 import solana.transaction as txlib
-from solana.keypair import Keypair
-from solana.system_program import TransferParams, transfer
+from solders.keypair import Keypair
 from solders.signature import Signature
+from solders.system_program import TransferParams, transfer
 
 
 def test_verify_confirmed_block(stubbed_blockhash):
@@ -11,11 +11,11 @@ def test_verify_confirmed_block(stubbed_blockhash):
     kp0, kp1, kp2, kp3 = (Keypair() for _ in range(4))
     # Create a couple signed transaction
     txn1 = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(
-        transfer(TransferParams(from_pubkey=kp0.public_key, to_pubkey=kp1.public_key, lamports=123))
+        transfer(TransferParams(from_pubkey=kp0.pubkey(), to_pubkey=kp1.pubkey(), lamports=123))
     )
     txn1.sign(kp0)
     txn2 = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(
-        transfer(TransferParams(from_pubkey=kp2.public_key, to_pubkey=kp3.public_key, lamports=456))
+        transfer(TransferParams(from_pubkey=kp2.pubkey(), to_pubkey=kp3.pubkey(), lamports=456))
     )
     txn2.sign(kp2)
     # Build confirmed_block with dummy data for blockhases and balances

@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import List, Optional, Union, cast
 
 from solana.blockhash import Blockhash
-from solana.keypair import Keypair
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 from solana.rpc.types import TxOpts
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetTokenAccountBalanceResp,
@@ -340,7 +340,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         txn, payer, multisig = self._create_multisig_args(m, multi_signers, balance_needed)
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
         await self._conn.send_transaction(txn, payer, multisig, opts=opts_to_use, recent_blockhash=recent_blockhash)
-        return multisig.public_key
+        return multisig.pubkey()
 
     async def get_mint_info(self) -> MintInfo:
         """Retrieve mint information."""

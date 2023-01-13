@@ -3,11 +3,11 @@
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 
-from solana.system_program import SYS_PROGRAM_ID
-from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
+from solders.system_program import ID as SYS_PROGRAM_ID
+from solders.sysvar import RENT
 
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
@@ -706,7 +706,7 @@ def initialize_mint(params: InitializeMintParams) -> Instruction:
     return Instruction(
         accounts=[
             AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
-            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
         ],
         program_id=params.program_id,
         data=data,
@@ -742,7 +742,7 @@ def initialize_account(params: InitializeAccountParams) -> Instruction:
             AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
             AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
             AccountMeta(pubkey=params.owner, is_signer=False, is_writable=False),
-            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
         ],
         program_id=params.program_id,
         data=data,
@@ -781,7 +781,7 @@ def initialize_multisig(params: InitializeMultisigParams) -> Instruction:
     )
     keys = [
         AccountMeta(pubkey=params.multisig, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
     ]
     for signer in params.signers:
         keys.append(AccountMeta(pubkey=signer, is_signer=False, is_writable=False))
@@ -1184,7 +1184,7 @@ def create_associated_token_account(payer: Pubkey, owner: Pubkey, mint: Pubkey) 
             AccountMeta(pubkey=mint, is_signer=False, is_writable=False),
             AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
             AccountMeta(pubkey=TOKEN_PROGRAM_ID, is_signer=False, is_writable=False),
-            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
         ],
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
         data=bytes(0),
