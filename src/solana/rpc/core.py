@@ -9,6 +9,7 @@ except ImportError:
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
+from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
@@ -83,7 +84,6 @@ from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import Blockhash, BlockhashCache
-from solana.message import Message
 from solana.rpc import types
 from solana.transaction import Transaction
 

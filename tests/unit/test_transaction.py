@@ -6,10 +6,10 @@ import solana.system_program as sp
 import solana.transaction as txlib
 import solders.system_program as ssp
 from solana.blockhash import Blockhash
-from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solders.hash import Hash
-from solders.instruction import AccountMeta
+from solders.instruction import AccountMeta, CompiledInstruction
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.message import Message as SoldersMessage
 from solders.pubkey import Pubkey
 from solders.signature import Signature
@@ -117,24 +117,22 @@ def test_wire_format_and_desrialize(stubbed_blockhash, stubbed_receiver, stubbed
     assert wire_txn == expected_txn.serialize()
 
 
-def test_populate(stubbed_blockhash):
+def test_populate():
     """Test populating transaction with a message and two signatures."""
-    account_keys = [str(Pubkey([0] * 31 + [i + 1])) for i in range(5)]
-    msg = Message(
-        MessageArgs(
-            account_keys=account_keys,
-            header=MessageHeader(
-                num_readonly_signed_accounts=0, num_readonly_unsigned_accounts=3, num_required_signatures=2
-            ),
-            instructions=[CompiledInstruction(accounts=bytes([1, 2, 3]), data=bytes([9] * 5), program_id_index=4)],
-            recent_blockhash=stubbed_blockhash,
-        )
+    account_keys = [Pubkey([0] * 31 + [i + 1]) for i in range(5)]
+    msg = Message.new_with_compiled_instructions(
+        num_required_signatures=2,
+        num_readonly_signed_accounts=0,
+        num_readonly_unsigned_accounts=3,
+        account_keys=account_keys,
+        instructions=[CompiledInstruction(accounts=bytes([1, 2, 3]), data=bytes([9] * 5), program_id_index=4)],
+        recent_blockhash=Hash.default(),
     )
     signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]
     transaction = txlib.Transaction.populate(msg, signatures)
     assert len(transaction.instructions) == len(msg.instructions)
     assert len(transaction.signatures) == len(signatures)
-    assert transaction.recent_blockhash == msg.recent_blockhash
+    assert transaction.recent_blockhash == str(msg.recent_blockhash)
 
 
 def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stubbed_sender):
@@ -484,7 +482,7 @@ def test_sort_account_metas(stubbed_blockhash):
 
     js_msg_b64_check = b"AwABBwZtbiRMvgQjcE2kVx9yon8XqPSO5hwc2ApflnOZMu0Qo9G5/xbhB0sp8/03Rv9x4MKSkQ+k4LB6lNLvCgKZ/ju/aw+EyQpTObVa3Xm+NA1gSTzutgFCTfkDto/0KtuIHHAMpKRb92NImxKeWQJ2/291j6nTzFj1D6nW25p7TofHmVsGt8uFnTv7+8vsWZ0uN7azdxa+jCIIm4WzKK+4uKfX39t5UA7S1soBQaJkTGOQkSbBo39gIjDkbW0TrevslgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxJrndgN4IFTxep3s6kO0ROug7bEsbx0xxuDkqEvwUusDBgIABAwCAAAAgIQeAAAAAAAGAgIFDAIAAACAhB4AAAAAAAYCAQMMAgAAAICEHgAAAAAA"  # noqa: E501 pylint: disable=line-too-long
 
-    assert b64encode(tx_msg.serialize()) == js_msg_b64_check
+    assert b64encode(bytes(tx_msg)) == js_msg_b64_check
 
     # Transaction should organize AccountMetas by pubkey
     assert tx_msg.account_keys[0] == fee_payer.pubkey()

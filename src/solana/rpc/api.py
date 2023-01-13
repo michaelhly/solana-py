@@ -5,6 +5,7 @@ from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
@@ -61,7 +62,6 @@ from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
 from solana.blockhash import Blockhash, BlockhashCache
-from solana.message import Message
 from solana.rpc import types
 from solana.transaction import Transaction
 
