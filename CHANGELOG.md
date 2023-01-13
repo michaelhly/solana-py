@@ -17,7 +17,7 @@
         - `my_keypair.secret_key` -> `bytes(my_keypair)`
         - `my_keypair.seed` -> `my_keypair.secret()`
         - `my_keypair.sign(msg)` -> `my_keypair.sign_message(msg)`
-        - `Keypair.from_secret_key(key)` -> `Keypair.from_seed(key)`
+        - `Keypair.from_secret_key(key)` -> `Keypair.from_bytes(key)`
 - Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
 
