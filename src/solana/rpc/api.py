@@ -4,6 +4,7 @@ from __future__ import annotations
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 
+from solders.hash import Hash as Blockhash
 from solders.keypair import Keypair
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
@@ -61,7 +62,7 @@ from solders.rpc.responses import (
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
-from solana.blockhash import Blockhash, BlockhashCache
+from solana.blockhash import BlockhashCache
 from solana.rpc import types
 from solana.transaction import Transaction
 

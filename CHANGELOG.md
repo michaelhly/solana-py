@@ -5,11 +5,11 @@
 ## Added
 
 - Add VersionedTransaction support to `send_transaction` and `simulate_transaction` methods [(#334)](https://github.com/michaelhly/solana-py/pull/334)
-- Support VersionedMessage in `get_fee_for_message` methods [(#336)](https://github.com/michaelhly/solana-py/pull/336)
+- Support VersionedMessage in `get_fee_for_message` methods [(#337)](https://github.com/michaelhly/solana-py/pull/337)
 
 ## Changed
 
-- Remove redundant classes and modules ([#329](https://github.com/michaelhly/solana-py/pull/329) and [#335](https://github.com/michaelhly/solana-py/pull/335)):
+- Remove redundant classes and modules ([#329](https://github.com/michaelhly/solana-py/pull/329), [#335](https://github.com/michaelhly/solana-py/pull/335) and [#338](https://github.com/michaelhly/solana-py/pull/338)):
     - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
     - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
     - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
@@ -22,6 +22,10 @@
     - Remove `Message` in favour of `solders.message.Message`.
     - Remove `system_program` in favour of `solders.system_program`. Note: where previously a params object like `AssignParams` called a field `program_id`, it now calls it `owner`.
     - Remove `sysvar` in favour of `solders.sysvar`. The constants in `solders.sysvar` have short names, so instead of `solana.sysvar.SYSVAR_RENT_PUBKEY` you'll use `solders.sysvar.RENT`.
+    - Remove `solana.blockhash.Blockhash` in favour of `solders.hash.Hash`. Note: `Blockhash(my_str)` -> `Hash.from_str(my_str)`.
+    - Remove `solana.transaction.TransactionSignature` newtype. This was unused - solana-py is already using `solders.signature.Signature`.
+    - Remove constant `solana.transaction.SIG_LENGTH` in favour of `solders.signature.Signature.LENGTH`.
+    - Remove unused `solana.transaction.SigPubkeyPair`.
 - Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
 

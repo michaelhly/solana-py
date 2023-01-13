@@ -1,16 +1,7 @@
-"""Blockhash.
-
-Example:
-    >>> # An arbitrary base58 encoded blockhash:
-    >>> Blockhash("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k")
-    'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k'
-"""
-from typing import NewType
+"""Blockhash utils."""
 
 from cachetools import TTLCache
-
-Blockhash = NewType("Blockhash", str)
-"""Type for blockhash."""
+from solders.hash import Hash
 
 
 class BlockhashCache:
@@ -26,11 +17,11 @@ class BlockhashCache:
         self.unused_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
         self.used_blockhashes: TTLCache = TTLCache(maxsize=maxsize, ttl=ttl)
 
-    def set(self, blockhash: Blockhash, slot: int, used_immediately: bool = False) -> None:
+    def set(self, blockhash: Hash, slot: int, used_immediately: bool = False) -> None:
         """Update the cache.
 
         Args:
-            blockhash: new Blockhash value.
+            blockhash: new blockhash value.
             slot: the slot which the blockhash came from.
             used_immediately: whether the client used the blockhash immediately after fetching it.
 
@@ -43,11 +34,11 @@ class BlockhashCache:
             return
         self.unused_blockhashes[slot] = blockhash
 
-    def get(self) -> Blockhash:
-        """Get the cached Blockhash. Raises KeyError if cache has expired.
+    def get(self) -> Hash:
+        """Get the cached blockhash. Raises KeyError if cache has expired.
 
         Returns:
-            cached Blockhash.
+            cached blockhash.
 
         """
         try:

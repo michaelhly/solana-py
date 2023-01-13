@@ -4,8 +4,7 @@ from base64 import b64decode, b64encode
 import pytest
 import solana.transaction as txlib
 import solders.system_program as sp
-from solana.blockhash import Blockhash
-from solders.hash import Hash
+from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, CompiledInstruction
 from solders.keypair import Keypair
 from solders.message import Message
@@ -36,8 +35,7 @@ def test_to_solders(stubbed_blockhash: Blockhash) -> None:
     solders_transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
     assert transfer.data == solders_transfer.data
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
-    solders_blockhash = Hash.from_string(stubbed_blockhash)
-    solders_msg = SoldersMessage.new_with_blockhash([solders_transfer], None, solders_blockhash)
+    solders_msg = SoldersMessage.new_with_blockhash([solders_transfer], None, stubbed_blockhash)
     solders_txn = SoldersTx.new_unsigned(solders_msg)
     assert txn.to_solders() == solders_txn
     assert txlib.Transaction.from_solders(solders_txn) == txn
@@ -125,13 +123,13 @@ def test_populate():
         num_readonly_unsigned_accounts=3,
         account_keys=account_keys,
         instructions=[CompiledInstruction(accounts=bytes([1, 2, 3]), data=bytes([9] * 5), program_id_index=4)],
-        recent_blockhash=Hash.default(),
+        recent_blockhash=Blockhash.default(),
     )
     signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]
     transaction = txlib.Transaction.populate(msg, signatures)
     assert len(transaction.instructions) == len(msg.instructions)
     assert len(transaction.signatures) == len(signatures)
-    assert transaction.recent_blockhash == str(msg.recent_blockhash)
+    assert transaction.recent_blockhash == msg.recent_blockhash
 
 
 def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stubbed_sender):

@@ -4,10 +4,10 @@ import time
 from typing import NamedTuple
 
 import pytest
-from solana.blockhash import Blockhash
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
+from solders.hash import Hash as Blockhash
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
@@ -36,7 +36,7 @@ def event_loop():
 @pytest.fixture(scope="session")
 def stubbed_blockhash() -> Blockhash:
     """Arbitrary block hash."""
-    return Blockhash("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k")
+    return Blockhash.from_string("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k")
 
 
 @pytest.fixture(scope="session")

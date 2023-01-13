@@ -9,6 +9,7 @@ except ImportError:
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
+from solders.hash import Hash as Blockhash
 from solders.message import MessageV0, VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
@@ -83,7 +84,7 @@ from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
-from solana.blockhash import Blockhash, BlockhashCache
+from solana.blockhash import BlockhashCache
 from solana.rpc import types
 from solana.transaction import Transaction
 
@@ -518,7 +519,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     @staticmethod
     def parse_recent_blockhash(blockhash_resp: GetLatestBlockhashResp) -> Blockhash:
         """Extract blockhash from JSON RPC result."""
-        return Blockhash(str(blockhash_resp.value.blockhash))
+        return blockhash_resp.value.blockhash
 
     def _process_blockhash_resp(self, blockhash_resp: GetLatestBlockhashResp, used_immediately: bool) -> Blockhash:
         recent_blockhash = self.parse_recent_blockhash(blockhash_resp)

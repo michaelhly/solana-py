@@ -3,7 +3,6 @@ from typing import Tuple
 
 import pytest
 import solders.system_program as sp
-from solana.blockhash import Blockhash
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
@@ -270,7 +269,7 @@ async def test_send_raw_transaction_and_get_balance(
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to async_stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=async_stubbed_sender.pubkey(), to_pubkey=async_stubbed_receiver, lamports=1000
@@ -305,7 +304,7 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height
     # Create transfer tx transfer lamports from stubbed sender to async_stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=async_stubbed_sender.pubkey(), to_pubkey=async_stubbed_receiver, lamports=1000
@@ -340,7 +339,7 @@ async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, tes
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height - 330
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     )
     # Sign transaction
@@ -367,7 +366,7 @@ async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver,
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     )
     # Get fee for transaction message

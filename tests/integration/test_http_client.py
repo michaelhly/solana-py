@@ -3,7 +3,6 @@ from typing import Tuple
 
 import pytest
 import solders.system_program as sp
-from solana.blockhash import Blockhash
 from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
@@ -171,7 +170,7 @@ def test_send_transaction_prefetched_blockhash(
     )
     recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_latest_blockhash())
     resp = test_http_client.send_transaction(
-        transfer_tx, stubbed_sender_prefetched_blockhash, recent_blockhash=Blockhash(str(recent_blockhash))
+        transfer_tx, stubbed_sender_prefetched_blockhash, recent_blockhash=recent_blockhash
     )
     assert_valid_response(resp)
     # Confirm transaction
@@ -251,7 +250,7 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     )
     # Sign transaction
@@ -282,7 +281,7 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     )
     # Sign transaction
@@ -313,7 +312,7 @@ def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height - 330
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     )
     # Sign transaction
@@ -338,7 +337,7 @@ def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_cli
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=Blockhash(str(recent_blockhash))).add(
+    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     )
     # get fee for transaction

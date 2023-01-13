@@ -1,10 +1,9 @@
 """Library to package an atomic sequence of instructions to a transaction."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, List, NamedTuple, NewType, Optional, Sequence, Tuple, Union
+from typing import Any, List, NamedTuple, Optional, Sequence, Tuple, Union
 
-from solders.hash import Hash
+from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
 from solders.message import Message
@@ -15,14 +14,8 @@ from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
 
-from solana.blockhash import Blockhash
-
-TransactionSignature = NewType("TransactionSignature", str)
-"""Type for TransactionSignature."""
 PACKET_DATA_SIZE = 1280 - 40 - 8
 """Constant for maximum over-the-wire size of a Transaction."""
-SIG_LENGTH = 64
-"""Constant for standard length of a signature."""
 
 
 class NonceInformation(NamedTuple):
@@ -32,14 +25,6 @@ class NonceInformation(NamedTuple):
     """The current Nonce blockhash."""
     nonce_instruction: Instruction
     """AdvanceNonceAccount Instruction."""
-
-
-@dataclass
-class SigPubkeyPair:
-    """Pair of signature and corresponding public key."""
-
-    pubkey: Pubkey
-    signature: Optional[bytes] = None
 
 
 def _build_solders_tx(
@@ -52,17 +37,15 @@ def _build_solders_tx(
     underlying_instructions = (
         core_instructions if nonce_info is None else [nonce_info.nonce_instruction, *core_instructions]
     )
-    underlying_blockhash_str: Optional[str]
+    underlying_blockhash: Optional[Blockhash]
     if nonce_info is not None:
-        underlying_blockhash_str = nonce_info.nonce
+        underlying_blockhash = nonce_info.nonce
     elif recent_blockhash is not None:
-        underlying_blockhash_str = recent_blockhash
+        underlying_blockhash = recent_blockhash
     else:
-        underlying_blockhash_str = None
+        underlying_blockhash = None
     underlying_fee_payer = None if fee_payer is None else fee_payer
-    underlying_blockhash = (
-        Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
-    )
+    underlying_blockhash = Blockhash.default() if underlying_blockhash is None else underlying_blockhash
     msg = SoldersMessage.new_with_blockhash(underlying_instructions, underlying_fee_payer, underlying_blockhash)
     return SoldersTx.new_unsigned(msg)
 
@@ -144,7 +127,7 @@ class Transaction:
     @property
     def recent_blockhash(self) -> Optional[Blockhash]:
         """Optional[Blockhash]: The blockhash assigned to this transaction."""
-        return Blockhash(str(self._solders.message.recent_blockhash))
+        return self._solders.message.recent_blockhash
 
     @recent_blockhash.setter
     def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:  # noqa: D102
@@ -288,7 +271,6 @@ class Transaction:
 
         Example:
             >>> from solders.keypair import Keypair
-            >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
             >>> from solders.hash import Hash
             >>> from solders.system_program import transfer, TransferParams
@@ -296,7 +278,7 @@ class Transaction:
             >>> seed = bytes(leading_zeros + [1])
             >>> sender, receiver = Keypair.from_seed(seed), Pubkey(leading_zeros + [2])
             >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.pubkey(), to_pubkey=receiver, lamports=1000)))
-            >>> transfer_tx.recent_blockhash = Blockhash(str(Hash(leading_zeros + [3])))
+            >>> transfer_tx.recent_blockhash = Hash(leading_zeros + [3])
             >>> transfer_tx.sign(sender)
             >>> transfer_tx.serialize().hex()
             '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000'
@@ -355,7 +337,7 @@ class Transaction:
             >>> from solders.message import Message
             >>> from solders.signature import Signature
             >>> msg = Message.from_bytes(raw_message)
-            >>> signatures = [Signature(bytes([1] * SIG_LENGTH)), Signature(bytes([2] * SIG_LENGTH))]
+            >>> signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]
             >>> type(Transaction.populate(msg, signatures))
             <class 'solana.transaction.Transaction'>
 
