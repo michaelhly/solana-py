@@ -8,7 +8,6 @@ from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
-from solders.hash import Hash as Blockhash
 from solders.keypair import Keypair
 from solders.message import MessageV0
 from solders.pubkey import Pubkey
