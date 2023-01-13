@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.29.0] - Unreleased
+## [0.29.0] - 2023-01-13
 
 ## Added
 
@@ -27,7 +27,7 @@
     - Remove constant `solana.transaction.SIG_LENGTH` in favour of `solders.signature.Signature.LENGTH`.
     - Remove unused `solana.transaction.SigPubkeyPair`.
 - Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
-- Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
+- Use new `solders.rpc.requests.SendRawTransaction` in `send_raw_transaction` methods [(#332)](https://github.com/michaelhly/solana-py/pull/332)
 
 ## [0.28.1] - 2022-12-29
 
