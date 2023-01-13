@@ -377,6 +377,31 @@ async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver,
 
 
 @pytest.mark.integration
+async def test_get_fee_for_versioned_message(
+    stubbed_sender: Keypair, stubbed_receiver: Pubkey, test_http_client_async: AsyncClient
+):
+    """Test that gets a fee for a transaction using get_fee_for_message."""
+    # Get a recent blockhash
+    resp = test_http_client_async.get_latest_blockhash()
+    recent_blockhash = resp.value.blockhash
+    assert recent_blockhash is not None
+    msg = MessageV0.try_compile(
+        payer=stubbed_sender.pubkey(),
+        instructions=[
+            sp.transfer(
+                sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000)
+            )
+        ],
+        address_lookup_table_accounts=[],
+        recent_blockhash=recent_blockhash,
+    )
+    # get fee for transaction
+    fee_resp = await test_http_client_async.get_fee_for_message(msg)
+    assert_valid_response(fee_resp)
+    assert fee_resp.value is not None
+
+
+@pytest.mark.integration
 async def test_get_block_commitment(test_http_client_async):
     """Test get block commitment."""
     resp = await test_http_client_async.get_block_commitment(5)
