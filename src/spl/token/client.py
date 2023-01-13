@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import List, Optional, Union, cast
 
-from solana.blockhash import Blockhash
 from solana.rpc.api import Client
 from solana.rpc.commitment import Commitment
 from solana.rpc.types import TxOpts
+from solders.hash import Hash as Blockhash
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (

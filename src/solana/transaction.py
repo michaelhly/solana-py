@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, List, NamedTuple, NewType, Optional, Sequence, Tuple, Union
 
-from solders.hash import Hash
+from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
 from solders.message import Message
@@ -14,8 +14,6 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
-
-from solana.blockhash import Blockhash
 
 TransactionSignature = NewType("TransactionSignature", str)
 """Type for TransactionSignature."""
@@ -52,17 +50,15 @@ def _build_solders_tx(
     underlying_instructions = (
         core_instructions if nonce_info is None else [nonce_info.nonce_instruction, *core_instructions]
     )
-    underlying_blockhash_str: Optional[str]
+    underlying_blockhash: Optional[Blockhash]
     if nonce_info is not None:
-        underlying_blockhash_str = nonce_info.nonce
+        underlying_blockhash = nonce_info.nonce
     elif recent_blockhash is not None:
-        underlying_blockhash_str = recent_blockhash
+        underlying_blockhash = recent_blockhash
     else:
-        underlying_blockhash_str = None
+        underlying_blockhash = None
     underlying_fee_payer = None if fee_payer is None else fee_payer
-    underlying_blockhash = (
-        Hash.default() if underlying_blockhash_str is None else Hash.from_string(underlying_blockhash_str)
-    )
+    underlying_blockhash = Blockhash.default() if underlying_blockhash is None else underlying_blockhash
     msg = SoldersMessage.new_with_blockhash(underlying_instructions, underlying_fee_payer, underlying_blockhash)
     return SoldersTx.new_unsigned(msg)
 
@@ -144,7 +140,7 @@ class Transaction:
     @property
     def recent_blockhash(self) -> Optional[Blockhash]:
         """Optional[Blockhash]: The blockhash assigned to this transaction."""
-        return Blockhash(str(self._solders.message.recent_blockhash))
+        return self._solders.message.recent_blockhash
 
     @recent_blockhash.setter
     def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:  # noqa: D102
