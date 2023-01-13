@@ -19,7 +19,7 @@
         - `my_keypair.sign(msg)` -> `my_keypair.sign_message(msg)`
         - `Keypair.from_secret_key(key)` -> `Keypair.from_bytes(key)`
     - Remove `Message` in favour of `solders.message.Message`.
-    - Remove `system_program` in favour of `solders.system_program`.
+    - Remove `system_program` in favour of `solders.system_program`. Note: where previously a params object like `AssignParams` called a field `program_id`, it now calls it `owner`.
     - Remove `sysvar` in favour of `solders.sysvar`. The constants in `solders.sysvar` have short names, so instead of `solana.sysvar.SYSVAR_RENT_PUBKEY` you'll use `solders.sysvar.RENT`.
 - Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
