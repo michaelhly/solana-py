@@ -17,8 +17,6 @@ from solders.transaction import TransactionError
 
 PACKET_DATA_SIZE = 1280 - 40 - 8
 """Constant for maximum over-the-wire size of a Transaction."""
-SIG_LENGTH = 64
-"""Constant for standard length of a signature."""
 
 
 class NonceInformation(NamedTuple):
@@ -348,7 +346,7 @@ class Transaction:
             >>> from solders.message import Message
             >>> from solders.signature import Signature
             >>> msg = Message.from_bytes(raw_message)
-            >>> signatures = [Signature(bytes([1] * SIG_LENGTH)), Signature(bytes([2] * SIG_LENGTH))]
+            >>> signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]
             >>> type(Transaction.populate(msg, signatures))
             <class 'solana.transaction.Transaction'>
 
