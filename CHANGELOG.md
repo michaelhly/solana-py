@@ -8,10 +8,16 @@
 
 ## Changed
 
-- Remove redundant classes [(#329)](https://github.com/michaelhly/solana-py/pull/329):
+- Remove redundant classes ([#329](https://github.com/michaelhly/solana-py/pull/329) and [#335](https://github.com/michaelhly/solana-py/pull/335)):
     - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
     - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
     - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
+    - Remove `Keypair` in favour of `solders.keypair.Keypair`. Your code will need to change as follows: 
+        - `my_keypair.public_key` -> `my_keypair.pubkey()`
+        - `my_keypair.secret_key` -> `bytes(my_keypair)`
+        - `my_keypair.seed` -> `my_keypair.secret()`
+        - `my_keypair.sign(msg)` -> `my_keypair.sign_message(msg)`
+        - `Keypair.from_secret_key(key)` -> `Keypair.from_seed(key)`
 - Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
 
