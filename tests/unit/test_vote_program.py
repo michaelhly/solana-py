@@ -3,6 +3,7 @@ import base64
 
 import solana.transaction as txlib
 import solana.vote_program as vp
+from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
@@ -80,7 +81,7 @@ def test_withdraw_from_vote_account():
     receiver_account_pubkey = Pubkey.from_string("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
 
     txn = txlib.Transaction(fee_payer=withdrawer_keypair.pubkey())
-    txn.recent_blockhash = "Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH"
+    txn.recent_blockhash = Hash.from_string("Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH")
 
     txn.add(
         vp.withdraw_from_vote_account(

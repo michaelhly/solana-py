@@ -123,13 +123,13 @@ def test_populate():
         num_readonly_unsigned_accounts=3,
         account_keys=account_keys,
         instructions=[CompiledInstruction(accounts=bytes([1, 2, 3]), data=bytes([9] * 5), program_id_index=4)],
-        recent_blockhash=Hash.default(),
+        recent_blockhash=Blockhash.default(),
     )
     signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]
     transaction = txlib.Transaction.populate(msg, signatures)
     assert len(transaction.instructions) == len(msg.instructions)
     assert len(transaction.signatures) == len(signatures)
-    assert transaction.recent_blockhash == str(msg.recent_blockhash)
+    assert transaction.recent_blockhash == msg.recent_blockhash
 
 
 def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stubbed_sender):
