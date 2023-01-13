@@ -4,11 +4,11 @@ from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib
 import pytest
-from solana import system_program as sp
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
 from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
 from solana.transaction import Transaction
+from solders import system_program as sp
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.rpc.config import RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
@@ -257,7 +257,7 @@ async def test_program_subscribe(
 ):
     """Test program subscription."""
     program, owned = program_subscribed
-    instruction = sp.assign(sp.AssignParams(account_pubkey=owned.pubkey(), program_id=program.pubkey()))
+    instruction = sp.assign(sp.AssignParams(pubkey=owned.pubkey(), owner=program.pubkey()))
     transaction = Transaction()
     transaction.add(instruction)
     await test_http_client_async.send_transaction(transaction, owned)
