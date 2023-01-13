@@ -2,9 +2,8 @@
 from base64 import b64decode, b64encode
 
 import pytest
-import solana.system_program as sp
 import solana.transaction as txlib
-import solders.system_program as ssp
+import solders.system_program as sp
 from solana.blockhash import Blockhash
 from solders.hash import Hash
 from solders.instruction import AccountMeta, CompiledInstruction
@@ -34,7 +33,7 @@ def test_to_solders(stubbed_blockhash: Blockhash) -> None:
     """Test converting a Transaction to solders."""
     kp1, kp2 = Keypair(), Keypair()
     transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
-    solders_transfer = ssp.transfer(ssp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
+    solders_transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
     assert transfer.data == solders_transfer.data
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     solders_blockhash = Hash.from_string(stubbed_blockhash)

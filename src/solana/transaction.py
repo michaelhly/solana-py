@@ -291,7 +291,7 @@ class Transaction:
             >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
             >>> from solders.hash import Hash
-            >>> from solana.system_program import transfer, TransferParams
+            >>> from solders.system_program import transfer, TransferParams
             >>> leading_zeros = [0] * 31
             >>> seed = bytes(leading_zeros + [1])
             >>> sender, receiver = Keypair.from_seed(seed), Pubkey(leading_zeros + [2])

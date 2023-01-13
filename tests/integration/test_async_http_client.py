@@ -2,7 +2,7 @@
 from typing import Tuple
 
 import pytest
-import solana.system_program as sp
+import solders.system_program as sp
 from solana.blockhash import Blockhash
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed

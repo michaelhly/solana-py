@@ -1,7 +1,7 @@
 """Test get confirmed block."""
 
 import solana.transaction as txlib
-from solana.system_program import TransferParams, transfer
+from solders.system_program import TransferParams, transfer
 from solders.keypair import Keypair
 from solders.signature import Signature
 

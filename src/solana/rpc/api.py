@@ -420,7 +420,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
         Example:
             >>> from solders.keypair import Keypair
-            >>> from solana.system_program import TransferParams, transfer
+            >>> from solders.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
@@ -1013,7 +1013,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solders.keypair import Keypair
             >>> from solders.pubkey import Pubkey
             >>> from solana.rpc.api import Client
-            >>> from solana.system_program import TransferParams, transfer
+            >>> from solders.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])

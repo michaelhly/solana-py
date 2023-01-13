@@ -3,11 +3,11 @@
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 
-from solana.system_program import SYS_PROGRAM_ID
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
+from solders.system_program import ID as SYS_PROGRAM_ID
 
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
