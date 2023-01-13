@@ -382,7 +382,7 @@ async def test_get_fee_for_versioned_message(
 ):
     """Test that gets a fee for a transaction using get_fee_for_message."""
     # Get a recent blockhash
-    resp = test_http_client_async.get_latest_blockhash()
+    resp = await test_http_client_async.get_latest_blockhash()
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     msg = MessageV0.try_compile(
