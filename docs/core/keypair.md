@@ -1,3 +1,0 @@
-# Keypair
-
-:::solana.keypair
