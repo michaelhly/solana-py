@@ -15,8 +15,6 @@ from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
 
-TransactionSignature = NewType("TransactionSignature", str)
-"""Type for TransactionSignature."""
 PACKET_DATA_SIZE = 1280 - 40 - 8
 """Constant for maximum over-the-wire size of a Transaction."""
 SIG_LENGTH = 64
