@@ -25,6 +25,7 @@
     - Remove `solana.blockhash.Blockhash` in favour of `solders.hash.Hash`. Note: `Blockhash(my_str)` -> `Hash.from_str(my_str)`.
     - Remove `solana.transaction.TransactionSignature` newtype. This was unused - solana-py is already using `solders.signature.Signature`.
     - Remove constant `solana.transaction.SIG_LENGTH` in favour of `solders.signature.Signature.LENGTH`.
+    - Remove unused `solana.transaction.SigPubkeyPair`.
 - Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Use new `solders.rpc.requests.SendRawTransasction` in `send_raw_transaction` methods
 

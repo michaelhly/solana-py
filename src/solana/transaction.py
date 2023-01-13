@@ -28,14 +28,6 @@ class NonceInformation(NamedTuple):
     """AdvanceNonceAccount Instruction."""
 
 
-@dataclass
-class SigPubkeyPair:
-    """Pair of signature and corresponding public key."""
-
-    pubkey: Pubkey
-    signature: Optional[bytes] = None
-
-
 def _build_solders_tx(
     recent_blockhash: Optional[Blockhash] = None,
     nonce_info: Optional[NonceInformation] = None,
