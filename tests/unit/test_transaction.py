@@ -4,8 +4,7 @@ from base64 import b64decode, b64encode
 import pytest
 import solana.transaction as txlib
 import solders.system_program as sp
-from solana.blockhash import Blockhash
-from solders.hash import Hash
+from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, CompiledInstruction
 from solders.keypair import Keypair
 from solders.message import Message
@@ -36,8 +35,7 @@ def test_to_solders(stubbed_blockhash: Blockhash) -> None:
     solders_transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
     assert transfer.data == solders_transfer.data
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
-    solders_blockhash = Hash.from_string(stubbed_blockhash)
-    solders_msg = SoldersMessage.new_with_blockhash([solders_transfer], None, solders_blockhash)
+    solders_msg = SoldersMessage.new_with_blockhash([solders_transfer], None, stubbed_blockhash)
     solders_txn = SoldersTx.new_unsigned(solders_msg)
     assert txn.to_solders() == solders_txn
     assert txlib.Transaction.from_solders(solders_txn) == txn
