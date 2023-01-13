@@ -284,7 +284,6 @@ class Transaction:
 
         Example:
             >>> from solders.keypair import Keypair
-            >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
             >>> from solders.hash import Hash
             >>> from solders.system_program import transfer, TransferParams
@@ -292,7 +291,7 @@ class Transaction:
             >>> seed = bytes(leading_zeros + [1])
             >>> sender, receiver = Keypair.from_seed(seed), Pubkey(leading_zeros + [2])
             >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.pubkey(), to_pubkey=receiver, lamports=1000)))
-            >>> transfer_tx.recent_blockhash = Blockhash(str(Hash(leading_zeros + [3])))
+            >>> transfer_tx.recent_blockhash = Hash(leading_zeros + [3])
             >>> transfer_tx.sign(sender)
             >>> transfer_tx.serialize().hex()
             '019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000'
