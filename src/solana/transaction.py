@@ -1,8 +1,7 @@
 """Library to package an atomic sequence of instructions to a transaction."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, List, NamedTuple, NewType, Optional, Sequence, Tuple, Union
+from typing import Any, List, NamedTuple, Optional, Sequence, Tuple, Union
 
 from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, Instruction
