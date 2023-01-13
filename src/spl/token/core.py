@@ -122,10 +122,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             sp.create_account(
                 sp.CreateAccountParams(
                     from_pubkey=payer.pubkey(),
-                    new_account_pubkey=mint_keypair.pubkey(),
+                    to_pubkey=mint_keypair.pubkey(),
                     lamports=balance_needed,
                     space=MINT_LAYOUT.sizeof(),
-                    program_id=program_id,
+                    owner=program_id,
                 )
             )
         )
@@ -164,10 +164,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             sp.create_account(
                 sp.CreateAccountParams(
                     from_pubkey=self.payer.pubkey(),
-                    new_account_pubkey=new_keypair.pubkey(),
+                    to_pubkey=new_keypair.pubkey(),
                     lamports=balance_needed,
                     space=ACCOUNT_LAYOUT.sizeof(),
-                    program_id=self.program_id,
+                    owner=self.program_id,
                 )
             )
         )
@@ -225,10 +225,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             sp.create_account(
                 sp.CreateAccountParams(
                     from_pubkey=payer.pubkey(),
-                    new_account_pubkey=new_keypair.pubkey(),
+                    to_pubkey=new_keypair.pubkey(),
                     lamports=balance_needed,
                     space=ACCOUNT_LAYOUT.sizeof(),
-                    program_id=program_id,
+                    owner=program_id,
                 )
             )
         )
@@ -610,10 +610,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             sp.create_account(
                 sp.CreateAccountParams(
                     from_pubkey=self.payer.pubkey(),
-                    new_account_pubkey=multisig_keypair.pubkey(),
+                    to_pubkey=multisig_keypair.pubkey(),
                     lamports=balance_needed,
                     space=MULTISIG_LAYOUT.sizeof(),
-                    program_id=self.program_id,
+                    owner=self.program_id,
                 )
             )
         )
