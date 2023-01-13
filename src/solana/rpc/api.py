@@ -5,7 +5,7 @@ from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 
 from solders.keypair import Keypair
-from solders.message import Message
+from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
@@ -411,7 +411,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(self._get_epoch_schedule, GetEpochScheduleResp)
 
-    def get_fee_for_message(self, message: Message, commitment: Optional[Commitment] = None) -> GetFeeForMessageResp:
+    def get_fee_for_message(
+        self, message: VersionedMessage, commitment: Optional[Commitment] = None
+    ) -> GetFeeForMessageResp:
         """Returns the fee for a message.
 
         Args:

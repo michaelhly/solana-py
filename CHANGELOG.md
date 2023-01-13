@@ -4,7 +4,8 @@
 
 ## Added
 
-- Add VersionedTransaction support to `send_transaction` and `simulate_transaction` methods [(#334)](https://github.com/michaelhly/solana-py/pull/334):
+- Add VersionedTransaction support to `send_transaction` and `simulate_transaction` methods [(#334)](https://github.com/michaelhly/solana-py/pull/334)
+- Support VersionedMessage in `get_fee_for_message` methods [(#336)](https://github.com/michaelhly/solana-py/pull/336)
 
 ## Changed
 

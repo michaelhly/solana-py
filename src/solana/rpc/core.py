@@ -9,7 +9,7 @@ except ImportError:
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
-from solders.message import Message
+from solders.message import MessageV0, VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
@@ -254,8 +254,13 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcContextConfig(commitment=commitment_to_use)
         return GetEpochInfo(config)
 
-    def _get_fee_for_message_body(self, message: Message, commitment: Optional[Commitment]) -> GetFeeForMessage:
+    def _get_fee_for_message_body(
+        self, message: VersionedMessage, commitment: Optional[Commitment]
+    ) -> GetFeeForMessage:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        # weird mypy hack:
+        if isinstance(message, MessageV0):
+            return GetFeeForMessage(message, commitment_to_use)
         return GetFeeForMessage(message, commitment_to_use)
 
     def _get_inflation_governor_body(self, commitment: Optional[Commitment]) -> GetInflationGovernor:
