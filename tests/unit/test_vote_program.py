@@ -8,7 +8,7 @@ from solders.pubkey import Pubkey
 
 
 def test_withdraw_from_vote_account():
-    withdrawer_keypair = Keypair.from_seed(
+    withdrawer_keypair = Keypair.from_bytes(
         [
             134,
             123,
