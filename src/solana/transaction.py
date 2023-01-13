@@ -6,6 +6,7 @@ from typing import Any, List, NamedTuple, NewType, Optional, Sequence, Tuple, Un
 
 from solders.hash import Hash
 from solders.instruction import AccountMeta, Instruction
+from solders.keypair import Keypair
 from solders.message import Message as SoldersMessage
 from solders.presigner import Presigner
 from solders.pubkey import Pubkey
@@ -14,7 +15,6 @@ from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
 
 from solana.blockhash import Blockhash
-from solana.keypair import Keypair
 from solana.message import Message
 
 TransactionSignature = NewType("TransactionSignature", str)
@@ -239,8 +239,7 @@ class Transaction:
 
         All the caveats from the `sign` method apply to `sign_partial`
         """
-        underlying_signers = [signer.to_solders() for signer in partial_signers]
-        self._solders.partial_sign(underlying_signers, self._solders.message.recent_blockhash)
+        self._solders.partial_sign(partial_signers, self._solders.message.recent_blockhash)
 
     def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.
@@ -254,8 +253,7 @@ class Transaction:
 
         The Transaction must be assigned a valid `recent_blockhash` before invoking this method.
         """
-        underlying_signers = [signer.to_solders() for signer in signers]
-        self._solders.sign(underlying_signers, self._solders.message.recent_blockhash)
+        self._solders.sign(signers, self._solders.message.recent_blockhash)
 
     def add_signature(self, pubkey: Pubkey, signature: Signature) -> None:
         """Add an externally created signature to a transaction.
@@ -289,7 +287,7 @@ class Transaction:
             verify_signatures: a bool indicating to verify the signature or not. Defaults to True
 
         Example:
-            >>> from solana.keypair import Keypair
+            >>> from solders.keypair import Keypair
             >>> from solana.blockhash import Blockhash
             >>> from solders.pubkey import Pubkey
             >>> from solders.hash import Hash
@@ -297,7 +295,7 @@ class Transaction:
             >>> leading_zeros = [0] * 31
             >>> seed = bytes(leading_zeros + [1])
             >>> sender, receiver = Keypair.from_seed(seed), Pubkey(leading_zeros + [2])
-            >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.public_key, to_pubkey=receiver, lamports=1000)))
+            >>> transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.pubkey(), to_pubkey=receiver, lamports=1000)))
             >>> transfer_tx.recent_blockhash = Blockhash(str(Hash(leading_zeros + [3])))
             >>> transfer_tx.sign(sender)
             >>> transfer_tx.serialize().hex()

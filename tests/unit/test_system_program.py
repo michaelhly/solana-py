@@ -3,15 +3,15 @@ import base64
 
 import solana.system_program as sp
 import solana.transaction as txlib
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
 
 def test_create_account():
     """Test creating a transaction for create account."""
     params = sp.CreateAccountParams(
-        from_pubkey=Keypair().public_key,
-        new_account_pubkey=Keypair().public_key,
+        from_pubkey=Keypair().pubkey(),
+        new_account_pubkey=Keypair().pubkey(),
         lamports=123,
         space=1,
         program_id=Pubkey([0] * 31 + [1]),
@@ -21,14 +21,14 @@ def test_create_account():
 
 def test_transfer():
     """Test creating a transaction for transfer."""
-    params = sp.TransferParams(from_pubkey=Keypair().public_key, to_pubkey=Keypair().public_key, lamports=123)
+    params = sp.TransferParams(from_pubkey=Keypair().pubkey(), to_pubkey=Keypair().pubkey(), lamports=123)
     assert sp.decode_transfer(sp.transfer(params)) == params
 
 
 def test_assign():
     """Test creating a transaction for assign."""
     params = sp.AssignParams(
-        account_pubkey=Keypair().public_key,
+        account_pubkey=Keypair().pubkey(),
         program_id=Pubkey([0] * 31 + [1]),
     )
     assert sp.decode_assign(sp.assign(params)) == params
@@ -37,7 +37,7 @@ def test_assign():
 def test_allocate():
     """Test creating a transaction for allocate."""
     params = sp.AllocateParams(
-        account_pubkey=Keypair().public_key,
+        account_pubkey=Keypair().pubkey(),
         space=12345,
     )
     assert sp.decode_allocate(sp.allocate(params)) == params
@@ -46,7 +46,7 @@ def test_allocate():
 def test_allocate_with_seed():
     """Test creating a transaction for allocate with seed."""
     params = sp.AllocateWithSeedParams(
-        account_pubkey=Keypair().public_key,
+        account_pubkey=Keypair().pubkey(),
         base_pubkey=Pubkey([0] * 31 + [1]),
         seed="gqln",
         space=65537,
@@ -58,7 +58,7 @@ def test_allocate_with_seed():
 def test_create_account_with_seed():
     """Test creating a an account with seed."""
     params = sp.CreateAccountWithSeedParams(
-        from_pubkey=Keypair().public_key,
+        from_pubkey=Keypair().pubkey(),
         new_account_pubkey=Pubkey([0] * 31 + [3]),
         base_pubkey=Pubkey([0] * 31 + [1]),
         seed="gqln",
@@ -227,9 +227,9 @@ def test_create_nonce_account():
 
     create_account_txn = sp.create_nonce_account(
         sp.CreateNonceAccountParams(
-            from_pubkey=from_keypair.public_key,
-            nonce_pubkey=nonce_keypair.public_key,
-            authorized_pubkey=from_keypair.public_key,
+            from_pubkey=from_keypair.pubkey(),
+            nonce_pubkey=nonce_keypair.pubkey(),
+            authorized_pubkey=from_keypair.pubkey(),
             lamports=2000000,
         )
     )
@@ -237,8 +237,8 @@ def test_create_nonce_account():
 
     create_account_hash = create_account_txn.serialize_message()
 
-    create_account_txn.add_signature(from_keypair.public_key, from_keypair.sign(create_account_hash))
-    create_account_txn.add_signature(nonce_keypair.public_key, nonce_keypair.sign(create_account_hash))
+    create_account_txn.add_signature(from_keypair.pubkey(), from_keypair.sign(create_account_hash))
+    create_account_txn.add_signature(nonce_keypair.pubkey(), nonce_keypair.sign(create_account_hash))
 
     assert create_account_txn == js_expected_txn
     # XXX:  Cli message serialization do not sort on account metas producing discrepency
@@ -471,27 +471,27 @@ def test_advance_nonce_and_transfer():
     cli_expected_txn = txlib.Transaction.deserialize(cli_wire_txn)  # noqa: F841
     js_expected_txn = txlib.Transaction.deserialize(js_wire_txn)
 
-    txn = txlib.Transaction(fee_payer=from_keypair.public_key)
+    txn = txlib.Transaction(fee_payer=from_keypair.pubkey())
     txn.recent_blockhash = "6DPp9aRRX6cLBqj5FepEvoccHFs3s8gUhd9t9ftTwAta"
 
     txn.add(
         sp.nonce_advance(
             sp.AdvanceNonceParams(
-                nonce_pubkey=nonce_keypair.public_key,
-                authorized_pubkey=from_keypair.public_key,
+                nonce_pubkey=nonce_keypair.pubkey(),
+                authorized_pubkey=from_keypair.pubkey(),
             )
         )
     )
 
     txn.add(
         sp.transfer(
-            sp.TransferParams(from_pubkey=from_keypair.public_key, to_pubkey=to_keypair.public_key, lamports=2000000)
+            sp.TransferParams(from_pubkey=from_keypair.pubkey(), to_pubkey=to_keypair.pubkey(), lamports=2000000)
         )
     )
 
     txn_hash = txn.serialize_message()
 
-    txn.add_signature(from_keypair.public_key, from_keypair.sign(txn_hash))
+    txn.add_signature(from_keypair.pubkey(), from_keypair.sign(txn_hash))
 
     assert txn == js_expected_txn
     # XXX:  Cli message serialization do not sort on account metas producing discrepency

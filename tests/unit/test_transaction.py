@@ -6,10 +6,10 @@ import solana.system_program as sp
 import solana.transaction as txlib
 import solders.system_program as ssp
 from solana.blockhash import Blockhash
-from solana.keypair import Keypair
 from solana.message import CompiledInstruction, Message, MessageArgs, MessageHeader
 from solders.hash import Hash
 from solders.instruction import AccountMeta
+from solders.keypair import Keypair
 from solders.message import Message as SoldersMessage
 from solders.pubkey import Pubkey
 from solders.signature import Signature
@@ -22,21 +22,19 @@ def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> t
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         accounts=[
-            AccountMeta(kp0.public_key, True, True),
-            AccountMeta(kp1.public_key, True, True),
-            AccountMeta(kp2.public_key, True, True),
+            AccountMeta(kp0.pubkey(), True, True),
+            AccountMeta(kp1.pubkey(), True, True),
+            AccountMeta(kp2.pubkey(), True, True),
         ],
     )
-    return txlib.Transaction(fee_payer=kp0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash)
+    return txlib.Transaction(fee_payer=kp0.pubkey(), instructions=[ixn], recent_blockhash=stubbed_blockhash)
 
 
 def test_to_solders(stubbed_blockhash: Blockhash) -> None:
     """Test converting a Transaction to solders."""
     kp1, kp2 = Keypair(), Keypair()
-    transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
-    solders_transfer = ssp.transfer(
-        ssp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123)
-    )
+    transfer = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
+    solders_transfer = ssp.transfer(ssp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
     assert transfer.data == solders_transfer.data
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     solders_blockhash = Hash.from_string(stubbed_blockhash)
@@ -55,20 +53,18 @@ def test_sign_partial(stubbed_blockhash):
         program_id=Pubkey.default(),
         data=bytes([0, 0, 0, 0]),
         accounts=[
-            AccountMeta(keypair0.public_key, True, True),
-            AccountMeta(keypair1.public_key, True, True),
-            AccountMeta(keypair2.public_key, True, True),
+            AccountMeta(keypair0.pubkey(), True, True),
+            AccountMeta(keypair1.pubkey(), True, True),
+            AccountMeta(keypair2.pubkey(), True, True),
         ],
     )
-    txn = txlib.Transaction(fee_payer=keypair0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash)
+    txn = txlib.Transaction(fee_payer=keypair0.pubkey(), instructions=[ixn], recent_blockhash=stubbed_blockhash)
     assert txn.to_solders().message.header.num_required_signatures == 3
     txn.sign_partial(keypair0, keypair2)
     assert not txn.to_solders().is_signed()
     txn.sign_partial(keypair1)
     assert txn.to_solders().is_signed()
-    expected_tx = txlib.Transaction(
-        fee_payer=keypair0.public_key, instructions=[ixn], recent_blockhash=stubbed_blockhash
-    )
+    expected_tx = txlib.Transaction(fee_payer=keypair0.pubkey(), instructions=[ixn], recent_blockhash=stubbed_blockhash)
     expected_tx.sign(keypair0, keypair1, keypair2)
     assert txn == expected_tx
 
@@ -85,8 +81,8 @@ def test_recent_blockhash_setter(stubbed_blockhash):
 def test_transfer_signatures(stubbed_blockhash):
     """Test signing transfer transactions."""
     kp1, kp2 = Keypair(), Keypair()
-    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
-    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=kp2.public_key, to_pubkey=kp1.public_key, lamports=123))
+    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
+    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=kp2.pubkey(), to_pubkey=kp1.pubkey(), lamports=123))
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash)
     txn.add(transfer1, transfer2)
     txn.sign(kp1, kp2)
@@ -98,8 +94,8 @@ def test_transfer_signatures(stubbed_blockhash):
 def test_dedup_signatures(stubbed_blockhash):
     """Test signature deduplication."""
     kp1, kp2 = Keypair(), Keypair()
-    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
-    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=kp1.public_key, to_pubkey=kp2.public_key, lamports=123))
+    transfer1 = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
+    transfer2 = sp.transfer(sp.TransferParams(from_pubkey=kp1.pubkey(), to_pubkey=kp2.pubkey(), lamports=123))
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer1, transfer2)
     txn.sign(kp1)
 
@@ -107,7 +103,7 @@ def test_dedup_signatures(stubbed_blockhash):
 def test_wire_format_and_desrialize(stubbed_blockhash, stubbed_receiver, stubbed_sender):
     """Test serialize/derialize transaction to/from wire format."""
     transfer = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=49)
+        sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=49)
     )
     expected_txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     expected_txn.sign(stubbed_sender)
@@ -144,7 +140,7 @@ def test_populate(stubbed_blockhash):
 def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stubbed_sender):
     """Test to serialize an unsigned transaction."""
     transfer = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=49)
+        sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=49)
     )
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     assert txn.signatures == (Signature.default(),)
@@ -154,7 +150,7 @@ def test_serialize_unsigned_transaction(stubbed_blockhash, stubbed_receiver, stu
     assert txn.signatures == (Signature.default(),)
 
     # Set fee payer
-    txn.fee_payer = stubbed_sender.public_key
+    txn.fee_payer = stubbed_sender.pubkey()
     # Serialize message
     assert b64encode(txn.serialize_message()) == (
         b"AQABAxOY9ixtGkV8UbpqS189vS9p/KkyFiGNyJl+QWvRfZPK/UOfzLZnJ/KJxcbeO8So/l3V13dwvI/xXD7u3LFK8/wAAAAAAAAA"
@@ -183,7 +179,7 @@ def test_serialize_unsigned_transaction_without_verifying_signatures(
 ):
     """Test to serialize an unsigned transaction without verifying the signatures."""
     transfer = sp.transfer(
-        sp.TransferParams(from_pubkey=stubbed_sender.public_key, to_pubkey=stubbed_receiver, lamports=49)
+        sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=49)
     )
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash).add(transfer)
     assert txn.signatures == (Signature.default(),)
@@ -193,7 +189,7 @@ def test_serialize_unsigned_transaction_without_verifying_signatures(
     assert txn.signatures == (Signature.default(),)
 
     # Set fee payer
-    txn.fee_payer = stubbed_sender.public_key
+    txn.fee_payer = stubbed_sender.pubkey()
     # Serialize message
     assert b64encode(txn.serialize_message()) == (
         b"AQABAxOY9ixtGkV8UbpqS189vS9p/KkyFiGNyJl+QWvRfZPK/UOfzLZnJ/KJxcbeO8So/l3V13dwvI/xXD7u3LFK8/wAAAAAAAAA"
@@ -448,19 +444,19 @@ def test_sort_account_metas(stubbed_blockhash):
     )
 
     fee_payer = signer_one
-    sorted_signers = sorted([x.public_key for x in [signer_one, signer_two, signer_three]], key=str)
-    sorted_signers_excluding_fee_payer = [x for x in sorted_signers if str(x) != str(fee_payer.public_key)]
-    sorted_receivers = sorted([x.public_key for x in [receiver_one, receiver_two, receiver_three]], key=str)
+    sorted_signers = sorted([x.pubkey() for x in [signer_one, signer_two, signer_three]], key=str)
+    sorted_signers_excluding_fee_payer = [x for x in sorted_signers if str(x) != str(fee_payer.pubkey())]
+    sorted_receivers = sorted([x.pubkey() for x in [receiver_one, receiver_two, receiver_three]], key=str)
 
     txn = txlib.Transaction(recent_blockhash=stubbed_blockhash)
-    txn.fee_payer = fee_payer.public_key
+    txn.fee_payer = fee_payer.pubkey()
 
     # Add three transfer transactions
     txn.add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=signer_one.public_key,
-                to_pubkey=receiver_one.public_key,
+                from_pubkey=signer_one.pubkey(),
+                to_pubkey=receiver_one.pubkey(),
                 lamports=2_000_000,
             )
         )
@@ -468,8 +464,8 @@ def test_sort_account_metas(stubbed_blockhash):
     txn.add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=signer_two.public_key,
-                to_pubkey=receiver_two.public_key,
+                from_pubkey=signer_two.pubkey(),
+                to_pubkey=receiver_two.pubkey(),
                 lamports=2_000_000,
             )
         )
@@ -477,8 +473,8 @@ def test_sort_account_metas(stubbed_blockhash):
     txn.add(
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=signer_three.public_key,
-                to_pubkey=receiver_three.public_key,
+                from_pubkey=signer_three.pubkey(),
+                to_pubkey=receiver_three.pubkey(),
                 lamports=2_000_000,
             )
         )
@@ -491,7 +487,7 @@ def test_sort_account_metas(stubbed_blockhash):
     assert b64encode(tx_msg.serialize()) == js_msg_b64_check
 
     # Transaction should organize AccountMetas by pubkey
-    assert tx_msg.account_keys[0] == fee_payer.public_key
+    assert tx_msg.account_keys[0] == fee_payer.pubkey()
     assert tx_msg.account_keys[1] == sorted_signers_excluding_fee_payer[0]
     assert tx_msg.account_keys[2] == sorted_signers_excluding_fee_payer[1]
     assert tx_msg.account_keys[3] == sorted_receivers[0]

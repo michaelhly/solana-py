@@ -31,14 +31,14 @@ def withdraw_from_vote_account(params: WithdrawFromVoteAccountParams) -> Instruc
 
     Example:
         >>> from solders.pubkey import Pubkey
-        >>> from solana.keypair import Keypair
+        >>> from solders.keypair import Keypair
         >>> vote = Pubkey([0] * 31 + [1])
         >>> withdrawer = Keypair.from_seed(bytes([0]*32))
         >>> instruction = withdraw_from_vote_account(
         ...    WithdrawFromVoteAccountParams(
         ...        vote_account_from_pubkey=vote,
-        ...        to_pubkey=withdrawer.public_key,
-        ...        withdrawer=withdrawer.public_key,
+        ...        to_pubkey=withdrawer.pubkey(),
+        ...        withdrawer=withdrawer.pubkey(),
         ...        lamports=3_000_000_000,
         ...    )
         ... )

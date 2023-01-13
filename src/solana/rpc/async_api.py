@@ -3,6 +3,7 @@ import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
 
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
@@ -58,7 +59,6 @@ from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
 from solana.blockhash import Blockhash, BlockhashCache
-from solana.keypair import Keypair
 from solana.message import Message
 from solana.rpc import types
 from solana.transaction import Transaction
@@ -433,13 +433,13 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
-            >>> from solana.keypair import Keypair
+            >>> from solders.keypair import Keypair
             >>> from solana.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
+            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_fee_for_message(txn.compile_message())).value # doctest: +SKIP
             5000
@@ -1025,13 +1025,13 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 Only supported for legacy Transaction.
 
         Example:
-            >>> from solana.keypair import Keypair
+            >>> from solders.keypair import Keypair
             >>> from solana.system_program import TransferParams, transfer
             >>> from solana.transaction import Transaction
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.public_key, to_pubkey=receiver.public_key, lamports=1000)))
+            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.send_transaction(txn, sender)).value # doctest: +SKIP
             Signature(
