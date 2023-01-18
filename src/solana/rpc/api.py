@@ -129,7 +129,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.is_connected()
 
-    def get_balance(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
+    def get_balance(self, pubkey: Pubkey | str, commitment: Optional[Commitment] = None) -> GetBalanceResp:
         """Returns the balance of the account of provided Pubkey.
 
         Args:
@@ -142,12 +142,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_balance(Pubkey([0] * 31 + [1])).value # doctest: +SKIP
             4104230290
         """
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_balance_body(pubkey, commitment)
         return self._provider.make_request(body, GetBalanceResp)
 
     def get_account_info(
         self,
-        pubkey: Pubkey,
+        pubkey: Pubkey | str,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -179,6 +181,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 },
             )
         """
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_account_info_body(
             pubkey=pubkey,
             commitment=commitment,
@@ -189,7 +193,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_account_info_json_parsed(
         self,
-        pubkey: Pubkey,
+        pubkey: Pubkey | str,
         commitment: Optional[Commitment] = None,
     ) -> GetAccountInfoMaybeJsonParsedResp:
         """Returns all the account info for the specified public key in parsed JSON format.
@@ -208,6 +212,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 11111111111111111111111111111111,
             )
         """
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_account_info_body(pubkey=pubkey, commitment=commitment, encoding="jsonParsed", data_slice=None)
         return self._provider.make_request(body, GetAccountInfoMaybeJsonParsedResp)
 
@@ -328,7 +334,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_signatures_for_address(
         self,
-        account: Pubkey,
+        account: Pubkey | str,
         before: Optional[Signature] = None,
         until: Optional[Signature] = None,
         limit: Optional[int] = None,
@@ -356,12 +362,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
         return self._provider.make_request(body, GetSignaturesForAddressResp)
 
     def get_transaction(
         self,
-        tx_sig: Signature,
+        tx_sig: Signature | str,
         encoding: str = "json",
         commitment: Optional[Commitment] = None,
         max_supported_transaction_version: Optional[int] = None,
@@ -385,6 +393,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_transaction(sig).value.block_time # doctest: +SKIP
             1234
         """  # noqa: E501 # pylint: disable=line-too-long
+        if isinstance(tx_sig, str):
+            tx_sig = Signature.from_string(tx_sig)
         body = self._get_transaction_body(tx_sig, encoding, commitment, max_supported_transaction_version)
         return self._provider.make_request(body, GetTransactionResp)
 
@@ -612,7 +622,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
-        pubkey: Pubkey,
+        pubkey: Pubkey | str,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
@@ -639,6 +649,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_program_accounts_body(
             pubkey=pubkey,
             commitment=commitment,
@@ -672,6 +684,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_program_accounts(pubkey, filters=filters).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_program_accounts_body(
             pubkey=pubkey,
             commitment=commitment,
@@ -795,7 +809,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(body, GetSupplyResp)
 
     def get_token_account_balance(
-        self, pubkey: Pubkey, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey | str, commitment: Optional[Commitment] = None
     ) -> GetTokenAccountBalanceResp:
         """Returns the token balance of an SPL Token account (UNSTABLE).
 
@@ -809,12 +823,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_token_account_balance(pubkey).value.amount  # noqa: E501 # doctest: +SKIP
             '9864'
         """
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_token_account_balance_body(pubkey, commitment)
         return self._provider.make_request(body, GetTokenAccountBalanceResp)
 
     def get_token_accounts_by_delegate(
         self,
-        delegate: Pubkey,
+        delegate: Pubkey | str,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateResp:
@@ -825,12 +841,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             opts: Token account option specifying at least one of `mint` or `program_id`.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
+        if isinstance(delegate, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_token_accounts_by_delegate_body(delegate, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByDelegateResp)
 
     def get_token_accounts_by_delegate_json_parsed(
         self,
-        delegate: Pubkey,
+        delegate: Pubkey | str,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateJsonParsedResp:
@@ -841,12 +859,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             opts: Token account option specifying at least one of `mint` or `program_id`.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
+        if isinstance(delegate, str):
+            delegate = Pubkey.from_string(delegate)
         body = self._get_token_accounts_by_delegate_json_parsed_body(delegate, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByDelegateJsonParsedResp)
 
     def get_token_accounts_by_owner(
         self,
-        owner: Pubkey,
+        owner: Pubkey | str,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerResp:
@@ -857,12 +877,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             opts: Token account option specifying at least one of `mint` or `program_id`.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
+        if isinstance(owner, str):
+            owner = Pubkey.from_string(owner)
         body = self._get_token_accounts_by_owner_body(owner, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByOwnerResp)
 
     def get_token_accounts_by_owner_json_parsed(
         self,
-        owner: Pubkey,
+        owner: Pubkey | str,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerJsonParsedResp:
@@ -873,18 +895,24 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             opts: Token account option specifying at least one of `mint` or `program_id`.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
+        if isinstance(owner, str):
+            owner = Pubkey.from_string(owner)
         body = self._get_token_accounts_by_owner_json_parsed_body(owner, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByOwnerJsonParsedResp)
 
     def get_token_largest_accounts(
-        self, pubkey: Pubkey, commitment: Optional[Commitment] = None
+        self, pubkey: Pubkey | str, commitment: Optional[Commitment] = None
     ) -> GetTokenLargestAccountsResp:
         """Returns the 20 largest accounts of a particular SPL Token type."""
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_token_largest_accounts_body(pubkey, commitment)
         return self._provider.make_request(body, GetTokenLargestAccountsResp)
 
     def get_token_supply(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetTokenSupplyResp:
         """Returns the total supply of an SPL Token type."""
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._get_token_supply_body(pubkey, commitment)
         return self._provider.make_request(body, GetTokenSupplyResp)
 
@@ -956,6 +984,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
+        if isinstance(pubkey, str):
+            pubkey = Pubkey.from_string(pubkey)
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return self._provider.make_request(body, RequestAirdropResp)
 
