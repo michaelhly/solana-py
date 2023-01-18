@@ -362,8 +362,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
-        if isinstance(pubkey, str):
-            pubkey = Pubkey.from_string(pubkey)
+        if isinstance(account, str):
+            account = Pubkey.from_string(account)
         body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
         return self._provider.make_request(body, GetSignaturesForAddressResp)
 
@@ -842,7 +842,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
         """
         if isinstance(delegate, str):
-            pubkey = Pubkey.from_string(pubkey)
+            delegate = Pubkey.from_string(delegate)
         body = self._get_token_accounts_by_delegate_body(delegate, opts, commitment)
         return self._provider.make_request(body, GetTokenAccountsByDelegateResp)
 
