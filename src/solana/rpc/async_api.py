@@ -1046,7 +1046,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             if recent_blockhash is not None:
                 msg = "recent_blockhash arg is not used when sending VersionedTransaction."
                 raise ValueError(msg)
-            versioned_tx_opts = types.TxOpts(preflight_commitment=self._commitment)
+            versioned_tx_opts = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
             return await self.send_raw_transaction(bytes(txn), opts=versioned_tx_opts)
         last_valid_block_height = None
         if recent_blockhash is None:
