@@ -122,7 +122,7 @@ jobs:
       - name: Get uuid
         id: uuid
         run: |
-          echo "::set-output name=uuid::$(uuidgen)"
+          echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
 
       - name: Upload partial coverage
         uses: actions/upload-artifact@v2
