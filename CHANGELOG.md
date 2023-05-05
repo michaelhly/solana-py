@@ -4,7 +4,7 @@
 
 ### Changed
 
-Use latest Solders
+Use latest Solders [(#352)](https://github.com/michaelhly/solana-py/pull/352)
 
 ## [0.29.2] - 2023-04-24
 
