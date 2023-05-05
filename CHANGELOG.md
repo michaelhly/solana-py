@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.29.2] - 2023-04-24
+
+## Changed
+
+Relaxed websockets dependency [(#347)](https://github.com/michaelhly/solana-py/pull/347)
+
+## [0.29.1] - 2022-02-02
+
+## Fixed
+
+Fix accidentally ignoring tx_opts in `send_transaction` methods [(#343)](https://github.com/michaelhly/solana-py/pull/343)
+
 ## [0.29.0] - 2023-01-13
 
 ## Added
