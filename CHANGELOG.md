@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.30.0] - 2023-05-05
+
+### Changed
+
+Use latest Solders
+
 ## [0.29.2] - 2023-04-24
 
 ### Changed
