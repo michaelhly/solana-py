@@ -1,13 +1,31 @@
 # Changelog
 
+## [0.30.0] - 2023-05-05
+
+### Changed
+
+Use latest Solders [(#352)](https://github.com/michaelhly/solana-py/pull/352)
+
+## [0.29.2] - 2023-04-24
+
+### Changed
+
+Relaxed websockets dependency [(#347)](https://github.com/michaelhly/solana-py/pull/347)
+
+## [0.29.1] - 2022-02-02
+
+### Fixed
+
+Fix accidentally ignoring tx_opts in `send_transaction` methods [(#343)](https://github.com/michaelhly/solana-py/pull/343)
+
 ## [0.29.0] - 2023-01-13
 
-## Added
+### Added
 
 - Add VersionedTransaction support to `send_transaction` and `simulate_transaction` methods [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Support VersionedMessage in `get_fee_for_message` methods [(#337)](https://github.com/michaelhly/solana-py/pull/337)
 
-## Changed
+### Changed
 
 - Remove redundant classes and modules ([#329](https://github.com/michaelhly/solana-py/pull/329), [#335](https://github.com/michaelhly/solana-py/pull/335) and [#338](https://github.com/michaelhly/solana-py/pull/338)):
     - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
@@ -31,40 +49,40 @@
 
 ## [0.28.1] - 2022-12-29
 
-## Fixed
+### Fixed
 
 Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://github.com/michaelhly/solana-py/pull/328)
 
 ## [0.28.0] - 2022-10-31
 
-## Changed
+### Changed
 
 - Use latest `solders`. Note that the parsed fields of jsonParsed responses are now dicts rather than strings. [(#318)](https://github.com/michaelhly/solana-py/pull/318)
 - Remove `requests` dependency [(#315)](https://github.com/michaelhly/solana-py/pull/315)
 
-## Fixed
+### Fixed
 
 - Fix flakiness in token client transactions [(#314)](https://github.com/michaelhly/solana-py/pull/314)
 
 ## [0.27.2] - 2022-10-15
 
-## Changed
+### Changed
 
 - Use latest `solders` [(#312)](https://github.com/michaelhly/solana-py/pull/312)
 
 ## [0.27.1] - 2022-10-14
 
-## Fixed
+### Fixed
 
 - Fix incorrect `encoding` arg in `_simulate_transaction_body` [(#311)](https://github.com/michaelhly/solana-py/pull/311)
 
 ## [0.27.0] - 2022-10-14
 
-## Changed
+### Changed
 
 - Replace SubscriptionError.code with SubscriptionError.type [(#309)](https://github.com/michaelhly/solana-py/pull/309)
 
-## Fixed 
+### Fixed 
 
 - Fix parsing of RPC error messages [(#309)](https://github.com/michaelhly/solana-py/pull/309)
 - Correctly filter by program_id in _get_token_accounts_convert [(#308)](https://github.com/michaelhly/solana-py/pull/308)
@@ -72,12 +90,12 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 ## [0.26.0] - 2022-10-13
 
-## Added
+### Added
 
 - Added batch request methods `(Async)HTTPProvider.make_batch_request(_unparsed)` [(#304)](https://github.com/michaelhly/solana-py/pull/304)
 - Added `make_request_unparsed` to `(Async)HTTPProvider` [(#304)](https://github.com/michaelhly/solana-py/pull/304)
 
-## Changed
+### Changed
 
 - Use solders for parsing RPC requests [(#302)](https://github.com/michaelhly/solana-py/pull/302):
     - **Breaking change**: Every RPC method now returns a strongly typed object instead of a dictionary.
@@ -97,25 +115,25 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
     - **Breaking change**: Functions that accepted Union[PublicKey, str] now only accept PublicKey.
     - **Breaking change**: RPC functions that accepted a `str` signature param now expect a `solders.signature.Signature`.
 
-## Fixed
+### Fixed
 
 - `send_raw_transaction` now defaults to the client's commitment level if `preflight_commitment` is not otherwise specified.
 
 ## [0.25.0] - 2022-06-21
 
-## Fixed
+### Fixed
 
 - Use latest Solders version to make objects pickleable again [(#252)](https://github.com/michaelhly/solana-py/pull/252).
 
 
-## Changed
+### Changed
 
 - Updated httpx to fix critical vulnerability [(#248)](https://github.com/michaelhly/solana-py/pull/248).
 - Updated pytest, websockets, pytest-docker, pytest-asyncio to latest. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
 - Updated apischema to latest. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
 
 
-## Added
+### Added
 
 - Added `get_latest_blockhash` RPC Call. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
 - Added `get_fee_for_message` RPC Call. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
@@ -127,7 +145,7 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 ## [0.24.0] - 2022-06-04
 
-## Changed
+### Changed
 
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for keypairs and pubkeys [(#237)](https://github.com/michaelhly/solana-py/pull/237).
 - Remove deprecated `Account` entirely [(#238)](https://github.com/michaelhly/solana-py/pull/238).
@@ -145,41 +163,41 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
     of an empty list.
 - Use [solders](https://github.com/kevinheavey/solders) under the hood for system instructions [(#243)](https://github.com/michaelhly/solana-py/pull/243)
 
-## Added
+### Added
 
 - Expose `client.commmitment` as a property like in web3.js [(#242)](https://github.com/michaelhly/solana-py/pull/242).
 
 ## [0.23.3] - 2022-04-29
 
-## Fixed
+### Fixed
 
 - Make transaction message compilation consistent with [@solana/web3.js](https://github.com/solana-labs/solana-web3.js/) ([228](https://github.com/michaelhly/solana-py/pull/228))
 
 ## [0.23.2] - 2022-04-17
 
-## Changed
+### Changed
 
 - Relax typing-extensions contraint ([#220](https://github.com/michaelhly/solana-py/pull/220))
 
 ## [0.23.1] - 2022-03-31
 
-## Fixed
+### Fixed
 
 - Fix str seed input for sp.create_account_with_seed ([#206](https://github.com/michaelhly/solana-py/pull/206))
 
-## Changed
+### Changed
 
 - Update `jsonrpcserver` dependency ([#205](https://github.com/michaelhly/solana-py/pull/205))
 
 ## [0.23.0] - 2022-03-06
 
-## Added
+### Added
 
 - Implement `__hash__` for PublicKey ([#202](https://github.com/michaelhly/solana-py/pull/202))
 
 ## [0.22.0] - 2022-03-03
 
-## Added
+### Added
 
 - Add default RPC client commitment to token client ([#187](https://github.com/michaelhly/solana-py/pull/187))
 - Add cluster_api_url function ([#193](https://github.com/michaelhly/solana-py/pull/193))
@@ -199,7 +217,7 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 - Throw more specific Exception in API client on failure to retrieve RPC result ([#166](https://github.com/michaelhly/solana-py/pull/166/files))
 
-## Added
+### Added
 
 - Add max_retries option to sendTransaction and commitment option to get_transaction ([#165](https://github.com/michaelhly/solana-py/pull/165))
 - Add a partial support for vote program ([#167](https://github.com/michaelhly/solana-py/pull/167))
@@ -210,20 +228,20 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 - Make keypair hashable and move setters out of property functions ([#158](https://github.com/michaelhly/solana-py/pull/158))
 
-## Added
+### Added
 
 - Optional Commitment parameter to `get_signatures_for_address` ([#157](https://github.com/michaelhly/solana-py/pull/157))
 - More SYSVAR constants ([#159](https://github.com/michaelhly/solana-py/pull/159))
 
 ## [0.19.1] - 2021-12-21
 
-## Added
+### Added
 
 - Custom solana-py RPC error handling ([#152](https://github.com/michaelhly/solana-py/pull/152))
 
 ## [0.19.0] - 2021-12-02
 
-## Added
+### Added
 
 - Websockets support ([#144](https://github.com/michaelhly/solana-py/pull/144))
 - New client functions ([#139](https://github.com/michaelhly/solana-py/pull/139))
@@ -240,7 +258,7 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 - Raise OnCurveException instead of generic Exception in `create_program_address`
   ([#128](https://github.com/michaelhly/solana-py/pull/128))
 
-## Added
+### Added
 
 - Add `until` parameter to `get_signatures_for_address` ([#133](https://github.com/michaelhly/solana-py/pull/133))
 - This changelog.
@@ -307,7 +325,7 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 - Integration tests
 
-## Added
+### Added
 
 - `solana.publickey.create_with_seed` ([#69](https://github.com/michaelhly/solana-py/pull/69))
 
@@ -322,7 +340,7 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 - Use python-pure25519 curve check util instead of crypto_core_ed25519_is_valid_point
 
-## Added ([#66](https://github.com/michaelhly/solana-py/pull/66))
+### Added ([#66](https://github.com/michaelhly/solana-py/pull/66))
 
 - python-pure25519 curve check util
 - `spl.token.client.create_associated_token_account`
