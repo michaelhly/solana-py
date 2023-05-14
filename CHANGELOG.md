@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.30.1] - 2023-05-14
+
+### Changed
+
+- Use latest Solders [(#359)](https://github.com/michaelhly/solana-py/pull/359)
+- Relax websockets to allow 11.x [(#355)](https://github.com/michaelhly/solana-py/pull/355)
+
+### Changed
+
+Use latest Solders [(#352)](https://github.com/michaelhly/solana-py/pull/352)
+
 ## [0.30.0] - 2023-05-05
 
 ### Changed
