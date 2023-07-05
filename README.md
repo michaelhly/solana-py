@@ -91,7 +91,7 @@ async def main():
     async with connect("wss://api.devnet.solana.com") as websocket:
         await websocket.logs_subscribe()
         first_resp = await websocket.recv()
-        subscription_id = first_resp.result
+        subscription_id = first_resp[0].result
         next_resp = await websocket.recv()
         print(next_resp)
         await websocket.logs_unsubscribe(subscription_id)
@@ -100,7 +100,7 @@ async def main():
     async with connect("wss://api.devnet.solana.com") as websocket:
         await websocket.logs_subscribe()
         first_resp = await websocket.recv()
-        subscription_id = first_resp.result
+        subscription_id = first_resp[0].result
         async for idx, msg in enumerate(websocket):
             if idx == 3:
                 break
