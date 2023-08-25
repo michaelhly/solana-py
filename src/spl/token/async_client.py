@@ -4,13 +4,22 @@ from __future__ import annotations
 
 from typing import List, Optional, Union, cast
 
-import spl.token.instructions as spl_token
-from solana.blockhash import Blockhash
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
-from solana.rpc.types import RPCResponse, TxOpts
+from solana.rpc.types import TxOpts
+from solders.hash import Hash as Blockhash
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
+from solders.rpc.responses import (
+    GetTokenAccountBalanceResp,
+    GetTokenAccountsByDelegateJsonParsedResp,
+    GetTokenAccountsByDelegateResp,
+    GetTokenAccountsByOwnerJsonParsedResp,
+    GetTokenAccountsByOwnerResp,
+    SendTransactionResp,
+)
+
+import spl.token.instructions as spl_token
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
 from spl.token.core import AccountInfo, MintInfo, _TokenCore
 
@@ -18,7 +27,7 @@ from spl.token.core import AccountInfo, MintInfo, _TokenCore
 class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     """An ERC20-like Token."""
 
-    def __init__(self, conn: AsyncClient, pubkey: PublicKey, program_id: PublicKey, payer: Keypair) -> None:
+    def __init__(self, conn: AsyncClient, pubkey: Pubkey, program_id: Pubkey, payer: Keypair) -> None:
         """Initialize a client to a SPL-Token program."""
         super().__init__(pubkey, program_id, payer)
         self._conn = conn
@@ -34,7 +43,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             Number of lamports required.
         """
         resp = await conn.get_minimum_balance_for_rent_exemption(ACCOUNT_LAYOUT.sizeof())
-        return resp["result"]
+        return resp.value
 
     @staticmethod
     async def get_min_balance_rent_for_exempt_for_mint(conn: AsyncClient) -> int:
@@ -47,7 +56,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
             Number of lamports required.
         """
         resp = await conn.get_minimum_balance_for_rent_exemption(MINT_LAYOUT.sizeof())
-        return resp["result"]
+        return resp.value
 
     @staticmethod
     async def get_min_balance_rent_for_exempt_for_multisig(conn: AsyncClient) -> int:
@@ -60,22 +69,40 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
              Number of lamports required.
         """
         resp = await conn.get_minimum_balance_for_rent_exemption(MULTISIG_LAYOUT.sizeof())
-        return resp["result"]
+        return resp.value
 
-    async def get_accounts(
+    async def get_accounts_by_owner(
         self,
-        owner: PublicKey,
-        is_delegate: bool = False,
+        owner: Pubkey,
         commitment: Optional[Commitment] = None,
-        encoding: str = "jsonParsed",
-    ) -> RPCResponse:
-        """Get token accounts of the provided owner by the token's mint.
+        encoding: str = "base64",
+    ) -> GetTokenAccountsByOwnerResp:
+        """Get token accounts of the provided owner.
 
         Args:
             owner: Public Key of the token account owner.
-            is_delegate: (optional) Flag specifying if the `owner` public key is a delegate.
-            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
             commitment: (optional) Bank state to query.
+            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
+        """
+        args = self._get_accounts_args(
+            owner,
+            commitment,
+            encoding,
+            self._conn.commitment,  # pylint: disable=protected-access
+        )
+        return await self._conn.get_token_accounts_by_owner(*args)
+
+    async def get_accounts_by_owner_json_parsed(
+        self,
+        owner: Pubkey,
+        commitment: Optional[Commitment] = None,
+    ) -> GetTokenAccountsByOwnerJsonParsedResp:
+        """Get token accounts of the provided owner by the token's mint, in JSON format.
+
+        Args:
+            owner: Public Key of the token account owner.
+            commitment: (optional) Bank state to query.
+
 
         Parsed-JSON encoding attempts to use program-specific state parsers to return more
         human-readable and explicit account state data. If parsed-JSON is requested but a
@@ -83,15 +110,61 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         from results. jsonParsed encoding is UNSTABLE.
         """
         args = self._get_accounts_args(
-            owner, commitment, encoding, self._conn.commitment  # pylint: disable=protected-access
+            owner,
+            commitment,
+            "jsonParsed",
+            self._conn.commitment,  # pylint: disable=protected-access
         )
-        return (
-            await self._conn.get_token_accounts_by_delegate(*args)
-            if is_delegate
-            else await self._conn.get_token_accounts_by_owner(*args)
-        )
+        return await self._conn.get_token_accounts_by_owner_json_parsed(*args)
 
-    async def get_balance(self, pubkey: PublicKey, commitment: Optional[Commitment] = None) -> RPCResponse:
+    async def get_accounts_by_delegate(
+        self,
+        owner: Pubkey,
+        commitment: Optional[Commitment] = None,
+        encoding: str = "base64",
+    ) -> GetTokenAccountsByDelegateResp:
+        """Get token accounts of the provided delegate.
+
+        Args:
+            owner: Public Key of the delegate account.
+            commitment: (optional) Bank state to query.
+            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
+        """
+        args = self._get_accounts_args(
+            owner,
+            commitment,
+            encoding,
+            self._conn.commitment,  # pylint: disable=protected-access
+        )
+        return await self._conn.get_token_accounts_by_delegate(*args)
+
+    async def get_accounts_by_delegate_json_parsed(
+        self,
+        owner: Pubkey,
+        commitment: Optional[Commitment] = None,
+        encoding: str = "base64",
+    ) -> GetTokenAccountsByDelegateJsonParsedResp:
+        """Get token accounts of the provided delegate, in JSON format.
+
+        Args:
+            owner: Public Key of the delegate account.
+            commitment: (optional) Bank state to query.
+            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
+
+        Parsed-JSON encoding attempts to use program-specific state parsers to return more
+        human-readable and explicit account state data. If parsed-JSON is requested but a
+        valid mint cannot be found for a particular account, that account will be filtered out
+        from results. jsonParsed encoding is UNSTABLE.
+        """
+        args = self._get_accounts_args(
+            owner,
+            commitment,
+            encoding,
+            self._conn.commitment,  # pylint: disable=protected-access
+        )
+        return await self._conn.get_token_accounts_by_delegate_json_parsed(*args)
+
+    async def get_balance(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetTokenAccountBalanceResp:
         """Get the balance of the provided token account.
 
         Args:
@@ -105,10 +178,10 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         cls,
         conn: AsyncClient,
         payer: Keypair,
-        mint_authority: PublicKey,
+        mint_authority: Pubkey,
         decimals: int,
-        program_id: PublicKey,
-        freeze_authority: Optional[PublicKey] = None,
+        program_id: Pubkey,
+        freeze_authority: Optional[Pubkey] = None,
         skip_confirmation: bool = False,
         recent_blockhash: Optional[Blockhash] = None,
     ) -> AsyncToken:
@@ -151,10 +224,10 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def create_account(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         skip_confirmation: bool = False,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> PublicKey:
+    ) -> Pubkey:
         """Create and initialize a new account.
 
         This account may then be used as a `transfer()` or `approve()` destination.
@@ -162,6 +235,7 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         Args:
             owner: User account that will own the new account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
+            recent_blockhash (optional): A prefetched blockhash for the transaction.
 
         Returns:
             Public key of the new empty account.
@@ -179,15 +253,16 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def create_associated_token_account(
         self,
-        owner: PublicKey,
+        owner: Pubkey,
         skip_confirmation: bool = False,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> PublicKey:
+    ) -> Pubkey:
         """Create an associated token account.
 
         Args:
             owner: User account that will own the associated token account.
             skip_confirmation: (optional) Option to skip transaction confirmation.
+            recent_blockhash (optional): A prefetched blockhash for the transaction.
 
         Returns:
             Public key of the new associated account.
@@ -205,13 +280,13 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     @staticmethod
     async def create_wrapped_native_account(
         conn: AsyncClient,
-        program_id: PublicKey,
-        owner: PublicKey,
+        program_id: Pubkey,
+        owner: Pubkey,
         payer: Keypair,
         amount: int,
         skip_confirmation: bool = False,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> PublicKey:
+    ) -> Pubkey:
         """Create and initialize a new account on the special native token mint.
 
         Args:
@@ -231,8 +306,14 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         # Allocate memory for the account
         balance_needed = await AsyncToken.get_min_balance_rent_for_exempt_for_account(conn)
-        new_account_public_key, txn, payer, new_account, opts = _TokenCore._create_wrapped_native_account_args(
-            program_id, owner, payer, amount, skip_confirmation, balance_needed, conn.commitment
+        (new_account_public_key, txn, payer, new_account, opts,) = _TokenCore._create_wrapped_native_account_args(
+            program_id,
+            owner,
+            payer,
+            amount,
+            skip_confirmation,
+            balance_needed,
+            conn.commitment,
         )
         await conn.send_transaction(txn, payer, new_account, opts=opts, recent_blockhash=recent_blockhash)
         return new_account_public_key
@@ -240,10 +321,10 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     async def create_multisig(
         self,
         m: int,
-        multi_signers: List[PublicKey],
+        multi_signers: List[Pubkey],
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> PublicKey:  # pylint: disable=invalid-name
+    ) -> Pubkey:  # pylint: disable=invalid-name
         """Create and initialize a new multisig.
 
         Args:
@@ -259,28 +340,28 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         txn, payer, multisig = self._create_multisig_args(m, multi_signers, balance_needed)
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
         await self._conn.send_transaction(txn, payer, multisig, opts=opts_to_use, recent_blockhash=recent_blockhash)
-        return multisig.public_key
+        return multisig.pubkey()
 
     async def get_mint_info(self) -> MintInfo:
         """Retrieve mint information."""
         info = await self._conn.get_account_info(self.pubkey)
         return self._create_mint_info(info)
 
-    async def get_account_info(self, account: PublicKey, commitment: Optional[Commitment] = None) -> AccountInfo:
+    async def get_account_info(self, account: Pubkey, commitment: Optional[Commitment] = None) -> AccountInfo:
         """Retrieve account information."""
         info = await self._conn.get_account_info(account, commitment)
         return self._create_account_info(info)
 
     async def transfer(
         self,
-        source: PublicKey,
-        dest: PublicKey,
-        owner: Union[Keypair, PublicKey],
+        source: Pubkey,
+        dest: Pubkey,
+        owner: Union[Keypair, Pubkey],
         amount: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Transfer tokens to another account.
 
         Args:
@@ -298,14 +379,14 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def approve(
         self,
-        source: PublicKey,
-        delegate: PublicKey,
-        owner: PublicKey,
+        source: Pubkey,
+        delegate: Pubkey,
+        owner: Pubkey,
         amount: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
         Args:
@@ -323,12 +404,12 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def revoke(
         self,
-        account: PublicKey,
-        owner: PublicKey,
+        account: Pubkey,
+        owner: Pubkey,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Revoke transfer authority for a given account.
 
         Args:
@@ -344,14 +425,14 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def set_authority(
         self,
-        account: PublicKey,
-        current_authority: Union[Keypair, PublicKey],
+        account: Pubkey,
+        current_authority: Union[Keypair, Pubkey],
         authority_type: spl_token.AuthorityType,
-        new_authority: Optional[PublicKey] = None,
+        new_authority: Optional[Pubkey] = None,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Assign a new authority to the account.
 
         Args:
@@ -365,19 +446,24 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
         txn, payer, signers, opts = self._set_authority_args(
-            account, current_authority, authority_type, new_authority, multi_signers, opts_to_use
+            account,
+            current_authority,
+            authority_type,
+            new_authority,
+            multi_signers,
+            opts_to_use,
         )
         return await self._conn.send_transaction(txn, payer, *signers, opts=opts, recent_blockhash=recent_blockhash)
 
     async def mint_to(
         self,
-        dest: PublicKey,
-        mint_authority: Union[Keypair, PublicKey],
+        dest: Pubkey,
+        mint_authority: Union[Keypair, Pubkey],
         amount: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Mint new tokens.
 
         Args:
@@ -397,13 +483,13 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def burn(
         self,
-        account: PublicKey,
-        owner: PublicKey,
+        account: Pubkey,
+        owner: Pubkey,
         amount: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Burn tokens.
 
         Args:
@@ -420,13 +506,13 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def close_account(
         self,
-        account: PublicKey,
-        dest: PublicKey,
-        authority: PublicKey,
+        account: Pubkey,
+        dest: Pubkey,
+        authority: Pubkey,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Remove approval for the transfer of any remaining tokens.
 
         Args:
@@ -443,12 +529,12 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def freeze_account(
         self,
-        account: PublicKey,
-        authority: PublicKey,
+        account: Pubkey,
+        authority: Pubkey,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Freeze account.
 
         Args:
@@ -464,12 +550,12 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def thaw_account(
         self,
-        account: PublicKey,
-        authority: PublicKey,
+        account: Pubkey,
+        authority: Pubkey,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Thaw account.
 
         Args:
@@ -485,15 +571,15 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def transfer_checked(
         self,
-        source: PublicKey,
-        dest: PublicKey,
-        owner: PublicKey,
+        source: Pubkey,
+        dest: Pubkey,
+        owner: Pubkey,
         amount: int,
         decimals: int,
         multi_signers: Optional[List[Keypair]],
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Transfer tokens to another account, asserting the token mint and decimals.
 
         Args:
@@ -514,15 +600,15 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def approve_checked(
         self,
-        source: PublicKey,
-        delegate: PublicKey,
-        owner: PublicKey,
+        source: Pubkey,
+        delegate: Pubkey,
+        owner: Pubkey,
         amount: int,
         decimals: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Grant a third-party permission to transfer up the specified number of tokens from an account.
 
         This method also asserts the token mint and decimals.
@@ -545,14 +631,14 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def mint_to_checked(
         self,
-        dest: PublicKey,
-        mint_authority: PublicKey,
+        dest: Pubkey,
+        mint_authority: Pubkey,
         amount: int,
         decimals: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Mint new tokens, asserting the token mint and decimals.
 
         Args:
@@ -572,14 +658,14 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
 
     async def burn_checked(
         self,
-        account: PublicKey,
-        owner: PublicKey,
+        account: Pubkey,
+        owner: Pubkey,
         amount: int,
         decimals: int,
         multi_signers: Optional[List[Keypair]] = None,
         opts: Optional[TxOpts] = None,
         recent_blockhash: Optional[Blockhash] = None,
-    ) -> RPCResponse:
+    ) -> SendTransactionResp:
         """Burn tokens, asserting the token mint and decimals.
 
         Args:

@@ -4,18 +4,18 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import Any
 
-from solana.transaction import TransactionInstruction
+from solders.instruction import Instruction
 
 
-def validate_instruction_keys(instruction: TransactionInstruction, expected: int) -> None:
+def validate_instruction_keys(instruction: Instruction, expected: int) -> None:
     """Verify length of AccountMeta list of a transaction instruction is at least the expected length.
 
     Args:
-        instruction: A TransactionInstruction object.
+        instruction: A Instruction object.
         expected: The expected length.
     """
-    if len(instruction.keys) < expected:
-        raise ValueError(f"invalid instruction: found {len(instruction.keys)} keys, expected at least {expected}")
+    if len(instruction.accounts) < expected:
+        raise ValueError(f"invalid instruction: found {len(instruction.accounts)} keys, expected at least {expected}")
 
 
 def validate_instruction_type(parsed_data: Any, expected_type: IntEnum) -> None:

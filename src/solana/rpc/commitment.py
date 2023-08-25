@@ -24,7 +24,6 @@ Confirmed = Commitment("confirmed")
 Processed = Commitment("processed")
 """The node will query its most recent block. Note that the block may not be complete."""
 
-COMMITMENT_RANKS = {Processed: 0, Confirmed: 1, Finalized: 2}
 
 Max = Commitment("max")
 """Deprecated"""

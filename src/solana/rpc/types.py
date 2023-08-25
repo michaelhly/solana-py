@@ -1,9 +1,8 @@
 """RPC types."""
-from typing import Any, NamedTuple, NewType, Optional, Union
+from typing import NamedTuple, NewType, Optional
 
-from typing_extensions import Literal, TypedDict  # noqa: F401
-
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
+from typing_extensions import TypedDict
 
 from .commitment import Commitment, Finalized
 
@@ -23,19 +22,6 @@ class RPCError(TypedDict):
     """Error message."""
 
 
-class RPCResponse(TypedDict, total=False):
-    """RPC Response."""
-
-    error: Union[RPCError, str]
-    """RPC error."""
-    id: int
-    """Request ID."""
-    jsonrpc: Literal["2.0"]
-    """Protocol."""
-    result: Any
-    """Response results."""
-
-
 class DataSliceOpts(NamedTuple):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
@@ -50,7 +36,7 @@ class MemcmpOpts(NamedTuple):
 
     offset: int
     """Offset into program account data to start comparison: <usize>."""
-    bytes: str
+    bytes: str  # noqa: A003
     """Data to match, as base-58 encoded string: <string>."""
 
 
@@ -60,18 +46,12 @@ class TokenAccountOpts(NamedTuple):
     Provide one of mint or program_id.
     """
 
-    mint: Optional[PublicKey] = None
+    mint: Optional[Pubkey] = None
     """Public key of the specific token Mint to limit accounts to."""
-    program_id: Optional[PublicKey] = None
+    program_id: Optional[Pubkey] = None
     """Public key of the Token program ID that owns the accounts."""
     encoding: str = "base64"
-    """Encoding for Account data, either "base58" (slow), "base64" or jsonParsed".
-
-    Parsed-JSON encoding attempts to use program-specific state parsers to return more
-    human-readable and explicit account state data. If parsed-JSON is requested but a
-    valid mint cannot be found for a particular account, that account will be filtered out
-    from results. jsonParsed encoding is UNSTABLE.
-    """
+    """Encoding for Account data, either "base58" (slow) or "base64"."""
     data_slice: Optional[DataSliceOpts] = None
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
