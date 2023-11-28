@@ -1,21 +1,20 @@
 """Tests for the Memo program."""
 import pytest
-from solders.transaction_status import ParsedInstruction
-
-from solana.keypair import Keypair
 from solana.rpc.api import Client
 from solana.rpc.commitment import Finalized
 from solana.transaction import Transaction
+from solders.keypair import Keypair
+from solders.transaction_status import ParsedInstruction
 from spl.memo.constants import MEMO_PROGRAM_ID
 from spl.memo.instructions import MemoParams, create_memo
 
-from .utils import AIRDROP_AMOUNT, assert_valid_response
+from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
 def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Client):
     """Test sending a memo instruction to localnet."""
-    airdrop_resp = test_http_client.request_airdrop(stubbed_sender.public_key, AIRDROP_AMOUNT)
+    airdrop_resp = test_http_client.request_airdrop(stubbed_sender.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(airdrop_resp)
     test_http_client.confirm_transaction(airdrop_resp.value)
     raw_message = "test"
@@ -23,7 +22,7 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     # Create memo params
     memo_params = MemoParams(
         program_id=MEMO_PROGRAM_ID,
-        signer=stubbed_sender.public_key,
+        signer=stubbed_sender.pubkey(),
         message=message,
     )
     # Create transfer tx to add memo to transaction from stubbed sender
@@ -45,4 +44,4 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     ixn = resp2_transaction.transaction.message.instructions[0]
     assert isinstance(ixn, ParsedInstruction)
     assert ixn.parsed == raw_message
-    assert ixn.program_id == MEMO_PROGRAM_ID.to_solders()
+    assert ixn.program_id == MEMO_PROGRAM_ID
