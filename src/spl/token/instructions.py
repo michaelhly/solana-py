@@ -640,7 +640,6 @@ def decode_sync_native(instruction: Instruction) -> SyncNativeParams:
     Returns:
         The decoded instruction.
     """
-    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.SYNC_NATIVE)
     return SyncNativeParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,

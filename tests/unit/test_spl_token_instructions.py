@@ -1,8 +1,8 @@
 """Unit tests for SPL-token instructions."""
 import spl.token.instructions as spl_token
 from solders.pubkey import Pubkey
-from spl.token.instructions import get_associated_token_address
 from spl.token.constants import TOKEN_PROGRAM_ID, WRAPPED_SOL_MINT
+from spl.token.instructions import get_associated_token_address
 
 
 def test_initialize_mint(stubbed_sender):
@@ -386,7 +386,6 @@ def test_burn_checked(stubbed_receiver):
 
 def test_sync_native(stubbed_sender):
     """Test sync account amount value with lamports."""
-
     token_account = get_associated_token_address(stubbed_sender.pubkey(), WRAPPED_SOL_MINT)
     params = spl_token.SyncNativeParams(program_id=TOKEN_PROGRAM_ID, account=token_account)
 
