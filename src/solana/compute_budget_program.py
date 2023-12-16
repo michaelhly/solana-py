@@ -9,11 +9,9 @@ from solders.pubkey import Pubkey
 from solana._layouts.compute_budget_instructions import (
     COMPUTE_BUDGET_INSTRUCTIONS_LAYOUT,
     InstructionType,
-    )
+)
 
-COMPUTE_BUDGET_PROGRAM_ID: Pubkey = (
-    Pubkey.from_string("ComputeBudget111111111111111111111111111111"),
-    )
+COMPUTE_BUDGET_PROGRAM_ID: Pubkey = Pubkey.from_string("ComputeBudget111111111111111111111111111111")
 
 
 # Instruction Params
