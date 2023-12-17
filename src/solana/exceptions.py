@@ -7,8 +7,10 @@ class SolanaExceptionBase(Exception):
 
     def __init__(self, exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> None:
         """Init."""
+    def __init__(self, exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.error_msg = self._build_error_message(exc, func, *args, **kwargs)
+        self.original_exception = exc
 
     @staticmethod
     def _build_error_message(
@@ -17,7 +19,7 @@ class SolanaExceptionBase(Exception):
         *args: Any,  # noqa: ARG004
         **kwargs: Any,  # noqa: ARG004
     ) -> str:
-        return f"{type(exc)} raised in {func} invokation"
+        return f"{type(exc)} raised in {func} invokation\nOriginal exception: {exc}"
 
 
 class SolanaRpcException(SolanaExceptionBase):
