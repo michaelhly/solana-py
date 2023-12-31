@@ -1167,7 +1167,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             return resp
         else:
-            timeout = time() + 30
+            timeout = time() + 90
             while time() < timeout:
                 resp = await self.get_signature_statuses([tx_sig])
                 resp_value = resp.value[0]

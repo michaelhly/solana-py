@@ -1139,7 +1139,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             sleep_seconds: The number of seconds to sleep when polling the signature status.
             last_valid_block_height: The block height by which the transaction would become invalid.
         """
-        timeout = time() + 30
+        timeout = time() + 90
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         commitment_rank = int(commitment_to_use)
         if last_valid_block_height:  # pylint: disable=no-else-return
