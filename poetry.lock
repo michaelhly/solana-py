@@ -1046,20 +1046,20 @@ files = [
 
 [[package]]
 name = "solders"
-version = "0.18.1"
+version = "0.19.0"
 description = "Python bindings for Solana Rust tools"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "solders-0.18.1-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:1b20230838626fad26d5bdaf8ebe3db3b660ef9f56cc271feca8970d464ea11f"},
-    {file = "solders-0.18.1-cp37-abi3-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:3d2503693d0fb0efd37e3f921277327ff664bd04fff551346fad565dd8b9185a"},
-    {file = "solders-0.18.1-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a92ee08cd1de84463b83551810981c25dcca4aa42ab57b8ba823d62dbab9d202"},
-    {file = "solders-0.18.1-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:8b78482deeed583b473e70314336d26562b5f2f14fa777a83b9406835eb3e988"},
-    {file = "solders-0.18.1-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3da01fcfcfd2154ff41328a3b7a32db655f8aace4ca146a7bf779c6088866daf"},
-    {file = "solders-0.18.1-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:0b6bd026bdfce27daacefa405f0e46f44f9e8dd7e60fd36d23278b08a0f40482"},
-    {file = "solders-0.18.1-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:02788caa3b82e846944a37f86dc673b6c9d80108679f44109f6c7acfd98808ec"},
-    {file = "solders-0.18.1-cp37-abi3-win_amd64.whl", hash = "sha256:1587231b57a94e29df3945fa2582817cdb1c935c7cc3b446140ae4154912d1e6"},
-    {file = "solders-0.18.1.tar.gz", hash = "sha256:1b41c36e331e2323ed4be1253fda2221391956b4a528270acfbf921e2a3f0329"},
+    {file = "solders-0.19.0-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:f7058bde8a83c469cf473a21ea7b1709a2288d7f389953fbc8e6930b6b7c8340"},
+    {file = "solders-0.19.0-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8e269cfc6d35c3e50612ae6139e82b96ae14bb7ae3b49e90ec51084bb2b73bc2"},
+    {file = "solders-0.19.0-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:f887d1eb4e64ec31fbb5228697bb7f562bb8fd91765e4c9e96729bd4b423d326"},
+    {file = "solders-0.19.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:44713e86ba1774fb2629ac94f4a3eb302867ff38df771649314b60225dc23a47"},
+    {file = "solders-0.19.0-cp37-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:d47628e7afe40a208974da1a9c1e8aea0daa18fbacf4c8c4cbdd7a87297b9d6b"},
+    {file = "solders-0.19.0-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:3ac5486f9f1a87375647cdf6d87468c8aa6ee656059041eeeba5688d45d76756"},
+    {file = "solders-0.19.0-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:f636273ab0d733e6cd8c03589e80a09b47a660911b716c56039027aec249c2fa"},
+    {file = "solders-0.19.0-cp37-abi3-win_amd64.whl", hash = "sha256:eeaa1289b3da9138c887853c315ecb139dcd3687bacf2ea5d9cb5855f7289f7d"},
+    {file = "solders-0.19.0.tar.gz", hash = "sha256:939d25a546cb499484255ea6aa19649b56208ad6566798f794c8268262cd811e"},
 ]
 
 [package.dependencies]
@@ -1276,4 +1276,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "524582d5419fbc9873ea1e111bc42e4fe2ff87b8bc765be5bd4038e1f030815b"
+content-hash = "a5367f42881cf1485668d31ed7ae2bc4e45f9bacb5cf3dbc428ba12584699275"
