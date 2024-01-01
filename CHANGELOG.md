@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.31.0] - 2024-01-02
+
+### Added
+
+- Add sync_native instruction [(#376)](https://github.com/michaelhly/solana-py/pull/376)
+
+### Changed
+
+- Update to latest Solders version [(#383)](https://github.com/michaelhly/solana-py/pull/383)
+- Increase confirmation timeout to 90 seconds [(#382)](https://github.com/michaelhly/solana-py/pull/382)
+
 ## [0.30.2] - 2023-06-02
 
 - Use latest Solders [(#363)](https://github.com/michaelhly/solana-py/pull/363)
