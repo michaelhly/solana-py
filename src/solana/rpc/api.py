@@ -8,6 +8,7 @@ from solders.hash import Hash as Blockhash
 from solders.keypair import Keypair
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
+from solders.rpc.config import RpcSimulateTransactionAccountsConfig
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
     GetAccountInfoResp,
@@ -60,6 +61,7 @@ from solders.rpc.responses import (
     ValidatorExitResp,
 )
 from solders.signature import Signature
+from solders.transaction import Transaction as SoldersTransaction
 from solders.transaction import VersionedTransaction
 
 from solana.blockhash import BlockhashCache
@@ -1072,17 +1074,25 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def simulate_transaction(
         self,
-        txn: Union[Transaction, VersionedTransaction],
+        txn: Union[SoldersTransaction, VersionedTransaction],
         sig_verify: bool = False,
+        replace_recent_blockhash: bool = False,
         commitment: Optional[Commitment] = None,
+        accounts: Optional[RpcSimulateTransactionAccountsConfig] = None,
+        min_context_slot: Optional[int] = None,
     ) -> SimulateTransactionResp:
         """Simulate sending a transaction.
 
         Args:
-            txn: A transaction object.
+            txn: A Transaction object, a transaction in wire format, or a transaction as base-64 encoded string
                 The transaction must have a valid blockhash, but is not required to be signed.
             sig_verify: If true the transaction signatures will be verified (default: false).
+            replace_recent_blockhash: if `true` the transaction recent blockhash will be replaced with the
+                most recent blockhash (default: false, conflicts with `sigVerify`).
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            accounts: List of accounts to be returned.
+                RpcSimulateTransactionAccountsConfig object containing `addresses` and `encoding` fields.
+            min_context_slot: the minimum slot that the request can be evaluated at
 
         Example:
             >>> solana_client = Client("http://localhost:8899")
@@ -1097,7 +1107,14 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.simulate_transaction(tx).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
         """
-        body = self._simulate_transaction_body(txn, sig_verify, commitment)
+        body = self._simulate_transaction_body(
+            txn,
+            sig_verify,
+            replace_recent_blockhash,
+            commitment,
+            accounts,
+            min_context_slot,
+        )
         return self._provider.make_request(body, SimulateTransactionResp)
 
     def validator_exit(self) -> ValidatorExitResp:

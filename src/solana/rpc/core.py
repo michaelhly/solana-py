@@ -25,6 +25,7 @@ from solders.rpc.config import (
     RpcSendTransactionConfig,
     RpcSignaturesForAddressConfig,
     RpcSignatureStatusConfig,
+    RpcSimulateTransactionAccountsConfig,
     RpcSimulateTransactionConfig,
     RpcSupplyConfig,
     RpcTokenAccountsFilterMint,
@@ -81,12 +82,12 @@ from solders.rpc.requests import (
 )
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
+from solders.transaction import Transaction as SoldersTransaction
 from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.blockhash import BlockhashCache
 from solana.rpc import types
-from solana.transaction import Transaction
 
 from .commitment import Commitment, Confirmed, Finalized, Processed
 
@@ -485,26 +486,51 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @overload
     def _simulate_transaction_body(
-        self, txn: Transaction, sig_verify: bool, commitment: Optional[Commitment]
+        self,
+        txn: SoldersTransaction,
+        sig_verify: bool,
+        replace_recent_blockhash: bool,
+        commitment: Optional[Commitment],
+        accounts: Optional[RpcSimulateTransactionAccountsConfig],
+        min_context_slot: Optional[int],
     ) -> SimulateLegacyTransaction:
         ...
 
     @overload
     def _simulate_transaction_body(
-        self, txn: VersionedTransaction, sig_verify: bool, commitment: Optional[Commitment]
+        self,
+        txn: VersionedTransaction,
+        sig_verify: bool,
+        replace_recent_blockhash: bool,
+        commitment: Optional[Commitment],
+        accounts: Optional[RpcSimulateTransactionAccountsConfig],
+        min_context_slot: Optional[int],
     ) -> SimulateVersionedTransaction:
         ...
 
     def _simulate_transaction_body(
-        self, txn: Union[Transaction, VersionedTransaction], sig_verify: bool, commitment: Optional[Commitment]
+        self,
+        txn: Union[SoldersTransaction, VersionedTransaction],
+        sig_verify: bool = False,
+        replace_recent_blockhash: bool = False,
+        commitment: Optional[Commitment] = None,
+        accounts: Optional[RpcSimulateTransactionAccountsConfig] = None,
+        min_context_slot: Optional[int] = None,
     ) -> Union[SimulateLegacyTransaction, SimulateVersionedTransaction]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcSimulateTransactionConfig(sig_verify=sig_verify, commitment=commitment_to_use)
-        if isinstance(txn, Transaction):
-            if txn.recent_blockhash is None:
+        config = RpcSimulateTransactionConfig(
+            sig_verify=sig_verify,
+            replace_recent_blockhash=replace_recent_blockhash,
+            commitment=commitment_to_use,
+            accounts=accounts,
+            min_context_slot=min_context_slot,
+        )
+        if isinstance(txn, SoldersTransaction):
+            if txn.message.recent_blockhash is None:
                 raise ValueError("transaction must have a valid blockhash")
-            return SimulateLegacyTransaction(txn.to_solders(), config)
-        return SimulateVersionedTransaction(txn, config)
+            return SimulateLegacyTransaction(txn, config)
+        else:
+            return SimulateVersionedTransaction(txn, config)
 
     @staticmethod
     def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
