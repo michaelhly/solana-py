@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.32.0] - 2024-02-12
+
+### Changed
+
+- Upgrade to Solders 0.20 [(#394)](https://github.com/michaelhly/solana-py/pull/394)
+
 ## [0.31.0] - 2024-01-02
 
 ### Added
