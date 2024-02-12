@@ -75,7 +75,7 @@ select = [
     "PLW",
     "RUF",
 ]
-ignore = ["D203"]
+ignore = ["D203", "I001"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
