@@ -6,7 +6,6 @@ format:
 
 lint:
 	poetry run black --check --diff src tests
-	poetry run ruff -V
 	poetry run ruff src tests
 	poetry run mypy src
 
