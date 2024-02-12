@@ -1,5 +1,4 @@
 """Integration test utils."""
-
 from typing import get_args
 
 from solders.rpc.responses import RPCError, RPCResult
