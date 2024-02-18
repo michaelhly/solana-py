@@ -4,10 +4,6 @@ from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib
 import pytest
-from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Finalized
-from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
-from solana.transaction import Transaction
 from solders import system_program as sp
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
@@ -26,6 +22,11 @@ from solders.rpc.responses import (
 )
 from solders.system_program import ID as SYS_PROGRAM_ID
 from websockets.legacy.client import WebSocketClientProtocol
+
+from solana.rpc.async_api import AsyncClient
+from solana.rpc.commitment import Finalized
+from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
+from solana.transaction import Transaction
 
 from ..utils import AIRDROP_AMOUNT
 

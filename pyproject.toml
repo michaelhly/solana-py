@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "solana"
-version = "0.31.0"
+version = "0.32.0"
 description = "Solana Python API"
 authors = [
     "Michael Huang <michaelhly@gmail.com>",
@@ -32,7 +32,7 @@ typing-extensions = ">=4.2.0"
 cachetools = "^4.2.2"
 types-cachetools = "^4.2.4"
 websockets = ">=9.0,<12.0"
-solders = "^0.19.0"
+solders = "^0.20.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"
@@ -75,7 +75,7 @@ select = [
     "PLW",
     "RUF",
 ]
-ignore = ["D203"]
+ignore = ["D203", "I001"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

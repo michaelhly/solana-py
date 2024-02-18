@@ -1,6 +1,7 @@
 """Test security txt."""
 
 import pytest
+
 from solana.utils.security_txt import NoSecurityTxtFoundError, parse_security_txt
 
 

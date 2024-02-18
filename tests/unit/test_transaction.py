@@ -2,7 +2,6 @@
 from base64 import b64decode, b64encode
 
 import pytest
-import solana.transaction as txlib
 import solders.system_program as sp
 from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, CompiledInstruction
@@ -12,6 +11,8 @@ from solders.message import Message as SoldersMessage
 from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import Transaction as SoldersTx
+
+import solana.transaction as txlib
 
 
 def example_tx(stubbed_blockhash, kp0: Keypair, kp1: Keypair, kp2: Keypair) -> txlib.Transaction:
