@@ -3,6 +3,7 @@ import itertools
 from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from solders.account_decoder import UiDataSliceConfig
+from solders.transaction_status import TransactionDetails
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
@@ -185,16 +186,31 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         self,
         filter_: Union[RpcBlockSubscribeFilter, RpcBlockSubscribeFilterMentions] = RpcBlockSubscribeFilter.All,
         commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
+        transaction_details: TransactionDetails = None,
+        show_rewards: Optional[bool] = None,
+        max_supported_transaction_version: Optional[int] = None,
     ) -> None:
         """Subscribe to blocks.
 
         Args:
             filter_: filter criteria for the blocks.
             commitment: The commitment level to use.
+            encoding: Encoding to use.
+            transaction_details: level of transaction detail to return.
+            show_rewards: whether to populate the rewards array. If parameter not provided, the default includes rewards.
+            max_supported_transaction_version: the max transaction version to return in responses.
         """
         req_id = self.increment_counter_and_get_id()
         commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
-        config = RpcBlockSubscribeConfig(commitment_to_use)
+        encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
+        config = RpcBlockSubscribeConfig(
+            commitment=commitment_to_use,
+            encoding=encoding_to_use,
+            transaction_details=transaction_details,
+            show_rewards=show_rewards,
+            max_supported_transaction_version=max_supported_transaction_version,
+        )
         req = BlockSubscribe(filter_, config, req_id)
         await self.send_data(req)
 
