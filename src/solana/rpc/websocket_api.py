@@ -11,6 +11,9 @@ from solders.rpc.config import (
     RpcTransactionLogsConfig,
     RpcTransactionLogsFilter,
     RpcTransactionLogsFilterMentions,
+    RpcBlockSubscribeConfig,
+    RpcBlockSubscribeFilter,
+    RpcBlockSubscribeFilterMentions,
 )
 from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
@@ -19,6 +22,8 @@ from solders.rpc.requests import (
     Body,
     LogsSubscribe,
     LogsUnsubscribe,
+    BlockSubscribe,
+    BlockUnsubscribe,
     ProgramSubscribe,
     ProgramUnsubscribe,
     RootSubscribe,
@@ -173,6 +178,37 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """
         req_id = self.increment_counter_and_get_id()
         req = LogsUnsubscribe(subscription, req_id)
+        await self.send_data(req)
+        del self.subscriptions[subscription]
+
+    async def block_subscribe(
+        self,
+        filter_: Union[RpcBlockSubscribeFilter, RpcBlockSubscribeFilterMentions] = RpcBlockSubscribeFilter.All,
+        commitment: Optional[Commitment] = None,
+    ) -> None:
+        """Subscribe to blocks.
+
+        Args:
+            filter_: filter criteria for the blocks.
+            commitment: The commitment level to use.
+        """
+        req_id = self.increment_counter_and_get_id()
+        commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+        config = RpcBlockSubscribeConfig(commitment_to_use)
+        req = BlockSubscribe(filter_, config, req_id)
+        await self.send_data(req)
+
+    async def block_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        """Unsubscribe from blocks.
+
+        Args:
+            subscription: ID of subscription to cancel.
+        """
+        req_id = self.increment_counter_and_get_id()
+        req = BlockUnsubscribe(subscription, req_id)
         await self.send_data(req)
         del self.subscriptions[subscription]
 
