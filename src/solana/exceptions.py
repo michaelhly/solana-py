@@ -20,11 +20,16 @@ class SolanaExceptionBase(Exception):
         return f"{type(exc)} raised in {func} invokation"
 
 
-class SolanaRpcException(SolanaExceptionBase):
+class SolanaRpcException:
     """Class for Solana-py RPC exceptions."""
 
+    def __init__(self, exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> None:
+        """Init."""
+        self.error_msg = self._build_error_message(exc, func, *args, **kwargs)
+    
     @staticmethod
     def _build_error_message(
+        self, 
         exc: Exception,
         func: Callable[[Any], Any],  # noqa: ARG004
         *args: Any,
