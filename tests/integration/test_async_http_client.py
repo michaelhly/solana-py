@@ -199,67 +199,6 @@ async def test_send_transaction_prefetched_blockhash(
 
 
 @pytest.mark.integration
-async def test_send_transaction_cached_blockhash(
-    async_stubbed_sender_cached_blockhash,
-    async_stubbed_receiver_cached_blockhash,
-    test_http_client_async_cached_blockhash,
-):
-    """Test sending a transaction to localnet."""
-    # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction().add(
-        sp.transfer(
-            sp.TransferParams(
-                from_pubkey=async_stubbed_sender_cached_blockhash.pubkey(),
-                to_pubkey=async_stubbed_receiver_cached_blockhash,
-                lamports=1000,
-            )
-        )
-    )
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) == 0
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) == 0
-    resp = await test_http_client_async_cached_blockhash.send_transaction(
-        transfer_tx, async_stubbed_sender_cached_blockhash
-    )
-    # we could have got a new blockhash or not depending on network latency and luck
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) in (0, 1)
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) == 1
-    assert_valid_response(resp)
-    # Confirm transaction
-    await test_http_client_async_cached_blockhash.confirm_transaction(resp.value)
-    # Check balances
-    resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.pubkey())
-    assert_valid_response(resp)
-    assert resp.value == 9999994000
-
-    # Second transaction
-    transfer_tx = Transaction().add(
-        sp.transfer(
-            sp.TransferParams(
-                from_pubkey=async_stubbed_sender_cached_blockhash.pubkey(),
-                to_pubkey=async_stubbed_receiver_cached_blockhash,
-                lamports=2000,
-            )
-        )
-    )
-    resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_receiver_cached_blockhash)
-    assert_valid_response(resp)
-    assert resp.value == 10000001000
-    resp = await test_http_client_async_cached_blockhash.send_transaction(
-        transfer_tx, async_stubbed_sender_cached_blockhash
-    )
-    # we could have got a new blockhash or not depending on network latency and luck
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.unused_blockhashes) in (0, 1)
-    assert len(test_http_client_async_cached_blockhash.blockhash_cache.used_blockhashes) in (1, 2)
-    assert_valid_response(resp)
-    # Confirm transaction
-    resp = await test_http_client_async_cached_blockhash.confirm_transaction(resp.value)
-    # Check balances
-    resp = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.pubkey())
-    assert_valid_response(resp)
-    assert resp.value == 9999987000
-
-
-@pytest.mark.integration
 async def test_send_raw_transaction_and_get_balance(
     async_stubbed_sender, async_stubbed_receiver, test_http_client_async
 ):
