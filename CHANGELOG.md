@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.33.0] - Unreleased
+
+### Changed
+
+Relax httpx dependency [(#408)](https://github.com/michaelhly/solana-py/pull/408)
+
 ## [0.32.0] - 2024-02-12
 
 ### Changed
