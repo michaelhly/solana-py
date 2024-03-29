@@ -1,11 +1,6 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
-from typing import List, Optional, Sequence, Tuple, Union, cast, overload
-
-try:
-    from typing import Literal  # type: ignore
-except ImportError:
-    from typing_extensions import Literal  # type: ignore
+from typing import List, Optional, Sequence, Tuple, Union, overload
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
@@ -84,7 +79,6 @@ from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
-from solana.blockhash import BlockhashCache
 from solana.rpc import types
 from solana.transaction import Transaction
 
@@ -154,14 +148,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def __init__(
         self,
         commitment: Optional[Commitment] = None,
-        blockhash_cache: Union[BlockhashCache, bool] = False,
     ):
         self._commitment = commitment or Finalized
-        self.blockhash_cache: Union[BlockhashCache, Literal[False]] = (
-            BlockhashCache()
-            if blockhash_cache is True
-            else cast(Union[BlockhashCache, Literal[False]], blockhash_cache)
-        )
 
     @property
     def commitment(self) -> Commitment:
@@ -520,10 +508,3 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def parse_recent_blockhash(blockhash_resp: GetLatestBlockhashResp) -> Blockhash:
         """Extract blockhash from JSON RPC result."""
         return blockhash_resp.value.blockhash
-
-    def _process_blockhash_resp(self, blockhash_resp: GetLatestBlockhashResp, used_immediately: bool) -> Blockhash:
-        recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
-        if self.blockhash_cache:
-            slot = blockhash_resp.context.slot
-            self.blockhash_cache.set(recent_blockhash, slot, used_immediately=used_immediately)
-        return recent_blockhash
