@@ -58,27 +58,6 @@ def test_request_air_drop_prefetched_blockhash(
 
 
 @pytest.mark.integration
-def test_request_air_drop_cached_blockhash(
-    stubbed_sender_cached_blockhash, stubbed_receiver_cached_blockhash, test_http_client: Client
-):
-    """Test air drop to stubbed_sender and stubbed_receiver."""
-    # Airdrop to stubbed_sender
-    resp = test_http_client.request_airdrop(stubbed_sender_cached_blockhash.pubkey(), AIRDROP_AMOUNT)
-    assert_valid_response(resp)
-    test_http_client.confirm_transaction(resp.value)
-    assert_valid_response(resp)
-    balance = test_http_client.get_balance(stubbed_sender_cached_blockhash.pubkey())
-    assert balance.value == AIRDROP_AMOUNT
-    # Airdrop to stubbed_receiver
-    resp = test_http_client.request_airdrop(stubbed_receiver_cached_blockhash, AIRDROP_AMOUNT)
-    assert_valid_response(resp)
-    test_http_client.confirm_transaction(resp.value)
-    assert_valid_response(resp)
-    balance = test_http_client.get_balance(stubbed_receiver_cached_blockhash)
-    assert balance.value == AIRDROP_AMOUNT
-
-
-@pytest.mark.integration
 def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client: Client):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver

@@ -62,31 +62,6 @@ async def test_request_air_drop_prefetched_blockhash(
 
 
 @pytest.mark.integration
-async def test_request_air_drop_cached_blockhash(
-    async_stubbed_sender_cached_blockhash,
-    async_stubbed_receiver_cached_blockhash,
-    test_http_client_async_cached_blockhash,
-):
-    """Test air drop to async_stubbed_sender and async_stubbed_receiver."""
-    # Airdrop to stubbed_sender
-    resp = await test_http_client_async_cached_blockhash.request_airdrop(
-        async_stubbed_sender_cached_blockhash.pubkey(), AIRDROP_AMOUNT
-    )
-    assert_valid_response(resp)
-    await test_http_client_async_cached_blockhash.confirm_transaction(resp.value)
-    balance = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_sender_cached_blockhash.pubkey())
-    assert balance.value == AIRDROP_AMOUNT
-    # Airdrop to stubbed_receiver
-    resp = await test_http_client_async_cached_blockhash.request_airdrop(
-        async_stubbed_receiver_cached_blockhash, AIRDROP_AMOUNT
-    )
-    assert_valid_response(resp)
-    await test_http_client_async_cached_blockhash.confirm_transaction(resp.value)
-    balance = await test_http_client_async_cached_blockhash.get_balance(async_stubbed_receiver_cached_blockhash)
-    assert balance.value == AIRDROP_AMOUNT
-
-
-@pytest.mark.integration
 async def test_send_transaction_and_get_balance(
     async_stubbed_sender: Keypair, async_stubbed_receiver: Pubkey, test_http_client_async: AsyncClient
 ):
