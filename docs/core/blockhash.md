@@ -1,3 +1,0 @@
-# Blockhash
-
-:::solana.blockhash
