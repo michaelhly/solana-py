@@ -1,10 +1,11 @@
 # Changelog
 
-## [0.33.0] - Unreleased
+## [0.33.0] - 2024-03-29
 
 ### Changed
 
-Relax httpx dependency [(#408)](https://github.com/michaelhly/solana-py/pull/408)
+- Relax httpx dependency [(#408)](https://github.com/michaelhly/solana-py/pull/408)
+- Upgrade to Solders 0.21.0 (fixes aarch64 compatibility issues) [(#402)](https://github.com/michaelhly/solana-py/pull/402)
 
 ## [0.32.0] - 2024-02-12
 
