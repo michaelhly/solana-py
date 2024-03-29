@@ -154,38 +154,11 @@ def test_http_client(docker_services, _sleep_for_first_blocks) -> Client:  # pyl
 
 @pytest.mark.integration
 @pytest.fixture(scope="session")
-def test_http_client_cached_blockhash(
-    docker_services, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
-) -> Client:
-    """Test http_client.is_connected."""
-    http_client = Client(commitment=Processed, blockhash_cache=True)
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
-    return http_client
-
-
-@pytest.mark.integration
-@pytest.fixture(scope="session")
 def test_http_client_async(
     docker_services, event_loop, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
 ) -> AsyncClient:
     """Test http_client.is_connected."""
     http_client = AsyncClient(commitment=Processed)
-
-    def check() -> bool:
-        return event_loop.run_until_complete(http_client.is_connected())
-
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=check)
-    yield http_client
-    event_loop.run_until_complete(http_client.close())
-
-
-@pytest.mark.integration
-@pytest.fixture(scope="session")
-def test_http_client_async_cached_blockhash(
-    docker_services, event_loop, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
-) -> AsyncClient:
-    """Test http_client.is_connected."""
-    http_client = AsyncClient(commitment=Processed, blockhash_cache=True)
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())
