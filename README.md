@@ -37,7 +37,7 @@ Note: This library uses many core types from the [Solders](https://github.com/ke
 ## ⚡ Quickstart
 
 ### Installation
-1. Install Python bindings for the [solana-sdk](https://docs.rs/solana-sdk/latest/solana_sdk/).
+1. Install [Python bindings](https://kevinheavey.github.io/solders/) for the [solana-sdk](https://docs.rs/solana-sdk/latest/solana_sdk/).
 ```sh
 pip install solders
 ```
