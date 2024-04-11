@@ -37,7 +37,12 @@ Note: This library uses many core types from the [Solders](https://github.com/ke
 ## ⚡ Quickstart
 
 ### Installation
+1. Install Python bindings for the [solana-sdk](https://docs.rs/solana-sdk/latest/solana_sdk/).
+```sh
+pip install solders
+```
 
+2. Install this package to interact with the [Solana JSON RPC API](https://solana.com/docs/rpc).
 ```sh
 pip install solana
 ```
