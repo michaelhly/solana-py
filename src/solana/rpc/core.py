@@ -45,6 +45,7 @@ from solders.rpc.requests import (
     GetIdentity,
     GetInflationGovernor,
     GetInflationRate,
+    GetInflationReward,
     GetLargestAccounts,
     GetLatestBlockhash,
     GetLeaderSchedule,
@@ -346,6 +347,15 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> GetStakeActivation:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetStakeActivation(pubkey, RpcEpochConfig(epoch, commitment_to_use))
+
+    def _get_inflation_reward_body(
+        self,
+        pubkeys: List[Pubkey],
+        epoch: Optional[int],
+        commitment: Optional[Commitment],
+    ) -> GetInflationReward:
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        return GetInflationReward(pubkeys, RpcEpochConfig(epoch, commitment_to_use))
 
     def _get_supply_body(self, commitment: Optional[Commitment]) -> GetSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]

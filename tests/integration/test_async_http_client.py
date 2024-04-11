@@ -431,6 +431,15 @@ async def test_get_inflation_rate(test_http_client_async):
     assert_valid_response(resp)
 
 
+# XXX: Block not available for slot on local cluster
+@pytest.mark.skip
+@pytest.mark.integration
+async def test_get_inflation_reward(stubbed_sender, test_http_client_async):
+    """Test get inflation reward."""
+    resp = await test_http_client_async.get_inflation_reward([stubbed_sender.pubkey()], commitment=Confirmed)
+    assert_valid_response(resp)
+
+
 @pytest.mark.integration
 async def test_get_largest_accounts(test_http_client_async):
     """Test get largest accounts."""

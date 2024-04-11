@@ -25,6 +25,7 @@ from solders.rpc.responses import (
     GetIdentityResp,
     GetInflationGovernorResp,
     GetInflationRateResp,
+    GetInflationRewardResp,
     GetLargestAccountsResp,
     GetLatestBlockhashResp,
     GetLeaderScheduleResp,
@@ -487,6 +488,24 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             1
         """
         return await self._provider.make_request(self._get_inflation_rate, GetInflationRateResp)
+
+    async def get_inflation_reward(
+        self, pubkeys: List[Pubkey], epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+    ) -> GetInflationRewardResp:
+        """Returns the inflation / staking reward for a list of addresses for an epoch.
+
+        Args:
+            pubkeys: An array of addresses to query, as base-58 encoded strings
+            epoch: (optional) An epoch for which the reward occurs. If omitted, the previous epoch will be used
+            commitment: Bank state to query. It can be either "finalized" or "confirmed".
+
+        Example:
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> (await solana_client.get_inflation_reward()).value.amount # doctest: +SKIP
+            2500
+        """
+        body = self._get_inflation_reward_body(pubkeys, epoch, commitment)
+        return await self._provider.make_request(body, GetInflationRewardResp)
 
     async def get_largest_accounts(
         self, filter_opt: Optional[str] = None, commitment: Optional[Commitment] = None
