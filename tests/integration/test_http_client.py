@@ -415,6 +415,8 @@ def test_get_inflation_rate(test_http_client: Client):
     assert_valid_response(resp)
 
 
+# XXX: Block not available for slot on local cluster
+@pytest.mark.skip
 @pytest.mark.integration
 def test_get_inflation_reward(stubbed_sender, test_http_client: Client):
     """Test get inflation reward."""
