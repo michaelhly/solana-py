@@ -52,7 +52,7 @@ from websockets.legacy.client import connect as ws_connect
 
 from solana.rpc import types
 from solana.rpc.commitment import Commitment
-from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS
+from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS, _TX_ENCODING_TO_SOLDERS
 
 
 class SubscriptionError(Exception):
@@ -204,7 +204,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """
         req_id = self.increment_counter_and_get_id()
         commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
-        encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
+        encoding_to_use = None if encoding is None else _TX_ENCODING_TO_SOLDERS[encoding]
         config = RpcBlockSubscribeConfig(
             commitment=commitment_to_use,
             encoding=encoding_to_use,
