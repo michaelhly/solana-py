@@ -1,5 +1,6 @@
 """Utils for security.txt."""
 
+
 from dataclasses import dataclass, fields
 from typing import Any, List, Optional
 

@@ -1,5 +1,4 @@
 """Test sync client."""
-
 from unittest.mock import patch
 
 import pytest

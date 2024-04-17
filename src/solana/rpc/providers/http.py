@@ -1,5 +1,4 @@
 """HTTP RPC Provider."""
-
 from typing import Tuple, Type, overload
 
 import httpx

@@ -1,5 +1,4 @@
 """Byte layouts for vote program instructions."""
-
 from enum import IntEnum
 
 from construct import (

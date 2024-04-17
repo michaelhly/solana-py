@@ -1,5 +1,4 @@
 """Tests for the HTTP API Client."""
-
 from typing import Tuple
 
 import pytest
@@ -541,8 +540,8 @@ async def test_batch_request(test_http_client_async: AsyncClient):
     parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
     resp: Tuple[
         Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]
-    ] = await test_http_client_async._provider.make_batch_request(
+    ] = await test_http_client_async._provider.make_batch_request(  # pylint: disable=protected-access
         reqs, parsers
-    )  # pylint: disable=protected-access
+    )
     assert_valid_response(resp[0])
     assert_valid_response(resp[1])

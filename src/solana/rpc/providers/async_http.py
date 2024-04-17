@@ -1,5 +1,4 @@
 """Async HTTP RPC Provider."""
-
 from typing import Dict, Optional, Tuple, Type, overload
 
 import httpx

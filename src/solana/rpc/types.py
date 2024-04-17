@@ -1,5 +1,4 @@
 """RPC types."""
-
 from typing import NamedTuple, NewType, Optional
 
 from solders.pubkey import Pubkey

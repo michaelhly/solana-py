@@ -1,5 +1,4 @@
 """Library to package an atomic sequence of instructions to a transaction."""
-
 from __future__ import annotations
 
 from typing import Any, List, NamedTuple, Optional, Sequence, Tuple, Union

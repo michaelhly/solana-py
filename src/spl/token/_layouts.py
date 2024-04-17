@@ -1,5 +1,4 @@
 """Token instruction layouts."""
-
 from enum import IntEnum
 
 from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass, Switch

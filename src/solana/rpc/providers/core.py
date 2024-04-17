@@ -1,5 +1,4 @@
 """Helper code for HTTP provider classes."""
-
 import itertools
 import logging
 import os
