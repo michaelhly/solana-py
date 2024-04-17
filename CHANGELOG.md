@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.34.0] - 2024-04-17
+
+### Added
+
+- Add block subscribe/unsubscribe websocket methods [(#418)](https://github.com/michaelhly/solana-py/pull/418)
+- Add getInflationReward RPC method [(#413)](https://github.com/michaelhly/solana-py/pull/413)
+
+
 ## [0.33.0] - 2024-03-29
 
 ### Changed
