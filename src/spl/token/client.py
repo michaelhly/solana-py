@@ -305,13 +305,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         """
         # Allocate memory for the account
         balance_needed = Token.get_min_balance_rent_for_exempt_for_account(conn)
-        (
-            new_account_public_key,
-            txn,
-            payer,
-            new_account,
-            opts,
-        ) = _TokenCore._create_wrapped_native_account_args(
+        (new_account_public_key, txn, payer, new_account, opts,) = _TokenCore._create_wrapped_native_account_args(
             program_id,
             owner,
             payer,

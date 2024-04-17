@@ -616,8 +616,10 @@ async def test_batch_request(test_http_client_async: AsyncClient):
     """Test get vote accounts."""
     reqs = (GetBlockHeight(), GetFirstAvailableBlock())
     parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
-    resp: Tuple[Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]] = (
-        await test_http_client_async._provider.make_batch_request(reqs, parsers)  # pylint: disable=protected-access
-    )
+    resp: Tuple[
+        Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]
+    ] = await test_http_client_async._provider.make_batch_request(
+        reqs, parsers
+    )  # pylint: disable=protected-access
     assert_valid_response(resp[0])
     assert_valid_response(resp[1])

@@ -199,7 +199,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
             commitment: The commitment level to use.
             encoding: Encoding to use.
             transaction_details: level of transaction detail to return.
-            show_rewards: whether to populate the rewards array. If parameter not provided, the default includes rewards.
+            show_rewards: whether to populate the rewards array.
             max_supported_transaction_version: the max transaction version to return in responses.
         """
         req_id = self.increment_counter_and_get_id()

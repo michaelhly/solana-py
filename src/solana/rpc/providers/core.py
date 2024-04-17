@@ -100,27 +100,33 @@ def _parse_raw(raw: str, parser: Type[T]) -> T:
 
 
 @overload
-def _parse_raw_batch(raw: str, parsers: _Tup) -> _RespTup: ...
+def _parse_raw_batch(raw: str, parsers: _Tup) -> _RespTup:
+    ...
 
 
 @overload
-def _parse_raw_batch(raw: str, parsers: _Tup1) -> _RespTup1: ...
+def _parse_raw_batch(raw: str, parsers: _Tup1) -> _RespTup1:
+    ...
 
 
 @overload
-def _parse_raw_batch(raw: str, parsers: _Tup2) -> _RespTup2: ...
+def _parse_raw_batch(raw: str, parsers: _Tup2) -> _RespTup2:
+    ...
 
 
 @overload
-def _parse_raw_batch(raw: str, parsers: _Tup3) -> _RespTup3: ...
+def _parse_raw_batch(raw: str, parsers: _Tup3) -> _RespTup3:
+    ...
 
 
 @overload
-def _parse_raw_batch(raw: str, parsers: _Tup4) -> _RespTup4: ...
+def _parse_raw_batch(raw: str, parsers: _Tup4) -> _RespTup4:
+    ...
 
 
 @overload
-def _parse_raw_batch(raw: str, parsers: _Tup5) -> _RespTup5: ...
+def _parse_raw_batch(raw: str, parsers: _Tup5) -> _RespTup5:
+    ...
 
 
 def _parse_raw_batch(raw: str, parsers: _Tuples) -> Tuple[RPCResult, ...]:
@@ -133,27 +139,33 @@ def _after_request_unparsed(raw_response: httpx.Response) -> str:
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup) -> _RespTup: ...
+def _after_batch_request(raw_response: httpx.Response, parsers: _Tup) -> _RespTup:
+    ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup1) -> _RespTup1: ...
+def _after_batch_request(raw_response: httpx.Response, parsers: _Tup1) -> _RespTup1:
+    ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup2) -> _RespTup2: ...
+def _after_batch_request(raw_response: httpx.Response, parsers: _Tup2) -> _RespTup2:
+    ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup3) -> _RespTup3: ...
+def _after_batch_request(raw_response: httpx.Response, parsers: _Tup3) -> _RespTup3:
+    ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup4) -> _RespTup4: ...
+def _after_batch_request(raw_response: httpx.Response, parsers: _Tup4) -> _RespTup4:
+    ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup5) -> _RespTup5: ...
+def _after_batch_request(raw_response: httpx.Response, parsers: _Tup5) -> _RespTup5:
+    ...
 
 
 def _after_batch_request(raw_response: httpx.Response, parsers: _Tuples) -> Tuple[RPCResult, ...]:
