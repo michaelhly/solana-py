@@ -8,5 +8,5 @@ services:
       - "9900:9900"
     environment:
       [
-        SOLANA_RUN_SH_VALIDATOR_ARGS=--rpc-pubsub-enable-vote-subscription
+        SOLANA_RUN_SH_VALIDATOR_ARGS=--rpc-pubsub-enable-vote-subscription --rpc-pubsub-enable-block-subscription
       ]

@@ -12,6 +12,7 @@ from solders.rpc.requests import AccountSubscribe, AccountUnsubscribe, Body, Log
 from solders.rpc.responses import (
     AccountNotification,
     LogsNotification,
+    BlockNotification,
     ProgramNotification,
     RootNotification,
     SignatureNotification,
@@ -101,6 +102,18 @@ async def logs_subscribed_mentions_filter(
     subscription_id = msg.result
     yield
     await websocket.logs_unsubscribe(subscription_id)
+
+
+@pytest.fixture
+async def block_subscribed(websocket: SolanaWsClientProtocol) -> AsyncGenerator[None, None]:
+    """Setup block subscription."""
+    await websocket.block_subscribe()
+    first_resp = await websocket.recv()
+    msg = first_resp[0]
+    assert isinstance(msg, SubscriptionResult)
+    subscription_id = msg.result
+    yield
+    await websocket.block_unsubscribe(subscription_id)
 
 
 @pytest.fixture
@@ -248,6 +261,18 @@ async def test_logs_subscribe_mentions_filter(
     msg = main_resp[0]
     assert isinstance(msg, LogsNotification)
     assert msg.result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
+
+
+@pytest.mark.integration
+async def test_block_subscribe(
+    websocket: SolanaWsClientProtocol,
+    block_subscribed: None,
+):
+    """Test block subscription."""
+    main_resp = await websocket.recv()
+    msg = main_resp[0]
+    assert isinstance(msg, BlockNotification)
+    assert msg.result.value.slot >= 0
 
 
 @pytest.mark.integration
