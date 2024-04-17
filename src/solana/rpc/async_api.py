@@ -1,4 +1,5 @@
 """Async API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
+
 import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union

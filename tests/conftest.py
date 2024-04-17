@@ -1,4 +1,5 @@
 """Fixtures for pytest."""
+
 import asyncio
 import time
 from typing import NamedTuple

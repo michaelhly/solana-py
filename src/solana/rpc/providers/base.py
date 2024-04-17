@@ -1,4 +1,5 @@
 """Base RPC Provider."""
+
 from solders.rpc.requests import Body
 from typing_extensions import Type
 

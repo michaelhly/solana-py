@@ -1,4 +1,5 @@
 """API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
+
 from __future__ import annotations
 
 from time import sleep, time

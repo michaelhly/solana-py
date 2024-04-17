@@ -1,4 +1,5 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
+
 import itertools
 from typing import Any, Dict, List, Optional, Sequence, Union, cast
 

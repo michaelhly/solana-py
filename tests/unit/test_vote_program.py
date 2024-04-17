@@ -1,4 +1,5 @@
 """Unit tests for solana.vote_program."""
+
 import base64
 
 from solders.hash import Hash
