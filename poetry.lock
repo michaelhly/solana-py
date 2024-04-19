@@ -168,6 +168,33 @@ files = [
 ]
 
 [[package]]
+name = "construct"
+version = "2.10.68"
+description = "A powerful declarative symmetric parser/builder for binary data"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "construct-2.10.68.tar.gz", hash = "sha256:7b2a3fd8e5f597a5aa1d614c3bd516fa065db01704c72a1efaaeec6ef23d8b45"},
+]
+
+[package.extras]
+extras = ["arrow", "cloudpickle", "enum34", "lz4", "numpy", "ruamel.yaml"]
+
+[[package]]
+name = "construct-typing"
+version = "0.5.6"
+description = "Extension for the python package 'construct' that adds typing features"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "construct-typing-0.5.6.tar.gz", hash = "sha256:0dc501351cd6b308f15ec54e5fe7c0fbc07cc1530a1b77b4303062a0a93c1297"},
+    {file = "construct_typing-0.5.6-py3-none-any.whl", hash = "sha256:39c948329e880564e33521cba497b21b07967c465b9c9037d6334e2cffa1ced9"},
+]
+
+[package.dependencies]
+construct = "2.10.68"
+
+[[package]]
 name = "coverage"
 version = "7.4.4"
 description = "Code coverage measurement for Python"
@@ -1215,4 +1242,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "fc0d26c7f3ef2ebc7b2f1f07a80c4659c317ca980f1059206d4ff97447c790a2"
+content-hash = "55ce381b631d7d6b5dd41d6977ef81542d1d668a9b8567333aac8ac22ec5da72"
