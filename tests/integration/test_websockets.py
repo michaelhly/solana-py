@@ -4,10 +4,6 @@ from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib
 import pytest
-from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Finalized
-from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
-from solana.transaction import Transaction
 from solders import system_program as sp
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
@@ -16,6 +12,7 @@ from solders.rpc.requests import AccountSubscribe, AccountUnsubscribe, Body, Log
 from solders.rpc.responses import (
     AccountNotification,
     LogsNotification,
+    BlockNotification,
     ProgramNotification,
     RootNotification,
     SignatureNotification,
@@ -26,6 +23,11 @@ from solders.rpc.responses import (
 )
 from solders.system_program import ID as SYS_PROGRAM_ID
 from websockets.legacy.client import WebSocketClientProtocol
+
+from solana.rpc.async_api import AsyncClient
+from solana.rpc.commitment import Finalized
+from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
+from solana.transaction import Transaction
 
 from ..utils import AIRDROP_AMOUNT
 
@@ -100,6 +102,18 @@ async def logs_subscribed_mentions_filter(
     subscription_id = msg.result
     yield
     await websocket.logs_unsubscribe(subscription_id)
+
+
+@pytest.fixture
+async def block_subscribed(websocket: SolanaWsClientProtocol) -> AsyncGenerator[None, None]:
+    """Setup block subscription."""
+    await websocket.block_subscribe()
+    first_resp = await websocket.recv()
+    msg = first_resp[0]
+    assert isinstance(msg, SubscriptionResult)
+    subscription_id = msg.result
+    yield
+    await websocket.block_unsubscribe(subscription_id)
 
 
 @pytest.fixture
@@ -247,6 +261,18 @@ async def test_logs_subscribe_mentions_filter(
     msg = main_resp[0]
     assert isinstance(msg, LogsNotification)
     assert msg.result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
+
+
+@pytest.mark.integration
+async def test_block_subscribe(
+    websocket: SolanaWsClientProtocol,
+    block_subscribed: None,
+):
+    """Test block subscription."""
+    main_resp = await websocket.recv()
+    msg = main_resp[0]
+    assert isinstance(msg, BlockNotification)
+    assert msg.result.value.slot >= 0
 
 
 @pytest.mark.integration

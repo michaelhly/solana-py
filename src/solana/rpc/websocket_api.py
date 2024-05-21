@@ -1,8 +1,10 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
+
 import itertools
 from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from solders.account_decoder import UiDataSliceConfig
+from solders.transaction_status import TransactionDetails
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
@@ -11,6 +13,9 @@ from solders.rpc.config import (
     RpcTransactionLogsConfig,
     RpcTransactionLogsFilter,
     RpcTransactionLogsFilterMentions,
+    RpcBlockSubscribeConfig,
+    RpcBlockSubscribeFilter,
+    RpcBlockSubscribeFilterMentions,
 )
 from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
@@ -19,6 +24,8 @@ from solders.rpc.requests import (
     Body,
     LogsSubscribe,
     LogsUnsubscribe,
+    BlockSubscribe,
+    BlockUnsubscribe,
     ProgramSubscribe,
     ProgramUnsubscribe,
     RootSubscribe,
@@ -45,7 +52,7 @@ from websockets.legacy.client import connect as ws_connect
 
 from solana.rpc import types
 from solana.rpc.commitment import Commitment
-from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS
+from solana.rpc.core import _ACCOUNT_ENCODING_TO_SOLDERS, _COMMITMENT_TO_SOLDERS, _TX_ENCODING_TO_SOLDERS
 
 
 class SubscriptionError(Exception):
@@ -173,6 +180,52 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         """
         req_id = self.increment_counter_and_get_id()
         req = LogsUnsubscribe(subscription, req_id)
+        await self.send_data(req)
+        del self.subscriptions[subscription]
+
+    async def block_subscribe(
+        self,
+        filter_: Union[RpcBlockSubscribeFilter, RpcBlockSubscribeFilterMentions] = RpcBlockSubscribeFilter.All,
+        commitment: Optional[Commitment] = None,
+        encoding: Optional[str] = None,
+        transaction_details: TransactionDetails = None,
+        show_rewards: Optional[bool] = None,
+        max_supported_transaction_version: Optional[int] = None,
+    ) -> None:
+        """Subscribe to blocks.
+
+        Args:
+            filter_: filter criteria for the blocks.
+            commitment: The commitment level to use.
+            encoding: Encoding to use.
+            transaction_details: level of transaction detail to return.
+            show_rewards: whether to populate the rewards array.
+            max_supported_transaction_version: the max transaction version to return in responses.
+        """
+        req_id = self.increment_counter_and_get_id()
+        commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+        encoding_to_use = None if encoding is None else _TX_ENCODING_TO_SOLDERS[encoding]
+        config = RpcBlockSubscribeConfig(
+            commitment=commitment_to_use,
+            encoding=encoding_to_use,
+            transaction_details=transaction_details,
+            show_rewards=show_rewards,
+            max_supported_transaction_version=max_supported_transaction_version,
+        )
+        req = BlockSubscribe(filter_, config, req_id)
+        await self.send_data(req)
+
+    async def block_unsubscribe(
+        self,
+        subscription: int,
+    ) -> None:
+        """Unsubscribe from blocks.
+
+        Args:
+            subscription: ID of subscription to cancel.
+        """
+        req_id = self.increment_counter_and_get_id()
+        req = BlockUnsubscribe(subscription, req_id)
         await self.send_data(req)
         del self.subscriptions[subscription]
 

@@ -25,6 +25,7 @@ from solders.rpc.responses import (
     GetIdentityResp,
     GetInflationGovernorResp,
     GetInflationRateResp,
+    GetInflationRewardResp,
     GetLargestAccountsResp,
     GetLatestBlockhashResp,
     GetLeaderScheduleResp,
@@ -60,7 +61,6 @@ from solders.rpc.responses import (
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
-from solana.blockhash import BlockhashCache
 from solana.rpc import types
 from solana.transaction import Transaction
 
@@ -80,22 +80,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     Args:
         endpoint: URL of the RPC endpoint.
         commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
-        blockhash_cache: (Experimental) If True, keep a cache of recent blockhashes to make
-            `send_transaction` calls faster.
-            You can also pass your own BlockhashCache object to customize its parameters.
-
-            The cache works as follows:
-
-            1.  Retrieve the oldest unused cached blockhash that is younger than `ttl` seconds,
-                where `ttl` is defined in the BlockhashCache (we prefer unused blockhashes because
-                reusing blockhashes can cause errors in some edge cases, and we prefer slightly
-                older blockhashes because they're more likely to be accepted by every validator).
-            2.  If there are no unused blockhashes in the cache, take the oldest used
-                blockhash that is younger than `ttl` seconds.
-            3.  Fetch a new recent blockhash *after* sending the transaction. This is to keep the cache up-to-date.
-
-            If you want something tailored to your use case, run your own loop that fetches the recent blockhash,
-            and pass that value in your `.send_transaction` calls.
         timeout: HTTP request timeout in seconds.
         extra_headers: Extra headers to pass for HTTP request.
     """
@@ -104,12 +88,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
-        blockhash_cache: Union[BlockhashCache, bool] = False,
         timeout: float = 10,
         extra_headers: Optional[Dict[str, str]] = None,
     ) -> None:
         """Init API client."""
-        super().__init__(commitment, blockhash_cache)
+        super().__init__(commitment)
         self._provider = async_http.AsyncHTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers)
 
     async def __aenter__(self) -> "AsyncClient":
@@ -505,6 +488,24 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             1
         """
         return await self._provider.make_request(self._get_inflation_rate, GetInflationRateResp)
+
+    async def get_inflation_reward(
+        self, pubkeys: List[Pubkey], epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+    ) -> GetInflationRewardResp:
+        """Returns the inflation / staking reward for a list of addresses for an epoch.
+
+        Args:
+            pubkeys: An array of addresses to query, as base-58 encoded strings
+            epoch: (optional) An epoch for which the reward occurs. If omitted, the previous epoch will be used
+            commitment: Bank state to query. It can be either "finalized" or "confirmed".
+
+        Example:
+            >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> (await solana_client.get_inflation_reward()).value.amount # doctest: +SKIP
+            2500
+        """
+        body = self._get_inflation_reward_body(pubkeys, epoch, commitment)
+        return await self._provider.make_request(body, GetInflationRewardResp)
 
     async def get_largest_accounts(
         self, filter_opt: Optional[str] = None, commitment: Optional[Commitment] = None
@@ -1050,17 +1051,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             return await self.send_raw_transaction(bytes(txn), opts=versioned_tx_opts)
         last_valid_block_height = None
         if recent_blockhash is None:
-            if self.blockhash_cache:
-                try:
-                    recent_blockhash = self.blockhash_cache.get()
-                except ValueError:
-                    blockhash_resp = await self.get_latest_blockhash(Finalized)
-                    recent_blockhash = self._process_blockhash_resp(blockhash_resp, used_immediately=True)
-                    last_valid_block_height = blockhash_resp.value.last_valid_block_height
-            else:
-                blockhash_resp = await self.get_latest_blockhash(Finalized)
-                recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
-                last_valid_block_height = blockhash_resp.value.last_valid_block_height
+            blockhash_resp = await self.get_latest_blockhash(Finalized)
+            recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
+            last_valid_block_height = blockhash_resp.value.last_valid_block_height
 
         txn.recent_blockhash = recent_blockhash
 
@@ -1074,9 +1067,6 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             else opts
         )
         txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
-        if self.blockhash_cache:
-            blockhash_resp = await self.get_latest_blockhash(Finalized)
-            self._process_blockhash_resp(blockhash_resp, used_immediately=False)
         return txn_resp
 
     async def simulate_transaction(
@@ -1167,7 +1157,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             return resp
         else:
-            timeout = time() + 30
+            timeout = time() + 90
             while time() < timeout:
                 resp = await self.get_signature_statuses([tx_sig])
                 resp_value = resp.value[0]

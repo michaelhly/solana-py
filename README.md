@@ -37,7 +37,12 @@ Note: This library uses many core types from the [Solders](https://github.com/ke
 ## ⚡ Quickstart
 
 ### Installation
+1. Install [Python bindings](https://kevinheavey.github.io/solders/) for the [solana-sdk](https://docs.rs/solana-sdk/latest/solana_sdk/).
+```sh
+pip install solders
+```
 
+2. Install this package to interact with the [Solana JSON RPC API](https://solana.com/docs/rpc).
 ```sh
 pip install solana
 ```
@@ -91,7 +96,7 @@ async def main():
     async with connect("wss://api.devnet.solana.com") as websocket:
         await websocket.logs_subscribe()
         first_resp = await websocket.recv()
-        subscription_id = first_resp.result
+        subscription_id = first_resp[0].result
         next_resp = await websocket.recv()
         print(next_resp)
         await websocket.logs_unsubscribe(subscription_id)
@@ -100,7 +105,7 @@ async def main():
     async with connect("wss://api.devnet.solana.com") as websocket:
         await websocket.logs_subscribe()
         first_resp = await websocket.recv()
-        subscription_id = first_resp.result
+        subscription_id = first_resp[0].result
         async for idx, msg in enumerate(websocket):
             if idx == 3:
                 break

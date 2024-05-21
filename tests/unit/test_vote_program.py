@@ -1,11 +1,12 @@
 """Unit tests for solana.vote_program."""
 import base64
 
-import solana.transaction as txlib
-import solana.vote_program as vp
 from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
+
+import solana.transaction as txlib
+import solana.vote_program as vp
 
 
 def test_withdraw_from_vote_account():

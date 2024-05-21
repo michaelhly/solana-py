@@ -26,6 +26,7 @@ class InstructionType(IntEnum):
     APPROVE2 = 13
     MINT_TO2 = 14
     BURN2 = 15
+    SYNC_NATIVE = 17
 
 
 _INITIALIZE_MINT_LAYOUT = cStruct(

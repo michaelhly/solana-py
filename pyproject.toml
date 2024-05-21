@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "solana"
-version = "0.29.1"
+version = "0.34.0"
 description = "Solana Python API"
-authors = ["Michael Huang <michaelhly@gmail.com>", "Kevin Heavey <heaveykevin2@gmail.com>"]
+authors = [
+    "Michael Huang <michaelhly@gmail.com>",
+    "Kevin Heavey <heaveykevin2@gmail.com>",
+]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/michaelhly/solanapy"
@@ -22,20 +25,20 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 construct-typing = "^0.5.2"
-httpx = "^0.23.0"
+httpx = ">=0.23.0"
 typing-extensions = ">=4.2.0"
-cachetools = "^4.2.2"
-types-cachetools = "^4.2.4"
-websockets = "^10.3"
-solders = "^0.14.0"
+websockets = ">=9.0,<12.0"
+solders = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"
-pytest = "^7.1.2"
+pytest = "^7.4.3"
 mypy = "^0.910"
-pytest-docker = "^0.12.0"
+pyyaml = "6.0.1"
+pytest-docker = "^2.0.1"
+requests = "2.28.1"
 bump2version = "^1.0.1"
 pytest-asyncio = "^0.18.3"
 pytest-cov = "^3.0.0"
@@ -53,8 +56,24 @@ build-backend = "poetry.core.masonry.api"
 line-length = 120
 
 # Enable Pyflakes `E` and `F` codes by default.
-select = ["A", "B", "D", "E", "F", "I", "ARG", "BLE", "C4", "SIM", "PLC", "PLE", "PLR", "PLW", "RUF"]
-ignore = ["D203"]
+select = [
+    "A",
+    "B",
+    "D",
+    "E",
+    "F",
+    "I",
+    "ARG",
+    "BLE",
+    "C4",
+    "SIM",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "RUF",
+]
+ignore = ["D203", "I001"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

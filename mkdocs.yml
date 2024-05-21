@@ -52,7 +52,6 @@ nav:
       - rpc/types.md
       - rpc/providers.md
   - Core API:
-      - core/blockhash.md
       - core/transaction.md
       - core/utils.md
       - core/vote_program.md

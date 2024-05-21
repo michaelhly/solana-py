@@ -3,12 +3,12 @@
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 
-from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.sysvar import RENT
 
+from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
 
@@ -289,6 +289,15 @@ class BurnCheckedParams(NamedTuple):
     """Amount decimals."""
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
+
+
+class SyncNativeParams(NamedTuple):
+    """BurnChecked token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    account: Pubkey
+    """Account to sync."""
 
 
 def __parse_and_validate_instruction(
@@ -622,6 +631,21 @@ def decode_burn_checked(instruction: Instruction) -> BurnCheckedParams:
     )
 
 
+def decode_sync_native(instruction: Instruction) -> SyncNativeParams:
+    """Decode a burn_checked token transaction and retrieve the instruction params.
+
+    Args:
+        instruction: The instruction to decode.
+
+    Returns:
+        The decoded instruction.
+    """
+    return SyncNativeParams(
+        program_id=instruction.program_id,
+        account=instruction.accounts[0].pubkey,
+    )
+
+
 def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey]) -> None:
     if signers:
         keys.append(AccountMeta(pubkey=owner, is_signer=False, is_writable=False))
@@ -637,6 +661,14 @@ def __burn_instruction(params: Union[BurnParams, BurnCheckedParams], data: Any) 
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
     ]
     __add_signers(keys, params.owner, params.signers)
+
+    return Instruction(accounts=keys, program_id=params.program_id, data=data)
+
+
+def __sync_native_instruction(params: SyncNativeParams, data: Any) -> Instruction:
+    keys = [
+        AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+    ]
 
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
@@ -1154,6 +1186,29 @@ def burn_checked(params: BurnCheckedParams) -> Instruction:
         }
     )
     return __burn_instruction(params, data)
+
+
+def sync_native(params: SyncNativeParams) -> Instruction:
+    """Syncs the amount field with the number of lamports of the account.
+
+    Example:
+        >>> account = Pubkey.default()
+        >>> params = SyncNativeParams(
+        ...     program_id=TOKEN_PROGRAM_ID, account=account,
+        ... )
+        >>> type(sync_native(params))
+        <class 'solders.instruction.Instruction'>
+
+    Returns:
+        The sync-native instruction.
+    """
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.SYNC_NATIVE,
+            "args": {},
+        }
+    )
+    return __sync_native_instruction(params, data)
 
 
 def get_associated_token_address(owner: Pubkey, mint: Pubkey) -> Pubkey:
