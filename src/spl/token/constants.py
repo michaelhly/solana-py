@@ -11,6 +11,12 @@ ACCOUNT_LEN: int = 165
 MULTISIG_LEN: int = 355
 """Data length of a multisig token account."""
 
+DEFAULT_DECIMALS: int = 9
+"""Standard number of decimals for SOL and wrapped SOL."""
+
+LAMPORTS_PER_SOL: int = 1_000_000_000
+"""Number of lamports per SOL, where 1 SOL equals 1 billion lamports."""
+
 ASSOCIATED_TOKEN_PROGRAM_ID = Pubkey.from_string("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
 """Program ID for the associated token account program."""
 
