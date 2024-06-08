@@ -17,6 +17,9 @@ ASSOCIATED_TOKEN_PROGRAM_ID = Pubkey.from_string("ATokenGPvbdGVxr1b2hvZbsiqW5xWH
 TOKEN_PROGRAM_ID: Pubkey = Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 """Public key that identifies the SPL token program."""
 
+TOKEN_2022_PROGRAM_ID: Pubkey = Pubkey.from_string("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb")
+"""Public key that identifies the SPL token 2022 program."""
+
 WRAPPED_SOL_MINT: Pubkey = Pubkey.from_string("So11111111111111111111111111111111111111112")
 """Public key of the "Native Mint" for wrapping SOL to SPL token.
 
