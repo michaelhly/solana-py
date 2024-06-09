@@ -12,6 +12,7 @@ from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp
 from solders.transaction import VersionedTransaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
+from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
@@ -360,9 +361,7 @@ async def test_get_blocks(test_http_client_async):
 @pytest.mark.integration
 async def test_get_signatures_for_address(test_http_client_async: AsyncClient):
     """Test get signatures for addresses."""
-    resp = await test_http_client_async.get_signatures_for_address(
-        Pubkey.from_string("Vote111111111111111111111111111111111111111"), limit=1, commitment=Confirmed
-    )
+    resp = await test_http_client_async.get_signatures_for_address(VOTE_PROGRAM_ID, limit=1, commitment=Confirmed)
     assert_valid_response(resp)
 
 
