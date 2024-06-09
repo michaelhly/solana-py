@@ -27,3 +27,6 @@ The Token Program can be used to wrap native SOL. Doing so allows native SOL to 
 other Token program token type and can be useful when being called from other programs that interact
 with the Token Program's interface.
 """
+
+NATIVE_DECIMALS: int = 9
+"""Number of decimals for SOL and the  Wrapped SOL mint."""

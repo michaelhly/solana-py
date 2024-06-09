@@ -9,6 +9,7 @@ from solders.rpc.config import RpcSignaturesForAddressConfig
 from solders.rpc.requests import GetSignaturesForAddress
 from solders.signature import Signature
 
+from solana.constants import SYSTEM_PROGRAM_ID
 from solana.exceptions import SolanaRpcException
 from solana.rpc.commitment import Finalized
 
@@ -26,7 +27,7 @@ def test_client_http_exception(unit_test_http_client):
 def test_client_address_sig_args_no_commitment(unit_test_http_client):
     """Test generating getSignaturesForAddress body."""
     expected = GetSignaturesForAddress(
-        Pubkey.from_string("11111111111111111111111111111111"),
+        SYSTEM_PROGRAM_ID,
         RpcSignaturesForAddressConfig(
             limit=5, before=Signature.default(), until=Signature.default(), commitment=CommitmentLevel.Processed
         ),
@@ -39,7 +40,7 @@ def test_client_address_sig_args_no_commitment(unit_test_http_client):
 
 def test_client_address_sig_args_with_commitment(unit_test_http_client):
     expected = GetSignaturesForAddress(
-        Pubkey.from_string("11111111111111111111111111111111"),
+        SYSTEM_PROGRAM_ID,
         RpcSignaturesForAddressConfig(limit=5, commitment=CommitmentLevel.Finalized),
     )
     actual = unit_test_http_client._get_signatures_for_address_body(Pubkey([0] * 31 + [0]), None, None, 5, Finalized)
