@@ -10,13 +10,14 @@ from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
 from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
 from solders.transaction import VersionedTransaction
-from spl.token.constants import WRAPPED_SOL_MINT
 
+from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.types import DataSliceOpts, TxOpts
 from solana.transaction import Transaction
+from spl.token.constants import WRAPPED_SOL_MINT
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
@@ -344,9 +345,7 @@ def test_get_blocks(test_http_client: Client):
 @pytest.mark.integration
 def test_get_signatures_for_address(test_http_client: Client):
     """Test get signatures for addresses."""
-    resp = test_http_client.get_signatures_for_address(
-        Pubkey.from_string("Vote111111111111111111111111111111111111111"), limit=1, commitment=Confirmed
-    )
+    resp = test_http_client.get_signatures_for_address(VOTE_PROGRAM_ID, limit=1, commitment=Confirmed)
     assert_valid_response(resp)
 
 

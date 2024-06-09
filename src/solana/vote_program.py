@@ -6,11 +6,8 @@ from typing import NamedTuple
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 
+from solana.constants import VOTE_PROGRAM_ID
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
-
-VOTE_PROGRAM_ID: Pubkey = Pubkey.from_string("Vote111111111111111111111111111111111111111")
-"""Public key that identifies the Vote program."""
-
 
 # Instrection Params
 class WithdrawFromVoteAccountParams(NamedTuple):
