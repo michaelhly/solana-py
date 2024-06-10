@@ -406,7 +406,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         return cast(List[Union[Notification, SubscriptionResult]], parsed)
 
 
-class connect(ws_connect):  # pylint: disable=invalid-name
+class connect(ws_connect):  # pylint: disable=invalid-name,too-few-public-methods
     """Solana RPC websocket connector."""
 
     def __init__(self, uri: str = "ws://localhost:8900", **kwargs: Any) -> None:
