@@ -416,4 +416,11 @@ class connect(ws_connect):  # pylint: disable=invalid-name,too-few-public-method
             uri: The websocket endpoint.
             **kwargs: Keyword arguments for ``websockets.legacy.client.connect``
         """
-        super().__init__(uri, **kwargs, create_protocol=SolanaWsClientProtocol)
+        # Ensure that create_protocol explicitly creates a SolanaWsClientProtocol
+        kwargs.setdefault("create_protocol", SolanaWsClientProtocol)
+        super().__init__(uri, **kwargs)
+
+    async def __aenter__(self) -> SolanaWsClientProtocol:
+        """Overrides to specify the type of protocol explicitly."""
+        protocol = await super().__aenter__()
+        return cast(SolanaWsClientProtocol, protocol)
