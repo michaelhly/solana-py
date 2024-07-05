@@ -3,7 +3,6 @@ from typing import Tuple
 
 import pytest
 import solders.system_program as sp
-from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.message import MessageV0, Message
 from solders.pubkey import Pubkey
@@ -273,7 +272,7 @@ def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_cli
     ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), Hash.default())
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), recent_blockhash)
     # get fee for transaction
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
