@@ -62,7 +62,7 @@ from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
 from solana.rpc import types
-from solana.transaction import Transaction
+from solders.transaction import Transaction
 
 from .commitment import Commitment, Finalized
 from .core import (
@@ -419,11 +419,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solders.keypair import Keypair
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solana.transaction import Transaction
+            >>> from solders.message import Message
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
+            >>> msg = Message([transfer(TransferParams(
+            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))])
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_fee_for_message(txn.compile_message())).value # doctest: +SKIP
             5000
@@ -1012,62 +1012,28 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def send_transaction(
         self,
         txn: Union[VersionedTransaction, Transaction],
-        *signers: Keypair,
         opts: Optional[types.TxOpts] = None,
-        recent_blockhash: Optional[Blockhash] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
 
         Args:
             txn: transaction object.
-            signers: Signers to sign the transaction. Only supported for legacy Transaction.
             opts: (optional) Transaction options.
-            recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
-                skip fetching the recent blockhash or relying on the cache.
-                Only supported for legacy Transaction.
 
         Example:
             >>> from solders.keypair import Keypair
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solana.transaction import Transaction
+            >>> from solders.message import Message
+            >>> from solders.transaction import Transaction
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
-            >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> (await solana_client.send_transaction(txn, sender)).value # doctest: +SKIP
-            Signature(
-                1111111111111111111111111111111111111111111111111111111111111111,
-            )
+            >>> ixns = [transfer(TransferParams(
+            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))]
+            >>> msg = Message(ixns, sender.pubkey())
+            >>> client = AsyncClient("http://localhost:8899")
+            >>> (await client.send_transaction(Transaction([sender], msg, (await client.get_latest_blockhash())))).value # doctest: +SKIP
         """
-        if isinstance(txn, VersionedTransaction):
-            if signers:
-                msg = "*signers args are not used when sending VersionedTransaction."
-                raise ValueError(msg)
-            if recent_blockhash is not None:
-                msg = "recent_blockhash arg is not used when sending VersionedTransaction."
-                raise ValueError(msg)
-            versioned_tx_opts = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
-            return await self.send_raw_transaction(bytes(txn), opts=versioned_tx_opts)
-        last_valid_block_height = None
-        if recent_blockhash is None:
-            blockhash_resp = await self.get_latest_blockhash(Finalized)
-            recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
-            last_valid_block_height = blockhash_resp.value.last_valid_block_height
-
-        txn.recent_blockhash = recent_blockhash
-
-        txn.sign(*signers)
-        opts_to_use = (
-            types.TxOpts(
-                preflight_commitment=self._commitment,
-                last_valid_block_height=last_valid_block_height,
-            )
-            if opts is None
-            else opts
-        )
-        txn_resp = await self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
-        return txn_resp
+        return await self.send_raw_transaction(bytes(txn), opts=opts)
 
     async def simulate_transaction(
         self,
@@ -1092,7 +1058,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'
             ...     '1851a106901020200010c0200000040420f0000000000'
             ... )
-            >>> tx = Transaction.deserialize(bytes.fromhex(full_signed_tx_hex))
+            >>> tx = Transaction.from_bytes(bytes.fromhex(full_signed_tx_hex))
             >>> (await solana_client.simulate_transaction(tx)).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
         """

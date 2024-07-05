@@ -27,7 +27,7 @@ from websockets.legacy.client import WebSocketClientProtocol
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
 from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
-from solana.transaction import Transaction
+from solders.transaction import Transaction
 
 from ..utils import AIRDROP_AMOUNT
 

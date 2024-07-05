@@ -17,7 +17,7 @@ from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.types import DataSliceOpts, TxOpts
-from solana.transaction import Transaction
+from solders.transaction import Transaction
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
 

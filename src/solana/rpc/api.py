@@ -64,7 +64,7 @@ from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
 from solana.rpc import types
-from solana.transaction import Transaction
+from solders.transaction import Transaction
 
 from .commitment import Commitment, Finalized
 from .core import (
@@ -407,13 +407,13 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solders.keypair import Keypair
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solana.transaction import Transaction
+            >>> from solders.message import Message
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
+            >>> msg = Message([transfer(TransferParams(
+            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))])
             >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_fee_for_message(txn.compile_message()).value # doctest: +SKIP
+            >>> solana_client.get_fee_for_message(msg).value # doctest: +SKIP
             5000
         """
         body = self._get_fee_for_message_body(message, commitment)
@@ -1018,11 +1018,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solders.pubkey import Pubkey
             >>> from solana.rpc.api import Client
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solana.transaction import Transaction
+            >>> from solders.message import Message
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
+            >>> msg = Message([transfer(TransferParams(
+            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))])
             >>> solana_client = Client("http://localhost:8899")
             >>> solana_client.send_transaction(txn, sender).value # doctest: +SKIP
             Signature(
@@ -1074,6 +1074,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
+            >>> from solders.transaction import Transaction
             >>> solana_client = Client("http://localhost:8899")
             >>> full_signed_tx_hex = (
             ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc'
@@ -1082,7 +1083,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'
             ...     '1851a106901020200010c0200000040420f0000000000'
             ... )
-            >>> tx = Transaction.deserialize(bytes.fromhex(full_signed_tx_hex))
+            >>> tx = Transaction.from_bytes(bytes.fromhex(full_signed_tx_hex))
             >>> solana_client.simulate_transaction(tx).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
         """
