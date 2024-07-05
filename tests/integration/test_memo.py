@@ -1,6 +1,7 @@
 """Tests for the Memo program."""
 import pytest
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.transaction_status import ParsedInstruction
 from spl.memo.constants import MEMO_PROGRAM_ID
 from spl.memo.instructions import MemoParams, create_memo
@@ -27,7 +28,10 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
         message=message,
     )
     # Create transfer tx to add memo to transaction from stubbed sender
-    transfer_tx = Transaction().add(create_memo(memo_params))
+    blockhash = test_http_client.get_latest_blockhash().value.blockhash
+    ixs = [create_memo(memo_params)]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
     resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
     assert_valid_response(resp)
     txn_id = resp.value

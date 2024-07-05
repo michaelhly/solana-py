@@ -6,6 +6,7 @@ import asyncstdlib
 import pytest
 from solders import system_program as sp
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.config import RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
 from solders.rpc.requests import AccountSubscribe, AccountUnsubscribe, Body, LogsSubscribe, LogsUnsubscribe
@@ -283,9 +284,10 @@ async def test_program_subscribe(
 ):
     """Test program subscription."""
     program, owned = program_subscribed
-    instruction = sp.assign(sp.AssignParams(pubkey=owned.pubkey(), owner=program.pubkey()))
-    transaction = Transaction()
-    transaction.add(instruction)
+    ixs = [sp.assign(sp.AssignParams(pubkey=owned.pubkey(), owner=program.pubkey()))]
+    blockhash = (test_http_client_async.get_latest_blockhash()).value.blockhash
+    msg = Message.new_with_blockhash(ixs, owned.pubkey(), blockhash)
+    transaction = Transaction([owned], msg, blockhash)
     await test_http_client_async.send_transaction(transaction, owned)
     main_resp = await websocket.recv()
     msg = main_resp[0]

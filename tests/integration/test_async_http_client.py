@@ -4,7 +4,7 @@ from typing import Tuple
 import pytest
 import solders.system_program as sp
 from solders.keypair import Keypair
-from solders.message import MessageV0
+from solders.message import MessageV0, Message
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
@@ -68,13 +68,16 @@ async def test_send_transaction_and_get_balance(
 ):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to async_stubbed_receiver
-    transfer_tx = Transaction().add(
+    ixs = [
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=async_stubbed_sender.pubkey(), to_pubkey=async_stubbed_receiver, lamports=1000
             )
         )
-    )
+    ]
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    msg = Message.new_with_blockhash(ixs, async_stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([async_stubbed_sender], msg, blockhash)
     resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender)
     assert_valid_response(resp)
     # Confirm transaction
@@ -132,13 +135,16 @@ async def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client_a
     balance = await test_http_client_async.get_balance(poor_account.pubkey())
     assert balance.value == airdrop_amount
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction().add(
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    ixs = [
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=poor_account.pubkey(), to_pubkey=stubbed_receiver, lamports=airdrop_amount + 1
             )
         )
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, poor_account.pubkey(), blockhash)
+    transfer_tx = Transaction([poor_account], msg, blockhash)
     with pytest.raises(RPCException) as exc_info:
         await test_http_client_async.send_transaction(transfer_tx, poor_account)
     err = exc_info.value.args[0]
@@ -152,7 +158,8 @@ async def test_send_transaction_prefetched_blockhash(
 ):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to async_stubbed_receiver
-    transfer_tx = Transaction().add(
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    ixs = [
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=async_stubbed_sender_prefetched_blockhash.pubkey(),
@@ -160,7 +167,9 @@ async def test_send_transaction_prefetched_blockhash(
                 lamports=1000,
             )
         )
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, async_stubbed_sender_prefetched_blockhash.pubkey(), blockhash)
+    transfer_tx = Transaction([async_stubbed_sender_prefetched_blockhash], msg, blockhash)
     resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender_prefetched_blockhash)
     assert_valid_response(resp)
     # Confirm transaction
@@ -185,13 +194,16 @@ async def test_send_raw_transaction_and_get_balance(
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to async_stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    ixs = [
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=async_stubbed_sender.pubkey(), to_pubkey=async_stubbed_receiver, lamports=1000
             )
         )
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, async_stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([async_stubbed_sender], msg, blockhash)
     # Sign transaction
     transfer_tx.sign(async_stubbed_sender)
     # Send raw transaction
@@ -220,13 +232,16 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height
     # Create transfer tx transfer lamports from stubbed sender to async_stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    ixs = [
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=async_stubbed_sender.pubkey(), to_pubkey=async_stubbed_receiver, lamports=1000
             )
         )
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, async_stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([async_stubbed_sender], msg, blockhash)
     # Sign transaction
     transfer_tx.sign(async_stubbed_sender)
     # Send raw transaction
@@ -255,9 +270,12 @@ async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, tes
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height - 330
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
     # Sign transaction
     transfer_tx.sign(stubbed_sender)
     # Send raw transaction
@@ -282,9 +300,12 @@ async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver,
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
     # Get fee for transaction message
     fee_resp = await test_http_client_async.get_fee_for_message(transfer_tx.compile_message())
     assert_valid_response(fee_resp)
