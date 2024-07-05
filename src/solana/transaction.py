@@ -1,4 +1,4 @@
-"""Library to package an atomic sequence of instructions to a transaction."""
+"""Deprecated: use `solders.transaction.Transaction` instead."""
 from __future__ import annotations
 import warnings
 warnings.warn('The transaction module is deprecated and will be removed. Use solders.transaction instead.', FutureWarning)
