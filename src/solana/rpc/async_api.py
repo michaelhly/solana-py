@@ -3,8 +3,6 @@ import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
 
-from solders.hash import Hash as Blockhash
-from solders.keypair import Keypair
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
@@ -64,7 +62,7 @@ from solders.transaction import VersionedTransaction
 from solana.rpc import types
 from solders.transaction import Transaction
 
-from .commitment import Commitment, Finalized
+from .commitment import Commitment
 from .core import (
     _COMMITMENT_TO_SOLDERS,
     TransactionExpiredBlockheightExceededError,
@@ -1031,8 +1029,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))]
             >>> msg = Message(ixns, sender.pubkey())
             >>> client = AsyncClient("http://localhost:8899")
-            >>> (await client.send_transaction(Transaction([sender], msg, (await client.get_latest_blockhash())))).value # doctest: +SKIP
-        """
+            >>> (await client.send_transaction(Transaction([sender], msg, (await client.get_latest_blockhash()).value.blockhash))) # doctest: +SKIP
+        """  # noqa: E501
         return await self.send_raw_transaction(bytes(txn), opts=opts)
 
     async def simulate_transaction(
