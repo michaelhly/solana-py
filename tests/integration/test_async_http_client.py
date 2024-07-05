@@ -78,7 +78,7 @@ async def test_send_transaction_and_get_balance(
     blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
     msg = Message.new_with_blockhash(ixs, async_stubbed_sender.pubkey(), blockhash)
     transfer_tx = Transaction([async_stubbed_sender], msg, blockhash)
-    resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender)
+    resp = await test_http_client_async.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
     await test_http_client_async.confirm_transaction(resp.value)
@@ -146,7 +146,7 @@ async def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client_a
     msg = Message.new_with_blockhash(ixs, poor_account.pubkey(), blockhash)
     transfer_tx = Transaction([poor_account], msg, blockhash)
     with pytest.raises(RPCException) as exc_info:
-        await test_http_client_async.send_transaction(transfer_tx, poor_account)
+        await test_http_client_async.send_transaction(transfer_tx)
     err = exc_info.value.args[0]
     assert isinstance(err, SendTransactionPreflightFailureMessage)
     assert err.data.logs
@@ -170,7 +170,7 @@ async def test_send_transaction_prefetched_blockhash(
     ]
     msg = Message.new_with_blockhash(ixs, async_stubbed_sender_prefetched_blockhash.pubkey(), blockhash)
     transfer_tx = Transaction([async_stubbed_sender_prefetched_blockhash], msg, blockhash)
-    resp = await test_http_client_async.send_transaction(transfer_tx, async_stubbed_sender_prefetched_blockhash)
+    resp = await test_http_client_async.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
     await test_http_client_async.confirm_transaction(resp.value)
@@ -207,7 +207,7 @@ async def test_send_raw_transaction_and_get_balance(
     # Sign transaction
     transfer_tx.sign(async_stubbed_sender)
     # Send raw transaction
-    resp = await test_http_client_async.send_raw_transaction(transfer_tx.serialize())
+    resp = await test_http_client_async.send_raw_transaction(bytes(transfer_tx))
     assert_valid_response(resp)
     # Confirm transaction
     resp = await test_http_client_async.confirm_transaction(resp.value)
@@ -246,7 +246,7 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     transfer_tx.sign(async_stubbed_sender)
     # Send raw transaction
     resp = await test_http_client_async.send_raw_transaction(
-        transfer_tx.serialize(),
+        bytes(transfer_tx),
         opts=TxOpts(preflight_commitment=Processed, last_valid_block_height=last_valid_block_height),
     )
     assert_valid_response(resp)
@@ -280,7 +280,7 @@ async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, tes
     transfer_tx.sign(stubbed_sender)
     # Send raw transaction
     resp = await test_http_client_async.send_raw_transaction(
-        transfer_tx.serialize(), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
+        bytes(transfer_tx), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
     )
     assert_valid_response(resp)
     # Confirm transaction

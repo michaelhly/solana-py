@@ -70,7 +70,7 @@ def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test
     transfer_tx = Transaction([stubbed_sender], msg, blockhash)
     sim_resp = test_http_client.simulate_transaction(transfer_tx)
     assert_valid_response(sim_resp)
-    resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
+    resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
     test_http_client.confirm_transaction(resp.value)
@@ -134,7 +134,7 @@ def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client: Client
     msg = Message.new_with_blockhash(ixs, poor_account.pubkey(), blockhash)
     transfer_tx = Transaction([poor_account], msg, blockhash)
     with pytest.raises(RPCException) as exc_info:
-        test_http_client.send_transaction(transfer_tx, poor_account)
+        test_http_client.send_transaction(transfer_tx)
     err = exc_info.value.args[0]
     assert isinstance(err, SendTransactionPreflightFailureMessage)
     assert err.data.logs
@@ -146,7 +146,7 @@ def test_send_transaction_prefetched_blockhash(
 ):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
-    blockhash = test_http_client.get_latest_blockhash().value.blockhash
+    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_latest_blockhash())
     ixs = [
         sp.transfer(
             sp.TransferParams(
@@ -156,12 +156,9 @@ def test_send_transaction_prefetched_blockhash(
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender_prefetched_blockhash.pubkey(), blockhash)
-    transfer_tx = Transaction([stubbed_sender_prefetched_blockhash], msg, blockhash)
-    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_latest_blockhash())
-    resp = test_http_client.send_transaction(
-        transfer_tx, stubbed_sender_prefetched_blockhash, recent_blockhash=recent_blockhash
-    )
+    msg = Message.new_with_blockhash(ixs, stubbed_sender_prefetched_blockhash.pubkey(), recent_blockhash)
+    transfer_tx = Transaction([stubbed_sender_prefetched_blockhash], msg, recent_blockhash)
+    resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
     test_http_client.confirm_transaction(resp.value)
@@ -192,7 +189,7 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
     # Sign transaction
     transfer_tx.sign(stubbed_sender)
     # Send raw transaction
-    tx_resp = test_http_client.send_raw_transaction(transfer_tx.serialize())
+    tx_resp = test_http_client.send_raw_transaction(bytes(transfer_tx))
     assert_valid_response(tx_resp)
     # Confirm transaction
     test_http_client.confirm_transaction(tx_resp.value)
@@ -227,7 +224,7 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     transfer_tx.sign(stubbed_sender)
     # Send raw transaction
     resp = test_http_client.send_raw_transaction(
-        transfer_tx.serialize(),
+        bytes(transfer_tx),
         opts=TxOpts(preflight_commitment=Processed, last_valid_block_height=last_valid_block_height),
     )
     assert_valid_response(resp)
@@ -256,11 +253,9 @@ def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http
     ]
     msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), recent_blockhash)
     transfer_tx = Transaction([stubbed_sender], msg, recent_blockhash)
-    # Sign transaction
-    transfer_tx.sign(stubbed_sender)
     # Send raw transaction
     tx_resp = test_http_client.send_raw_transaction(
-        transfer_tx.serialize(), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
+        bytes(transfer_tx), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
     )
     assert_valid_response(tx_resp)
     # Confirm transaction

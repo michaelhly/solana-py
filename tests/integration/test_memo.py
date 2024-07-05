@@ -32,7 +32,7 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     ixs = [create_memo(memo_params)]
     msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
     transfer_tx = Transaction([stubbed_sender], msg, blockhash)
-    resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
+    resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     txn_id = resp.value
     # Txn needs to be finalized in order to parse the logs.

@@ -288,7 +288,7 @@ async def test_program_subscribe(
     blockhash = (test_http_client_async.get_latest_blockhash()).value.blockhash
     msg = Message.new_with_blockhash(ixs, owned.pubkey(), blockhash)
     transaction = Transaction([owned], msg, blockhash)
-    await test_http_client_async.send_transaction(transaction, owned)
+    await test_http_client_async.send_transaction(transaction)
     main_resp = await websocket.recv()
     msg = main_resp[0]
     assert isinstance(msg, ProgramNotification)
