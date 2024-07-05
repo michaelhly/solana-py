@@ -187,8 +187,6 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
     ]
     msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
     transfer_tx = Transaction([stubbed_sender], msg, blockhash)
-    # Sign transaction
-    transfer_tx.sign(stubbed_sender)
     # Send raw transaction
     tx_resp = test_http_client.send_raw_transaction(bytes(transfer_tx))
     assert_valid_response(tx_resp)
@@ -221,8 +219,6 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     ]
     msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
     transfer_tx = Transaction([stubbed_sender], msg, blockhash)
-    # Sign transaction
-    transfer_tx.sign(stubbed_sender)
     # Send raw transaction
     resp = test_http_client.send_raw_transaction(
         bytes(transfer_tx),
