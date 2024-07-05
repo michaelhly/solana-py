@@ -5,8 +5,6 @@ from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.message import Message
 from solders.pubkey import Pubkey
-
-import solders.transaction as txlib
 import solana.vote_program as vp
 
 
