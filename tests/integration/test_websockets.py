@@ -285,7 +285,7 @@ async def test_program_subscribe(
     """Test program subscription."""
     program, owned = program_subscribed
     ixs = [sp.assign(sp.AssignParams(pubkey=owned.pubkey(), owner=program.pubkey()))]
-    blockhash = (test_http_client_async.get_latest_blockhash()).value.blockhash
+    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
     msg = Message.new_with_blockhash(ixs, owned.pubkey(), blockhash)
     transaction = Transaction([owned], msg, blockhash)
     await test_http_client_async.send_transaction(transaction)
