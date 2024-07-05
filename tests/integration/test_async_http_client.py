@@ -3,6 +3,7 @@ from typing import Tuple
 
 import pytest
 import solders.system_program as sp
+from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.message import MessageV0, Message
 from solders.pubkey import Pubkey
@@ -300,14 +301,12 @@ async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver,
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
     ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
-    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), Hash.default())
     # Get fee for transaction message
-    fee_resp = await test_http_client_async.get_fee_for_message(transfer_tx.compile_message())
+    fee_resp = await test_http_client_async.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
 

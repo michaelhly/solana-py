@@ -423,7 +423,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> msg = Message([transfer(TransferParams(
             ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))])
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> (await solana_client.get_fee_for_message(txn.compile_message())).value # doctest: +SKIP
+            >>> (await solana_client.get_fee_for_message(msg)).value # doctest: +SKIP
             5000
         """
         body = self._get_fee_for_message_body(message, commitment)
