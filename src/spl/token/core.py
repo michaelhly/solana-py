@@ -155,7 +155,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         balance_needed: int,
         commitment: Commitment,
         recent_blockhash: Blockhash,
-    ) -> Tuple[Pubkey, Transaction, Keypair, Keypair, TxOpts]:
+    ) -> Tuple[Pubkey, Transaction, TxOpts]:
         new_keypair = Keypair()
         # Allocate memory for the account
 
@@ -180,12 +180,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             ),
         ]
         msg = Message.new_with_blockhash(ixs, self.payer.pubkey(), recent_blockhash)
-        txn = Transaction([self.payer], msg, recent_blockhash)
+        txn = Transaction([self.payer, new_keypair], msg, recent_blockhash)
         return (
             new_keypair.pubkey(),
             txn,
-            self.payer,
-            new_keypair,
             TxOpts(skip_confirmation=skip_confirmation, preflight_commitment=commitment),
         )
 

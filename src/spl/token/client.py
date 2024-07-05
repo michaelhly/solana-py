@@ -250,7 +250,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         recent_blockhash_to_use = (
             self._conn.get_latest_blockhash().value.blockhash if recent_blockhash is None else recent_blockhash
         )
-        new_account_pk, txn, payer, new_account, opts = self._create_account_args(
+        new_account_pk, txn, opts = self._create_account_args(
             owner, skip_confirmation, balance_needed, self._conn.commitment, recent_blockhash_to_use
         )
         # Send the two instructions
