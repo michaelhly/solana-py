@@ -610,7 +610,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
     def _create_multisig_args(
         self, m: int, signers: List[Pubkey], balance_needed: int, recent_blockhash: Blockhash
-    ) -> Tuple[Transaction, Keypair, Keypair]:
+    ) -> Tuple[Transaction, Keypair]:
         multisig_keypair = Keypair()
         ixs = [
             sp.create_account(
@@ -632,8 +632,8 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             ),
         ]
         msg = Message.new_with_blockhash(ixs, self.payer.pubkey(), recent_blockhash)
-        txn = Transaction([self.payer], msg, recent_blockhash)
-        return txn, self.payer, multisig_keypair
+        txn = Transaction([self.payer, multisig_keypair], msg, recent_blockhash)
+        return txn, multisig_keypair
 
     def _transfer_checked_args(
         self,

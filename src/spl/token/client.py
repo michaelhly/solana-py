@@ -353,7 +353,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
         recent_blockhash_to_use = (
             self._conn.get_latest_blockhash().value.blockhash if recent_blockhash is None else recent_blockhash
         )
-        txn, payer, multisig = self._create_multisig_args(m, multi_signers, balance_needed, recent_blockhash_to_use)
+        txn, multisig = self._create_multisig_args(m, multi_signers, balance_needed, recent_blockhash_to_use)
         opts_to_use = TxOpts(preflight_commitment=self._conn.commitment) if opts is None else opts
         self._conn.send_transaction(txn, opts=opts_to_use)
         return multisig.pubkey()
