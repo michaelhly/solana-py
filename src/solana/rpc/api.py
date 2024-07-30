@@ -237,7 +237,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         slot: int,
         encoding: str = "json",
-        max_supported_transaction_version: int | None = None,
+        max_supported_transaction_version: Union[int, None] = None,
     ) -> GetBlockResp:
         """Returns identity and transaction information about a confirmed block in the ledger.
 

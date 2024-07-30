@@ -185,7 +185,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         filter_: Union[RpcBlockSubscribeFilter, RpcBlockSubscribeFilterMentions] = RpcBlockSubscribeFilter.All,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
-        transaction_details: TransactionDetails | None = None,
+        transaction_details: Union[TransactionDetails, None] = None,
         show_rewards: Optional[bool] = None,
         max_supported_transaction_version: Optional[int] = None,
     ) -> None:
