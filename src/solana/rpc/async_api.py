@@ -1105,7 +1105,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> (await solana_client.validator_exit()).value # doctest: +SKIP
             True
         """
-        return await self._provider.make_request(self._validator_exit, ValidatorExitResp)
+        return await self._provider.make_request(self._validator_exit, ValidatorExitResp)  # type: ignore
 
     async def __post_send_with_confirm(
         self,

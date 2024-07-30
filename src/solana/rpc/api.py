@@ -1100,7 +1100,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.validator_exit().value # doctest: +SKIP
             True
         """
-        return self._provider.make_request(self._validator_exit, ValidatorExitResp)
+        return self._provider.make_request(self._validator_exit, ValidatorExitResp)  # type: ignore
 
     def __post_send_with_confirm(
         self,
