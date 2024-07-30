@@ -36,7 +36,8 @@ class SolanaRpcException(SolanaExceptionBase):
         return f'{type(exc)} raised in "{rpc_method}" endpoint request'
 
 
-# Because we need to support python version older then 3.10 we don't always have access to ParamSpec, so in order to remove code duplication we have to share an untyped function
+# Because we need to support python version older then 3.10 we don't always have access to ParamSpec,
+# so in order to remove code duplication we have to share an untyped function
 def _untyped_handle_exceptions(internal_exception_cls, *exception_types_caught):
     def func_decorator(func):
         def argument_decorator(*args, **kwargs):
@@ -75,14 +76,12 @@ if sys.version_info >= (3, 10):
         internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
         """Decorator for handling async exception."""
-
         return _untyped_handle_exceptions(internal_exception_cls, exception_types_caught)  # type: ignore
 
     def handle_async_exceptions(
         internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
     ) -> Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]]:
         """Decorator for handling async exception."""
-
         return _untyped_handle_async_exceptions(internal_exception_cls, exception_types_caught)  # type: ignore
 
 else:
@@ -91,12 +90,10 @@ else:
         internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
     ) -> Callable[[Callable[..., T]], Callable[..., T]]:
         """Decorator for handling async exception."""
-
         return _untyped_handle_exceptions(internal_exception_cls, exception_types_caught)  # type: ignore
 
     def handle_async_exceptions(
         internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
     ) -> Callable[[Callable[..., Coroutine[Any, Any, T]]], Callable[..., Coroutine[Any, Any, T]]]:
         """Decorator for handling async exception."""
-
         return _untyped_handle_async_exceptions(internal_exception_cls, exception_types_caught)  # type: ignore
