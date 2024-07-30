@@ -75,7 +75,7 @@ if sys.version_info >= (3, 10):
     def handle_exceptions(
         internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
-        """Decorator for handling async exception."""
+        """Decorator for handling non-async exception."""
         return _untyped_handle_exceptions(internal_exception_cls, exception_types_caught)  # type: ignore
 
     def handle_async_exceptions(
@@ -89,7 +89,7 @@ else:
     def handle_exceptions(
         internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
     ) -> Callable[[Callable[..., T]], Callable[..., T]]:
-        """Decorator for handling async exception."""
+        """Decorator for handling non-async exception."""
         return _untyped_handle_exceptions(internal_exception_cls, exception_types_caught)  # type: ignore
 
     def handle_async_exceptions(
