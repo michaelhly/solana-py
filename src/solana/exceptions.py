@@ -1,7 +1,7 @@
 """Exceptions native to solana-py."""
 
 import sys
-from typing import Any, Callable, Coroutine, TypeVar
+from typing import Any, Callable, Coroutine, Type, TypeVar
 
 
 class SolanaExceptionBase(Exception):
@@ -52,7 +52,7 @@ def _untyped_handle_exceptions(internal_exception_cls, *exception_types_caught):
 
 
 def _untyped_handle_async_exceptions(
-    internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
+    internal_exception_cls: Type[SolanaRpcException], *exception_types_caught: Type[Exception]
 ):
     def func_decorator(func):
         async def argument_decorator(*args, **kwargs):
@@ -73,27 +73,25 @@ if sys.version_info >= (3, 10):
     P = ParamSpec("P")
 
     def handle_exceptions(
-        internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
+        internal_exception_cls: Type[SolanaRpcException], *exception_types_caught: Type[Exception]
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
         """Decorator for handling non-async exception."""
         return _untyped_handle_exceptions(internal_exception_cls, *exception_types_caught)  # type: ignore
 
     def handle_async_exceptions(
-        internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
+        internal_exception_cls: Type[SolanaRpcException], *exception_types_caught: Type[Exception]
     ) -> Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]]:
         """Decorator for handling async exception."""
         return _untyped_handle_async_exceptions(internal_exception_cls, *exception_types_caught)  # type: ignore
 
 else:
 
-    def handle_exceptions(
-        internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
-    ) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    def handle_exceptions(internal_exception_cls: Type[SolanaRpcException], *exception_types_caught: Type[Exception]):
         """Decorator for handling non-async exception."""
-        return _untyped_handle_exceptions(internal_exception_cls, *exception_types_caught)  # type: ignore
+        return _untyped_handle_exceptions(internal_exception_cls, *exception_types_caught)
 
     def handle_async_exceptions(
-        internal_exception_cls: type[SolanaRpcException], *exception_types_caught: type[Exception]
-    ) -> Callable[[Callable[..., Coroutine[Any, Any, T]]], Callable[..., Coroutine[Any, Any, T]]]:
+        internal_exception_cls: Type[SolanaRpcException], *exception_types_caught: Type[Exception]
+    ):
         """Decorator for handling async exception."""
-        return _untyped_handle_async_exceptions(internal_exception_cls, *exception_types_caught)  # type: ignore
+        return _untyped_handle_async_exceptions(internal_exception_cls, *exception_types_caught)
