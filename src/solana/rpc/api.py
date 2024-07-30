@@ -1,4 +1,5 @@
 """API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
+
 from __future__ import annotations
 
 from time import sleep, time
@@ -236,7 +237,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         slot: int,
         encoding: str = "json",
-        max_supported_transaction_version: int = None,
+        max_supported_transaction_version: int | None = None,
     ) -> GetBlockResp:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
