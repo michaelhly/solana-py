@@ -617,7 +617,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             encoding="jsonParsed",
             data_slice=None,
         )
-        return await self._provider.make_request(body, GetMultipleAccountsResp)
+        return await self._provider.make_request(body, GetMultipleAccountsMaybeJsonParsedResp)
 
     async def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
