@@ -1,0 +1,2716 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Kevin Heavey & Michael Huang">
+      
+      
+        <link rel="canonical" href="https://michaelhly.github.io/solana-py/core/transaction/">
+      
+      <link rel="icon" href="../../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-8.5.10">
+    
+    
+      
+        <title>Transaction - Solana.py</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.975780f9.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.2505c338.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#transaction" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Solana.py" class="md-header__button md-logo" aria-label="Solana.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 17H18c1.1 0 2-.9 2-2s-.9-2-2-2V9c0-1 0-2-1.08-2.86.05-.21.08-.42.08-.64C17 3.57 15 2 12.5 2c-2.26 0-4.12 1.31-4.43 3H6L3.71 2.79 3 3.5l2 2-2 2 .71.71L6 6h2.07c.31 1.69 2.17 3 4.43 3 .5 0 1-.08 1.43-.2.04.07.07.14.07.2v4H8c-1.1 0-2 .9-2 2s.9 2 2 2H6.5A2.5 2.5 0 0 0 4 19.5c0 .17 0 .34.05.5H4c-1.1 0-2 .9-2 2h17.5a2.5 2.5 0 0 0 0-5M12 5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Solana.py
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Transaction
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/michaelhly/solana-py" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    michaelhly/solana-py
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../rpc/api/" class="md-tabs__link">
+        RPC API
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="./" class="md-tabs__link md-tabs__link--active">
+        Core API
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../spl/intro/" class="md-tabs__link">
+        Solana Program Library (SPL)
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Solana.py" class="md-nav__button md-logo" aria-label="Solana.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 17H18c1.1 0 2-.9 2-2s-.9-2-2-2V9c0-1 0-2-1.08-2.86.05-.21.08-.42.08-.64C17 3.57 15 2 12.5 2c-2.26 0-4.12 1.31-4.43 3H6L3.71 2.79 3 3.5l2 2-2 2 .71.71L6 6h2.07c.31 1.69 2.17 3 4.43 3 .5 0 1-.08 1.43-.2.04.07.07.14.07.2v4H8c-1.1 0-2 .9-2 2s.9 2 2 2H6.5A2.5 2.5 0 0 0 4 19.5c0 .17 0 .34.05.5H4c-1.1 0-2 .9-2 2h17.5a2.5 2.5 0 0 0 0-5M12 5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1Z"/></svg>
+
+    </a>
+    Solana.py
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/michaelhly/solana-py" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    michaelhly/solana-py
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          RPC API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="RPC API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          RPC API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpc/api/" class="md-nav__link">
+        API Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpc/async_api/" class="md-nav__link">
+        Async API Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpc/websocket/" class="md-nav__link">
+        Websocket Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpc/commitment/" class="md-nav__link">
+        Commitment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpc/types/" class="md-nav__link">
+        RPC Types
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpc/providers/" class="md-nav__link">
+        RPC Providers
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Core API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Core API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Core API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Transaction
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Transaction
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#solana.transaction" class="md-nav__link">
+    transaction
+  </a>
+  
+    <nav class="md-nav" aria-label="transaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.PACKET_DATA_SIZE" class="md-nav__link">
+    PACKET_DATA_SIZE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.NonceInformation" class="md-nav__link">
+    NonceInformation
+  </a>
+  
+    <nav class="md-nav" aria-label="NonceInformation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.NonceInformation.nonce" class="md-nav__link">
+    nonce
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.NonceInformation.nonce_instruction" class="md-nav__link">
+    nonce_instruction
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction" class="md-nav__link">
+    Transaction
+  </a>
+  
+    <nav class="md-nav" aria-label="Transaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.fee_payer" class="md-nav__link">
+    fee_payer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.instructions" class="md-nav__link">
+    instructions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.recent_blockhash" class="md-nav__link">
+    recent_blockhash
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.signatures" class="md-nav__link">
+    signatures
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.add" class="md-nav__link">
+    add()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.add_signature" class="md-nav__link">
+    add_signature()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.compile_message" class="md-nav__link">
+    compile_message()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.deserialize" class="md-nav__link">
+    deserialize()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.from_solders" class="md-nav__link">
+    from_solders()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.populate" class="md-nav__link">
+    populate()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.serialize" class="md-nav__link">
+    serialize()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.serialize_message" class="md-nav__link">
+    serialize_message()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.sign" class="md-nav__link">
+    sign()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.sign_partial" class="md-nav__link">
+    sign_partial()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.signature" class="md-nav__link">
+    signature()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.to_solders" class="md-nav__link">
+    to_solders()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.verify_signatures" class="md-nav__link">
+    verify_signatures()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        Utils
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vote_program/" class="md-nav__link">
+        Vote Program
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Solana Program Library (SPL)
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Solana Program Library (SPL)" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Solana Program Library (SPL)
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/intro/" class="md-nav__link">
+        Solana Program Library (SPL)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Token
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Token" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Token
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/client/" class="md-nav__link">
+        Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/async_client/" class="md-nav__link">
+        Async Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/constants/" class="md-nav__link">
+        Constants
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/instructions/" class="md-nav__link">
+        Instructions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/core/" class="md-nav__link">
+        Core
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_3" type="checkbox" id="__nav_4_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3">
+          Memo Program
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Memo Program" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_3">
+          <span class="md-nav__icon md-icon"></span>
+          Memo Program
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/memo/intro/" class="md-nav__link">
+        Intro
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/memo/constants/" class="md-nav__link">
+        Constants
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/memo/instructions/" class="md-nav__link">
+        Memo Program
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#solana.transaction" class="md-nav__link">
+    transaction
+  </a>
+  
+    <nav class="md-nav" aria-label="transaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.PACKET_DATA_SIZE" class="md-nav__link">
+    PACKET_DATA_SIZE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.NonceInformation" class="md-nav__link">
+    NonceInformation
+  </a>
+  
+    <nav class="md-nav" aria-label="NonceInformation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.NonceInformation.nonce" class="md-nav__link">
+    nonce
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.NonceInformation.nonce_instruction" class="md-nav__link">
+    nonce_instruction
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction" class="md-nav__link">
+    Transaction
+  </a>
+  
+    <nav class="md-nav" aria-label="Transaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.fee_payer" class="md-nav__link">
+    fee_payer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.instructions" class="md-nav__link">
+    instructions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.recent_blockhash" class="md-nav__link">
+    recent_blockhash
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.signatures" class="md-nav__link">
+    signatures
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.add" class="md-nav__link">
+    add()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.add_signature" class="md-nav__link">
+    add_signature()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.compile_message" class="md-nav__link">
+    compile_message()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.deserialize" class="md-nav__link">
+    deserialize()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.from_solders" class="md-nav__link">
+    from_solders()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.populate" class="md-nav__link">
+    populate()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.serialize" class="md-nav__link">
+    serialize()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.serialize_message" class="md-nav__link">
+    serialize_message()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.sign" class="md-nav__link">
+    sign()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.sign_partial" class="md-nav__link">
+    sign_partial()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.signature" class="md-nav__link">
+    signature()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.to_solders" class="md-nav__link">
+    to_solders()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.transaction.Transaction.verify_signatures" class="md-nav__link">
+    verify_signatures()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/michaelhly/solana-py/edit/master/docs/core/transaction.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="transaction">Transaction</h1>
+
+
+  <div class="doc doc-object doc-module">
+
+
+
+<h2 id="solana.transaction" class="doc doc-heading">
+        <code>solana.transaction</code>
+
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+      <p>Library to package an atomic sequence of instructions to a transaction.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="solana.transaction.PACKET_DATA_SIZE" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">PACKET_DATA_SIZE</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Constant for maximum over-the-wire size of a Transaction.</p>
+    </div>
+
+  </div>
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h3 id="solana.transaction.NonceInformation" class="doc doc-heading">
+        <code>
+NonceInformation        </code>
+
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>NonceInformation to be used to build a Transaction.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">NonceInformation</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NonceInformation to be used to build a Transaction.&quot;&quot;&quot;</span>
+
+    <span class="n">nonce</span><span class="p">:</span> <span class="n">Blockhash</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The current Nonce blockhash.&quot;&quot;&quot;</span>
+    <span class="n">nonce_instruction</span><span class="p">:</span> <span class="n">Instruction</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;AdvanceNonceAccount Instruction.&quot;&quot;&quot;</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="solana.transaction.NonceInformation.nonce" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">nonce</span><span class="p">:</span> <span class="n">Hash</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>The current Nonce blockhash.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="solana.transaction.NonceInformation.nonce_instruction" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">nonce_instruction</span><span class="p">:</span> <span class="n">Instruction</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>AdvanceNonceAccount Instruction.</p>
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h3 id="solana.transaction.Transaction" class="doc doc-heading">
+        <code>
+Transaction        </code>
+
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Transaction class to represent an atomic transaction.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>recent_blockhash</code></td>
+        <td><code>Optional[Blockhash]</code></td>
+        <td><p>A recent transaction id.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>nonce_info</code></td>
+        <td><code>Optional[NonceInformation]</code></td>
+        <td><p>Nonce information.
+If populated, transaction will use a durable Nonce hash instead of a <code>recent_blockhash</code>.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>fee_payer</code></td>
+        <td><code>Optional[Pubkey]</code></td>
+        <td><p>The transaction fee payer.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>instructions</code></td>
+        <td><code>Optional[Sequence[Instruction]]</code></td>
+        <td><p>The instructions to be executed in this transaction.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Transaction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transaction class to represent an atomic transaction.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        recent_blockhash: A recent transaction id.</span>
+<span class="sd">        nonce_info: Nonce information.</span>
+<span class="sd">            If populated, transaction will use a durable Nonce hash instead of a `recent_blockhash`.</span>
+<span class="sd">        fee_payer: The transaction fee payer.</span>
+<span class="sd">        instructions: The instructions to be executed in this transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Default (empty) signature</span>
+    <span class="n">__DEFAULT_SIG</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">recent_blockhash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Blockhash</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">nonce_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NonceInformation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fee_payer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Pubkey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Instruction</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init transaction object.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span> <span class="o">=</span> <span class="n">_build_solders_tx</span><span class="p">(</span>
+            <span class="n">recent_blockhash</span><span class="o">=</span><span class="n">recent_blockhash</span><span class="p">,</span>
+            <span class="n">nonce_info</span><span class="o">=</span><span class="n">nonce_info</span><span class="p">,</span>
+            <span class="n">fee_payer</span><span class="o">=</span><span class="n">fee_payer</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_solders</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">txn</span><span class="p">:</span> <span class="n">SoldersTx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert from a `solders` transaction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            txn: The `solders` transaction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The `solana-py` transaction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_tx</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+        <span class="n">new_tx</span><span class="o">.</span><span class="n">_solders</span> <span class="o">=</span> <span class="n">txn</span>
+        <span class="k">return</span> <span class="n">new_tx</span>
+
+    <span class="k">def</span> <span class="nf">to_solders</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SoldersTx</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to a `solders` transaction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The `solders` transaction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Equality defintion for Transactions.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Transaction</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_solders</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">to_solders</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">recent_blockhash</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Blockhash</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional[Blockhash]: The blockhash assigned to this transaction.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">recent_blockhash</span>
+
+    <span class="nd">@recent_blockhash</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">recent_blockhash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockhash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Blockhash</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span> <span class="o">=</span> <span class="n">_build_solders_tx</span><span class="p">(</span>
+            <span class="n">recent_blockhash</span><span class="o">=</span><span class="n">blockhash</span><span class="p">,</span>
+            <span class="n">nonce_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">fee_payer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fee_payer</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fee_payer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Pubkey</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional[Pubkey]: The transaction fee payer.&quot;&quot;&quot;</span>
+        <span class="n">account_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">account_keys</span>
+        <span class="k">return</span> <span class="n">account_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">account_keys</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="nd">@fee_payer</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">fee_payer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Pubkey</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span> <span class="o">=</span> <span class="n">_build_solders_tx</span><span class="p">(</span>
+            <span class="n">recent_blockhash</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">,</span>
+            <span class="n">nonce_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">fee_payer</span><span class="o">=</span><span class="n">payer</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Instruction</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tuple[Instruction]: The instructions contained in this transaction.&quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_decompile_instructions</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+    <span class="nd">@instructions</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ixns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Instruction</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span> <span class="o">=</span> <span class="n">_build_solders_tx</span><span class="p">(</span>
+            <span class="n">recent_blockhash</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">,</span>
+            <span class="n">nonce_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">fee_payer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fee_payer</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="n">ixns</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">signatures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Signature</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tuple[Signature]: Signatures for the transaction.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">signatures</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Signature</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The first (payer) Transaction signature.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The payer signature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">signatures</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Transaction</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add one or more instructions to this Transaction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: The instructions to add to this Transaction.</span>
+<span class="sd">                If a `Transaction` is passsed, the instructions will be extracted from it.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The transaction with the added instructions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">Transaction</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">+</span> <span class="n">arg</span><span class="o">.</span><span class="n">instructions</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid instruction:&quot;</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">compile_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>  <span class="c1"># pylint: disable=too-many-locals</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compile transaction data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The compiled message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span>
+
+    <span class="k">def</span> <span class="nf">serialize_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get raw transaction data that need to be covered by signatures.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The serialized message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compile_message</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">sign_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">partial_signers</span><span class="p">:</span> <span class="n">Keypair</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Partially sign a Transaction with the specified keypairs.</span>
+
+<span class="sd">        All the caveats from the `sign` method apply to `sign_partial`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">partial_sign</span><span class="p">(</span><span class="n">partial_signers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">signers</span><span class="p">:</span> <span class="n">Keypair</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sign the Transaction with the specified accounts.</span>
+
+<span class="sd">        Multiple signatures may be applied to a Transaction. The first signature</span>
+<span class="sd">        is considered &quot;primary&quot; and is used when testing for Transaction confirmation.</span>
+
+<span class="sd">        Transaction fields should not be modified after the first call to `sign`,</span>
+<span class="sd">        as doing so may invalidate the signature and cause the Transaction to be</span>
+<span class="sd">        rejected.</span>
+
+<span class="sd">        The Transaction must be assigned a valid `recent_blockhash` before invoking this method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">signers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pubkey</span><span class="p">:</span> <span class="n">Pubkey</span><span class="p">,</span> <span class="n">signature</span><span class="p">:</span> <span class="n">Signature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an externally created signature to a transaction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pubkey: The public key that created the signature.</span>
+<span class="sd">            signature: The signature to add.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">presigner</span> <span class="o">=</span> <span class="n">Presigner</span><span class="p">(</span><span class="n">pubkey</span><span class="p">,</span> <span class="n">signature</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">partial_sign</span><span class="p">([</span><span class="n">presigner</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">verify_signatures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify signatures of a complete, signed Transaction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            a bool indicating if the signatures are correct or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">TransactionError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verify_signatures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize the Transaction in the wire format.</span>
+
+<span class="sd">        The Transaction must have a valid `signature` before invoking this method.</span>
+<span class="sd">        verify_signatures can be added if the signature does not require to be verified.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            verify_signatures: a bool indicating to verify the signature or not. Defaults to True</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from solders.keypair import Keypair</span>
+<span class="sd">            &gt;&gt;&gt; from solders.pubkey import Pubkey</span>
+<span class="sd">            &gt;&gt;&gt; from solders.hash import Hash</span>
+<span class="sd">            &gt;&gt;&gt; from solders.system_program import transfer, TransferParams</span>
+<span class="sd">            &gt;&gt;&gt; leading_zeros = [0] * 31</span>
+<span class="sd">            &gt;&gt;&gt; seed = bytes(leading_zeros + [1])</span>
+<span class="sd">            &gt;&gt;&gt; sender, receiver = Keypair.from_seed(seed), Pubkey(leading_zeros + [2])</span>
+<span class="sd">            &gt;&gt;&gt; transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.pubkey(), to_pubkey=receiver, lamports=1000)))</span>
+<span class="sd">            &gt;&gt;&gt; transfer_tx.recent_blockhash = Hash(leading_zeros + [3])</span>
+<span class="sd">            &gt;&gt;&gt; transfer_tx.sign(sender)</span>
+<span class="sd">            &gt;&gt;&gt; transfer_tx.serialize().hex()</span>
+<span class="sd">            &#39;019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000&#39;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The serialized transaction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501 pylint: disable=line-too-long</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">signatures</span> <span class="o">==</span> <span class="p">[</span><span class="n">Signature</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">signatures</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;transaction has not been signed&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verify_signatures</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify_signatures</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;transaction has not been signed correctly&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">raw_transaction</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a wire transaction into a Transaction object.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; raw_transaction = bytes.fromhex(</span>
+<span class="sd">            ...     &#39;019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2&#39;</span>
+<span class="sd">            ...     &#39;75a23ba504674c8fbbb724827b23b42dc8e08019e23&#39;</span>
+<span class="sd">            ...     &#39;120f1b6f40f9799355ce54185b4415be37ca2cee6e0&#39;</span>
+<span class="sd">            ...     &#39;e010001034cb5abf6ad79fbf5abbccafcc269d85cd2&#39;</span>
+<span class="sd">            ...     &#39;651ed4b885b5869f241aedf0a5ba290000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000200000000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;000000301020200010c02000000e803000000000000&#39;</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; type(Transaction.deserialize(raw_transaction))</span>
+<span class="sd">            &lt;class &#39;solana.transaction.Transaction&#39;&gt;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The deserialized transaction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_solders</span><span class="p">(</span><span class="n">SoldersTx</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">raw_transaction</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">signatures</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Signature</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Populate Transaction object from message and signatures.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; raw_message = bytes.fromhex(</span>
+<span class="sd">            ...     &#39;0200030500000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000000000100000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000000000000000000000200000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000000000000000000000000000000000300000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0004000000000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">            ...     &#39;0000000000000005c49ae77603782054f17a9decea43b444eba0&#39;</span>
+<span class="sd">            ...     &#39;edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909&#39;</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; from solders.message import Message</span>
+<span class="sd">            &gt;&gt;&gt; from solders.signature import Signature</span>
+<span class="sd">            &gt;&gt;&gt; msg = Message.from_bytes(raw_message)</span>
+<span class="sd">            &gt;&gt;&gt; signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]</span>
+<span class="sd">            &gt;&gt;&gt; type(Transaction.populate(msg, signatures))</span>
+<span class="sd">            &lt;class &#39;solana.transaction.Transaction&#39;&gt;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The populated transaction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_solders</span><span class="p">(</span><span class="n">SoldersTx</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">signatures</span><span class="p">))</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="solana.transaction.Transaction.fee_payer" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">fee_payer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Pubkey</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Optional[Pubkey]: The transaction fee payer.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="solana.transaction.Transaction.instructions" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">instructions</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Instruction</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Tuple[Instruction]: The instructions contained in this transaction.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="solana.transaction.Transaction.recent_blockhash" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">recent_blockhash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Blockhash</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-writable"><code>writable</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Optional[Blockhash]: The blockhash assigned to this transaction.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="solana.transaction.Transaction.signatures" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">signatures</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Signature</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Tuple[Signature]: Signatures for the transaction.</p>
+    </div>
+
+  </div>
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.__init__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recent_blockhash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nonce_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fee_payer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Init transaction object.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">recent_blockhash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Blockhash</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">nonce_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NonceInformation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fee_payer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Pubkey</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Instruction</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Init transaction object.&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span> <span class="o">=</span> <span class="n">_build_solders_tx</span><span class="p">(</span>
+        <span class="n">recent_blockhash</span><span class="o">=</span><span class="n">recent_blockhash</span><span class="p">,</span>
+        <span class="n">nonce_info</span><span class="o">=</span><span class="n">nonce_info</span><span class="p">,</span>
+        <span class="n">fee_payer</span><span class="o">=</span><span class="n">fee_payer</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.add" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Add one or more instructions to this Transaction.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>*args</code></td>
+        <td><code>Union[Transaction, Instruction]</code></td>
+        <td><p>The instructions to add to this Transaction.
+If a <code>Transaction</code> is passsed, the instructions will be extracted from it.</p></td>
+        <td><code>()</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Transaction</code></td>
+      <td><p>The transaction with the added instructions.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Transaction</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add one or more instructions to this Transaction.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *args: The instructions to add to this Transaction.</span>
+<span class="sd">            If a `Transaction` is passsed, the instructions will be extracted from it.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The transaction with the added instructions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">Transaction</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">+</span> <span class="n">arg</span><span class="o">.</span><span class="n">instructions</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid instruction:&quot;</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.add_signature" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">add_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pubkey</span><span class="p">,</span> <span class="n">signature</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Add an externally created signature to a transaction.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>pubkey</code></td>
+        <td><code>Pubkey</code></td>
+        <td><p>The public key that created the signature.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>signature</code></td>
+        <td><code>Signature</code></td>
+        <td><p>The signature to add.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pubkey</span><span class="p">:</span> <span class="n">Pubkey</span><span class="p">,</span> <span class="n">signature</span><span class="p">:</span> <span class="n">Signature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add an externally created signature to a transaction.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pubkey: The public key that created the signature.</span>
+<span class="sd">        signature: The signature to add.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">presigner</span> <span class="o">=</span> <span class="n">Presigner</span><span class="p">(</span><span class="n">pubkey</span><span class="p">,</span> <span class="n">signature</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">partial_sign</span><span class="p">([</span><span class="n">presigner</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.compile_message" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">compile_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Compile transaction data.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Message</code></td>
+      <td><p>The compiled message.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">compile_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>  <span class="c1"># pylint: disable=too-many-locals</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compile transaction data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The compiled message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.deserialize" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">deserialize</span><span class="p">(</span><span class="n">raw_transaction</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Parse a wire transaction into a Transaction object.</p>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">raw_transaction</span> <span class="o">=</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">fromhex</span><span class="p">(</span>
+<span class="o">...</span>     <span class="s1">&#39;019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;75a23ba504674c8fbbb724827b23b42dc8e08019e23&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;120f1b6f40f9799355ce54185b4415be37ca2cee6e0&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;e010001034cb5abf6ad79fbf5abbccafcc269d85cd2&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;651ed4b885b5869f241aedf0a5ba290000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000200000000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;000000301020200010c02000000e803000000000000&#39;</span>
+<span class="o">...</span> <span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">type</span><span class="p">(</span><span class="n">Transaction</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">raw_transaction</span><span class="p">))</span>
+<span class="o">&lt;</span><span class="k">class</span> <span class="err">&#39;</span><span class="nc">solana</span><span class="o">.</span><span class="n">transaction</span><span class="o">.</span><span class="n">Transaction</span><span class="s1">&#39;&gt;</span>
+</code></pre></div>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Transaction</code></td>
+      <td><p>The deserialized transaction.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">raw_transaction</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a wire transaction into a Transaction object.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; raw_transaction = bytes.fromhex(</span>
+<span class="sd">        ...     &#39;019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa2&#39;</span>
+<span class="sd">        ...     &#39;75a23ba504674c8fbbb724827b23b42dc8e08019e23&#39;</span>
+<span class="sd">        ...     &#39;120f1b6f40f9799355ce54185b4415be37ca2cee6e0&#39;</span>
+<span class="sd">        ...     &#39;e010001034cb5abf6ad79fbf5abbccafcc269d85cd2&#39;</span>
+<span class="sd">        ...     &#39;651ed4b885b5869f241aedf0a5ba290000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000200000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;000000301020200010c02000000e803000000000000&#39;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; type(Transaction.deserialize(raw_transaction))</span>
+<span class="sd">        &lt;class &#39;solana.transaction.Transaction&#39;&gt;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The deserialized transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_solders</span><span class="p">(</span><span class="n">SoldersTx</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">raw_transaction</span><span class="p">))</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.from_solders" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">from_solders</span><span class="p">(</span><span class="n">txn</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Convert from a <code>solders</code> transaction.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>txn</code></td>
+        <td><code>SoldersTx</code></td>
+        <td><p>The <code>solders</code> transaction.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Transaction</code></td>
+      <td><p>The <code>solana-py</code> transaction.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">from_solders</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">txn</span><span class="p">:</span> <span class="n">SoldersTx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert from a `solders` transaction.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        txn: The `solders` transaction.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The `solana-py` transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_tx</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+    <span class="n">new_tx</span><span class="o">.</span><span class="n">_solders</span> <span class="o">=</span> <span class="n">txn</span>
+    <span class="k">return</span> <span class="n">new_tx</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.populate" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">populate</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">signatures</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Populate Transaction object from message and signatures.</p>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">raw_message</span> <span class="o">=</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">fromhex</span><span class="p">(</span>
+<span class="o">...</span>     <span class="s1">&#39;0200030500000000000000000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000000000100000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000000000000000000000200000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000000000000000000000000000000000300000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000000000000000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0004000000000000000000000000000000000000000000000000&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;0000000000000005c49ae77603782054f17a9decea43b444eba0&#39;</span>
+<span class="o">...</span>     <span class="s1">&#39;edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909&#39;</span>
+<span class="o">...</span> <span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.message</span> <span class="kn">import</span> <span class="n">Message</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.signature</span> <span class="kn">import</span> <span class="n">Signature</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">signatures</span> <span class="o">=</span> <span class="p">[</span><span class="n">Signature</span><span class="p">(</span><span class="nb">bytes</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">Signature</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">)),</span> <span class="n">Signature</span><span class="p">(</span><span class="nb">bytes</span><span class="p">([</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">Signature</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">))]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">type</span><span class="p">(</span><span class="n">Transaction</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">signatures</span><span class="p">))</span>
+<span class="o">&lt;</span><span class="k">class</span> <span class="err">&#39;</span><span class="nc">solana</span><span class="o">.</span><span class="n">transaction</span><span class="o">.</span><span class="n">Transaction</span><span class="s1">&#39;&gt;</span>
+</code></pre></div>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Transaction</code></td>
+      <td><p>The populated transaction.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">signatures</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Signature</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Transaction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Populate Transaction object from message and signatures.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; raw_message = bytes.fromhex(</span>
+<span class="sd">        ...     &#39;0200030500000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000100000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000200000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000000000000000300000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0004000000000000000000000000000000000000000000000000&#39;</span>
+<span class="sd">        ...     &#39;0000000000000005c49ae77603782054f17a9decea43b444eba0&#39;</span>
+<span class="sd">        ...     &#39;edb12c6f1d31c6e0e4a84bf052eb010403010203050909090909&#39;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; from solders.message import Message</span>
+<span class="sd">        &gt;&gt;&gt; from solders.signature import Signature</span>
+<span class="sd">        &gt;&gt;&gt; msg = Message.from_bytes(raw_message)</span>
+<span class="sd">        &gt;&gt;&gt; signatures = [Signature(bytes([1] * Signature.LENGTH)), Signature(bytes([2] * Signature.LENGTH))]</span>
+<span class="sd">        &gt;&gt;&gt; type(Transaction.populate(msg, signatures))</span>
+<span class="sd">        &lt;class &#39;solana.transaction.Transaction&#39;&gt;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The populated transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_solders</span><span class="p">(</span><span class="n">SoldersTx</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">signatures</span><span class="p">))</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.serialize" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verify_signatures</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Serialize the Transaction in the wire format.</p>
+<p>The Transaction must have a valid <code>signature</code> before invoking this method.
+verify_signatures can be added if the signature does not require to be verified.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>verify_signatures</code></td>
+        <td><code>bool</code></td>
+        <td><p>a bool indicating to verify the signature or not. Defaults to True</p></td>
+        <td><code>True</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.keypair</span> <span class="kn">import</span> <span class="n">Keypair</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.pubkey</span> <span class="kn">import</span> <span class="n">Pubkey</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.hash</span> <span class="kn">import</span> <span class="n">Hash</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.system_program</span> <span class="kn">import</span> <span class="n">transfer</span><span class="p">,</span> <span class="n">TransferParams</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">leading_zeros</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">31</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">seed</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">leading_zeros</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">sender</span><span class="p">,</span> <span class="n">receiver</span> <span class="o">=</span> <span class="n">Keypair</span><span class="o">.</span><span class="n">from_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">),</span> <span class="n">Pubkey</span><span class="p">(</span><span class="n">leading_zeros</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">transfer_tx</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">transfer</span><span class="p">(</span><span class="n">TransferParams</span><span class="p">(</span><span class="n">from_pubkey</span><span class="o">=</span><span class="n">sender</span><span class="o">.</span><span class="n">pubkey</span><span class="p">(),</span> <span class="n">to_pubkey</span><span class="o">=</span><span class="n">receiver</span><span class="p">,</span> <span class="n">lamports</span><span class="o">=</span><span class="mi">1000</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">transfer_tx</span><span class="o">.</span><span class="n">recent_blockhash</span> <span class="o">=</span> <span class="n">Hash</span><span class="p">(</span><span class="n">leading_zeros</span> <span class="o">+</span> <span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">transfer_tx</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">transfer_tx</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">()</span>
+<span class="s1">&#39;019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000&#39;</span>
+</code></pre></div>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bytes</code></td>
+      <td><p>The serialized transaction.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verify_signatures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serialize the Transaction in the wire format.</span>
+
+<span class="sd">    The Transaction must have a valid `signature` before invoking this method.</span>
+<span class="sd">    verify_signatures can be added if the signature does not require to be verified.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        verify_signatures: a bool indicating to verify the signature or not. Defaults to True</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from solders.keypair import Keypair</span>
+<span class="sd">        &gt;&gt;&gt; from solders.pubkey import Pubkey</span>
+<span class="sd">        &gt;&gt;&gt; from solders.hash import Hash</span>
+<span class="sd">        &gt;&gt;&gt; from solders.system_program import transfer, TransferParams</span>
+<span class="sd">        &gt;&gt;&gt; leading_zeros = [0] * 31</span>
+<span class="sd">        &gt;&gt;&gt; seed = bytes(leading_zeros + [1])</span>
+<span class="sd">        &gt;&gt;&gt; sender, receiver = Keypair.from_seed(seed), Pubkey(leading_zeros + [2])</span>
+<span class="sd">        &gt;&gt;&gt; transfer_tx = Transaction().add(transfer(TransferParams(from_pubkey=sender.pubkey(), to_pubkey=receiver, lamports=1000)))</span>
+<span class="sd">        &gt;&gt;&gt; transfer_tx.recent_blockhash = Hash(leading_zeros + [3])</span>
+<span class="sd">        &gt;&gt;&gt; transfer_tx.sign(sender)</span>
+<span class="sd">        &gt;&gt;&gt; transfer_tx.serialize().hex()</span>
+<span class="sd">        &#39;019d53be8af3a7c30f86c1092d2c3ea61d270c0cfa275a23ba504674c8fbbb724827b23b42dc8e08019e23120f1b6f40f9799355ce54185b4415be37ca2cee6e0e010001034cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba2900000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000301020200010c02000000e803000000000000&#39;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The serialized transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501 pylint: disable=line-too-long</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">signatures</span> <span class="o">==</span> <span class="p">[</span><span class="n">Signature</span><span class="o">.</span><span class="n">default</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">signatures</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;transaction has not been signed&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verify_signatures</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify_signatures</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;transaction has not been signed correctly&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.serialize_message" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">serialize_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Get raw transaction data that need to be covered by signatures.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bytes</code></td>
+      <td><p>The serialized message.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">serialize_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get raw transaction data that need to be covered by signatures.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The serialized message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compile_message</span><span class="p">())</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.sign" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">signers</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Sign the Transaction with the specified accounts.</p>
+<p>Multiple signatures may be applied to a Transaction. The first signature
+is considered "primary" and is used when testing for Transaction confirmation.</p>
+<p>Transaction fields should not be modified after the first call to <code>sign</code>,
+as doing so may invalidate the signature and cause the Transaction to be
+rejected.</p>
+<p>The Transaction must be assigned a valid <code>recent_blockhash</code> before invoking this method.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">sign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">signers</span><span class="p">:</span> <span class="n">Keypair</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sign the Transaction with the specified accounts.</span>
+
+<span class="sd">    Multiple signatures may be applied to a Transaction. The first signature</span>
+<span class="sd">    is considered &quot;primary&quot; and is used when testing for Transaction confirmation.</span>
+
+<span class="sd">    Transaction fields should not be modified after the first call to `sign`,</span>
+<span class="sd">    as doing so may invalidate the signature and cause the Transaction to be</span>
+<span class="sd">    rejected.</span>
+
+<span class="sd">    The Transaction must be assigned a valid `recent_blockhash` before invoking this method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">signers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.sign_partial" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">sign_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">partial_signers</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Partially sign a Transaction with the specified keypairs.</p>
+<p>All the caveats from the <code>sign</code> method apply to <code>sign_partial</code></p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">sign_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">partial_signers</span><span class="p">:</span> <span class="n">Keypair</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Partially sign a Transaction with the specified keypairs.</span>
+
+<span class="sd">    All the caveats from the `sign` method apply to `sign_partial`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">partial_sign</span><span class="p">(</span><span class="n">partial_signers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">recent_blockhash</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.signature" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>The first (payer) Transaction signature.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Signature</code></td>
+      <td><p>The payer signature.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Signature</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The first (payer) Transaction signature.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The payer signature.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">signatures</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.to_solders" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">to_solders</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Convert to a <code>solders</code> transaction.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>SoldersTx</code></td>
+      <td><p>The <code>solders</code> transaction.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">to_solders</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SoldersTx</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert to a `solders` transaction.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The `solders` transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="solana.transaction.Transaction.verify_signatures" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">verify_signatures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Verify signatures of a complete, signed Transaction.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bool</code></td>
+      <td><p>a bool indicating if the signatures are correct or not.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>solana/transaction.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">verify_signatures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Verify signatures of a complete, signed Transaction.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        a bool indicating if the signatures are correct or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solders</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">TransactionError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../../rpc/providers/" class="md-footer__link md-footer__link--prev" aria-label="Previous: RPC Providers" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              RPC Providers
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../utils/" class="md-footer__link md-footer__link--next" aria-label="Next: Utils" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Utils
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      
+    
+    
+  </body>
+</html>

@@ -1,0 +1,2575 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Kevin Heavey & Michael Huang">
+      
+      
+        <link rel="canonical" href="https://michaelhly.github.io/solana-py/rpc/providers/">
+      
+      <link rel="icon" href="../../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-8.5.10">
+    
+    
+      
+        <title>RPC Providers - Solana.py</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.975780f9.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.2505c338.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rpc-providers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Solana.py" class="md-header__button md-logo" aria-label="Solana.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 17H18c1.1 0 2-.9 2-2s-.9-2-2-2V9c0-1 0-2-1.08-2.86.05-.21.08-.42.08-.64C17 3.57 15 2 12.5 2c-2.26 0-4.12 1.31-4.43 3H6L3.71 2.79 3 3.5l2 2-2 2 .71.71L6 6h2.07c.31 1.69 2.17 3 4.43 3 .5 0 1-.08 1.43-.2.04.07.07.14.07.2v4H8c-1.1 0-2 .9-2 2s.9 2 2 2H6.5A2.5 2.5 0 0 0 4 19.5c0 .17 0 .34.05.5H4c-1.1 0-2 .9-2 2h17.5a2.5 2.5 0 0 0 0-5M12 5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Solana.py
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RPC Providers
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/michaelhly/solana-py" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    michaelhly/solana-py
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link md-tabs__link--active">
+        RPC API
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../core/transaction/" class="md-tabs__link">
+        Core API
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../spl/intro/" class="md-tabs__link">
+        Solana Program Library (SPL)
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Solana.py" class="md-nav__button md-logo" aria-label="Solana.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 17H18c1.1 0 2-.9 2-2s-.9-2-2-2V9c0-1 0-2-1.08-2.86.05-.21.08-.42.08-.64C17 3.57 15 2 12.5 2c-2.26 0-4.12 1.31-4.43 3H6L3.71 2.79 3 3.5l2 2-2 2 .71.71L6 6h2.07c.31 1.69 2.17 3 4.43 3 .5 0 1-.08 1.43-.2.04.07.07.14.07.2v4H8c-1.1 0-2 .9-2 2s.9 2 2 2H6.5A2.5 2.5 0 0 0 4 19.5c0 .17 0 .34.05.5H4c-1.1 0-2 .9-2 2h17.5a2.5 2.5 0 0 0 0-5M12 5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1Z"/></svg>
+
+    </a>
+    Solana.py
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/michaelhly/solana-py" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    michaelhly/solana-py
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          RPC API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="RPC API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          RPC API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        API Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../async_api/" class="md-nav__link">
+        Async API Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../websocket/" class="md-nav__link">
+        Websocket Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commitment/" class="md-nav__link">
+        Commitment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        RPC Types
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          RPC Providers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        RPC Providers
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#solana.rpc.providers" class="md-nav__link">
+    providers
+  </a>
+  
+    <nav class="md-nav" aria-label="providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base" class="md-nav__link">
+    async_base
+  </a>
+  
+    <nav class="md-nav" aria-label="async_base">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base.AsyncBaseProvider" class="md-nav__link">
+    AsyncBaseProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="AsyncBaseProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base.AsyncBaseProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base.AsyncBaseProvider.make_request" class="md-nav__link">
+    make_request()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http" class="md-nav__link">
+    async_http
+  </a>
+  
+    <nav class="md-nav" aria-label="async_http">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider" class="md-nav__link">
+    AsyncHTTPProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="AsyncHTTPProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.close" class="md-nav__link">
+    close()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.make_batch_request" class="md-nav__link">
+    make_batch_request()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.make_batch_request_unparsed" class="md-nav__link">
+    make_batch_request_unparsed()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.make_request_unparsed" class="md-nav__link">
+    make_request_unparsed()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base" class="md-nav__link">
+    base
+  </a>
+  
+    <nav class="md-nav" aria-label="base">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base.BaseProvider" class="md-nav__link">
+    BaseProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base.BaseProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base.BaseProvider.make_request" class="md-nav__link">
+    make_request()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.core" class="md-nav__link">
+    core
+  </a>
+  
+    <nav class="md-nav" aria-label="core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.core.get_default_endpoint" class="md-nav__link">
+    get_default_endpoint()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http" class="md-nav__link">
+    http
+  </a>
+  
+    <nav class="md-nav" aria-label="http">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider" class="md-nav__link">
+    HTTPProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="HTTPProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.make_batch_request" class="md-nav__link">
+    make_batch_request()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.make_batch_request_unparsed" class="md-nav__link">
+    make_batch_request_unparsed()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.make_request_unparsed" class="md-nav__link">
+    make_request_unparsed()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Core API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Core API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Core API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/transaction/" class="md-nav__link">
+        Transaction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/utils/" class="md-nav__link">
+        Utils
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/vote_program/" class="md-nav__link">
+        Vote Program
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Solana Program Library (SPL)
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Solana Program Library (SPL)" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Solana Program Library (SPL)
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/intro/" class="md-nav__link">
+        Solana Program Library (SPL)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Token
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Token" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Token
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/client/" class="md-nav__link">
+        Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/async_client/" class="md-nav__link">
+        Async Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/constants/" class="md-nav__link">
+        Constants
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/instructions/" class="md-nav__link">
+        Instructions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/token/core/" class="md-nav__link">
+        Core
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_3" type="checkbox" id="__nav_4_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_3">
+          Memo Program
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Memo Program" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_3">
+          <span class="md-nav__icon md-icon"></span>
+          Memo Program
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/memo/intro/" class="md-nav__link">
+        Intro
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/memo/constants/" class="md-nav__link">
+        Constants
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spl/memo/instructions/" class="md-nav__link">
+        Memo Program
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#solana.rpc.providers" class="md-nav__link">
+    providers
+  </a>
+  
+    <nav class="md-nav" aria-label="providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base" class="md-nav__link">
+    async_base
+  </a>
+  
+    <nav class="md-nav" aria-label="async_base">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base.AsyncBaseProvider" class="md-nav__link">
+    AsyncBaseProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="AsyncBaseProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base.AsyncBaseProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_base.AsyncBaseProvider.make_request" class="md-nav__link">
+    make_request()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http" class="md-nav__link">
+    async_http
+  </a>
+  
+    <nav class="md-nav" aria-label="async_http">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider" class="md-nav__link">
+    AsyncHTTPProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="AsyncHTTPProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.close" class="md-nav__link">
+    close()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.make_batch_request" class="md-nav__link">
+    make_batch_request()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.make_batch_request_unparsed" class="md-nav__link">
+    make_batch_request_unparsed()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.async_http.AsyncHTTPProvider.make_request_unparsed" class="md-nav__link">
+    make_request_unparsed()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base" class="md-nav__link">
+    base
+  </a>
+  
+    <nav class="md-nav" aria-label="base">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base.BaseProvider" class="md-nav__link">
+    BaseProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base.BaseProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.base.BaseProvider.make_request" class="md-nav__link">
+    make_request()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.core" class="md-nav__link">
+    core
+  </a>
+  
+    <nav class="md-nav" aria-label="core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.core.get_default_endpoint" class="md-nav__link">
+    get_default_endpoint()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http" class="md-nav__link">
+    http
+  </a>
+  
+    <nav class="md-nav" aria-label="http">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider" class="md-nav__link">
+    HTTPProvider
+  </a>
+  
+    <nav class="md-nav" aria-label="HTTPProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.is_connected" class="md-nav__link">
+    is_connected()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.make_batch_request" class="md-nav__link">
+    make_batch_request()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.make_batch_request_unparsed" class="md-nav__link">
+    make_batch_request_unparsed()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solana.rpc.providers.http.HTTPProvider.make_request_unparsed" class="md-nav__link">
+    make_request_unparsed()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/michaelhly/solana-py/edit/master/docs/rpc/providers.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="rpc-providers">RPC Providers</h1>
+
+
+  <div class="doc doc-object doc-module">
+
+
+
+<h2 id="solana.rpc.providers" class="doc doc-heading">
+        <code>solana.rpc.providers</code>
+
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+      <p>RPC Providers.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-module">
+
+
+
+<h3 id="solana.rpc.providers.async_base" class="doc doc-heading">
+        <code>async_base</code>
+
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Async base RPC Provider.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h4 id="solana.rpc.providers.async_base.AsyncBaseProvider" class="doc doc-heading">
+        <code>
+AsyncBaseProvider        </code>
+
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Base class for async RPC providers to implement.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">AsyncBaseProvider</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for async RPC providers to implement.&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a request ot the rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_base.AsyncBaseProvider.is_connected" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Health check.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_base.AsyncBaseProvider.make_request" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make a request ot the rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a request ot the rpc endpoint.&quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-module">
+
+
+
+<h3 id="solana.rpc.providers.async_http" class="doc doc-heading">
+        <code>async_http</code>
+
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Async HTTP RPC Provider.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h4 id="solana.rpc.providers.async_http.AsyncHTTPProvider" class="doc doc-heading">
+        <code>
+AsyncHTTPProvider        </code>
+
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Async HTTP provider to interact with the http rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">AsyncHTTPProvider</span><span class="p">(</span><span class="n">AsyncBaseProvider</span><span class="p">,</span> <span class="n">_HTTPProviderCore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async HTTP provider to interact with the http rpc endpoint.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">endpoint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">extra_headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init AsyncHTTPProvider.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">extra_headers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String definition for HTTPProvider.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Async HTTP RPC connection </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint_uri</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@handle_async_exceptions</span><span class="p">(</span><span class="n">SolanaRpcException</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_request_unparsed</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parse_raw</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_request</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+        <span class="n">raw_response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_batch_request</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+        <span class="n">raw_response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup1</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup1</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup2</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup2</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup3</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup3</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup4</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup4</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup5</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup5</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tuples</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RPCResult</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an async HTTP batch request to an http rpc endpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reqs: A tuple of request objects from ``solders.rpc.requests``.</span>
+<span class="sd">            parsers: A tuple of response classes from ``solders.rpc.responses``.</span>
+<span class="sd">                Note: ``parsers`` should line up with ``reqs``.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from solana.rpc.providers.async_http import AsyncHTTPProvider</span>
+<span class="sd">            &gt;&gt;&gt; from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock</span>
+<span class="sd">            &gt;&gt;&gt; from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp</span>
+<span class="sd">            &gt;&gt;&gt; provider = AsyncHTTPProvider(&quot;https://api.devnet.solana.com&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; reqs = (GetBlockHeight(), GetFirstAvailableBlock())</span>
+<span class="sd">            &gt;&gt;&gt; parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)</span>
+<span class="sd">            &gt;&gt;&gt; await provider.make_batch_request(reqs, parsers) # doctest: +SKIP</span>
+<span class="sd">            (GetBlockHeightResp(</span>
+<span class="sd">                158613909,</span>
+<span class="sd">            ), GetFirstAvailableBlockResp(</span>
+<span class="sd">                86753592,</span>
+<span class="sd">            ))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_batch_request_unparsed</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parse_raw_batch</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">health_uri</span><span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Health check failed with error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">httpx</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">OK</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AsyncHTTPProvider&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use as a context manager.&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="fm">__aenter__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__aexit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_exc_type</span><span class="p">,</span> <span class="n">_exc</span><span class="p">,</span> <span class="n">_tb</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exits the context manager.&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close session.&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_http.AsyncHTTPProvider.__init__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_headers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Init AsyncHTTPProvider.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">endpoint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">extra_headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Init AsyncHTTPProvider.&quot;&quot;&quot;</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">extra_headers</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_http.AsyncHTTPProvider.close" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Close session.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Close session.&quot;&quot;&quot;</span>
+    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_http.AsyncHTTPProvider.is_connected" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Health check.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">health_uri</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Health check failed with error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">httpx</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">OK</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_http.AsyncHTTPProvider.make_batch_request" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make an async HTTP batch request to an http rpc endpoint.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>reqs</code></td>
+        <td><code>Tuple[Union[solders.rpc.requests.GetAccountInfo, solders.rpc.requests.GetBalance, solders.rpc.requests.GetBlock, solders.rpc.requests.GetBlockHeight, solders.rpc.requests.GetBlockProduction, solders.rpc.requests.GetBlockCommitment, solders.rpc.requests.GetBlocks, solders.rpc.requests.GetBlocksWithLimit, solders.rpc.requests.GetBlockTime, solders.rpc.requests.GetClusterNodes, solders.rpc.requests.GetEpochInfo, solders.rpc.requests.GetEpochSchedule, solders.rpc.requests.GetFeeForMessage, solders.rpc.requests.GetFirstAvailableBlock, solders.rpc.requests.GetGenesisHash, solders.rpc.requests.GetHealth, solders.rpc.requests.GetHighestSnapshotSlot, solders.rpc.requests.GetIdentity, solders.rpc.requests.GetInflationGovernor, solders.rpc.requests.GetInflationRate, solders.rpc.requests.GetInflationReward, solders.rpc.requests.GetLargestAccounts, solders.rpc.requests.GetLatestBlockhash, solders.rpc.requests.GetLeaderSchedule, solders.rpc.requests.GetMaxRetransmitSlot, solders.rpc.requests.GetMaxShredInsertSlot, solders.rpc.requests.GetMinimumBalanceForRentExemption, solders.rpc.requests.GetMultipleAccounts, solders.rpc.requests.GetProgramAccounts, solders.rpc.requests.GetRecentPerformanceSamples, solders.rpc.requests.GetSignaturesForAddress, solders.rpc.requests.GetSignatureStatuses, solders.rpc.requests.GetSlot, solders.rpc.requests.GetSlotLeader, solders.rpc.requests.GetSlotLeaders, solders.rpc.requests.GetStakeActivation, solders.rpc.requests.GetSupply, solders.rpc.requests.GetTokenAccountBalance, solders.rpc.requests.GetTokenAccountsByDelegate, solders.rpc.requests.GetTokenAccountsByOwner, solders.rpc.requests.GetTokenLargestAccounts, solders.rpc.requests.GetTokenSupply, solders.rpc.requests.GetTransaction, solders.rpc.requests.GetTransactionCount, solders.rpc.requests.GetVersion, solders.rpc.requests.GetVoteAccounts, solders.rpc.requests.IsBlockhashValid, solders.rpc.requests.MinimumLedgerSlot, solders.rpc.requests.RequestAirdrop, solders.rpc.requests.SendRawTransaction, solders.rpc.requests.SendLegacyTransaction, solders.rpc.requests.ValidatorExit, solders.rpc.requests.AccountSubscribe, solders.rpc.requests.BlockSubscribe, solders.rpc.requests.LogsSubscribe, solders.rpc.requests.ProgramSubscribe, solders.rpc.requests.SignatureSubscribe, solders.rpc.requests.SlotSubscribe, solders.rpc.requests.SlotsUpdatesSubscribe, solders.rpc.requests.RootSubscribe, solders.rpc.requests.VoteSubscribe, solders.rpc.requests.AccountUnsubscribe, solders.rpc.requests.BlockUnsubscribe, solders.rpc.requests.LogsUnsubscribe, solders.rpc.requests.ProgramUnsubscribe, solders.rpc.requests.SignatureUnsubscribe, solders.rpc.requests.SimulateLegacyTransaction, solders.rpc.requests.SlotUnsubscribe, solders.rpc.requests.SlotsUpdatesUnsubscribe, solders.rpc.requests.RootUnsubscribe, solders.rpc.requests.VoteUnsubscribe], ...]</code></td>
+        <td><p>A tuple of request objects from <code>solders.rpc.requests</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>parsers</code></td>
+        <td><code>Union[Tuple[Type[~T]], Tuple[Type[~T], Type[~_T1]], Tuple[Type[~T], Type[~_T1], Type[~_T2]], Tuple[Type[~T], Type[~_T1], Type[~_T2], Type[~_T3]], Tuple[Type[~T], Type[~_T1], Type[~_T2], Type[~_T3], Type[~_T4]], Tuple[Type[~T], Type[~_T1], Type[~_T2], Type[~_T3], Type[~_T4], Type[~_T5]]]</code></td>
+        <td><p>A tuple of response classes from <code>solders.rpc.responses</code>.
+Note: <code>parsers</code> should line up with <code>reqs</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solana.rpc.providers.async_http</span> <span class="kn">import</span> <span class="n">AsyncHTTPProvider</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.rpc.requests</span> <span class="kn">import</span> <span class="n">GetBlockHeight</span><span class="p">,</span> <span class="n">GetFirstAvailableBlock</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.rpc.responses</span> <span class="kn">import</span> <span class="n">GetBlockHeightResp</span><span class="p">,</span> <span class="n">GetFirstAvailableBlockResp</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">AsyncHTTPProvider</span><span class="p">(</span><span class="s2">&quot;https://api.devnet.solana.com&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">reqs</span> <span class="o">=</span> <span class="p">(</span><span class="n">GetBlockHeight</span><span class="p">(),</span> <span class="n">GetFirstAvailableBlock</span><span class="p">())</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">parsers</span> <span class="o">=</span> <span class="p">(</span><span class="n">GetBlockHeightResp</span><span class="p">,</span> <span class="n">GetFirstAvailableBlockResp</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">await</span> <span class="n">provider</span><span class="o">.</span><span class="n">make_batch_request</span><span class="p">(</span><span class="n">reqs</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span>
+<span class="p">(</span><span class="n">GetBlockHeightResp</span><span class="p">(</span>
+    <span class="mi">158613909</span><span class="p">,</span>
+<span class="p">),</span> <span class="n">GetFirstAvailableBlockResp</span><span class="p">(</span>
+    <span class="mi">86753592</span><span class="p">,</span>
+<span class="p">))</span>
+</code></pre></div>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tuples</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RPCResult</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an async HTTP batch request to an http rpc endpoint.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        reqs: A tuple of request objects from ``solders.rpc.requests``.</span>
+<span class="sd">        parsers: A tuple of response classes from ``solders.rpc.responses``.</span>
+<span class="sd">            Note: ``parsers`` should line up with ``reqs``.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from solana.rpc.providers.async_http import AsyncHTTPProvider</span>
+<span class="sd">        &gt;&gt;&gt; from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock</span>
+<span class="sd">        &gt;&gt;&gt; from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp</span>
+<span class="sd">        &gt;&gt;&gt; provider = AsyncHTTPProvider(&quot;https://api.devnet.solana.com&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reqs = (GetBlockHeight(), GetFirstAvailableBlock())</span>
+<span class="sd">        &gt;&gt;&gt; parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)</span>
+<span class="sd">        &gt;&gt;&gt; await provider.make_batch_request(reqs, parsers) # doctest: +SKIP</span>
+<span class="sd">        (GetBlockHeightResp(</span>
+<span class="sd">            158613909,</span>
+<span class="sd">        ), GetFirstAvailableBlockResp(</span>
+<span class="sd">            86753592,</span>
+<span class="sd">        ))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_batch_request_unparsed</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_raw_batch</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_http.AsyncHTTPProvider.make_batch_request_unparsed" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_batch_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make an async HTTP request to an http rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">make_batch_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+    <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_batch_request</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+    <span class="n">raw_response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.async_http.AsyncHTTPProvider.make_request_unparsed" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make an async HTTP request to an http rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/async_http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">make_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+    <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_request</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+    <span class="n">raw_response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-module">
+
+
+
+<h3 id="solana.rpc.providers.base" class="doc doc-heading">
+        <code>base</code>
+
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Base RPC Provider.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h4 id="solana.rpc.providers.base.BaseProvider" class="doc doc-heading">
+        <code>
+BaseProvider        </code>
+
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Base class for RPC providers to implement.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">BaseProvider</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for RPC providers to implement.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a request to the rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.base.BaseProvider.is_connected" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Health check.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.base.BaseProvider.make_request" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span></code>
+
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make a request to the rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a request to the rpc endpoint.&quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Providers must implement this method&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-module">
+
+
+
+<h3 id="solana.rpc.providers.core" class="doc doc-heading">
+        <code>core</code>
+
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Helper code for HTTP provider classes.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h4 id="solana.rpc.providers.core.get_default_endpoint" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_default_endpoint</span><span class="p">()</span></code>
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Get the default http rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/core.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_default_endpoint</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">URI</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the default http rpc endpoint.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">URI</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SOLANARPC_HTTP_URI&quot;</span><span class="p">,</span> <span class="s2">&quot;http://localhost:8899&quot;</span><span class="p">))</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-module">
+
+
+
+<h3 id="solana.rpc.providers.http" class="doc doc-heading">
+        <code>http</code>
+
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>HTTP RPC Provider.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h4 id="solana.rpc.providers.http.HTTPProvider" class="doc doc-heading">
+        <code>
+HTTPProvider        </code>
+
+
+
+</h4>
+
+    <div class="doc doc-contents ">
+
+      <p>HTTP provider to interact with the http rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">HTTPProvider</span><span class="p">(</span><span class="n">BaseProvider</span><span class="p">,</span> <span class="n">_HTTPProviderCore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;HTTP provider to interact with the http rpc endpoint.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String definition for HTTPProvider.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;HTTP RPC connection </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint_uri</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@handle_exceptions</span><span class="p">(</span><span class="n">SolanaRpcException</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_request_unparsed</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parse_raw</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">make_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_request</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+        <span class="n">raw_response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">make_batch_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+        <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_batch_request</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+        <span class="n">raw_response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup1</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup1</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup2</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup2</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup3</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup3</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup4</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup4</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">_BodiesTup5</span><span class="p">,</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tup5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RespTup5</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tuples</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RPCResult</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a HTTP batch request to an http rpc endpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reqs: A tuple of request objects from ``solders.rpc.requests``.</span>
+<span class="sd">            parsers: A tuple of response classes from ``solders.rpc.responses``.</span>
+<span class="sd">                Note: ``parsers`` should line up with ``reqs``.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from solana.rpc.providers.http import HTTPProvider</span>
+<span class="sd">            &gt;&gt;&gt; from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock</span>
+<span class="sd">            &gt;&gt;&gt; from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp</span>
+<span class="sd">            &gt;&gt;&gt; provider = HTTPProvider(&quot;https://api.devnet.solana.com&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; reqs = (GetBlockHeight(), GetFirstAvailableBlock())</span>
+<span class="sd">            &gt;&gt;&gt; parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)</span>
+<span class="sd">            &gt;&gt;&gt; provider.make_batch_request(reqs, parsers) # doctest: +SKIP</span>
+<span class="sd">            (GetBlockHeightResp(</span>
+<span class="sd">                158613909,</span>
+<span class="sd">            ), GetFirstAvailableBlockResp(</span>
+<span class="sd">                86753592,</span>
+<span class="sd">            ))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_batch_request_unparsed</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parse_raw_batch</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">health_uri</span><span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Health check failed with error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">httpx</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">OK</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.http.HTTPProvider.is_connected" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Health check.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Health check.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">health_uri</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Health check failed with error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">httpx</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">OK</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.http.HTTPProvider.make_batch_request" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span></code>
+
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make a HTTP batch request to an http rpc endpoint.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>reqs</code></td>
+        <td><code>Tuple[Union[solders.rpc.requests.GetAccountInfo, solders.rpc.requests.GetBalance, solders.rpc.requests.GetBlock, solders.rpc.requests.GetBlockHeight, solders.rpc.requests.GetBlockProduction, solders.rpc.requests.GetBlockCommitment, solders.rpc.requests.GetBlocks, solders.rpc.requests.GetBlocksWithLimit, solders.rpc.requests.GetBlockTime, solders.rpc.requests.GetClusterNodes, solders.rpc.requests.GetEpochInfo, solders.rpc.requests.GetEpochSchedule, solders.rpc.requests.GetFeeForMessage, solders.rpc.requests.GetFirstAvailableBlock, solders.rpc.requests.GetGenesisHash, solders.rpc.requests.GetHealth, solders.rpc.requests.GetHighestSnapshotSlot, solders.rpc.requests.GetIdentity, solders.rpc.requests.GetInflationGovernor, solders.rpc.requests.GetInflationRate, solders.rpc.requests.GetInflationReward, solders.rpc.requests.GetLargestAccounts, solders.rpc.requests.GetLatestBlockhash, solders.rpc.requests.GetLeaderSchedule, solders.rpc.requests.GetMaxRetransmitSlot, solders.rpc.requests.GetMaxShredInsertSlot, solders.rpc.requests.GetMinimumBalanceForRentExemption, solders.rpc.requests.GetMultipleAccounts, solders.rpc.requests.GetProgramAccounts, solders.rpc.requests.GetRecentPerformanceSamples, solders.rpc.requests.GetSignaturesForAddress, solders.rpc.requests.GetSignatureStatuses, solders.rpc.requests.GetSlot, solders.rpc.requests.GetSlotLeader, solders.rpc.requests.GetSlotLeaders, solders.rpc.requests.GetStakeActivation, solders.rpc.requests.GetSupply, solders.rpc.requests.GetTokenAccountBalance, solders.rpc.requests.GetTokenAccountsByDelegate, solders.rpc.requests.GetTokenAccountsByOwner, solders.rpc.requests.GetTokenLargestAccounts, solders.rpc.requests.GetTokenSupply, solders.rpc.requests.GetTransaction, solders.rpc.requests.GetTransactionCount, solders.rpc.requests.GetVersion, solders.rpc.requests.GetVoteAccounts, solders.rpc.requests.IsBlockhashValid, solders.rpc.requests.MinimumLedgerSlot, solders.rpc.requests.RequestAirdrop, solders.rpc.requests.SendRawTransaction, solders.rpc.requests.SendLegacyTransaction, solders.rpc.requests.ValidatorExit, solders.rpc.requests.AccountSubscribe, solders.rpc.requests.BlockSubscribe, solders.rpc.requests.LogsSubscribe, solders.rpc.requests.ProgramSubscribe, solders.rpc.requests.SignatureSubscribe, solders.rpc.requests.SlotSubscribe, solders.rpc.requests.SlotsUpdatesSubscribe, solders.rpc.requests.RootSubscribe, solders.rpc.requests.VoteSubscribe, solders.rpc.requests.AccountUnsubscribe, solders.rpc.requests.BlockUnsubscribe, solders.rpc.requests.LogsUnsubscribe, solders.rpc.requests.ProgramUnsubscribe, solders.rpc.requests.SignatureUnsubscribe, solders.rpc.requests.SimulateLegacyTransaction, solders.rpc.requests.SlotUnsubscribe, solders.rpc.requests.SlotsUpdatesUnsubscribe, solders.rpc.requests.RootUnsubscribe, solders.rpc.requests.VoteUnsubscribe], ...]</code></td>
+        <td><p>A tuple of request objects from <code>solders.rpc.requests</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>parsers</code></td>
+        <td><code>Union[Tuple[Type[~T]], Tuple[Type[~T], Type[~_T1]], Tuple[Type[~T], Type[~_T1], Type[~_T2]], Tuple[Type[~T], Type[~_T1], Type[~_T2], Type[~_T3]], Tuple[Type[~T], Type[~_T1], Type[~_T2], Type[~_T3], Type[~_T4]], Tuple[Type[~T], Type[~_T1], Type[~_T2], Type[~_T3], Type[~_T4], Type[~_T5]]]</code></td>
+        <td><p>A tuple of response classes from <code>solders.rpc.responses</code>.
+Note: <code>parsers</code> should line up with <code>reqs</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solana.rpc.providers.http</span> <span class="kn">import</span> <span class="n">HTTPProvider</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.rpc.requests</span> <span class="kn">import</span> <span class="n">GetBlockHeight</span><span class="p">,</span> <span class="n">GetFirstAvailableBlock</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">solders.rpc.responses</span> <span class="kn">import</span> <span class="n">GetBlockHeightResp</span><span class="p">,</span> <span class="n">GetFirstAvailableBlockResp</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">HTTPProvider</span><span class="p">(</span><span class="s2">&quot;https://api.devnet.solana.com&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">reqs</span> <span class="o">=</span> <span class="p">(</span><span class="n">GetBlockHeight</span><span class="p">(),</span> <span class="n">GetFirstAvailableBlock</span><span class="p">())</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">parsers</span> <span class="o">=</span> <span class="p">(</span><span class="n">GetBlockHeightResp</span><span class="p">,</span> <span class="n">GetFirstAvailableBlockResp</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">provider</span><span class="o">.</span><span class="n">make_batch_request</span><span class="p">(</span><span class="n">reqs</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span>
+<span class="p">(</span><span class="n">GetBlockHeightResp</span><span class="p">(</span>
+    <span class="mi">158613909</span><span class="p">,</span>
+<span class="p">),</span> <span class="n">GetFirstAvailableBlockResp</span><span class="p">(</span>
+    <span class="mi">86753592</span><span class="p">,</span>
+<span class="p">))</span>
+</code></pre></div>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">make_batch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">parsers</span><span class="p">:</span> <span class="n">_Tuples</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RPCResult</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a HTTP batch request to an http rpc endpoint.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        reqs: A tuple of request objects from ``solders.rpc.requests``.</span>
+<span class="sd">        parsers: A tuple of response classes from ``solders.rpc.responses``.</span>
+<span class="sd">            Note: ``parsers`` should line up with ``reqs``.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from solana.rpc.providers.http import HTTPProvider</span>
+<span class="sd">        &gt;&gt;&gt; from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock</span>
+<span class="sd">        &gt;&gt;&gt; from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp</span>
+<span class="sd">        &gt;&gt;&gt; provider = HTTPProvider(&quot;https://api.devnet.solana.com&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reqs = (GetBlockHeight(), GetFirstAvailableBlock())</span>
+<span class="sd">        &gt;&gt;&gt; parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)</span>
+<span class="sd">        &gt;&gt;&gt; provider.make_batch_request(reqs, parsers) # doctest: +SKIP</span>
+<span class="sd">        (GetBlockHeightResp(</span>
+<span class="sd">            158613909,</span>
+<span class="sd">        ), GetFirstAvailableBlockResp(</span>
+<span class="sd">            86753592,</span>
+<span class="sd">        ))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_batch_request_unparsed</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_raw_batch</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">parsers</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.http.HTTPProvider.make_batch_request_unparsed" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_batch_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">)</span></code>
+
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make an async HTTP request to an http rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">make_batch_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Body</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+    <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_batch_request</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+    <span class="n">raw_response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="solana.rpc.providers.http.HTTPProvider.make_request_unparsed" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span></code>
+
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Make an async HTTP request to an http rpc endpoint.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>solana/rpc/providers/http.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">make_request_unparsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Body</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an async HTTP request to an http rpc endpoint.&quot;&quot;&quot;</span>
+    <span class="n">request_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_before_request</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+    <span class="n">raw_response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">**</span><span class="n">request_kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_after_request_unparsed</span><span class="p">(</span><span class="n">raw_response</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../types/" class="md-footer__link md-footer__link--prev" aria-label="Previous: RPC Types" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              RPC Types
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../../core/transaction/" class="md-footer__link md-footer__link--next" aria-label="Next: Transaction" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Transaction
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      
+    
+    
+  </body>
+</html>
