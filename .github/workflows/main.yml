@@ -110,13 +110,13 @@ jobs:
         id: uuid
         run: |
           echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
-          ls -l -a
 
       - name: Upload partial coverage
         uses: actions/upload-artifact@v4
         with:
           name: coverage${{ steps.uuid.outputs.uuid }}
           path: .coverage
+          include-hidden-files: true
 
   coverage:
     needs: tests
