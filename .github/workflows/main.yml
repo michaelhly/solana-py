@@ -174,9 +174,7 @@ jobs:
           poetry run coverage xml
 
       - name: Upload coverage to Codecov
-        # You may pin to the exact commit or the version.
-        # uses: codecov/codecov-action@6004246f47ab62d32be025ce173b241cd84ac58e
-        uses: codecov/codecov-action@v1.0.13
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           # Path to coverage file to upload
