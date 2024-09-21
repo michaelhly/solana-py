@@ -86,7 +86,7 @@ jobs:
       #----------------------------------------------
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
@@ -112,7 +112,7 @@ jobs:
           echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
 
       - name: Upload partial coverage
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: coverage${{ steps.uuid.outputs.uuid }}
           path: .coverage
@@ -144,7 +144,7 @@ jobs:
       #----------------------------------------------
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
@@ -170,9 +170,7 @@ jobs:
           poetry run coverage xml
 
       - name: Upload coverage to Codecov
-        # You may pin to the exact commit or the version.
-        # uses: codecov/codecov-action@6004246f47ab62d32be025ce173b241cd84ac58e
-        uses: codecov/codecov-action@v1.0.13
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           # Path to coverage file to upload
