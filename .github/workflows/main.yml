@@ -117,6 +117,7 @@ jobs:
           name: coverage${{ steps.uuid.outputs.uuid }}
           path: .coverage
           include-hidden-files: true
+          if-no-files-found: error
 
   coverage:
     needs: tests
