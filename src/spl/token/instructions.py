@@ -1244,3 +1244,24 @@ def create_associated_token_account(payer: Pubkey, owner: Pubkey, mint: Pubkey) 
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
         data=bytes(0),
     )
+
+
+def create_idempotent_associated_token_account(payer: Pubkey, owner: Pubkey, mint: Pubkey) -> Instruction:
+    """Creates an associated token account for the given address/token mint if it not exists.
+
+    Returns:
+        The instruction to create the associated token account.
+    """
+    associated_token_address = get_associated_token_address(owner, mint)
+    return Instruction(
+        accounts=[
+            AccountMeta(pubkey=payer, is_signer=True, is_writable=True),
+            AccountMeta(pubkey=associated_token_address, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=owner, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=TOKEN_PROGRAM_ID, is_signer=False, is_writable=False),
+        ],
+        program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
+        data=bytes([1]),
+    )
