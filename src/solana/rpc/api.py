@@ -7,8 +7,8 @@ from typing import Dict, List, Optional, Sequence, Union
 from warnings import warn
 
 from solders.hash import Hash as Blockhash
-from solders.message import VersionedMessage
 from solders.keypair import Keypair
+from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
