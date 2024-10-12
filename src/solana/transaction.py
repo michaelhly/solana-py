@@ -88,7 +88,7 @@ class Transaction:
     ) -> None:
         """Init transaction object."""
         warn(
-            "Transaction is deprecated and will be removed in a later release. Please use the Transaction modules from solders.transaction.",
+            "Transaction is deprecated and will be removed in a later release. Please use the Transaction module from solders.transaction instead.",
             DeprecationWarning,
         )
 
