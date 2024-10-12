@@ -3,6 +3,7 @@
 import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
+from warnings import warn
 
 from solders.hash import Hash as Blockhash
 from solders.message import VersionedMessage
@@ -1041,6 +1042,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
+        warn("send_transaction_legacy is deprecated. Use send_transaction instead.", DeprecationWarning)
+
         last_valid_block_height = None
         if recent_blockhash is None:
             blockhash_resp = await self.get_latest_blockhash(Finalized)
