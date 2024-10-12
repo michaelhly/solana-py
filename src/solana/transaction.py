@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import Any, List, NamedTuple, Optional, Sequence, Tuple, Union
+from warnings import warn
 
 from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, Instruction
@@ -78,9 +79,6 @@ class Transaction:
         instructions: The instructions to be executed in this transaction.
     """
 
-    # Default (empty) signature
-    __DEFAULT_SIG = bytes(64)
-
     def __init__(
         self,
         recent_blockhash: Optional[Blockhash] = None,
@@ -89,6 +87,12 @@ class Transaction:
         instructions: Optional[Sequence[Instruction]] = None,
     ) -> None:
         """Init transaction object."""
+        warn(
+            """Transaction is deprecated and will be removed in a later release.
+            Please use the Transaction module from solders.transaction instead.""",
+            DeprecationWarning,
+        )
+
         self._solders = _build_solders_tx(
             recent_blockhash=recent_blockhash,
             nonce_info=nonce_info,

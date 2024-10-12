@@ -4,7 +4,7 @@ from typing import Tuple
 import pytest
 import solders.system_program as sp
 from solders.keypair import Keypair
-from solders.message import MessageV0
+from solders.message import MessageV0, Message
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
@@ -16,7 +16,7 @@ from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.types import DataSliceOpts, TxOpts
-from solana.transaction import Transaction
+from solders.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
@@ -62,12 +62,15 @@ def test_request_air_drop_prefetched_blockhash(
 def test_send_transaction_and_get_balance(stubbed_sender, stubbed_receiver, test_http_client: Client):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction().add(
+    blockhash = test_http_client.get_latest_blockhash().value.blockhash
+    ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
     sim_resp = test_http_client.simulate_transaction(transfer_tx)
     assert_valid_response(sim_resp)
-    resp = test_http_client.send_transaction(transfer_tx, stubbed_sender)
+    resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
     test_http_client.confirm_transaction(resp.value)
@@ -120,15 +123,18 @@ def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client: Client
     balance = test_http_client.get_balance(poor_account.pubkey())
     assert balance.value == airdrop_amount
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction().add(
+    blockhash = test_http_client.get_latest_blockhash().value.blockhash
+    ixs = [
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=poor_account.pubkey(), to_pubkey=stubbed_receiver, lamports=airdrop_amount + 1
             )
         )
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, poor_account.pubkey(), blockhash)
+    transfer_tx = Transaction([poor_account], msg, blockhash)
     with pytest.raises(RPCException) as exc_info:
-        test_http_client.send_transaction(transfer_tx, poor_account)
+        test_http_client.send_transaction(transfer_tx)
     err = exc_info.value.args[0]
     assert isinstance(err, SendTransactionPreflightFailureMessage)
     assert err.data.logs
@@ -140,7 +146,8 @@ def test_send_transaction_prefetched_blockhash(
 ):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction().add(
+    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_latest_blockhash())
+    ixs = [
         sp.transfer(
             sp.TransferParams(
                 from_pubkey=stubbed_sender_prefetched_blockhash.pubkey(),
@@ -148,11 +155,10 @@ def test_send_transaction_prefetched_blockhash(
                 lamports=1000,
             )
         )
-    )
-    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_latest_blockhash())
-    resp = test_http_client.send_transaction(
-        transfer_tx, stubbed_sender_prefetched_blockhash, recent_blockhash=recent_blockhash
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender_prefetched_blockhash.pubkey(), recent_blockhash)
+    transfer_tx = Transaction([stubbed_sender_prefetched_blockhash], msg, recent_blockhash)
+    resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
     test_http_client.confirm_transaction(resp.value)
@@ -174,13 +180,14 @@ def test_send_raw_transaction_and_get_balance(stubbed_sender, stubbed_receiver, 
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    blockhash = test_http_client.get_latest_blockhash().value.blockhash
+    ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
-    )
-    # Sign transaction
-    transfer_tx.sign(stubbed_sender)
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
     # Send raw transaction
-    tx_resp = test_http_client.send_raw_transaction(transfer_tx.serialize())
+    tx_resp = test_http_client.send_raw_transaction(bytes(transfer_tx))
     assert_valid_response(tx_resp)
     # Confirm transaction
     test_http_client.confirm_transaction(tx_resp.value)
@@ -205,14 +212,15 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    blockhash = test_http_client.get_latest_blockhash().value.blockhash
+    ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
-    )
-    # Sign transaction
-    transfer_tx.sign(stubbed_sender)
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
     # Send raw transaction
     resp = test_http_client.send_raw_transaction(
-        transfer_tx.serialize(),
+        bytes(transfer_tx),
         opts=TxOpts(preflight_commitment=Processed, last_valid_block_height=last_valid_block_height),
     )
     assert_valid_response(resp)
@@ -236,14 +244,14 @@ def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http
     assert recent_blockhash is not None
     last_valid_block_height = resp.value.last_valid_block_height - 330
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
-    )
-    # Sign transaction
-    transfer_tx.sign(stubbed_sender)
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), recent_blockhash)
+    transfer_tx = Transaction([stubbed_sender], msg, recent_blockhash)
     # Send raw transaction
     tx_resp = test_http_client.send_raw_transaction(
-        transfer_tx.serialize(), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
+        bytes(transfer_tx), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
     )
     assert_valid_response(tx_resp)
     # Confirm transaction
@@ -261,11 +269,12 @@ def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_cli
     recent_blockhash = resp.value.blockhash
     assert recent_blockhash is not None
     # Create transfer tx transfer lamports from stubbed sender to stubbed_receiver
-    transfer_tx = Transaction(recent_blockhash=recent_blockhash).add(
+    ixs = [
         sp.transfer(sp.TransferParams(from_pubkey=stubbed_sender.pubkey(), to_pubkey=stubbed_receiver, lamports=1000))
-    )
+    ]
+    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), recent_blockhash)
     # get fee for transaction
-    fee_resp = test_http_client.get_fee_for_message(transfer_tx.compile_message())
+    fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
 

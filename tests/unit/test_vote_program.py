@@ -3,9 +3,8 @@ import base64
 
 from solders.hash import Hash
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey
-
-import solana.transaction as txlib
 import solana.vote_program as vp
 
 
@@ -80,19 +79,20 @@ def test_withdraw_from_vote_account():
     )
     vote_account_pubkey = Pubkey.from_string("CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk")
     receiver_account_pubkey = Pubkey.from_string("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
-
-    txn = txlib.Transaction(fee_payer=withdrawer_keypair.pubkey())
-    txn.recent_blockhash = Hash.from_string("Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH")
-
-    txn.add(
-        vp.withdraw_from_vote_account(
-            vp.WithdrawFromVoteAccountParams(
-                vote_account_from_pubkey=vote_account_pubkey,
-                to_pubkey=receiver_account_pubkey,
-                withdrawer=withdrawer_keypair.pubkey(),
-                lamports=2_000_000_000,
+    recent_blockhash = Hash.from_string("Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH")
+    msg = Message.new_with_blockhash(
+        [
+            vp.withdraw_from_vote_account(
+                vp.WithdrawFromVoteAccountParams(
+                    vote_account_from_pubkey=vote_account_pubkey,
+                    to_pubkey=receiver_account_pubkey,
+                    withdrawer=withdrawer_keypair.pubkey(),
+                    lamports=2_000_000_000,
+                )
             )
-        )
+        ],
+        withdrawer_keypair.pubkey(),
+        recent_blockhash,
     )
 
     # solana withdraw-from-vote-account --dump-transaction-message \
@@ -108,7 +108,7 @@ def test_withdraw_from_vote_account():
         b"AQABBDqF5SfUR/5I9i2gnIHHEr01j2JItmpFHSaRd74NaZ1whdju9KDr87dR4CFbvp8kmkq1rSYitXg2nDzw1kcQsBarFQYO0flqHdOoQpaNxOZ8eSlkLWHns0kvxLHtDo6WbQdhSB01dHS7fE12JOvTvbPYNV5z0RBD/A2jU4AAAAAAjxrQaMS7FjmaR++mvFr3XE6XbzMUTMJUIpITrUWBzGwBAwMCAQAMAwAAAACUNXcAAAAA"  # noqa: E501 pylint: disable=line-too-long
     )
 
-    serialized_message = txn.serialize_message()
+    serialized_message = bytes(msg)
 
     assert serialized_message == js_wire_msg
     # XXX:  Cli message serialization do not sort on account metas producing discrepency

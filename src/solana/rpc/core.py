@@ -81,7 +81,7 @@ from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.rpc import types
-from solana.transaction import Transaction
+from solders.transaction import Transaction
 
 from .commitment import Commitment, Confirmed, Finalized, Processed
 
@@ -499,9 +499,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcSimulateTransactionConfig(sig_verify=sig_verify, commitment=commitment_to_use)
         if isinstance(txn, Transaction):
-            if txn.recent_blockhash is None:
-                raise ValueError("transaction must have a valid blockhash")
-            return SimulateLegacyTransaction(txn.to_solders(), config)
+            return SimulateLegacyTransaction(txn, config)
         return SimulateVersionedTransaction(txn, config)
 
     @staticmethod
