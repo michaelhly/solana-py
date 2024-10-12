@@ -4,28 +4,27 @@ import itertools
 from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from solders.account_decoder import UiDataSliceConfig
-from solders.transaction_status import TransactionDetails
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
+    RpcBlockSubscribeConfig,
+    RpcBlockSubscribeFilter,
+    RpcBlockSubscribeFilterMentions,
     RpcProgramAccountsConfig,
     RpcSignatureSubscribeConfig,
     RpcTransactionLogsConfig,
     RpcTransactionLogsFilter,
     RpcTransactionLogsFilterMentions,
-    RpcBlockSubscribeConfig,
-    RpcBlockSubscribeFilter,
-    RpcBlockSubscribeFilterMentions,
 )
 from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
     AccountSubscribe,
     AccountUnsubscribe,
+    BlockSubscribe,
+    BlockUnsubscribe,
     Body,
     LogsSubscribe,
     LogsUnsubscribe,
-    BlockSubscribe,
-    BlockUnsubscribe,
     ProgramSubscribe,
     ProgramUnsubscribe,
     RootSubscribe,
@@ -40,13 +39,11 @@ from solders.rpc.requests import (
     VoteUnsubscribe,
     batch_to_json,
 )
-from solders.rpc.responses import (
-    Notification,
-    SubscriptionResult,
-    parse_websocket_message,
-)
+from solders.rpc.responses import Notification
 from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
+from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
+from solders.transaction_status import TransactionDetails
 from websockets.legacy.client import WebSocketClientProtocol
 from websockets.legacy.client import connect as ws_connect
 
@@ -188,7 +185,7 @@ class SolanaWsClientProtocol(WebSocketClientProtocol):
         filter_: Union[RpcBlockSubscribeFilter, RpcBlockSubscribeFilterMentions] = RpcBlockSubscribeFilter.All,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
-        transaction_details: TransactionDetails = None,
+        transaction_details: Union[TransactionDetails, None] = None,
         show_rewards: Optional[bool] = None,
         max_supported_transaction_version: Optional[int] = None,
     ) -> None:

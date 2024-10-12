@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Python 3.11
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -65,9 +65,9 @@ jobs:
 
     steps:
       - name: checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
@@ -86,7 +86,7 @@ jobs:
       #----------------------------------------------
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
@@ -104,7 +104,7 @@ jobs:
 
       - name: Run tests
         run: |
-          poetry run pytest ${{ matrix.test_path }}  --cov
+          poetry run pytest ${{ matrix.test_path }} --cov
 
       - name: Get uuid
         id: uuid
@@ -112,10 +112,12 @@ jobs:
           echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
 
       - name: Upload partial coverage
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: coverage${{ steps.uuid.outputs.uuid }}
           path: .coverage
+          include-hidden-files: true
+          if-no-files-found: error
 
   coverage:
     needs: tests
@@ -123,9 +125,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - name: Set up Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
@@ -144,7 +148,7 @@ jobs:
       #----------------------------------------------
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
@@ -162,7 +166,7 @@ jobs:
 
       - name: Download all coverage artifacts
         # Downloads coverage1, coverage2, etc.
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
 
       - name: Run coverage
         run: |
@@ -170,9 +174,7 @@ jobs:
           poetry run coverage xml
 
       - name: Upload coverage to Codecov
-        # You may pin to the exact commit or the version.
-        # uses: codecov/codecov-action@6004246f47ab62d32be025ce173b241cd84ac58e
-        uses: codecov/codecov-action@v1.0.13
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           # Path to coverage file to upload

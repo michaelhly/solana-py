@@ -1,4 +1,5 @@
 """Async API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
+
 import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
@@ -246,7 +247,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         slot: int,
         encoding: str = "json",
-        max_supported_transaction_version: int = None,
+        max_supported_transaction_version: Union[int, None] = None,
     ) -> GetBlockResp:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
@@ -619,7 +620,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             encoding="jsonParsed",
             data_slice=None,
         )
-        return await self._provider.make_request(body, GetMultipleAccountsResp)
+        return await self._provider.make_request(body, GetMultipleAccountsMaybeJsonParsedResp)
 
     async def get_program_accounts(  # pylint: disable=too-many-arguments
         self,
@@ -1073,7 +1074,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> (await solana_client.validator_exit()).value # doctest: +SKIP
             True
         """
-        return await self._provider.make_request(self._validator_exit, ValidatorExitResp)
+        return await self._provider.make_request(self._validator_exit, ValidatorExitResp)  # type: ignore
 
     async def __post_send_with_confirm(
         self,

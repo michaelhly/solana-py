@@ -1,4 +1,5 @@
 """Helper code for HTTP provider classes."""
+
 import itertools
 import logging
 import os
@@ -95,7 +96,7 @@ def _parse_raw(raw: str, parser: Type[T]) -> T:
     parsed = parser.from_json(raw)  # type: ignore
     if isinstance(parsed, RPCError.__args__):  # type: ignore # TODO: drop py37 and use typing.get_args
         raise RPCException(parsed)
-    return parsed
+    return parsed  # type: ignore
 
 
 @overload

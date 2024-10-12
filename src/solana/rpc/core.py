@@ -227,7 +227,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         tx_sig: Signature,
         encoding: str = "json",
-        commitment: Commitment = None,
+        commitment: Union[Commitment, None] = None,
         max_supported_transaction_version: Optional[int] = None,
     ) -> GetTransaction:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
