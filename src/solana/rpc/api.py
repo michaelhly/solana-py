@@ -1031,7 +1031,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
-        warn("send_transaction_legacy is deprecated. Use send_transaction instead.", DeprecationWarning)
+        warn("send_legacy_transaction is deprecated. Use send_transaction instead.", DeprecationWarning)
 
         last_valid_block_height = None
         if recent_blockhash is None:
