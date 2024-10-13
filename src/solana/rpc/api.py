@@ -780,6 +780,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.get_stake_activation().value.active # doctest: +SKIP
             124429280
         """
+        warn("get_stake_activation is deprecated. Use get_account_info instead.", DeprecationWarning)
         body = self._get_stake_activation_body(pubkey, epoch, commitment)
         return self._provider.make_request(body, GetStakeActivationResp)
 
