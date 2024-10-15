@@ -1217,11 +1217,12 @@ def get_associated_token_address(owner: Pubkey, mint: Pubkey, token_program_id: 
     Args:
         owner (Pubkey): Owner's wallet address.
         mint (Pubkey): The token mint address.
-        token_program_id (Pubkey, optional): The token program ID. Must be either `spl.token.constants.TOKEN_PROGRAM_ID` or `spl.token.constants.TOKEN_2022_PROGRAM_ID` (default is `TOKEN_PROGRAM_ID`).
-    
+        token_program_id (Pubkey, optional): The token program ID. Must be either `spl.token.constants.TOKEN_PROGRAM_ID`
+            or `spl.token.constants.TOKEN_2022_PROGRAM_ID` (default is `TOKEN_PROGRAM_ID`).
+
     Returns:
         The public key of the derived associated token address.
-    
+
     Raises:
         ValueError: If an invalid `token_program_id` is provided.
     """
@@ -1234,18 +1235,21 @@ def get_associated_token_address(owner: Pubkey, mint: Pubkey, token_program_id: 
     return key
 
 
-def create_associated_token_account(payer: Pubkey, owner: Pubkey, mint: Pubkey, token_program_id: Pubkey = TOKEN_PROGRAM_ID) -> Instruction:
+def create_associated_token_account(
+    payer: Pubkey, owner: Pubkey, mint: Pubkey, token_program_id: Pubkey = TOKEN_PROGRAM_ID
+) -> Instruction:
     """Creates a transaction instruction to create an associated token account.
 
     Args:
         payer (Pubkey): Payer's wallet address.
         owner (Pubkey): Owner's wallet address.
         mint (Pubkey): The token mint address.
-        token_program_id (Pubkey, optional): The token program ID. Must be either `spl.token.constants.TOKEN_PROGRAM_ID` or `spl.token.constants.TOKEN_2022_PROGRAM_ID` (default is `TOKEN_PROGRAM_ID`).
+        token_program_id (Pubkey, optional): The token program ID. Must be either `spl.token.constants.TOKEN_PROGRAM_ID`
+            or `spl.token.constants.TOKEN_2022_PROGRAM_ID` (default is `TOKEN_PROGRAM_ID`).
 
     Returns:
         The instruction to create the associated token account.
-    
+
     Raises:
         ValueError: If an invalid `token_program_id` is provided.
     """
