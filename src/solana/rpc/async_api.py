@@ -24,6 +24,7 @@ from solders.rpc.responses import (
     GetFeeForMessageResp,
     GetFirstAvailableBlockResp,
     GetGenesisHashResp,
+    GetHealthResp,
     GetIdentityResp,
     GetInflationGovernorResp,
     GetInflationRateResp,
@@ -120,7 +121,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Returns:
             True if the client is connected.
         """
-        return await self._provider.is_connected()
+        body = self._get_health_body()
+        response = await self._provider.make_request(body, GetHealthResp)
+        return response.value == "ok"
 
     async def get_balance(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
         """Returns the balance of the account of provided Pubkey.

@@ -120,17 +120,6 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         raw = await self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
 
-    async def is_connected(self) -> bool:
-        """Health check."""
-        try:
-            response = await self.session.get(self.health_uri)
-            response.raise_for_status()
-        except (IOError, httpx.HTTPError) as err:
-            self.logger.error("Health check failed with error: %s", str(err))
-            return False
-
-        return response.status_code == httpx.codes.OK
-
     async def __aenter__(self) -> "AsyncHTTPProvider":
         """Use as a context manager."""
         await self.session.__aenter__()
