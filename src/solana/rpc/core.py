@@ -42,6 +42,7 @@ from solders.rpc.requests import (
     GetFeeForMessage,
     GetFirstAvailableBlock,
     GetGenesisHash,
+    GetHealth,
     GetIdentity,
     GetInflationGovernor,
     GetInflationRate,
@@ -77,11 +78,10 @@ from solders.rpc.requests import (
 )
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
-from solders.transaction import VersionedTransaction
+from solders.transaction import Transaction, VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.rpc import types
-from solders.transaction import Transaction
 
 from .commitment import Commitment, Confirmed, Finalized, Processed
 
@@ -156,6 +156,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def commitment(self) -> Commitment:
         """The default commitment used for requests."""
         return self._commitment
+
+    def _get_health_body(self) -> GetHealth:
+        return GetHealth()
 
     def _get_balance_body(self, pubkey: Pubkey, commitment: Optional[Commitment]) -> GetBalance:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]

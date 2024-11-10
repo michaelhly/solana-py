@@ -108,14 +108,3 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         """
         raw = self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
-
-    def is_connected(self) -> bool:
-        """Health check."""
-        try:
-            response = httpx.get(self.health_uri)
-            response.raise_for_status()
-        except (IOError, httpx.HTTPError) as err:
-            self.logger.error("Health check failed with error: %s", str(err))
-            return False
-
-        return response.status_code == httpx.codes.OK

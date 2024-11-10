@@ -25,6 +25,7 @@ from solders.rpc.responses import (
     GetFeeForMessageResp,
     GetFirstAvailableBlockResp,
     GetGenesisHashResp,
+    GetHealthResp,
     GetIdentityResp,
     GetInflationGovernorResp,
     GetInflationRateResp,
@@ -112,7 +113,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Returns:
             True if the client is connected.
         """
-        return self._provider.is_connected()
+        body = self._get_health_body()
+        response = self._provider.make_request(body, GetHealthResp)
+        return response.value == "ok"
 
     def get_balance(self, pubkey: Pubkey, commitment: Optional[Commitment] = None) -> GetBalanceResp:
         """Returns the balance of the account of provided Pubkey.

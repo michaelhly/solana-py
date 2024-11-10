@@ -11,7 +11,3 @@ class BaseProvider:
     def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make a request to the rpc endpoint."""
         raise NotImplementedError("Providers must implement this method")
-
-    def is_connected(self) -> bool:
-        """Health check."""
-        raise NotImplementedError("Providers must implement this method")
