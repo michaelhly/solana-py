@@ -33,7 +33,6 @@ websockets = ">=9.0,<12.0"
 solders = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
-black = "^22.3"
 pytest = "^7.4.3"
 mypy = "^1.0"
 pyyaml = "6.0.1"
@@ -110,9 +109,6 @@ convention = "google"
 [tool.ruff.lint.per-file-ignores]
 "src/solana/blockhash.py" = ["A003"]
 "tests/**/*.py" = ["D100", "D103", "ARG001"]
-
-[tool.black]
-line-length = 120
 
 [tool.pyright]
 reportMissingModuleSource = false
