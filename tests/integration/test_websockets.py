@@ -211,9 +211,7 @@ async def test_multiple_subscriptions(
     await test_http_client_async.request_airdrop(stubbed_sender.pubkey(), AIRDROP_AMOUNT)
     async for idx, message in asyncstdlib.enumerate(websocket):
         for item in message:
-            if isinstance(item, AccountNotification):
-                assert item.result is not None
-            elif isinstance(item, LogsNotification):
+            if isinstance(item, (AccountNotification, LogsNotification)):
                 assert item.result is not None
             else:
                 raise ValueError(f"Unexpected message for this test: {item}")

@@ -794,7 +794,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> (await solana_client.get_stake_activation()).value.active # doctest: +SKIP
             124429280
         """
-        warn("get_stake_activation is deprecated. Use get_account_info instead.", DeprecationWarning)
+        warn("get_stake_activation is deprecated. Use get_account_info instead.", DeprecationWarning, stacklevel=1)
         body = self._get_stake_activation_body(pubkey, epoch, commitment)
         return await self._provider.make_request(body, GetStakeActivationResp)
 
@@ -1046,7 +1046,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
-        warn("send_legacy_transaction is deprecated. Use send_transaction instead.", DeprecationWarning)
+        warn("send_legacy_transaction is deprecated. Use send_transaction instead.", DeprecationWarning, stacklevel=1)
 
         last_valid_block_height = None
         if recent_blockhash is None:

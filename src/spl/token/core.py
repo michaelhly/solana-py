@@ -397,7 +397,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             delegated_amount = decoded_data.delegated_amount
 
         is_initialized = decoded_data.state != 0
-        is_frozen = decoded_data.state == 2
+        is_frozen = decoded_data.state == 2  # noqa: PLR2004
 
         if decoded_data.is_native_option == 1:
             rent_exempt_reserve = decoded_data.is_native

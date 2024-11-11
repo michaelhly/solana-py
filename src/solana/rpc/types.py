@@ -37,7 +37,7 @@ class MemcmpOpts(NamedTuple):
 
     offset: int
     """Offset into program account data to start comparison: <usize>."""
-    bytes: str  # noqa: A003
+    bytes: str
     """Data to match, as base-58 encoded string: <string>."""
 
 
