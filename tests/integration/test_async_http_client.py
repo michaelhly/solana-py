@@ -1,4 +1,5 @@
 """Tests for the HTTP API Client."""
+
 from typing import Tuple
 
 import pytest

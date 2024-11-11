@@ -1,5 +1,6 @@
 # pylint: disable=unused-argument,redefined-outer-name
 """Tests for the Websocket Client."""
+
 from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib

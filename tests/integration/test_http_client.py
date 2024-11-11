@@ -1,4 +1,5 @@
 """Tests for the HTTP API Client."""
+
 from typing import Tuple
 
 import pytest
@@ -530,10 +531,10 @@ def test_batch_request(test_http_client: Client):
     """Test get vote accounts."""
     reqs = (GetBlockHeight(), GetFirstAvailableBlock())
     parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
-    resp: Tuple[
-        Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]
-    ] = test_http_client._provider.make_batch_request(  # pylint: disable=protected-access
-        reqs, parsers
+    resp: Tuple[Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]] = (
+        test_http_client._provider.make_batch_request(  # pylint: disable=protected-access
+            reqs, parsers
+        )
     )
     assert_valid_response(resp[0])
     assert_valid_response(resp[1])
