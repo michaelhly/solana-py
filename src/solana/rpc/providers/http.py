@@ -1,4 +1,5 @@
 """HTTP RPC Provider."""
+
 from typing import Tuple, Type, overload
 
 import httpx
@@ -61,28 +62,22 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         return _after_request_unparsed(raw_response)
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5: ...
 
     def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint.

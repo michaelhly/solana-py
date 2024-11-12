@@ -1,5 +1,6 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
+
 from typing import List, Optional, Sequence, Tuple, Union, overload
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
@@ -380,7 +381,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment],
-    ) -> Tuple[Pubkey, Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId], RpcAccountInfoConfig,]:
+    ) -> Tuple[
+        Pubkey,
+        Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId],
+        RpcAccountInfoConfig,
+    ]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[opts.encoding]
         maybe_data_slice = opts.data_slice
@@ -487,14 +492,12 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     @overload
     def _simulate_transaction_body(
         self, txn: Transaction, sig_verify: bool, commitment: Optional[Commitment]
-    ) -> SimulateLegacyTransaction:
-        ...
+    ) -> SimulateLegacyTransaction: ...
 
     @overload
     def _simulate_transaction_body(
         self, txn: VersionedTransaction, sig_verify: bool, commitment: Optional[Commitment]
-    ) -> SimulateVersionedTransaction:
-        ...
+    ) -> SimulateVersionedTransaction: ...
 
     def _simulate_transaction_body(
         self, txn: Union[Transaction, VersionedTransaction], sig_verify: bool, commitment: Optional[Commitment]
@@ -507,7 +510,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
-
         if isinstance(resp, InvalidParamsMessage):
             raise RPCNoResultException(resp.message)
 

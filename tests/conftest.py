@@ -1,4 +1,5 @@
 """Fixtures for pytest."""
+
 import asyncio
 import time
 from typing import NamedTuple
@@ -131,7 +132,9 @@ def test_http_client(docker_services, _sleep_for_first_blocks) -> Client:  # pyl
 @pytest.mark.integration
 @pytest.fixture(scope="session")
 def test_http_client_async(
-    docker_services, event_loop, _sleep_for_first_blocks  # pylint: disable=redefined-outer-name
+    docker_services,
+    event_loop,
+    _sleep_for_first_blocks,  # pylint: disable=redefined-outer-name
 ) -> AsyncClient:
     """Test http_client.is_connected."""
     http_client = AsyncClient(commitment=Processed)

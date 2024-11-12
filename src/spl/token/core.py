@@ -1,5 +1,6 @@
 # pylint: disable=too-many-arguments
 """Helper code for client.py and async_client.py."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple, Type, Union
@@ -75,7 +76,6 @@ class MintInfo(NamedTuple):
 
 
 class _TokenCore:  # pylint: disable=too-few-public-methods
-
     pubkey: Pubkey
     """The public key identifying this mint."""
 
@@ -190,7 +190,6 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
     def _create_associated_token_account_args(
         self, owner: Pubkey, skip_confirmation: bool, commitment: Commitment, recent_blockhash: Blockhash
     ) -> Tuple[Pubkey, Transaction, Keypair, TxOpts]:
-
         # Construct transaction
         ix = spl_token.create_associated_token_account(payer=self.payer.pubkey(), owner=owner, mint=self.pubkey)
         msg = Message.new_with_blockhash([ix], self.payer.pubkey(), recent_blockhash)
@@ -398,7 +397,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             delegated_amount = decoded_data.delegated_amount
 
         is_initialized = decoded_data.state != 0
-        is_frozen = decoded_data.state == 2
+        is_frozen = decoded_data.state == 2  # noqa: PLR2004
 
         if decoded_data.is_native_option == 1:
             rent_exempt_reserve = decoded_data.is_native

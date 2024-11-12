@@ -1,5 +1,6 @@
 # pylint: disable=too-many-arguments
 """Async SPL Token program client."""
+
 from __future__ import annotations
 
 from typing import List, Optional, Union, cast
@@ -319,7 +320,13 @@ class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
         recent_blockhash_to_use = (
             (await conn.get_latest_blockhash()).value.blockhash if recent_blockhash is None else recent_blockhash
         )
-        (new_account_public_key, txn, payer, new_account, opts,) = _TokenCore._create_wrapped_native_account_args(
+        (
+            new_account_public_key,
+            txn,
+            payer,
+            new_account,
+            opts,
+        ) = _TokenCore._create_wrapped_native_account_args(
             program_id,
             owner,
             payer,

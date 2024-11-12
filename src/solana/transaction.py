@@ -1,4 +1,5 @@
 """Library to package an atomic sequence of instructions to a transaction."""
+
 from __future__ import annotations
 
 from typing import Any, List, NamedTuple, Optional, Sequence, Tuple, Union
@@ -91,6 +92,7 @@ class Transaction:
             """Transaction is deprecated and will be removed in a later release.
             Please use the Transaction module from solders.transaction instead.""",
             DeprecationWarning,
+            stacklevel=1,
         )
 
         self._solders = _build_solders_tx(
@@ -134,7 +136,7 @@ class Transaction:
         return self._solders.message.recent_blockhash
 
     @recent_blockhash.setter
-    def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:  # noqa: D102
+    def recent_blockhash(self, blockhash: Optional[Blockhash]) -> None:
         self._solders = _build_solders_tx(
             recent_blockhash=blockhash,
             nonce_info=None,
@@ -149,7 +151,7 @@ class Transaction:
         return account_keys[0] if account_keys else None
 
     @fee_payer.setter
-    def fee_payer(self, payer: Optional[Pubkey]) -> None:  # noqa: D102
+    def fee_payer(self, payer: Optional[Pubkey]) -> None:
         self._solders = _build_solders_tx(
             recent_blockhash=self.recent_blockhash,
             nonce_info=None,
@@ -164,7 +166,7 @@ class Transaction:
         return tuple(_decompile_instructions(msg))
 
     @instructions.setter
-    def instructions(self, ixns: Sequence[Instruction]) -> None:  # noqa: D102
+    def instructions(self, ixns: Sequence[Instruction]) -> None:
         self._solders = _build_solders_tx(
             recent_blockhash=self.recent_blockhash,
             nonce_info=None,

@@ -4,6 +4,7 @@ Solana nodes choose which bank state to query based on a commitment requirement 
 
 In descending order of commitment (most finalized to least finalized), clients may specify:
 """
+
 from typing import NewType
 
 Commitment = NewType("Commitment", str)
