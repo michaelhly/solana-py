@@ -1,5 +1,6 @@
-# Original Source: https://github.com/solana-labs/solana/blob/d7b9aca87b0327266cde4f0116113a4203642130/web3.js/bin/localnet.sh
 #!/usr/bin/env bash
+# Original Source: https://github.com/solana-labs/solana/blob/d7b9aca87b0327266cde4f0116113a4203642130/web3.js/bin/localnet.sh
+
 set -e
 
 channel="edge"
