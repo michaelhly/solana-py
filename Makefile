@@ -9,35 +9,36 @@ lint:
 	poetry run ruff check src tests
 	poetry run mypy src
 
-publish:
-	make clean
+publish: clean
 	poetry build
 	poetry publish
 
-test-publish:
-	make clean
+test-publish: clean
 	poetry build
 	poetry publish -r testpypi
 
-.PHONY: tests
 tests:
-	poetry run pytest -vv
+	poetry run pytest
+
+tests-parallel:
+	poetry run pytest -n auto
 
 unit-tests:
-	poetry run pytest -vv -m "not integration" --doctest-modules
+	poetry run pytest -m "not integration" --doctest-modules
 
 int-tests:
-	poetry run pytest -vv -m integration
+	poetry run pytest -m integration
 
 update-localnet:
-	sh bin/localnet.sh update
+	./bin/localnet.sh update
 
 start-localnet:
-	sh bin/localnet.sh up
+	./bin/localnet.sh up
 
 stop-localnet:
-	sh bin/localnet.sh down
+	./bin/localnet.sh down
 
 serve:
 	mkdocs serve
 
+.PHONY: $(MAKECMDGOALS)

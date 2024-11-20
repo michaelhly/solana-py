@@ -47,29 +47,28 @@ jobs:
 
   tests:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        test_path: [
-            "tests/integration/test_async_http_client.py",
-            "tests/integration/test_async_token_client.py",
-            "tests/integration/test_http_client.py",
-            "tests/integration/test_token_client.py",
-            "tests/integration/test_websockets.py",
-            "tests/integration/test_recent_performance_samples.py",
-            "tests/integration/test_memo.py",
-            "tests/unit",
-            "src", # doctests
-          ]
+        # first list entry: lower bound, second list entry: upper bound
+        # of the supported python versions, versions in between are assumed
+        # to be supported as well without further testing
+        python-version: [3.9, 3.13]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
       - name: Set up Python 3.9
+        id: setup-python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python-version }}
 
       #----------------------------------------------
       #  -----  install & configure poetry  -----
@@ -89,7 +88,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       #----------------------------------------------
       # install dependencies if cache does not exist
       #----------------------------------------------
@@ -102,84 +101,31 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
 
-      - name: Run tests
+      - name: Run all tests
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          poetry run pytest ${{ matrix.test_path }} --cov
+          make tests-parallel
 
-      - name: Get uuid
-        id: uuid
+      - name: Run unit tests
+        if: matrix.os != 'ubuntu-latest'
         run: |
-          echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
+          make unit-tests
 
-      - name: Upload partial coverage
+      - name: Upload html coverage
         uses: actions/upload-artifact@v4
         with:
-          name: coverage${{ steps.uuid.outputs.uuid }}
-          path: .coverage
+          name: coverage-html-${{ runner.os }}-${{ matrix.python-version }}
+          path: htmlcov
           include-hidden-files: true
           if-no-files-found: error
 
-  coverage:
-    needs: tests
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.9
-
-      #----------------------------------------------
-      #  -----  install & configure poetry  -----
-      #----------------------------------------------
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.3.2
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      #----------------------------------------------
-      #       load cached venv if cache exists
-      #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      #----------------------------------------------
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
-      #----------------------------------------------
-      # install your root project
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
-
-      - name: Download all coverage artifacts
-        # Downloads coverage1, coverage2, etc.
-        uses: actions/download-artifact@v4
-
-      - name: Run coverage
-        run: |
-          poetry run coverage combine coverage*/.coverage*
-          poetry run coverage xml
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        # Do not upload/fail for PRs in forks
+        if: github.repository == 'michaelhly/solana-py'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          # Path to coverage file to upload
-          file: ./coverage.xml
-          env_vars: OS,PYTHON
+          flags: ${{ runner.os }},${{ runner.arch }},${{ matrix.python-version }}
           # Specify whether or not CI build should fail if Codecov runs into an error during upload
           fail_ci_if_error: true
 
