@@ -36,6 +36,8 @@ test-ledger/
 
 # pytest coverage
 .coverage
+coverage.xml
+htmlcov/
 
 # manual tests
 testing.py

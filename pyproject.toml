@@ -15,9 +15,11 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 packages = [
     { include = "solana", from = "src" },
@@ -25,7 +27,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 construct-typing = "^0.5.2"
 httpx = ">=0.23.0"
 typing-extensions = ">=4.2.0"
@@ -41,6 +43,8 @@ requests = "2.28.1"
 bump2version = "^1.0.1"
 pytest-asyncio = "^0.18.3"
 pytest-cov = "^3.0.0"
+pytest-html = "^4.1.1"
+pytest-xdist = "^3.6.1"
 asyncstdlib = "^3.10.2"
 mkdocstrings = "^0.18.0"
 mkdocs-material = "^8.2.1"
@@ -51,10 +55,27 @@ ruff = "^0.7.3"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pytest.ini_options]
+addopts = [
+    "--doctest-modules",
+    "-p no:anyio",
+    "--cov",
+    "--color=yes",
+    "--cov-report=xml",
+    "--cov-report=html",
+    "--container-scope=module", # restart container for each module
+    "--dist=loadscope",         # distribute tests by module
+    "-vv",
+    "-s",
+]
+asyncio_mode = "auto"
+markers = ["integration: mark a test as a integration test."]
+testpaths = ["src", "tests"]
+
 [tool.ruff]
 line-length = 120
-# Assume Python 3.10.
-target-version = "py310"
+# Assume Python 3.9 (lower bound of supported python versions)
+target-version = "py39"
 
 [tool.ruff.lint]
 # Enable Pyflakes `E` and `F` codes by default.

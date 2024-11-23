@@ -23,7 +23,7 @@ class Clients(NamedTuple):
     loop: asyncio.AbstractEventLoop
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def event_loop():
     """Event loop for pytest-asyncio."""
     try:
@@ -114,30 +114,33 @@ def unit_test_http_client_async() -> AsyncClient:
     return client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def _sleep_for_first_blocks() -> None:
     """Blocks 0 and 1 are unavailable so we sleep until they're done."""
-    time.sleep(20)
+    time.sleep(10)
 
 
 @pytest.mark.integration
-@pytest.fixture(scope="session")
-def test_http_client(docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
+@pytest.fixture(scope="module")
+def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
-    http_client = Client(commitment=Processed)
+    port = docker_services.port_for("localnet", 8899)
+    http_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
     docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
 
 @pytest.mark.integration
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def test_http_client_async(
+    docker_ip,
     docker_services,
     event_loop,
     _sleep_for_first_blocks,  # pylint: disable=redefined-outer-name
 ) -> AsyncClient:
     """Test http_client.is_connected."""
-    http_client = AsyncClient(commitment=Processed)
+    port = docker_services.port_for("localnet", 8899)
+    http_client = AsyncClient(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())

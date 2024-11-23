@@ -35,9 +35,12 @@ from ..utils import AIRDROP_AMOUNT
 
 
 @pytest.fixture
-async def websocket(test_http_client_async: AsyncClient) -> AsyncGenerator[WebSocketClientProtocol, None]:
+async def websocket(
+    test_http_client_async: AsyncClient, docker_ip, docker_services
+) -> AsyncGenerator[WebSocketClientProtocol, None]:
     """Websocket connection."""
-    async with connect() as client:
+    port = docker_services.port_for("localnet", 8900)
+    async with connect(uri=f"ws://{docker_ip}:{port}") as client:
         yield client
 
 
