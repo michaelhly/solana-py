@@ -1204,10 +1204,5 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 
 [metadata]
 lock-version = "2.0"
-<<<<<<< HEAD
 python-versions = "^3.8"
 content-hash = "95541beeaeba0fe21c852107e904bffae12313c0c1149fd5e41f3c93a0623c7c"
-=======
-python-versions = "^3.9"
-content-hash = "2bda9bd0b0d4d18d63d69cc17448d4f7353ca298e9c6ed9c6666a6c25b7745d9"
->>>>>>> ef1b672 (keeping poetry.lock with websockets ==12.0)
