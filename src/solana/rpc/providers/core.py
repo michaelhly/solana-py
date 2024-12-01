@@ -14,7 +14,7 @@ from solders.rpc.responses import batch_from_json as batch_resp_json
 from ..core import RPCException
 from ..types import URI
 
-DEFAULT_TIMEOUT = 10
+DEFAULT_TIMEOUT = 60
 
 
 T = TypeVar("T", bound=RPCResult)
