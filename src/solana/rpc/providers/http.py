@@ -1,6 +1,6 @@
 """HTTP RPC Provider."""
 
-from typing import Tuple, Type, overload
+from typing import Optional, Tuple, Dict, Type, overload
 
 import httpx
 from solders.rpc.requests import Body
@@ -9,6 +9,7 @@ from solders.rpc.responses import RPCResult
 from ...exceptions import SolanaRpcException, handle_exceptions
 from .base import BaseProvider
 from .core import (
+    DEFAULT_TIMEOUT,
     T,
     _after_request_unparsed,
     _BodiesTup,
@@ -39,6 +40,16 @@ from .core import (
 class HTTPProvider(BaseProvider, _HTTPProviderCore):
     """HTTP provider to interact with the http rpc endpoint."""
 
+    def __init__(
+        self,
+        endpoint: Optional[str] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+        timeout: float = DEFAULT_TIMEOUT,
+    ):
+        """Init HTTPProvider."""
+        super().__init__(endpoint, extra_headers)
+        self.session = httpx.Client(timeout=timeout)
+
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
         return f"HTTP RPC connection {self.endpoint_uri}"
@@ -52,13 +63,13 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body)
-        raw_response = httpx.post(**request_kwargs)
+        raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_batch_request(reqs)
-        raw_response = httpx.post(**request_kwargs)
+        raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     @overload
