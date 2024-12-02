@@ -7,13 +7,13 @@ from warnings import warn
 from solders.hash import Hash as Blockhash
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
-from solders.message import Message
-from solders.message import Message as SoldersMessage
+from solders.message import Message, MessageV0
 from solders.presigner import Presigner
 from solders.pubkey import Pubkey
 from solders.signature import Signature
-from solders.transaction import Transaction as SoldersTx
 from solders.transaction import TransactionError
+from solders.transaction import VersionedTransaction as SoldersTx
+
 
 PACKET_DATA_SIZE = 1280 - 40 - 8
 """Constant for maximum over-the-wire size of a Transaction."""
@@ -45,23 +45,24 @@ def _build_solders_tx(
         underlying_blockhash = recent_blockhash
     else:
         underlying_blockhash = None
-    underlying_fee_payer = None if fee_payer is None else fee_payer
+    underlying_fee_payer = Keypair().pubkey() if fee_payer is None else fee_payer
     underlying_blockhash = Blockhash.default() if underlying_blockhash is None else underlying_blockhash
-    msg = SoldersMessage.new_with_blockhash(underlying_instructions, underlying_fee_payer, underlying_blockhash)
-    return SoldersTx.new_unsigned(msg)
+    msg = MessageV0.try_compile(
+        payer=underlying_fee_payer,
+        instructions=underlying_instructions,
+        address_lookup_table_accounts=[],
+        recent_blockhash=underlying_blockhash,
+    )
+    return SoldersTx(msg, [])
 
 
-def _decompile_instructions(msg: SoldersMessage) -> List[Instruction]:
+def _decompile_instructions(msg: MessageV0) -> List[Instruction]:
     account_keys = msg.account_keys
     decompiled_instructions: List[Instruction] = []
     for compiled_ix in msg.instructions:
         program_id = account_keys[compiled_ix.program_id_index]
         account_metas = [
-            AccountMeta(
-                account_keys[idx],
-                is_signer=msg.is_signer(idx),
-                is_writable=msg.is_writable(idx),
-            )
+            AccountMeta(account_keys[idx], is_signer=msg.is_signer(idx), is_writable=msg.is_maybe_writable(idx))
             for idx in compiled_ix.accounts
         ]
         decompiled_instructions.append(Instruction(program_id, compiled_ix.data, account_metas))
@@ -161,7 +162,9 @@ class Transaction:
     def instructions(self) -> Tuple[Instruction, ...]:
         """Tuple[Instruction]: The instructions contained in this transaction."""
         msg = self._solders.message
-        return tuple(_decompile_instructions(msg))
+        if isinstance(msg, MessageV0):
+            return tuple(_decompile_instructions(msg))
+        raise RuntimeError("Unsupported. Please use the Transaction module from solders.transaction.")
 
     @instructions.setter
     def instructions(self, ixns: Sequence[Instruction]) -> None:  # noqa: D102
@@ -205,7 +208,7 @@ class Transaction:
 
         return self
 
-    def compile_message(self) -> Message:  # pylint: disable=too-many-locals
+    def compile_message(self) -> Union[Message, MessageV0]:
         """Compile transaction data.
 
         Returns:
@@ -226,7 +229,7 @@ class Transaction:
 
         All the caveats from the `sign` method apply to `sign_partial`
         """
-        self._solders.partial_sign(partial_signers, self._solders.message.recent_blockhash)
+        self._solders = SoldersTx(self._solders.message, partial_signers)
 
     def sign(self, *signers: Keypair) -> None:
         """Sign the Transaction with the specified accounts.
@@ -240,7 +243,7 @@ class Transaction:
 
         The Transaction must be assigned a valid `recent_blockhash` before invoking this method.
         """
-        self._solders.sign(signers, self._solders.message.recent_blockhash)
+        self._solders = SoldersTx(self._solders.message, signers)
 
     def add_signature(self, pubkey: Pubkey, signature: Signature) -> None:
         """Add an externally created signature to a transaction.
@@ -324,7 +327,7 @@ class Transaction:
         return cls.from_solders(SoldersTx.from_bytes(raw_transaction))
 
     @classmethod
-    def populate(cls, message: Message, signatures: List[Signature]) -> Transaction:
+    def populate(cls, message: MessageV0, signatures: List[Signature]) -> Transaction:
         """Populate Transaction object from message and signatures.
 
         Example:
