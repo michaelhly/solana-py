@@ -357,7 +357,9 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             raise AttributeError(f"Invalid mint owner: {owner}")
 
         bytes_data = value.data
-        if len(bytes_data) != MINT_LAYOUT.sizeof():
+
+        # TODO: This condition is necessary but not sufficient
+        if len(bytes_data) < MINT_LAYOUT.sizeof():
             raise ValueError("Invalid mint size")
 
         decoded_data = MINT_LAYOUT.parse(bytes_data)
@@ -380,7 +382,9 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             raise AttributeError("Invalid account owner")
 
         bytes_data = value.data
-        if len(bytes_data) != ACCOUNT_LAYOUT.sizeof():
+
+        # TODO: This condition is necessary but not sufficient
+        if len(bytes_data) < ACCOUNT_LAYOUT.sizeof():
             raise ValueError("Invalid account size")
 
         decoded_data = ACCOUNT_LAYOUT.parse(bytes_data)
