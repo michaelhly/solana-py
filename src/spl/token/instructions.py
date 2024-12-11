@@ -10,7 +10,11 @@ from solders.sysvar import RENT
 
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType
-from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID
+from spl.token.constants import (
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+)
 
 
 class AuthorityType(IntEnum):
@@ -24,6 +28,11 @@ class AuthorityType(IntEnum):
     """Owner of a given token account."""
     CLOSE_ACCOUNT = 3
     """Authority to close a token account."""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "AuthorityType":
+        """AuthorityType dict wrapper."""
+        return cls(**params)
 
 
 # Instruction Params
@@ -41,6 +50,11 @@ class InitializeMintParams(NamedTuple):
     freeze_authority: Optional[Pubkey] = None
     """The freeze authority/multisignature of the mint."""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "InitializeMintParams":
+        """InitializeMintParams dict wrapper."""
+        return cls(**params)
+
 
 class InitializeAccountParams(NamedTuple):
     """Initialize token account transaction params."""
@@ -54,6 +68,11 @@ class InitializeAccountParams(NamedTuple):
     owner: Pubkey
     """Owner of the new account."""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "InitializeAccountParams":
+        """InitializeAccountParams dict wrapper."""
+        return cls(**params)
+
 
 class InitializeMultisigParams(NamedTuple):
     """Initialize multisig token account transaction params."""
@@ -66,6 +85,11 @@ class InitializeMultisigParams(NamedTuple):
     """The number of signers (M) required to validate this multisignature account."""
     signers: List[Pubkey] = []
     """Addresses of multisig signers."""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "InitializeMultisigParams":
+        """InitializeMultisigParams dict wrapper."""
+        return cls(**params)
 
 
 class TransferParams(NamedTuple):
@@ -84,6 +108,11 @@ class TransferParams(NamedTuple):
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "TransferParams":
+        """TransferParams dict wrapper."""
+        return cls(**params)
+
 
 class ApproveParams(NamedTuple):
     """Approve token transaction params."""
@@ -101,6 +130,11 @@ class ApproveParams(NamedTuple):
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "ApproveParams":
+        """ApproveParams dict wrapper."""
+        return cls(**params)
+
 
 class RevokeParams(NamedTuple):
     """Revoke token transaction params."""
@@ -113,6 +147,11 @@ class RevokeParams(NamedTuple):
     """Owner of the source account."""
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "RevokeParams":
+        """RevokeParams dict wrapper."""
+        return cls(**params)
 
 
 class SetAuthorityParams(NamedTuple):
@@ -131,6 +170,11 @@ class SetAuthorityParams(NamedTuple):
     new_authority: Optional[Pubkey] = None
     """New authority of the account."""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "SetAuthorityParams":
+        """SetAuthorityParams dict wrapper."""
+        return cls(**params)
+
 
 class MintToParams(NamedTuple):
     """Mint token transaction params."""
@@ -147,6 +191,11 @@ class MintToParams(NamedTuple):
     """Amount to mint."""
     signers: List[Pubkey] = []
     """Signing accounts if `mint_authority` is a multiSig."""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "MintToParams":
+        """MintToParams dict wrapper."""
+        return cls(**params)
 
 
 class BurnParams(NamedTuple):
@@ -165,6 +214,11 @@ class BurnParams(NamedTuple):
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "BurnParams":
+        """BurnParams dict wrapper."""
+        return cls(**params)
+
 
 class CloseAccountParams(NamedTuple):
     """Close token account transaction params."""
@@ -179,6 +233,11 @@ class CloseAccountParams(NamedTuple):
     """Owner of the account."""
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "CloseAccountParams":
+        """CloseAccountParams dict wrapper."""
+        return cls(**params)
 
 
 class FreezeAccountParams(NamedTuple):
@@ -195,6 +254,11 @@ class FreezeAccountParams(NamedTuple):
     multi_signers: List[Pubkey] = []
     """Signing accounts if `authority` is a multiSig"""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "FreezeAccountParams":
+        """FreezeAccountParams dict wrapper."""
+        return cls(**params)
+
 
 class ThawAccountParams(NamedTuple):
     """Thaw token account transaction params."""
@@ -209,6 +273,11 @@ class ThawAccountParams(NamedTuple):
     """Mint freeze authority"""
     multi_signers: List[Pubkey] = []
     """Signing accounts if `authority` is a multiSig"""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "ThawAccountParams":
+        """ThawAccountParams dict wrapper."""
+        return cls(**params)
 
 
 class TransferCheckedParams(NamedTuple):
@@ -231,6 +300,11 @@ class TransferCheckedParams(NamedTuple):
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "TransferCheckedParams":
+        """TransferCheckedParams dict wrapper."""
+        return cls(**params)
+
 
 class ApproveCheckedParams(NamedTuple):
     """ApproveChecked token transaction params."""
@@ -252,6 +326,11 @@ class ApproveCheckedParams(NamedTuple):
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "ApproveCheckedParams":
+        """ApproveCheckedParams dict wrapper."""
+        return cls(**params)
+
 
 class MintToCheckedParams(NamedTuple):
     """MintToChecked token transaction params."""
@@ -270,6 +349,11 @@ class MintToCheckedParams(NamedTuple):
     """Amount decimals."""
     signers: List[Pubkey] = []
     """Signing accounts if `mint_authority` is a multiSig."""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "MintToCheckedParams":
+        """MintToCheckedParams dict wrapper."""
+        return cls(**params)
 
 
 class BurnCheckedParams(NamedTuple):
@@ -290,6 +374,11 @@ class BurnCheckedParams(NamedTuple):
     signers: List[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
+    @classmethod
+    def from_dict(cls, params: dict) -> "BurnCheckedParams":
+        """BurnCheckedParams dict wrapper."""
+        return cls(**params)
+
 
 class SyncNativeParams(NamedTuple):
     """BurnChecked token transaction params."""
@@ -298,6 +387,11 @@ class SyncNativeParams(NamedTuple):
     """SPL Token program account."""
     account: Pubkey
     """Account to sync."""
+
+    @classmethod
+    def from_dict(cls, params: dict) -> "SyncNativeParams":
+        """SyncNativeParams dict wrapper."""
+        return cls(**params)
 
 
 def __parse_and_validate_instruction(
