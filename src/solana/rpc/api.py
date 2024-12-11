@@ -6,8 +6,6 @@ from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 from warnings import warn
 
-from solders.hash import Hash as Blockhash
-from solders.keypair import Keypair
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
@@ -68,7 +66,7 @@ from solders.transaction import Transaction, VersionedTransaction
 
 from solana.rpc import types
 
-from .commitment import Commitment, Finalized
+from .commitment import Commitment
 from .core import (
     _COMMITMENT_TO_SOLDERS,
     RPCException,
