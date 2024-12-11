@@ -1,9 +1,14 @@
 """Unit tests for SPL-token instructions."""
 
-import spl.token.instructions as spl_token
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYSTEM_PROGRAM_ID
-from spl.token.constants import TOKEN_PROGRAM_ID, WRAPPED_SOL_MINT, ASSOCIATED_TOKEN_PROGRAM_ID
+
+import spl.token.instructions as spl_token
+from spl.token.constants import (
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+    WRAPPED_SOL_MINT,
+)
 from spl.token.instructions import get_associated_token_address
 
 
@@ -31,6 +36,16 @@ def test_initialize_mint(stubbed_sender):
     assert not decoded_params.freeze_authority
     assert decoded_params == params_no_freeze
 
+    params_dict = {
+        "decimals": 18,
+        "program_id": TOKEN_PROGRAM_ID,
+        "mint": stubbed_sender.pubkey(),
+        "mint_authority": mint_authority,
+        "freeze_authority": freeze_authority,
+    }
+    initialize_mint_params = spl_token.InitializeMintParams.from_dict(params_dict)
+    assert initialize_mint_params == params_with_freeze
+
 
 def test_initialize_account(stubbed_sender):
     """Test initialize account."""
@@ -43,6 +58,14 @@ def test_initialize_account(stubbed_sender):
     )
     instruction = spl_token.initialize_account(params)
     assert spl_token.decode_initialize_account(instruction) == params
+
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "account": new_account,
+        "mint": token_mint,
+        "owner": stubbed_sender.pubkey(),
+    }
+    assert spl_token.InitializeAccountParams.from_dict(params_dict) == params
 
 
 def test_initialize_multisig():
@@ -57,6 +80,13 @@ def test_initialize_multisig():
     )
     instruction = spl_token.initialize_multisig(params)
     assert spl_token.decode_initialize_multisig(instruction) == params
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "multisig": new_multisig,
+        "signers": signers,
+        "m": len(signers),
+    }
+    assert spl_token.InitializeMultisigParams.from_dict(params_dict) == params
 
 
 def test_transfer(stubbed_receiver, stubbed_sender):
@@ -81,6 +111,15 @@ def test_transfer(stubbed_receiver, stubbed_sender):
     )
     instruction = spl_token.transfer(multisig_params)
     assert spl_token.decode_transfer(instruction) == multisig_params
+
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "source": stubbed_sender.pubkey(),
+        "dest": stubbed_receiver,
+        "owner": stubbed_sender.pubkey(),
+        "amount": 123,
+    }
+    assert spl_token.TransferParams.from_dict(params_dict) == params
 
 
 def test_approve(stubbed_sender):
@@ -107,6 +146,15 @@ def test_approve(stubbed_sender):
     instruction = spl_token.approve(multisig_params)
     assert spl_token.decode_approve(instruction) == multisig_params
 
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "source": stubbed_sender.pubkey(),
+        "delegate": delegate_account,
+        "owner": stubbed_sender.pubkey(),
+        "amount": 123,
+    }
+    assert spl_token.ApproveParams.from_dict(params_dict) == params
+
 
 def test_revoke(stubbed_sender):
     """Test revoke."""
@@ -127,6 +175,13 @@ def test_revoke(stubbed_sender):
     )
     instruction = spl_token.revoke(multisig_params)
     assert spl_token.decode_revoke(instruction) == multisig_params
+
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "account": delegate_account,
+        "owner": stubbed_sender.pubkey(),
+    }
+    assert spl_token.RevokeParams.from_dict(params_dict) == params
 
 
 def test_set_authority():
@@ -154,6 +209,15 @@ def test_set_authority():
     assert not decoded_params.new_authority
     assert decoded_params == multisig_params
 
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "account": account,
+        "authority": spl_token.AuthorityType.FREEZE_ACCOUNT,
+        "new_authority": new_authority,
+        "current_authority": current_authority,
+    }
+    assert spl_token.SetAuthorityParams.from_dict(params_dict) == params
+
 
 def test_mint_to(stubbed_receiver):
     """Test mint to."""
@@ -178,6 +242,15 @@ def test_mint_to(stubbed_receiver):
     )
     instruction = spl_token.mint_to(multisig_params)
     assert spl_token.decode_mint_to(instruction) == multisig_params
+
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "mint": mint,
+        "dest": stubbed_receiver,
+        "mint_authority": mint_authority,
+        "amount": 123,
+    }
+    assert spl_token.MintToParams.from_dict(params_dict) == params
 
 
 def test_burn(stubbed_receiver):
@@ -204,6 +277,15 @@ def test_burn(stubbed_receiver):
     instruction = spl_token.burn(multisig_params)
     assert spl_token.decode_burn(instruction) == multisig_params
 
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "mint": mint,
+        "account": stubbed_receiver,
+        "owner": owner,
+        "amount": 123,
+    }
+    assert spl_token.BurnParams.from_dict(params_dict) == params
+
 
 def test_close_account(stubbed_sender):
     """Test close account."""
@@ -226,6 +308,14 @@ def test_close_account(stubbed_sender):
     )
     instruction = spl_token.close_account(multisig_params)
     assert spl_token.decode_close_account(instruction) == multisig_params
+
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "account": token_account,
+        "dest": stubbed_sender.pubkey(),
+        "owner": stubbed_sender.pubkey(),
+    }
+    assert spl_token.CloseAccountParams.from_dict(params_dict) == params
 
 
 def test_freeze_account(stubbed_sender):
@@ -250,6 +340,14 @@ def test_freeze_account(stubbed_sender):
     instruction = spl_token.freeze_account(multisig_params)
     assert spl_token.decode_freeze_account(instruction) == multisig_params
 
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "account": token_account,
+        "mint": mint,
+        "authority": stubbed_sender.pubkey(),
+    }
+    assert spl_token.FreezeAccountParams.from_dict(params_dict) == params
+
 
 def test_thaw_account(stubbed_sender):
     """Test thaw account."""
@@ -272,6 +370,14 @@ def test_thaw_account(stubbed_sender):
     )
     instruction = spl_token.thaw_account(multisig_params)
     assert spl_token.decode_thaw_account(instruction) == multisig_params
+
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "account": token_account,
+        "mint": mint,
+        "authority": stubbed_sender.pubkey(),
+    }
+    assert spl_token.ThawAccountParams.from_dict(params_dict) == params
 
 
 def test_transfer_checked(stubbed_receiver, stubbed_sender):
@@ -301,6 +407,16 @@ def test_transfer_checked(stubbed_receiver, stubbed_sender):
     )
     instruction = spl_token.transfer_checked(multisig_params)
     assert spl_token.decode_transfer_checked(instruction) == multisig_params
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "source": stubbed_sender.pubkey(),
+        "mint": mint,
+        "dest": stubbed_receiver,
+        "owner": stubbed_sender.pubkey(),
+        "amount": 123,
+        "decimals": 6,
+    }
+    assert spl_token.TransferCheckedParams.from_dict(params_dict) == params
 
 
 def test_approve_checked(stubbed_receiver, stubbed_sender):
@@ -331,6 +447,17 @@ def test_approve_checked(stubbed_receiver, stubbed_sender):
     instruction = spl_token.approve_checked(multisig_params)
     assert spl_token.decode_approve_checked(instruction) == multisig_params
 
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "source": stubbed_sender.pubkey(),
+        "mint": mint,
+        "delegate": stubbed_receiver,
+        "owner": stubbed_sender.pubkey(),
+        "amount": 123,
+        "decimals": 6,
+    }
+    assert spl_token.ApproveCheckedParams.from_dict(params_dict) == params
+
 
 def test_mint_to_checked(stubbed_receiver):
     """Test mint_to_checked."""
@@ -357,6 +484,16 @@ def test_mint_to_checked(stubbed_receiver):
     )
     instruction = spl_token.mint_to_checked(multisig_params)
     assert spl_token.decode_mint_to_checked(instruction) == multisig_params
+
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "mint": mint,
+        "dest": stubbed_receiver,
+        "mint_authority": mint_authority,
+        "amount": 123,
+        "decimals": 6,
+    }
+    assert spl_token.MintToCheckedParams.from_dict(params_dict) == params
 
 
 def test_burn_checked(stubbed_receiver):
@@ -385,6 +522,16 @@ def test_burn_checked(stubbed_receiver):
     instruction = spl_token.burn_checked(multisig_params)
     assert spl_token.decode_burn_checked(instruction) == multisig_params
 
+    params_dict = {
+        "program_id": TOKEN_PROGRAM_ID,
+        "mint": mint,
+        "account": stubbed_receiver,
+        "owner": owner,
+        "amount": 123,
+        "decimals": 6,
+    }
+    assert spl_token.BurnCheckedParams.from_dict(params_dict) == params
+
 
 def test_sync_native(stubbed_sender):
     """Test sync account amount value with lamports."""
@@ -394,6 +541,9 @@ def test_sync_native(stubbed_sender):
     instruction = spl_token.sync_native(params)
     decoded_params = spl_token.decode_sync_native(instruction)
     assert params == decoded_params
+
+    params_dict = {"program_id": TOKEN_PROGRAM_ID, "account": token_account}
+    assert spl_token.SyncNativeParams.from_dict(params_dict) == params
 
 
 def test_create_idempotent_token_account(stubbed_receiver, stubbed_sender):

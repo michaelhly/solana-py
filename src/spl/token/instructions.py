@@ -29,11 +29,6 @@ class AuthorityType(IntEnum):
     CLOSE_ACCOUNT = 3
     """Authority to close a token account."""
 
-    @classmethod
-    def from_dict(cls, params: dict) -> "AuthorityType":
-        """AuthorityType dict wrapper."""
-        return cls(**params)
-
 
 # Instruction Params
 class InitializeMintParams(NamedTuple):
