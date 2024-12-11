@@ -3,7 +3,6 @@
 import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
-from warnings import warn
 
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey

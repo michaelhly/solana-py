@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
-from warnings import warn
 
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
