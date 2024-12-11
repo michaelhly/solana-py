@@ -6,8 +6,6 @@ from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 from warnings import warn
 
-from solders.hash import Hash as Blockhash
-from solders.keypair import Keypair
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
@@ -67,9 +65,8 @@ from solders.signature import Signature
 from solders.transaction import Transaction, VersionedTransaction
 
 from solana.rpc import types
-from solana.transaction import Transaction as LegacyTransaction
 
-from .commitment import Commitment, Finalized
+from .commitment import Commitment
 from .core import (
     _COMMITMENT_TO_SOLDERS,
     RPCException,
@@ -1001,62 +998,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             return self._post_send(resp)
         post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return self.__post_send_with_confirm(*post_send_args)
-
-    def send_legacy_transaction(
-        self,
-        txn: LegacyTransaction,
-        *signers: Keypair,
-        opts: Optional[types.TxOpts] = None,
-        recent_blockhash: Optional[Blockhash] = None,
-    ) -> SendTransactionResp:
-        """Send a legacy transaction.
-
-        Args:
-            txn: transaction object.
-            signers: Signers to sign the transaction. Only supported for legacy Transaction.
-            opts: (optional) Transaction options.
-            recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
-                skip fetching the recent blockhash or relying on the cache.
-                Only supported for legacy Transaction.
-
-        Example:
-            >>> from solders.keypair import Keypair
-            >>> from solders.pubkey import Pubkey
-            >>> from solana.rpc.api import Client
-            >>> from solders.system_program import TransferParams, transfer
-            >>> from solana.transaction import Transaction
-            >>> leading_zeros = [0] * 31
-            >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.send_transaction(txn, sender).value # doctest: +SKIP
-            Signature(
-                1111111111111111111111111111111111111111111111111111111111111111,
-            )
-        """
-        warn("send_legacy_transaction is deprecated. Use send_transaction instead.", DeprecationWarning, stacklevel=1)
-
-        last_valid_block_height = None
-        if recent_blockhash is None:
-            blockhash_resp = self.get_latest_blockhash(Finalized)
-            recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
-            last_valid_block_height = blockhash_resp.value.last_valid_block_height
-
-        txn.recent_blockhash = recent_blockhash
-
-        txn.sign(*signers)
-        opts_to_use = (
-            types.TxOpts(
-                preflight_commitment=self._commitment,
-                last_valid_block_height=last_valid_block_height,
-            )
-            if opts is None
-            else opts
-        )
-
-        txn_resp = self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
-        return txn_resp
 
     def send_transaction(
         self,
