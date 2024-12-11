@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
-from warnings import warn
 
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
@@ -41,7 +40,6 @@ from solders.rpc.responses import (
     GetSignatureStatusesResp,
     GetSlotLeaderResp,
     GetSlotResp,
-    GetStakeActivationResp,
     GetSupplyResp,
     GetTokenAccountBalanceResp,
     GetTokenAccountsByDelegateJsonParsedResp,
@@ -760,29 +758,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         body = self._get_slot_leader_body(commitment)
         return self._provider.make_request(body, GetSlotLeaderResp)
-
-    def get_stake_activation(
-        self,
-        pubkey: Pubkey,
-        epoch: Optional[int] = None,
-        commitment: Optional[Commitment] = None,
-    ) -> GetStakeActivationResp:
-        """Returns epoch activation information for a stake account.
-
-        Args:
-            pubkey: Pubkey of stake account to query
-            epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
-                defaults to current epoch.
-            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_stake_activation().value.active # doctest: +SKIP
-            124429280
-        """
-        warn("get_stake_activation is deprecated. Use get_account_info instead.", DeprecationWarning, stacklevel=1)
-        body = self._get_stake_activation_body(pubkey, epoch, commitment)
-        return self._provider.make_request(body, GetStakeActivationResp)
 
     def get_supply(self, commitment: Optional[Commitment] = None) -> GetSupplyResp:
         """Returns information about the current supply.
