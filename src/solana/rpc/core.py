@@ -1,5 +1,6 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
+
 from typing import List, Optional, Sequence, Tuple, Union, overload
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
@@ -42,6 +43,7 @@ from solders.rpc.requests import (
     GetFeeForMessage,
     GetFirstAvailableBlock,
     GetGenesisHash,
+    GetHealth,
     GetIdentity,
     GetInflationGovernor,
     GetInflationRate,
@@ -77,11 +79,10 @@ from solders.rpc.requests import (
 )
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
-from solders.transaction import VersionedTransaction
+from solders.transaction import Transaction, VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.rpc import types
-from solders.transaction import Transaction
 
 from .commitment import Commitment, Confirmed, Finalized, Processed
 
@@ -156,6 +157,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def commitment(self) -> Commitment:
         """The default commitment used for requests."""
         return self._commitment
+
+    def _get_health_body(self) -> GetHealth:
+        return GetHealth()
 
     def _get_balance_body(self, pubkey: Pubkey, commitment: Optional[Commitment]) -> GetBalance:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -377,7 +381,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment],
-    ) -> Tuple[Pubkey, Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId], RpcAccountInfoConfig,]:
+    ) -> Tuple[
+        Pubkey,
+        Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId],
+        RpcAccountInfoConfig,
+    ]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[opts.encoding]
         maybe_data_slice = opts.data_slice
@@ -484,14 +492,12 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     @overload
     def _simulate_transaction_body(
         self, txn: Transaction, sig_verify: bool, commitment: Optional[Commitment]
-    ) -> SimulateLegacyTransaction:
-        ...
+    ) -> SimulateLegacyTransaction: ...
 
     @overload
     def _simulate_transaction_body(
         self, txn: VersionedTransaction, sig_verify: bool, commitment: Optional[Commitment]
-    ) -> SimulateVersionedTransaction:
-        ...
+    ) -> SimulateVersionedTransaction: ...
 
     def _simulate_transaction_body(
         self, txn: Union[Transaction, VersionedTransaction], sig_verify: bool, commitment: Optional[Commitment]
@@ -504,7 +510,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _post_send(resp: SendTransactionResp) -> SendTransactionResp:
-
         if isinstance(resp, InvalidParamsMessage):
             raise RPCNoResultException(resp.message)
 

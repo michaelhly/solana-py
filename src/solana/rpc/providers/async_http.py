@@ -1,4 +1,5 @@
 """Async HTTP RPC Provider."""
+
 from typing import Dict, Optional, Tuple, Type, overload
 
 import httpx
@@ -72,28 +73,22 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         return _after_request_unparsed(raw_response)
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup:
-        ...
+    async def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1:
-        ...
+    async def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2:
-        ...
+    async def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3:
-        ...
+    async def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4:
-        ...
+    async def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
-        ...
+    async def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5: ...
 
     async def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make an async HTTP batch request to an http rpc endpoint.
@@ -119,17 +114,6 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         """
         raw = await self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
-
-    async def is_connected(self) -> bool:
-        """Health check."""
-        try:
-            response = await self.session.get(self.health_uri)
-            response.raise_for_status()
-        except (IOError, httpx.HTTPError) as err:
-            self.logger.error("Health check failed with error: %s", str(err))
-            return False
-
-        return response.status_code == httpx.codes.OK
 
     async def __aenter__(self) -> "AsyncHTTPProvider":
         """Use as a context manager."""

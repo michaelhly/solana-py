@@ -1,4 +1,5 @@
 """Tests for the Memo program."""
+
 import pytest
 from solders.keypair import Keypair
 from solders.message import Message

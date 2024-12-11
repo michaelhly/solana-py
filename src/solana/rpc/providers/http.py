@@ -1,5 +1,6 @@
 """HTTP RPC Provider."""
-from typing import Tuple, Type, overload
+
+from typing import Optional, Tuple, Dict, Type, overload
 
 import httpx
 from solders.rpc.requests import Body
@@ -8,6 +9,7 @@ from solders.rpc.responses import RPCResult
 from ...exceptions import SolanaRpcException, handle_exceptions
 from .base import BaseProvider
 from .core import (
+    DEFAULT_TIMEOUT,
     T,
     _after_request_unparsed,
     _BodiesTup,
@@ -38,6 +40,16 @@ from .core import (
 class HTTPProvider(BaseProvider, _HTTPProviderCore):
     """HTTP provider to interact with the http rpc endpoint."""
 
+    def __init__(
+        self,
+        endpoint: Optional[str] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+        timeout: float = DEFAULT_TIMEOUT,
+    ):
+        """Init HTTPProvider."""
+        super().__init__(endpoint, extra_headers)
+        self.session = httpx.Client(timeout=timeout)
+
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
         return f"HTTP RPC connection {self.endpoint_uri}"
@@ -51,38 +63,32 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body)
-        raw_response = httpx.post(**request_kwargs)
+        raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_batch_request(reqs)
-        raw_response = httpx.post(**request_kwargs)
+        raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4: ...
 
     @overload
-    def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5:
-        ...
+    def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5: ...
 
     def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint.
@@ -108,14 +114,3 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         """
         raw = self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
-
-    def is_connected(self) -> bool:
-        """Health check."""
-        try:
-            response = httpx.get(self.health_uri)
-            response.raise_for_status()
-        except (IOError, httpx.HTTPError) as err:
-            self.logger.error("Health check failed with error: %s", str(err))
-            return False
-
-        return response.status_code == httpx.codes.OK

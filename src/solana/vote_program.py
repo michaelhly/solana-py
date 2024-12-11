@@ -1,4 +1,5 @@
 """Library to interface with the vote program."""
+
 from __future__ import annotations
 
 from typing import NamedTuple
@@ -8,6 +9,7 @@ from solders.pubkey import Pubkey
 
 from solana.constants import VOTE_PROGRAM_ID
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
+
 
 # Instrection Params
 class WithdrawFromVoteAccountParams(NamedTuple):
