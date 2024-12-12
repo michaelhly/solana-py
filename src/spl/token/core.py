@@ -281,7 +281,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             )
         ]
         msg = Message.new_with_blockhash(ixs, self.payer.pubkey(), recent_blockhash)
-        txn = Transaction([self.payer], msg, recent_blockhash)
+        txn = Transaction([self.payer, *signers], msg, recent_blockhash)
         return txn, opts
 
     def _set_authority_args(
@@ -666,7 +666,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             )
         ]
         msg = Message.new_with_blockhash(ixs, self.payer.pubkey(), recent_blockhash)
-        txn = Transaction([self.payer], msg, recent_blockhash)
+        txn = Transaction([self.payer, *signers], msg, recent_blockhash)
         return txn, opts
 
     def _mint_to_checked_args(
