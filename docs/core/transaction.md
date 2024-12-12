@@ -1,3 +1,0 @@
-# Transaction
-
-:::solana.transaction
