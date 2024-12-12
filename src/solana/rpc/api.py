@@ -83,7 +83,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
         timeout: HTTP request timeout in seconds.
         extra_headers: Extra headers to pass for HTTP request.
-
+        proxy: Proxy to pass for HTTP request.
     """
 
     def __init__(
