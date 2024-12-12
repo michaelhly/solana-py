@@ -96,11 +96,12 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
         timeout: float = 10,
+        proxy: str = None,
         extra_headers: Optional[Dict[str, str]] = None,
     ):
         """Init API client."""
         super().__init__(commitment)
-        self._provider = http.HTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers)
+        self._provider = http.HTTPProvider(endpoint, timeout=timeout, proxy=proxy, extra_headers=extra_headers)
 
     def is_connected(self) -> bool:
         """Health check.

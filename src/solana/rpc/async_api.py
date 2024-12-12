@@ -92,11 +92,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
         timeout: float = 10,
+        proxy: str = None,
         extra_headers: Optional[Dict[str, str]] = None,
     ) -> None:
         """Init API client."""
         super().__init__(commitment)
-        self._provider = async_http.AsyncHTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers)
+        self._provider = async_http.AsyncHTTPProvider(endpoint, timeout=timeout, proxy=proxy, extra_headers=extra_headers)
 
     async def __aenter__(self) -> "AsyncClient":
         """Use as a context manager."""
