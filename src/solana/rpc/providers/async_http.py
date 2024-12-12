@@ -45,7 +45,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         endpoint: Optional[str] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: float = DEFAULT_TIMEOUT,
-        proxy: str = None,
+        proxy: Optional[str] = None,
     ):
         """Init AsyncHTTPProvider."""
         super().__init__(endpoint, extra_headers)

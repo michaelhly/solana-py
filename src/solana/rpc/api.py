@@ -92,7 +92,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         timeout: float = 10,
         extra_headers: Optional[Dict[str, str]] = None,
-        proxy: str = None,
+        proxy: Optional[str] = None,
     ):
         """Init API client."""
         super().__init__(commitment)
