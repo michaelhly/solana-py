@@ -80,7 +80,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
         timeout: HTTP request timeout in seconds.
         extra_headers: Extra headers to pass for HTTP request.
-        proxy: Proxy to pass for HTTP request.
+        proxy: Proxy URL to pass to the HTTP client.
     """
 
     def __init__(
