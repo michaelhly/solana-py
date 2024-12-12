@@ -4,10 +4,7 @@ from __future__ import annotations
 
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
-from warnings import warn
 
-from solders.hash import Hash as Blockhash
-from solders.keypair import Keypair
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
 from solders.rpc.responses import (
@@ -43,7 +40,6 @@ from solders.rpc.responses import (
     GetSignatureStatusesResp,
     GetSlotLeaderResp,
     GetSlotResp,
-    GetStakeActivationResp,
     GetSupplyResp,
     GetTokenAccountBalanceResp,
     GetTokenAccountsByDelegateJsonParsedResp,
@@ -67,9 +63,8 @@ from solders.signature import Signature
 from solders.transaction import Transaction, VersionedTransaction
 
 from solana.rpc import types
-from solana.transaction import Transaction as LegacyTransaction
 
-from .commitment import Commitment, Finalized
+from .commitment import Commitment
 from .core import (
     _COMMITMENT_TO_SOLDERS,
     RPCException,
@@ -88,7 +83,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
         timeout: HTTP request timeout in seconds.
         extra_headers: Extra headers to pass for HTTP request.
-
+        proxy: Proxy URL to pass to the HTTP client.
     """
 
     def __init__(
@@ -97,10 +92,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         timeout: float = 10,
         extra_headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[str] = None,
     ):
         """Init API client."""
         super().__init__(commitment)
-        self._provider = http.HTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers)
+        self._provider = http.HTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers, proxy=proxy)
 
     def is_connected(self) -> bool:
         """Health check.
@@ -764,29 +760,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_slot_leader_body(commitment)
         return self._provider.make_request(body, GetSlotLeaderResp)
 
-    def get_stake_activation(
-        self,
-        pubkey: Pubkey,
-        epoch: Optional[int] = None,
-        commitment: Optional[Commitment] = None,
-    ) -> GetStakeActivationResp:
-        """Returns epoch activation information for a stake account.
-
-        Args:
-            pubkey: Pubkey of stake account to query
-            epoch: (optional) Epoch for which to calculate activation details. If parameter not provided,
-                defaults to current epoch.
-            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-
-        Example:
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.get_stake_activation().value.active # doctest: +SKIP
-            124429280
-        """
-        warn("get_stake_activation is deprecated. Use get_account_info instead.", DeprecationWarning, stacklevel=1)
-        body = self._get_stake_activation_body(pubkey, epoch, commitment)
-        return self._provider.make_request(body, GetStakeActivationResp)
-
     def get_supply(self, commitment: Optional[Commitment] = None) -> GetSupplyResp:
         """Returns information about the current supply.
 
@@ -1001,62 +974,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             return self._post_send(resp)
         post_send_args = self._send_raw_transaction_post_send_args(resp, opts_to_use)
         return self.__post_send_with_confirm(*post_send_args)
-
-    def send_legacy_transaction(
-        self,
-        txn: LegacyTransaction,
-        *signers: Keypair,
-        opts: Optional[types.TxOpts] = None,
-        recent_blockhash: Optional[Blockhash] = None,
-    ) -> SendTransactionResp:
-        """Send a legacy transaction.
-
-        Args:
-            txn: transaction object.
-            signers: Signers to sign the transaction. Only supported for legacy Transaction.
-            opts: (optional) Transaction options.
-            recent_blockhash: (optional) Pass a valid recent blockhash here if you want to
-                skip fetching the recent blockhash or relying on the cache.
-                Only supported for legacy Transaction.
-
-        Example:
-            >>> from solders.keypair import Keypair
-            >>> from solders.pubkey import Pubkey
-            >>> from solana.rpc.api import Client
-            >>> from solders.system_program import TransferParams, transfer
-            >>> from solana.transaction import Transaction
-            >>> leading_zeros = [0] * 31
-            >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> txn = Transaction().add(transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000)))
-            >>> solana_client = Client("http://localhost:8899")
-            >>> solana_client.send_transaction(txn, sender).value # doctest: +SKIP
-            Signature(
-                1111111111111111111111111111111111111111111111111111111111111111,
-            )
-        """
-        warn("send_legacy_transaction is deprecated. Use send_transaction instead.", DeprecationWarning, stacklevel=1)
-
-        last_valid_block_height = None
-        if recent_blockhash is None:
-            blockhash_resp = self.get_latest_blockhash(Finalized)
-            recent_blockhash = self.parse_recent_blockhash(blockhash_resp)
-            last_valid_block_height = blockhash_resp.value.last_valid_block_height
-
-        txn.recent_blockhash = recent_blockhash
-
-        txn.sign(*signers)
-        opts_to_use = (
-            types.TxOpts(
-                preflight_commitment=self._commitment,
-                last_valid_block_height=last_valid_block_height,
-            )
-            if opts is None
-            else opts
-        )
-
-        txn_resp = self.send_raw_transaction(txn.serialize(), opts=opts_to_use)
-        return txn_resp
 
     def send_transaction(
         self,

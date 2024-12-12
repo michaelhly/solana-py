@@ -52,9 +52,7 @@ nav:
       - rpc/types.md
       - rpc/providers.md
   - Core API:
-      - core/transaction.md
-      - core/utils.md
-      - core/vote_program.md
+      - core/api.md
   - Solana Program Library (SPL):
       - spl/intro.md
       - Token:
