@@ -80,6 +80,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Default bank state to query. It can be either "finalized", "confirmed" or "processed".
         timeout: HTTP request timeout in seconds.
         extra_headers: Extra headers to pass for HTTP request.
+        proxy: Proxy URL to pass to the HTTP client.
     """
 
     def __init__(
@@ -88,10 +89,13 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment: Optional[Commitment] = None,
         timeout: float = 10,
         extra_headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[str] = None,
     ) -> None:
         """Init API client."""
         super().__init__(commitment)
-        self._provider = async_http.AsyncHTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers)
+        self._provider = async_http.AsyncHTTPProvider(
+            endpoint, timeout=timeout, extra_headers=extra_headers, proxy=proxy
+        )
 
     async def __aenter__(self) -> "AsyncClient":
         """Use as a context manager."""

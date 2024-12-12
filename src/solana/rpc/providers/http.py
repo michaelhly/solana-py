@@ -45,10 +45,11 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         endpoint: Optional[str] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: float = DEFAULT_TIMEOUT,
+        proxy: Optional[str] = None,
     ):
         """Init HTTPProvider."""
         super().__init__(endpoint, extra_headers)
-        self.session = httpx.Client(timeout=timeout)
+        self.session = httpx.Client(timeout=timeout, proxy=proxy)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
