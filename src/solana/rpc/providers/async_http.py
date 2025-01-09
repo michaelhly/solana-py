@@ -49,7 +49,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     ):
         """Init AsyncHTTPProvider."""
         super().__init__(endpoint, extra_headers)
-        self.session = httpx.AsyncClient(timeout=timeout, proxy=proxy)
+        self.session = httpx.AsyncClient(timeout=timeout, proxies=proxy)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
@@ -77,21 +77,33 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
     async def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1: ...
+    async def make_batch_request(
+        self, reqs: _BodiesTup1, parsers: _Tup1
+    ) -> _RespTup1: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2: ...
+    async def make_batch_request(
+        self, reqs: _BodiesTup2, parsers: _Tup2
+    ) -> _RespTup2: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3: ...
+    async def make_batch_request(
+        self, reqs: _BodiesTup3, parsers: _Tup3
+    ) -> _RespTup3: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4: ...
+    async def make_batch_request(
+        self, reqs: _BodiesTup4, parsers: _Tup4
+    ) -> _RespTup4: ...
 
     @overload
-    async def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5: ...
+    async def make_batch_request(
+        self, reqs: _BodiesTup5, parsers: _Tup5
+    ) -> _RespTup5: ...
 
-    async def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
+    async def make_batch_request(
+        self, reqs: Tuple[Body, ...], parsers: _Tuples
+    ) -> Tuple[RPCResult, ...]:
         """Make an async HTTP batch request to an http rpc endpoint.
 
         Args:
