@@ -18,7 +18,6 @@ Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://
 
 Solana.py is the base Python library for interacting with Solana.
 You can use it to build transactions and interact
-with the
 [Solana JSON RPC API](https://docs.solana.com/apps/jsonrpc-api),
 much like you would do with
 [solana-web3.js](https://github.com/solana-labs/solana-web3.js/)
