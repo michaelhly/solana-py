@@ -1270,6 +1270,7 @@ def create_associated_token_account(
         data=bytes(0),
     )
 
+
 def create_idempotent_associated_token_account(
     payer: Pubkey, owner: Pubkey, mint: Pubkey, token_program_id: Pubkey = TOKEN_PROGRAM_ID
 ) -> Instruction:
