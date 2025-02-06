@@ -242,7 +242,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             ),
         ]
         msg = Message.new_with_blockhash(ixs, payer.pubkey(), recent_blockhash)
-        txn = Transaction([payer], msg, recent_blockhash)
+        txn = Transaction([payer, new_keypair], msg, recent_blockhash)
 
         return (
             new_keypair.pubkey(),
