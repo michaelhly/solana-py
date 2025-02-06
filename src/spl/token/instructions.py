@@ -1271,13 +1271,17 @@ def create_associated_token_account(
     )
 
 
-def create_idempotent_associated_token_account(payer: Pubkey, owner: Pubkey, mint: Pubkey) -> Instruction:
+def create_idempotent_associated_token_account(
+    payer: Pubkey, owner: Pubkey, mint: Pubkey, token_program_id: Pubkey = TOKEN_PROGRAM_ID
+) -> Instruction:
     """Creates an associated token account for the given address/token mint if it not exists.
 
     Returns:
         The instruction to create the associated token account.
     """
-    associated_token_address = get_associated_token_address(owner, mint)
+    if token_program_id not in [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]:
+        raise ValueError("token_program_id must be one of TOKEN_PROGRAM_ID or TOKEN_2022_PROGRAM_ID.")
+    associated_token_address = get_associated_token_address(owner, mint, token_program_id)
     return Instruction(
         accounts=[
             AccountMeta(pubkey=payer, is_signer=True, is_writable=True),
@@ -1285,7 +1289,7 @@ def create_idempotent_associated_token_account(payer: Pubkey, owner: Pubkey, min
             AccountMeta(pubkey=owner, is_signer=False, is_writable=False),
             AccountMeta(pubkey=mint, is_signer=False, is_writable=False),
             AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
-            AccountMeta(pubkey=TOKEN_PROGRAM_ID, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=token_program_id, is_signer=False, is_writable=False),
         ],
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
         data=bytes([1]),
