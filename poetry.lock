@@ -842,22 +842,22 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "pytest-docker"
-version = "2.2.0"
+version = "3.2.0"
 description = "Simple pytest fixtures for Docker and Docker Compose based tests"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "pytest-docker-2.2.0.tar.gz", hash = "sha256:b083fd2ae69212369390033c22228d3263555a5f3b4bef87b74160e07218f377"},
-    {file = "pytest_docker-2.2.0-py3-none-any.whl", hash = "sha256:8ee9c9742d58ac079c81c03635bb830881f7f4d529f0f53f4ba2c89ffc9c7137"},
+    {file = "pytest_docker-3.2.0-py3-none-any.whl", hash = "sha256:3e266db66887aa3611b2dfd86fb2a3b42f25f3a29d3f14b6e57a831e93a64f60"},
+    {file = "pytest_docker-3.2.0.tar.gz", hash = "sha256:3d6537564e1582cab39e6cc3d6f3d931e92398af62f8313fc826e436f8233e21"},
 ]
 
 [package.dependencies]
 attrs = ">=19.2.0"
-pytest = ">=4.0,<8.0"
+pytest = ">=4.0,<9.0"
 
 [package.extras]
 docker-compose-v1 = ["docker-compose (>=1.27.3,<2.0)"]
-tests = ["pytest-pycodestyle (>=2.0.0,<3.0)", "pytest-pylint (>=0.14.1,<1.0)", "requests (>=2.22.0,<3.0)"]
+tests = ["mypy (>=0.500,<2.000)", "pytest-mypy (>=0.10,<1.0)", "pytest-pycodestyle (>=2.0.0,<3.0)", "pytest-pylint (>=0.14.1,<1.0)", "requests (>=2.22.0,<3.0)", "types-requests (>=2.31,<3.0)", "types-setuptools (>=69.0,<70.0)"]
 
 [[package]]
 name = "pytest-html"
@@ -1322,4 +1322,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d309538c4fefdd2471c040b05a60f28fb056fed991c7f72be052a1647705d33b"
+content-hash = "ea71364495e80c71f1aa52946641aeeac514b1b7c282bac2f9999af705e3c57d"
