@@ -10,6 +10,6 @@ updates:
     schedule:
       interval: "monthly"
   - package-ecosystem: "github-actions"
-    directories: "/"
+    directory: "/"
     schedule:
       interval: "monthly"
