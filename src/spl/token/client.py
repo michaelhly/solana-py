@@ -282,7 +282,7 @@ class Token(_TokenCore):  # pylint: disable=too-many-public-methods
             self._conn.get_latest_blockhash().value.blockhash if recent_blockhash is None else recent_blockhash
         )
         public_key, txn, payer, opts = self._create_associated_token_account_args(
-            owner, skip_confirmation, self._conn.commitment, recent_blockhash_to_use
+            owner, skip_confirmation, self._conn.commitment, recent_blockhash_to_use, token_program_id=self.program_id
         )
         self._conn.send_transaction(txn, opts=opts)
         return public_key

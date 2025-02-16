@@ -188,10 +188,17 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         )
 
     def _create_associated_token_account_args(
-        self, owner: Pubkey, skip_confirmation: bool, commitment: Commitment, recent_blockhash: Blockhash, token_program_id: Pubkey = TOKEN_PROGRAM_ID
+        self,
+        owner: Pubkey,
+        skip_confirmation: bool,
+        commitment: Commitment,
+        recent_blockhash: Blockhash,
+        token_program_id: Pubkey = TOKEN_PROGRAM_ID,
     ) -> Tuple[Pubkey, Transaction, Keypair, TxOpts]:
         # Construct transaction
-        ix = spl_token.create_associated_token_account(payer=self.payer.pubkey(), owner=owner, mint=self.pubkey, token_program_id=token_program_id)
+        ix = spl_token.create_associated_token_account(
+            payer=self.payer.pubkey(), owner=owner, mint=self.pubkey, token_program_id=token_program_id
+        )
         msg = Message.new_with_blockhash([ix], self.payer.pubkey(), recent_blockhash)
         txn = Transaction([self.payer], msg, recent_blockhash)
         return (
