@@ -20,6 +20,7 @@ from solders.message import Message
 from solders.transaction import Transaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT  # type: ignore
 from spl.token.constants import WRAPPED_SOL_MINT
+from spl.token.constants import TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID
 
 if TYPE_CHECKING:
     from spl.token.async_client import AsyncToken
@@ -188,10 +189,10 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         )
 
     def _create_associated_token_account_args(
-        self, owner: Pubkey, skip_confirmation: bool, commitment: Commitment, recent_blockhash: Blockhash
+        self, owner: Pubkey, skip_confirmation: bool, commitment: Commitment, recent_blockhash: Blockhash, token_program_id: Pubkey = TOKEN_PROGRAM_ID
     ) -> Tuple[Pubkey, Transaction, Keypair, TxOpts]:
         # Construct transaction
-        ix = spl_token.create_associated_token_account(payer=self.payer.pubkey(), owner=owner, mint=self.pubkey)
+        ix = spl_token.create_associated_token_account(payer=self.payer.pubkey(), owner=owner, mint=self.pubkey, token_program_id=token_program_id)
         msg = Message.new_with_blockhash([ix], self.payer.pubkey(), recent_blockhash)
         txn = Transaction([self.payer], msg, recent_blockhash)
         return (
