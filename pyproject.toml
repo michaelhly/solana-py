@@ -31,7 +31,7 @@ python = "^3.9"
 construct-typing = "^0.5.2"
 httpx = ">=0.23.0"
 typing-extensions = ">=4.2.0"
-websockets = ">=9.0,<=14.2"
+websockets = ">=9.0,<=15.0"
 solders = ">=0.23,<0.27"
 
 [tool.poetry.dev-dependencies]
