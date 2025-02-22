@@ -35,7 +35,7 @@ websockets = ">=9.0,<=15.0"
 solders = ">=0.23,<0.27"
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.4.3"
+pytest = "^8.3.4"
 mypy = "^1.15"
 pyyaml = "6.0.2"
 pytest-docker = "^3.2.0"
