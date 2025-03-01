@@ -45,7 +45,7 @@ pytest-cov = "^6.0.0"
 pytest-html = "^4.1.1"
 pytest-xdist = "^3.6.1"
 asyncstdlib = "^3.10.2"
-mkdocstrings = "^0.18.0"
+mkdocstrings = "^0.28.2"
 mkdocs-material = "^8.2.1"
 ruff = "^0.7.3"
 
