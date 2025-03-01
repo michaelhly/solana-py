@@ -28,7 +28,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-construct-typing = "^0.5.2"
+construct-typing = ">=0.5.2,<0.7.0"
 httpx = ">=0.23.0"
 typing-extensions = ">=4.2.0"
 websockets = ">=9.0,<=15.0"
