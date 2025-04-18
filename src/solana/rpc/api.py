@@ -998,7 +998,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))]
             >>> msg = Message(ixns, sender.pubkey())
             >>> client = Client("http://localhost:8899")
-            >>> client.send_transaction(Transaction([sender], msg, client.get_latest_blockhash()).value.blockhash) # doctest: +SKIP
+            >>> client.send_transaction(Transaction([sender], msg, client.get_latest_blockhash().value.blockhash)) # doctest: +SKIP
         """  # noqa: E501
         tx_opts = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
         return self.send_raw_transaction(bytes(txn), opts=tx_opts)
