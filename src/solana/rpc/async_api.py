@@ -776,8 +776,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(body, GetSlotLeaderResp)
 
     async def get_slot_leaders(self, start: int, limit: int) -> GetSlotLeadersResp:
-        """
-        Returns the list of slot leaders for the provided start slot and limit.
+        """Returns the list of slot leaders for the provided start slot and limit.
 
         Args:
             start: The start slot to get the slot leaders from.
