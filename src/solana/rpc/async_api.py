@@ -38,6 +38,7 @@ from solders.rpc.responses import (
     GetSignaturesForAddressResp,
     GetSignatureStatusesResp,
     GetSlotLeaderResp,
+    GetSlotLeadersResp,
     GetSlotResp,
     GetSupplyResp,
     GetTokenAccountBalanceResp,
@@ -773,6 +774,19 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         body = self._get_slot_leader_body(commitment)
         return await self._provider.make_request(body, GetSlotLeaderResp)
+
+    async def get_slot_leaders(self, start: int, limit: int) -> GetSlotLeadersResp:
+        """Returns the list of slot leaders for the provided start slot and limit.
+
+        Args:
+            start: The start slot to get the slot leaders from.
+            limit: The number of slot leaders to return.
+
+        Returns:
+            A list of slot leaders.
+        """
+        body = self._get_slot_leaders_body(start, limit)
+        return await self._provider.make_request(body, GetSlotLeadersResp)
 
     async def get_supply(self, commitment: Optional[Commitment] = None) -> GetSupplyResp:
         """Returns information about the current supply.

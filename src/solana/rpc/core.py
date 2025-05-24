@@ -59,6 +59,7 @@ from solders.rpc.requests import (
     GetSignatureStatuses,
     GetSlot,
     GetSlotLeader,
+    GetSlotLeaders,
     GetStakeActivation,
     GetSupply,
     GetTokenAccountBalance,
@@ -342,6 +343,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_slot_leader_body(self, commitment: Optional[Commitment]) -> GetSlotLeader:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetSlotLeader(RpcContextConfig(commitment_to_use))
+
+    def _get_slot_leaders_body(
+        self,
+        start: int,
+        limit: int,
+    ) -> GetSlotLeaders:
+        return GetSlotLeaders(
+            start,
+            limit,
+        )
 
     def _get_stake_activation_body(
         self,
