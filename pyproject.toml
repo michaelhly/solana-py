@@ -47,7 +47,7 @@ pytest-xdist = "^3.6.1"
 asyncstdlib = "^3.10.2"
 mkdocstrings = "^0.18.0"
 mkdocs-material = "^8.2.1"
-ruff = "^0.7.3"
+ruff = "^0.11.12"
 
 
 [build-system]
