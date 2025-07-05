@@ -1,0 +1,39 @@
+from solana.keypair import Keypair
+from solana.rpc.api import Client
+from spl.token.client import Token
+from spl.token.constants import TOKEN_PROGRAM_ID
+from solana.rpc.types import TxOpts
+from solana.rpc.commitment import Confirmed
+
+# Connect to Solana devnet
+client = Client("https://api.devnet.solana.com")
+
+# Generate a wallet
+wallet = Keypair()
+
+# Airdrop SOL
+client.request_airdrop(wallet.public_key, int(1e9))  # 1 SOL
+print("Wallet:", wallet.public_key)
+
+# Create the token (RICHGUY)
+token = Token.create_mint(
+    conn=client,
+    payer=wallet,
+    mint_authority=wallet.public_key,
+    decimals=9,
+    program_id=TOKEN_PROGRAM_ID
+)
+
+print("✅ RICHGUY Token Address:", token.pubkey)
+
+# Create a token account to hold the new RICHGUY tokens
+token_account = token.create_account(wallet.public_key)
+
+# Mint tokens to yourself
+token.mint_to(
+    dest=token_account,
+    mint_authority=wallet,
+    amount=1000000000000
+)
+
+print("✅ Minted 1,000,000,000 RICHGUY tokens!")
