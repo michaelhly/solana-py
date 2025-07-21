@@ -29,7 +29,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.9"
 construct-typing = "^0.6.2"
-httpx = ">=0.23.0"
+httpx = ">=0.28.0"
 typing-extensions = ">=4.2.0"
 websockets = ">=9.0,<=15.0.1"
 solders = ">=0.23,<0.27"
