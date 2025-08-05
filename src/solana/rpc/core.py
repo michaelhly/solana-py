@@ -473,9 +473,20 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTransactionCount(RpcContextConfig(commitment_to_use))
 
-    def _get_vote_accounts_body(self, commitment: Optional[Commitment]) -> GetVoteAccounts:
+    def _get_vote_accounts_body(
+        self,
+        vote_pubkey: Optional[Pubkey] = None,
+        commitment: Optional[Commitment] = None,
+        keep_unstaked_delinquents: Optional[bool] = None,
+        delinquent_slot_distance: Optional[int] = None,
+    ) -> GetVoteAccounts:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcGetVoteAccountsConfig(commitment=commitment_to_use)
+        config = RpcGetVoteAccountsConfig(
+            vote_pubkey=vote_pubkey,
+            commitment=commitment_to_use,
+            keep_unstaked_delinquents=keep_unstaked_delinquents,
+            delinquent_slot_distance=delinquent_slot_distance,
+        )
         return GetVoteAccounts(config)
 
     def _request_airdrop_body(self, pubkey: Pubkey, lamports: int, commitment: Optional[Commitment]) -> RequestAirdrop:

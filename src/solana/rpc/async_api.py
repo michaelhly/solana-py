@@ -932,18 +932,30 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return await self._provider.make_request(self._get_version, GetVersionResp)
 
-    async def get_vote_accounts(self, commitment: Optional[Commitment] = None) -> GetVoteAccountsResp:
+    async def get_vote_accounts(
+        self,
+        vote_pubkey: Optional[Pubkey] = None,
+        commitment: Optional[Commitment] = None,
+        keep_unstaked_delinquents: Optional[bool] = None,
+        delinquent_slot_distance: Optional[int] = None,
+    ) -> GetVoteAccountsResp:
         """Returns the account info and associated stake for all the voting accounts in the current bank.
 
         Args:
+            vote_pubkey: Only return results for this validator vote address.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            keep_unstaked_delinquents: Filter out delinquent validators with no stake.
+            delinquent_slot_distance: Specify the number of slots behind the tip that the validator must fall
+                to be considered delinquent.
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_vote_accounts()).value.current[0].commission # doctest: +SKIP
             100
         """
-        body = self._get_vote_accounts_body(commitment)
+        body = self._get_vote_accounts_body(
+            vote_pubkey, commitment, keep_unstaked_delinquents, delinquent_slot_distance
+        )
         return await self._provider.make_request(body, GetVoteAccountsResp)
 
     async def request_airdrop(
