@@ -919,11 +919,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(self._get_version, GetVersionResp)
 
     def get_vote_accounts(
-            self,
-            vote_pubkey: Optional[Pubkey] = None,
-            commitment: Optional[Commitment] = None,
-            keep_unstaked_delinquents: Optional[bool] = None,
-            delinquent_slot_distance: Optional[int] = None
+        self,
+        vote_pubkey: Optional[Pubkey] = None,
+        commitment: Optional[Commitment] = None,
+        keep_unstaked_delinquents: Optional[bool] = None,
+        delinquent_slot_distance: Optional[int] = None,
     ) -> GetVoteAccountsResp:
         """Returns the account info and associated stake for all the voting accounts in the current bank.
 
@@ -940,10 +940,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             100
         """
         body = self._get_vote_accounts_body(
-            vote_pubkey,
-            commitment,
-            keep_unstaked_delinquents,
-            delinquent_slot_distance
+            vote_pubkey, commitment, keep_unstaked_delinquents, delinquent_slot_distance
         )
         return self._provider.make_request(body, GetVoteAccountsResp)
 
