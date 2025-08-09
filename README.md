@@ -50,13 +50,8 @@ pip install solana
 
 ### General Usage
 
-Note: check out the
-[Solana Cookbook](https://solanacookbook.com/)
-for more detailed examples!
-
-```py
-import solana
-```
+- [Python Cookbook](https://michaelhly.com/solana-py/cookbook/)
+- [Solana Cookbook](https://solanacookbook.com/)
 
 ### API Client
 
