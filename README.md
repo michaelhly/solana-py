@@ -10,7 +10,7 @@ Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://
 [![Python versions](https://img.shields.io/pypi/pyversions/solana.svg)]( https://pypi.python.org/pypi/solana)
 [![Codecov](https://codecov.io/gh/michaelhly/solana-py/branch/master/graph/badge.svg)](https://codecov.io/gh/michaelhly/solana-py/branch/master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/michaelhly/solana-py/blob/master/LICENSE)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/solana)](https://pypistats.org/packages/solana)
+[![PyPI Downloads](https://static.pepy.tech/badge/solana/month)](https://clickpy.clickhouse.com/dashboard/solana)
 
 # Solana.py
 
