@@ -1034,14 +1034,31 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         txn: Union[Transaction, VersionedTransaction],
         sig_verify: bool = False,
         commitment: Optional[Commitment] = None,
+        replace_recent_blockhash: bool = False,
+        min_context_slot: Optional[int] = None,
+        inner_instructions: bool = False,
+        accounts_addresses: Optional[List[Pubkey]] = None,
+        accounts_encoding: str = "base64",
     ) -> SimulateTransactionResp:
         """Simulate sending a transaction.
 
         Args:
             txn: A transaction object.
-                The transaction must have a valid blockhash, but is not required to be signed.
-            sig_verify: If true the transaction signatures will be verified (default: false).
+            sig_verify: If True the transaction signatures will be verified
+                (conflicts with ``replace_recent_blockhash``).
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            replace_recent_blockhash: If True the transaction recent blockhash
+                will be replaced with the most recent blockhash
+                (conflicts with ``sig_verify``).
+            min_context_slot: The minimum slot that the request can be evaluated at.
+            inner_instructions: If true the response will include inner instructions. 
+                These inner instructions will be `jsonParsed` where possible, otherwise json.
+            accounts_addresses: An array of accounts to return, as base-58 encoded strings
+            accounts_encoding: Encoding for returned Account data. 
+                Note: jsonParsed encoding attempts to use program-specific state parsers to return more 
+                human-readable and explicit account state data. If jsonParsed is requested but a parser 
+                cannot be found, the field falls back to base64 encoding, detectable when the returned 
+                accounts field is type string.
 
         Example:
             >>> from solders.transaction import Transaction
@@ -1057,7 +1074,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> solana_client.simulate_transaction(tx).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
         """
-        body = self._simulate_transaction_body(txn, sig_verify, commitment)
+        body = self._simulate_transaction_body(txn, sig_verify, commitment, replace_recent_blockhash, min_context_slot, inner_instructions, accounts_addresses, accounts_encoding)
         return self._provider.make_request(body, SimulateTransactionResp)
 
     def validator_exit(self) -> ValidatorExitResp:
