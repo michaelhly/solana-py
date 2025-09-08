@@ -514,8 +514,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @overload
     def _simulate_transaction_body(
-        self, txn: Transaction, 
-        sig_verify: bool, 
+        self,
+        txn: Transaction,
+        sig_verify: bool,
         commitment: Optional[Commitment],
         replace_recent_blockhash: bool,
         min_context_slot: Optional[int],
@@ -526,9 +527,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @overload
     def _simulate_transaction_body(
-        self, 
-        txn: VersionedTransaction,         
-        sig_verify: bool, 
+        self,
+        txn: VersionedTransaction,
+        sig_verify: bool,
         commitment: Optional[Commitment],
         replace_recent_blockhash: bool,
         min_context_slot: Optional[int],
@@ -538,9 +539,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> SimulateVersionedTransaction: ...
 
     def _simulate_transaction_body(
-        self, 
-        txn: Union[Transaction, VersionedTransaction],         
-        sig_verify: bool, 
+        self,
+        txn: Union[Transaction, VersionedTransaction],
+        sig_verify: bool,
         commitment: Optional[Commitment],
         replace_recent_blockhash: bool,
         min_context_slot: Optional[int],
@@ -549,11 +550,12 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         accounts_encoding: str,
     ) -> Union[SimulateLegacyTransaction, SimulateVersionedTransaction]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
+        accounts = None
         if accounts_addresses is not None:
             accounts_encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[accounts_encoding]
-            accounts = RpcSimulateTransactionAccountsConfig(addresses=accounts_addresses, encoding=accounts_encoding_to_use)
-        else:
-            accounts = None
+            accounts = RpcSimulateTransactionAccountsConfig(
+                addresses=accounts_addresses, encoding=accounts_encoding_to_use
+            )
         config = RpcSimulateTransactionConfig(
             sig_verify=sig_verify,
             commitment=commitment_to_use,
