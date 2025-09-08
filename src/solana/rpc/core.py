@@ -22,6 +22,7 @@ from solders.rpc.config import (
     RpcSignaturesForAddressConfig,
     RpcSignatureStatusConfig,
     RpcSimulateTransactionConfig,
+    RpcSimulateTransactionAccountsConfig,
     RpcSupplyConfig,
     RpcTokenAccountsFilterMint,
     RpcTokenAccountsFilterProgramId,
@@ -513,19 +514,56 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @overload
     def _simulate_transaction_body(
-        self, txn: Transaction, sig_verify: bool, commitment: Optional[Commitment]
+        self,
+        txn: Transaction,
+        sig_verify: bool,
+        commitment: Optional[Commitment],
+        replace_recent_blockhash: bool,
+        min_context_slot: Optional[int],
+        inner_instructions: bool,
+        accounts_addresses: Optional[List[Pubkey]],
+        accounts_encoding: str,
     ) -> SimulateLegacyTransaction: ...
 
     @overload
     def _simulate_transaction_body(
-        self, txn: VersionedTransaction, sig_verify: bool, commitment: Optional[Commitment]
+        self,
+        txn: VersionedTransaction,
+        sig_verify: bool,
+        commitment: Optional[Commitment],
+        replace_recent_blockhash: bool,
+        min_context_slot: Optional[int],
+        inner_instructions: bool,
+        accounts_addresses: Optional[List[Pubkey]],
+        accounts_encoding: str,
     ) -> SimulateVersionedTransaction: ...
 
     def _simulate_transaction_body(
-        self, txn: Union[Transaction, VersionedTransaction], sig_verify: bool, commitment: Optional[Commitment]
+        self,
+        txn: Union[Transaction, VersionedTransaction],
+        sig_verify: bool,
+        commitment: Optional[Commitment],
+        replace_recent_blockhash: bool,
+        min_context_slot: Optional[int],
+        inner_instructions: bool,
+        accounts_addresses: Optional[Sequence[Pubkey]],
+        accounts_encoding: str,
     ) -> Union[SimulateLegacyTransaction, SimulateVersionedTransaction]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcSimulateTransactionConfig(sig_verify=sig_verify, commitment=commitment_to_use)
+        accounts = None
+        if accounts_addresses is not None:
+            accounts_encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[accounts_encoding]
+            accounts = RpcSimulateTransactionAccountsConfig(
+                addresses=accounts_addresses, encoding=accounts_encoding_to_use
+            )
+        config = RpcSimulateTransactionConfig(
+            sig_verify=sig_verify,
+            commitment=commitment_to_use,
+            replace_recent_blockhash=replace_recent_blockhash,
+            min_context_slot=min_context_slot,
+            inner_instructions=inner_instructions,
+            accounts=accounts,
+        )
         if isinstance(txn, Transaction):
             return SimulateLegacyTransaction(txn, config)
         return SimulateVersionedTransaction(txn, config)
