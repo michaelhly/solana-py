@@ -112,7 +112,7 @@ jobs:
           make unit-tests
 
       - name: Upload html coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-html-${{ runner.os }}-${{ matrix.python-version }}
           path: htmlcov
