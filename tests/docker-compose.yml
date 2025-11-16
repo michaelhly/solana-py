@@ -1,4 +1,3 @@
-version: '3'
 services:
   localnet:
     image: "solanalabs/solana:v1.16.27"
