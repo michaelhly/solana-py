@@ -21,7 +21,7 @@ tests:
 	poetry run pytest
 
 tests-parallel:
-	poetry run pytest -n auto
+	poetry run pytest -vv -n auto
 
 unit-tests:
 	poetry run pytest -m "not integration" --doctest-modules
