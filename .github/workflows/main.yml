@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v5
+      - name: Debug
+        run: docker compose -f /home/runner/work/solana-py/solana-py/tests/docker-compose.yml
       - name: Set up Python 3.11
         uses: actions/setup-python@v6
         with:
