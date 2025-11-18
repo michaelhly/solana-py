@@ -19,7 +19,9 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v5
       - name: Debug
-        run: docker compose -f /home/runner/work/solana-py/solana-py/tests/docker-compose.yml
+        # The previous command was missing a subcommand like 'up'.
+        # To start the containers in the background, use:
+        run: docker compose -f /home/runner/work/solana-py/solana-py/tests/docker-compose.yml up
       - name: Set up Python 3.11
         uses: actions/setup-python@v6
         with:
