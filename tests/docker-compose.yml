@@ -9,3 +9,7 @@ services:
       [
         SOLANA_RUN_SH_VALIDATOR_ARGS=--rpc-pubsub-enable-vote-subscription --rpc-pubsub-enable-block-subscription,
       ]
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
