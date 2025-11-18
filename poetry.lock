@@ -129,33 +129,34 @@ files = [
 
 [[package]]
 name = "construct"
-version = "2.10.68"
+version = "2.10.70"
 description = "A powerful declarative symmetric parser/builder for binary data"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "construct-2.10.68.tar.gz", hash = "sha256:7b2a3fd8e5f597a5aa1d614c3bd516fa065db01704c72a1efaaeec6ef23d8b45"},
+    {file = "construct-2.10.70-py3-none-any.whl", hash = "sha256:c80be81ef595a1a821ec69dc16099550ed22197615f4320b57cc9ce2a672cb30"},
+    {file = "construct-2.10.70.tar.gz", hash = "sha256:4d2472f9684731e58cc9c56c463be63baa1447d674e0d66aeb5627b22f512c29"},
 ]
 
 [package.extras]
-extras = ["arrow", "cloudpickle", "enum34", "lz4", "numpy", "ruamel.yaml"]
+extras = ["arrow", "cloudpickle", "cryptography", "lz4", "numpy", "ruamel.yaml"]
 
 [[package]]
 name = "construct-typing"
-version = "0.6.2"
+version = "0.7.0"
 description = "Extension for the python package 'construct' that adds typing features"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "construct-typing-0.6.2.tar.gz", hash = "sha256:948e998cfc003681dc34f2d071c3a688cf35b805cbe107febbc488ef967ccba1"},
-    {file = "construct_typing-0.6.2-py3-none-any.whl", hash = "sha256:ebea6989ac622d0c4eb457092cef0c7bfbcfa110bd018670fea7064d0bc09e47"},
+    {file = "construct_typing-0.7.0-py3-none-any.whl", hash = "sha256:c92383c6e8e5d07ba25811c8d5163820458d821e73bb1006541f43f89788646c"},
+    {file = "construct_typing-0.7.0.tar.gz", hash = "sha256:71d110dedff39bd3b603c734077032a7065bc597a49db1f5b03a211d05dbac23"},
 ]
 
 [package.dependencies]
-construct = "2.10.68"
-typing-extensions = ">=4.6.0"
+construct = "2.10.70"
+typing_extensions = ">=4.6.0"
 
 [[package]]
 name = "coverage"
@@ -1399,4 +1400,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "f0dffa859325120c64f7035e7a4baf03c65b7a7342599eee97b075c3fedc15f5"
+content-hash = "9b9e2ffecda4fa78b76dc3ec0e5430cf4a43a3dba27ea295754aedf1184add54"
