@@ -42,6 +42,21 @@ class InitializeMintParams(NamedTuple):
     """The freeze authority/multisignature of the mint."""
 
 
+class InitializeMint2Params(NamedTuple):
+    """Initialize token mint transaction params without Rent sysvar."""
+
+    decimals: int
+    """Number of base 10 digits to the right of the decimal place."""
+    program_id: Pubkey
+    """SPL Token program account."""
+    mint: Pubkey
+    """Public key of the minter account."""
+    mint_authority: Pubkey
+    """The authority/multisignature to mint tokens."""
+    freeze_authority: Optional[Pubkey] = None
+    """The freeze authority/multisignature of the mint."""
+
+
 class InitializeAccountParams(NamedTuple):
     """Initialize token account transaction params."""
 
@@ -55,8 +70,47 @@ class InitializeAccountParams(NamedTuple):
     """Owner of the new account."""
 
 
+class InitializeAccount2Params(NamedTuple):
+    """Initialize token account transaction params with owner in instruction data."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    account: Pubkey
+    """Public key of the new account."""
+    mint: Pubkey
+    """Public key of the minter account."""
+    owner: Pubkey
+    """Owner of the new account."""
+
+
+class InitializeAccount3Params(NamedTuple):
+    """Initialize token account transaction params with owner in instruction data and no Rent sysvar."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    account: Pubkey
+    """Public key of the new account."""
+    mint: Pubkey
+    """Public key of the minter account."""
+    owner: Pubkey
+    """Owner of the new account."""
+
+
 class InitializeMultisigParams(NamedTuple):
     """Initialize multisig token account transaction params."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    multisig: Pubkey
+    """New multisig account address."""
+    m: int
+    """The number of signers (M) required to validate this multisignature account."""
+    signers: List[Pubkey] = []
+    """Addresses of multisig signers."""
+
+
+class InitializeMultisig2Params(NamedTuple):
+    """Initialize multisig token account transaction params without Rent sysvar."""
 
     program_id: Pubkey
     """SPL Token program account."""
@@ -300,6 +354,46 @@ class SyncNativeParams(NamedTuple):
     """Account to sync."""
 
 
+class GetAccountDataSizeParams(NamedTuple):
+    """GetAccountDataSize token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    mint: Pubkey
+    """Mint to calculate account size for."""
+
+
+class InitializeImmutableOwnerParams(NamedTuple):
+    """InitializeImmutableOwner token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    account: Pubkey
+    """Token account to initialize immutable owner for."""
+
+
+class AmountToUiAmountParams(NamedTuple):
+    """AmountToUiAmount token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    mint: Pubkey
+    """Mint to use for conversion."""
+    amount: int
+    """Amount of tokens to reformat."""
+
+
+class UiAmountToAmountParams(NamedTuple):
+    """UiAmountToAmount token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token program account."""
+    mint: Pubkey
+    """Mint to use for conversion."""
+    ui_amount: str
+    """The ui_amount string to convert."""
+
+
 def __parse_and_validate_instruction(
     instruction: Instruction,
     expected_keys: int,
@@ -332,6 +426,20 @@ def decode_initialize_mint(instruction: Instruction) -> InitializeMintParams:
     )
 
 
+def decode_initialize_mint2(instruction: Instruction) -> InitializeMint2Params:
+    """Decode an initialize mint2 token instruction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_MINT2)
+    return InitializeMint2Params(
+        decimals=parsed_data.args.decimals,
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+        mint_authority=Pubkey(parsed_data.args.mint_authority),
+        freeze_authority=Pubkey(parsed_data.args.freeze_authority)
+        if parsed_data.args.freeze_authority_option
+        else None,
+    )
+
+
 def decode_initialize_account(instruction: Instruction) -> InitializeAccountParams:
     """Decode an initialize account token instruction and retrieve the instruction params.
 
@@ -347,6 +455,28 @@ def decode_initialize_account(instruction: Instruction) -> InitializeAccountPara
         account=instruction.accounts[0].pubkey,
         mint=instruction.accounts[1].pubkey,
         owner=instruction.accounts[2].pubkey,
+    )
+
+
+def decode_initialize_account2(instruction: Instruction) -> InitializeAccount2Params:
+    """Decode an initialize account2 token instruction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.INITIALIZE_ACCOUNT2)
+    return InitializeAccount2Params(
+        program_id=instruction.program_id,
+        account=instruction.accounts[0].pubkey,
+        mint=instruction.accounts[1].pubkey,
+        owner=Pubkey(parsed_data.args.owner),
+    )
+
+
+def decode_initialize_account3(instruction: Instruction) -> InitializeAccount3Params:
+    """Decode an initialize account3 token instruction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.INITIALIZE_ACCOUNT3)
+    return InitializeAccount3Params(
+        program_id=instruction.program_id,
+        account=instruction.accounts[0].pubkey,
+        mint=instruction.accounts[1].pubkey,
+        owner=Pubkey(parsed_data.args.owner),
     )
 
 
@@ -366,6 +496,20 @@ def decode_initialize_multisig(instruction: Instruction) -> InitializeMultisigPa
         program_id=instruction.program_id,
         multisig=instruction.accounts[0].pubkey,
         signers=[signer.pubkey for signer in instruction.accounts[-num_signers:]],
+        m=num_signers,
+    )
+
+
+def decode_initialize_multisig2(instruction: Instruction) -> InitializeMultisig2Params:
+    """Decode an initialize multisig2 account token instruction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_MULTISIG2)
+    num_signers = parsed_data.args.m
+    validate_instruction_keys(instruction, 1 + num_signers)
+    signers: List[Pubkey] = [signer.pubkey for signer in instruction.accounts[-num_signers:]] if num_signers else []
+    return InitializeMultisig2Params(
+        program_id=instruction.program_id,
+        multisig=instruction.accounts[0].pubkey,
+        signers=signers,
         m=num_signers,
     )
 
@@ -646,6 +790,45 @@ def decode_sync_native(instruction: Instruction) -> SyncNativeParams:
     )
 
 
+def decode_get_account_data_size(instruction: Instruction) -> GetAccountDataSizeParams:
+    """Decode a get_account_data_size token transaction and retrieve the instruction params."""
+    _ = __parse_and_validate_instruction(instruction, 1, InstructionType.GET_ACCOUNT_DATA_SIZE)
+    return GetAccountDataSizeParams(
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+    )
+
+
+def decode_initialize_immutable_owner(instruction: Instruction) -> InitializeImmutableOwnerParams:
+    """Decode an initialize_immutable_owner token transaction and retrieve the instruction params."""
+    _ = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_IMMUTABLE_OWNER)
+    return InitializeImmutableOwnerParams(
+        program_id=instruction.program_id,
+        account=instruction.accounts[0].pubkey,
+    )
+
+
+def decode_amount_to_ui_amount(instruction: Instruction) -> AmountToUiAmountParams:
+    """Decode an amount_to_ui_amount token transaction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.AMOUNT_TO_UI_AMOUNT)
+    return AmountToUiAmountParams(
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+        amount=parsed_data.args.amount,
+    )
+
+
+def decode_ui_amount_to_amount(instruction: Instruction) -> UiAmountToAmountParams:
+    """Decode a ui_amount_to_amount token transaction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.UI_AMOUNT_TO_AMOUNT)
+    ui_amount_bytes: bytes = parsed_data.args.ui_amount
+    return UiAmountToAmountParams(
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+        ui_amount=ui_amount_bytes.decode("utf-8"),
+    )
+
+
 def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey]) -> None:
     if signers:
         keys.append(AccountMeta(pubkey=owner, is_signer=False, is_writable=False))
@@ -745,6 +928,29 @@ def initialize_mint(params: InitializeMintParams) -> Instruction:
     )
 
 
+def initialize_mint2(params: InitializeMint2Params) -> Instruction:
+    """Creates a transaction instruction to initialize a new mint without providing the Rent sysvar."""
+    freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (Pubkey([0] * 31 + [0]), 0)
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.INITIALIZE_MINT2,
+            "args": {
+                "decimals": params.decimals,
+                "mint_authority": bytes(params.mint_authority),
+                "freeze_authority_option": opt,
+                "freeze_authority": bytes(freeze_authority),
+            },
+        }
+    )
+    return Instruction(
+        accounts=[
+            AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+        ],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
 def initialize_account(params: InitializeAccountParams) -> Instruction:
     """Creates a transaction instruction to initialize a new account to hold tokens.
 
@@ -775,6 +981,43 @@ def initialize_account(params: InitializeAccountParams) -> Instruction:
             AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
             AccountMeta(pubkey=params.owner, is_signer=False, is_writable=False),
             AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
+        ],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def initialize_account2(params: InitializeAccount2Params) -> Instruction:
+    """Creates a transaction instruction to initialize a new account with owner passed in data."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.INITIALIZE_ACCOUNT2,
+            "args": {"owner": bytes(params.owner)},
+        }
+    )
+    return Instruction(
+        accounts=[
+            AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
+        ],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def initialize_account3(params: InitializeAccount3Params) -> Instruction:
+    """Creates a transaction instruction to initialize a new account with owner passed in data and no Rent sysvar."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.INITIALIZE_ACCOUNT3,
+            "args": {"owner": bytes(params.owner)},
+        }
+    )
+    return Instruction(
+        accounts=[
+            AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
         ],
         program_id=params.program_id,
         data=data,
@@ -818,6 +1061,22 @@ def initialize_multisig(params: InitializeMultisigParams) -> Instruction:
     for signer in params.signers:
         keys.append(AccountMeta(pubkey=signer, is_signer=False, is_writable=False))
 
+    return Instruction(accounts=keys, program_id=params.program_id, data=data)
+
+
+def initialize_multisig2(params: InitializeMultisig2Params) -> Instruction:
+    """Creates a transaction instruction to initialize a multisignature account without providing the Rent sysvar."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.INITIALIZE_MULTISIG2,
+            "args": {"m": params.m},
+        }
+    )
+    keys = [
+        AccountMeta(pubkey=params.multisig, is_signer=False, is_writable=True),
+    ]
+    for signer in params.signers:
+        keys.append(AccountMeta(pubkey=signer, is_signer=False, is_writable=False))
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
@@ -1209,6 +1468,53 @@ def sync_native(params: SyncNativeParams) -> Instruction:
         }
     )
     return __sync_native_instruction(params, data)
+
+
+def get_account_data_size(params: GetAccountDataSizeParams) -> Instruction:
+    """Gets the required size of an account for the given mint as a little-endian u64."""
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.GET_ACCOUNT_DATA_SIZE, "args": None})
+    return Instruction(
+        accounts=[AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False)],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def initialize_immutable_owner(params: InitializeImmutableOwnerParams) -> Instruction:
+    """Initializes the Immutable Owner extension for a token account."""
+    data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.INITIALIZE_IMMUTABLE_OWNER, "args": None})
+    return Instruction(
+        accounts=[AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def amount_to_ui_amount(params: AmountToUiAmountParams) -> Instruction:
+    """Converts a raw token amount to a UiAmount string using the given mint."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {"instruction_type": InstructionType.AMOUNT_TO_UI_AMOUNT, "args": {"amount": params.amount}}
+    )
+    return Instruction(
+        accounts=[AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False)],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def ui_amount_to_amount(params: UiAmountToAmountParams) -> Instruction:
+    """Converts a UiAmount string to a raw u64 token amount using the given mint."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.UI_AMOUNT_TO_AMOUNT,
+            "args": {"ui_amount": params.ui_amount.encode("utf-8")},
+        }
+    )
+    return Instruction(
+        accounts=[AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False)],
+        program_id=params.program_id,
+        data=data,
+    )
 
 
 def get_associated_token_address(owner: Pubkey, mint: Pubkey, token_program_id: Pubkey = TOKEN_PROGRAM_ID) -> Pubkey:
