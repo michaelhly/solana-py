@@ -32,6 +32,31 @@ def test_initialize_mint(stubbed_sender):
     assert decoded_params == params_no_freeze
 
 
+def test_initialize_mint2(stubbed_sender):
+    """Test initialize mint2."""
+    mint_authority, freeze_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
+    params_with_freeze = spl_token.InitializeMint2Params(
+        decimals=18,
+        program_id=TOKEN_PROGRAM_ID,
+        mint=stubbed_sender.pubkey(),
+        mint_authority=mint_authority,
+        freeze_authority=freeze_authority,
+    )
+    instruction = spl_token.initialize_mint2(params_with_freeze)
+    assert spl_token.decode_initialize_mint2(instruction) == params_with_freeze
+
+    params_no_freeze = spl_token.InitializeMint2Params(
+        decimals=18,
+        program_id=TOKEN_PROGRAM_ID,
+        mint=stubbed_sender.pubkey(),
+        mint_authority=mint_authority,
+    )
+    instruction = spl_token.initialize_mint2(params_no_freeze)
+    decoded_params = spl_token.decode_initialize_mint2(instruction)
+    assert not decoded_params.freeze_authority
+    assert decoded_params == params_no_freeze
+
+
 def test_initialize_account(stubbed_sender):
     """Test initialize account."""
     new_account, token_mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
@@ -43,6 +68,32 @@ def test_initialize_account(stubbed_sender):
     )
     instruction = spl_token.initialize_account(params)
     assert spl_token.decode_initialize_account(instruction) == params
+
+
+def test_initialize_account2(stubbed_sender):
+    """Test initialize account2."""
+    new_account, token_mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
+    params = spl_token.InitializeAccount2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        account=new_account,
+        mint=token_mint,
+        owner=stubbed_sender.pubkey(),
+    )
+    instruction = spl_token.initialize_account2(params)
+    assert spl_token.decode_initialize_account2(instruction) == params
+
+
+def test_initialize_account3(stubbed_sender):
+    """Test initialize account3."""
+    new_account, token_mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
+    params = spl_token.InitializeAccount3Params(
+        program_id=TOKEN_PROGRAM_ID,
+        account=new_account,
+        mint=token_mint,
+        owner=stubbed_sender.pubkey(),
+    )
+    instruction = spl_token.initialize_account3(params)
+    assert spl_token.decode_initialize_account3(instruction) == params
 
 
 def test_initialize_multisig():
@@ -57,6 +108,20 @@ def test_initialize_multisig():
     )
     instruction = spl_token.initialize_multisig(params)
     assert spl_token.decode_initialize_multisig(instruction) == params
+
+
+def test_initialize_multisig2():
+    """Test initialize multisig2."""
+    new_multisig = Pubkey([0] * 31 + [0])
+    signers = [Pubkey([0] * 31 + [i + 1]) for i in range(3)]
+    params = spl_token.InitializeMultisig2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        multisig=new_multisig,
+        signers=signers,
+        m=len(signers),
+    )
+    instruction = spl_token.initialize_multisig2(params)
+    assert spl_token.decode_initialize_multisig2(instruction) == params
 
 
 def test_transfer(stubbed_receiver, stubbed_sender):
@@ -394,6 +459,38 @@ def test_sync_native(stubbed_sender):
     instruction = spl_token.sync_native(params)
     decoded_params = spl_token.decode_sync_native(instruction)
     assert params == decoded_params
+
+
+def test_get_account_data_size():
+    """Test get_account_data_size."""
+    mint = Pubkey([0] * 31 + [0])
+    params = spl_token.GetAccountDataSizeParams(program_id=TOKEN_PROGRAM_ID, mint=mint)
+    instruction = spl_token.get_account_data_size(params)
+    assert spl_token.decode_get_account_data_size(instruction) == params
+
+
+def test_initialize_immutable_owner():
+    """Test initialize_immutable_owner."""
+    account = Pubkey([0] * 31 + [0])
+    params = spl_token.InitializeImmutableOwnerParams(program_id=TOKEN_PROGRAM_ID, account=account)
+    instruction = spl_token.initialize_immutable_owner(params)
+    assert spl_token.decode_initialize_immutable_owner(instruction) == params
+
+
+def test_amount_to_ui_amount():
+    """Test amount_to_ui_amount."""
+    mint = Pubkey([0] * 31 + [0])
+    params = spl_token.AmountToUiAmountParams(program_id=TOKEN_PROGRAM_ID, mint=mint, amount=42)
+    instruction = spl_token.amount_to_ui_amount(params)
+    assert spl_token.decode_amount_to_ui_amount(instruction) == params
+
+
+def test_ui_amount_to_amount():
+    """Test ui_amount_to_amount."""
+    mint = Pubkey([0] * 31 + [0])
+    params = spl_token.UiAmountToAmountParams(program_id=TOKEN_PROGRAM_ID, mint=mint, ui_amount="0.42")
+    instruction = spl_token.ui_amount_to_amount(params)
+    assert spl_token.decode_ui_amount_to_amount(instruction) == params
 
 
 def test_create_idempotent_token_account(stubbed_receiver, stubbed_sender):
