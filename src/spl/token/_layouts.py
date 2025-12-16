@@ -2,7 +2,7 @@
 
 from enum import IntEnum
 
-from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass, Switch
+from construct import Bytes, GreedyBytes, Int8ul, Int32ul, Int64ul, Pass, Switch
 from construct import Struct as cStruct
 
 PUBLIC_KEY_LAYOUT = Bytes(32)
@@ -27,7 +27,15 @@ class InstructionType(IntEnum):
     APPROVE2 = 13
     MINT_TO2 = 14
     BURN2 = 15
+    INITIALIZE_ACCOUNT2 = 16
     SYNC_NATIVE = 17
+    INITIALIZE_ACCOUNT3 = 18
+    INITIALIZE_MULTISIG2 = 19
+    INITIALIZE_MINT2 = 20
+    GET_ACCOUNT_DATA_SIZE = 21
+    INITIALIZE_IMMUTABLE_OWNER = 22
+    AMOUNT_TO_UI_AMOUNT = 23
+    UI_AMOUNT_TO_AMOUNT = 24
 
 
 _INITIALIZE_MINT_LAYOUT = cStruct(
@@ -39,6 +47,8 @@ _INITIALIZE_MINT_LAYOUT = cStruct(
 
 _INITIALIZE_MULTISIG_LAYOUT = cStruct("m" / Int8ul)
 
+_INITIALIZE_ACCOUNT2_LAYOUT = cStruct("owner" / PUBLIC_KEY_LAYOUT)
+
 _AMOUNT_LAYOUT = cStruct("amount" / Int64ul)
 
 _SET_AUTHORITY_LAYOUT = cStruct(
@@ -48,6 +58,8 @@ _SET_AUTHORITY_LAYOUT = cStruct(
 )
 
 _AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimals" / Int8ul)
+
+_UI_AMOUNT_LAYOUT = cStruct("ui_amount" / GreedyBytes)
 
 INSTRUCTIONS_LAYOUT = cStruct(
     "instruction_type" / Int8ul,
@@ -71,6 +83,15 @@ INSTRUCTIONS_LAYOUT = cStruct(
             InstructionType.APPROVE2: _AMOUNT2_LAYOUT,
             InstructionType.MINT_TO2: _AMOUNT2_LAYOUT,
             InstructionType.BURN2: _AMOUNT2_LAYOUT,
+            InstructionType.INITIALIZE_ACCOUNT2: _INITIALIZE_ACCOUNT2_LAYOUT,
+            InstructionType.SYNC_NATIVE: Pass,
+            InstructionType.INITIALIZE_ACCOUNT3: _INITIALIZE_ACCOUNT2_LAYOUT,
+            InstructionType.INITIALIZE_MULTISIG2: _INITIALIZE_MULTISIG_LAYOUT,
+            InstructionType.INITIALIZE_MINT2: _INITIALIZE_MINT_LAYOUT,
+            InstructionType.GET_ACCOUNT_DATA_SIZE: Pass,
+            InstructionType.INITIALIZE_IMMUTABLE_OWNER: Pass,
+            InstructionType.AMOUNT_TO_UI_AMOUNT: _AMOUNT_LAYOUT,
+            InstructionType.UI_AMOUNT_TO_AMOUNT: _UI_AMOUNT_LAYOUT,
         },
     ),
 )
