@@ -150,13 +150,13 @@ files = [
 
 [[package]]
 name = "cachetools"
-version = "4.2.4"
+version = "5.5.2"
 description = "Extensible memoizing collections and decorators"
 optional = false
-python-versions = "~=3.5"
+python-versions = ">=3.7"
 files = [
-    {file = "cachetools-4.2.4-py3-none-any.whl", hash = "sha256:92971d3cb7d2a97efff7c7bb1657f21a8f5fb309a37530537c71b1774189f2d1"},
-    {file = "cachetools-4.2.4.tar.gz", hash = "sha256:89ea6f1b638d5a73a4f9226be57ac5e4f399d22770b92355f92dcb0f7f001693"},
+    {file = "cachetools-5.5.2-py3-none-any.whl", hash = "sha256:d26a22bcc62eb95c3beabd9f1ee5e820d3d2704fe2967cbe350e20c8ffcd3f0a"},
+    {file = "cachetools-5.5.2.tar.gz", hash = "sha256:1a661caa9175d26759571b2e19580f9d6393969e5dfca11fdb1f947a23e640d4"},
 ]
 
 [[package]]
@@ -1675,4 +1675,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "dfb3bd2e2f886540c421d5ffbfb5bf9c8e2c79163fe1395dd0d4e614bc7fcd49"
+content-hash = "bdd94ce5220b946e6ad82e1671b0bf28feec84d76072f6b24cb966edd36e7ca6"
