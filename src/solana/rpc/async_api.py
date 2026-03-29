@@ -1142,6 +1142,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment_rank = int(commitment_to_use)
         if last_valid_block_height:  # pylint: disable=no-else-return
             current_blockheight = (await self.get_block_height(commitment)).value
+            if current_blockheight > last_valid_block_height:
+                raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             while current_blockheight <= last_valid_block_height:
                 resp = await self.get_signature_statuses([tx_sig])
                 resp_value = resp.value[0]
