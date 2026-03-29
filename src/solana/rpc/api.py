@@ -1130,6 +1130,8 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         commitment_rank = int(commitment_to_use)
         if last_valid_block_height:  # pylint: disable=no-else-return
             current_blockheight = (self.get_block_height(commitment)).value
+            if current_blockheight > last_valid_block_height:
+                raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             while current_blockheight <= last_valid_block_height:
                 resp = self.get_signature_statuses([tx_sig])
                 if isinstance(resp, RPCError.__args__):  # type: ignore
