@@ -88,6 +88,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         endpoint: Optional[str] = None,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         timeout: float = 10,
         extra_headers: Optional[Dict[str, str]] = None,
         proxy: Optional[str] = None,
@@ -145,6 +146,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
     ) -> GetAccountInfoResp:
@@ -191,6 +193,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetAccountInfoMaybeJsonParsedResp:
         """Returns all the account info for the specified public key.
 
@@ -333,6 +336,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         until: Optional[Signature] = None,
         limit: Optional[int] = None,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetSignaturesForAddressResp:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -346,6 +350,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             until: (optional) Search until this transaction signature, if found before limit reached.
             limit: (optional) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
             commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: (optional) The minimum slot that the request can be evaluated at.
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
@@ -356,7 +361,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
-        body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
+        body = self._get_signatures_for_address_body(account, before, until, limit, commitment, min_context_slot)
         return await self._provider.make_request(body, GetSignaturesForAddressResp)
 
     async def get_transaction(
@@ -364,6 +369,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         tx_sig: Signature,
         encoding: str = "json",
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         max_supported_transaction_version: Optional[int] = None,
     ) -> GetTransactionResp:
         """Returns transaction details for a confirmed transaction.
@@ -571,6 +577,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         encoding: str = "base64",
         data_slice: Optional[types.DataSliceOpts] = None,
     ) -> GetMultipleAccountsResp:
@@ -606,6 +613,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetMultipleAccountsMaybeJsonParsedResp:
         """Returns all the account info for a list of public keys.
 
@@ -632,6 +640,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         encoding: Optional[str] = None,
         data_slice: Optional[types.DataSliceOpts] = None,
         filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
@@ -670,6 +679,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
     ) -> GetProgramAccountsMaybeJsonParsedResp:
         """Returns all accounts owned by the provided program Pubkey.
@@ -825,6 +835,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         delegate: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetTokenAccountsByDelegateResp:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
 
@@ -841,6 +852,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         delegate: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetTokenAccountsByDelegateJsonParsedResp:
         """Returns all SPL Token accounts by approved delegate in JSON format (UNSTABLE).
 
@@ -857,6 +869,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         owner: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetTokenAccountsByOwnerJsonParsedResp:
         """Returns all SPL Token accounts by token owner in JSON format (UNSTABLE).
 
@@ -873,6 +886,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         owner: Pubkey,
         opts: types.TokenAccountOpts,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetTokenAccountsByOwnerResp:
         """Returns all SPL Token accounts by token owner (UNSTABLE).
 
@@ -936,6 +950,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         vote_pubkey: Optional[Pubkey] = None,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         keep_unstaked_delinquents: Optional[bool] = None,
         delinquent_slot_distance: Optional[int] = None,
     ) -> GetVoteAccountsResp:
@@ -1048,6 +1063,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         txn: Union[Transaction, VersionedTransaction],
         sig_verify: bool = False,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         replace_recent_blockhash: bool = False,
         min_context_slot: Optional[int] = None,
         inner_instructions: bool = False,
@@ -1127,6 +1143,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         tx_sig: Signature,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
         sleep_seconds: float = 0.5,
         last_valid_block_height: Optional[int] = None,
     ) -> GetSignatureStatusesResp:
