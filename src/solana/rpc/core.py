@@ -224,9 +224,12 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         until: Optional[Signature],
         limit: Optional[int],
         commitment: Optional[Commitment],
+        min_context_slot: Optional[int] = None,
     ) -> GetSignaturesForAddress:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        config = RpcSignaturesForAddressConfig(before=before, until=until, limit=limit, commitment=commitment_to_use)
+        config = RpcSignaturesForAddressConfig(
+            before=before, until=until, limit=limit, commitment=commitment_to_use, min_context_slot=min_context_slot
+        )
         return GetSignaturesForAddress(address, config)
 
     def _get_transaction_body(
