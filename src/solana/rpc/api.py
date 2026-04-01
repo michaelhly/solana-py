@@ -1146,8 +1146,6 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 current_blockheight = (self.get_block_height(commitment)).value
                 sleep(sleep_seconds)
             else:
-                if isinstance(resp, RPCError.__args__):  # type: ignore
-                    raise RPCException(resp)
                 raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             return resp
         else:
