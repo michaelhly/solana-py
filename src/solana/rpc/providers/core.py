@@ -77,6 +77,7 @@ class _HTTPProviderCore:  # pylint: disable=too-few-public-methods
 
     def _build_request_kwargs(self, body: Body) -> Dict[str, Any]:
         common_kwargs = self._build_common_request_kwargs()
+        # V9.2.0 Fix: Force compact JSON separators to prevent Content-Length mismatches
         data = body.to_json()
         return {**common_kwargs, "content": data}
 
