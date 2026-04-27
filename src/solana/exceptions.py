@@ -9,8 +9,8 @@ class SolanaExceptionBase(Exception):
 
     def __init__(self, exc: Exception, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> None:
         """Init."""
-        super().__init__()
         self.error_msg = self._build_error_message(exc, func, *args, **kwargs)
+        super().__init__(self.error_msg)
 
     @staticmethod
     def _build_error_message(
