@@ -333,6 +333,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         until: Optional[Signature] = None,
         limit: Optional[int] = None,
         commitment: Optional[Commitment] = None,
+        min_context_slot: Optional[int] = None,
     ) -> GetSignaturesForAddressResp:
         """Returns confirmed signatures for transactions involving an address.
 
@@ -346,6 +347,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             until: (optional) Search until this transaction signature, if found before limit reached.
             limit: (optional) Maximum transaction signatures to return (between 1 and 1,000, default: 1,000).
             commitment: (optional) Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            min_context_slot: (optional) The minimum slot that the request can be evaluated at.
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
@@ -356,7 +358,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """
-        body = self._get_signatures_for_address_body(account, before, until, limit, commitment)
+        body = self._get_signatures_for_address_body(account, before, until, limit, commitment, min_context_slot)
         return await self._provider.make_request(body, GetSignaturesForAddressResp)
 
     async def get_transaction(
