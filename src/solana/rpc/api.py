@@ -7,6 +7,7 @@ from typing import Dict, List, Optional, Sequence, Union
 
 from solders.message import VersionedMessage
 from solders.pubkey import Pubkey
+from solders.rpc.requests import GetRecentPrioritizationFees
 from solders.rpc.responses import (
     GetAccountInfoMaybeJsonParsedResp,
     GetAccountInfoResp,
@@ -36,6 +37,7 @@ from solders.rpc.responses import (
     GetProgramAccountsMaybeJsonParsedResp,
     GetProgramAccountsResp,
     GetRecentPerformanceSamplesResp,
+    GetRecentPrioritizationFeesResp,
     GetSignaturesForAddressResp,
     GetSignatureStatusesResp,
     GetSlotLeaderResp,
@@ -281,6 +283,28 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """  # noqa: E501 # pylint: disable=line-too-long
         body = self._get_recent_performance_samples_body(limit)
         return self._provider.make_request(body, GetRecentPerformanceSamplesResp)
+
+    def get_recent_prioritization_fees(
+        self, addresses: Optional[Sequence[Pubkey]] = None
+    ) -> GetRecentPrioritizationFeesResp:
+        """Returns a list of recent prioritization fees, in reverse slot order.
+
+        Args:
+            addresses: Account addresses to query. If omitted, the response includes recent prioritization fees
+                from the node's recent blocks.
+
+        Example:
+            >>> solana_client = Client("http://localhost:8899")
+            >>> solana_client.get_recent_prioritization_fees().value[0] # doctest: +SKIP
+            RpcPrioritizationFee(
+                RpcPrioritizationFee {
+                    slot: 348125,
+                    prioritization_fee: 1000,
+                },
+            )
+        """
+        body = GetRecentPrioritizationFees(addresses)
+        return self._provider.make_request(body, GetRecentPrioritizationFeesResp)
 
     def get_block_height(self, commitment: Optional[Commitment] = None) -> GetBlockHeightResp:
         """Returns the current block height of the node.
