@@ -1516,21 +1516,31 @@ def ui_amount_to_amount(params: UiAmountToAmountParams) -> Instruction:
         data=data,
     )
 
-
 def get_associated_token_address(owner: Pubkey, mint: Pubkey, token_program_id: Pubkey = TOKEN_PROGRAM_ID) -> Pubkey:
     """Derives the associated token address for the given wallet address and token mint.
+
+    .. note::
+        **Parameter order differs from solana/web3.js.**
+
+        In JavaScript, ``getAssociatedTokenAddressSync`` takes ``(mint, owner)``,
+        but this function takes ``(owner, mint)`` — the **opposite order**.
+        To avoid silent bugs when porting JS code to Python, use keyword arguments::
+
+            # Safe usage — explicit and unambiguous
+            ata = get_associated_token_address(owner=owner_pubkey, mint=mint_pubkey)
 
     Args:
         owner (Pubkey): Owner's wallet address.
         mint (Pubkey): The token mint address.
-        token_program_id (Pubkey, optional): The token program ID. Must be either `spl.token.constants.TOKEN_PROGRAM_ID`
-            or `spl.token.constants.TOKEN_2022_PROGRAM_ID` (default is `TOKEN_PROGRAM_ID`).
+        token_program_id (Pubkey, optional): The token program ID. Must be either
+            ``spl.token.constants.TOKEN_PROGRAM_ID`` or ``spl.token.constants.TOKEN_2022_PROGRAM_ID``
+            (default is ``TOKEN_PROGRAM_ID``).
 
     Returns:
         The public key of the derived associated token address.
 
     Raises:
-        ValueError: If an invalid `token_program_id` is provided.
+        ValueError: If an invalid ``token_program_id`` is provided.
     """
     if token_program_id not in [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]:
         raise ValueError("token_program_id must be one of TOKEN_PROGRAM_ID or TOKEN_2022_PROGRAM_ID.")
