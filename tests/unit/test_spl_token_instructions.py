@@ -493,6 +493,20 @@ def test_ui_amount_to_amount():
     assert spl_token.decode_ui_amount_to_amount(instruction) == params
 
 
+def test_get_associated_token_address_uses_expected_seed_order():
+    """Test associated token address derivation seed order."""
+    owner = Pubkey.new_unique()
+    mint = Pubkey.new_unique()
+    expected, _ = Pubkey.find_program_address(
+        seeds=[bytes(owner), bytes(TOKEN_PROGRAM_ID), bytes(mint)],
+        program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
+    )
+
+    actual = get_associated_token_address(owner=owner, mint=mint, token_program_id=TOKEN_PROGRAM_ID)
+
+    assert actual == expected
+
+
 def test_create_idempotent_token_account(stubbed_receiver, stubbed_sender):
     """Test Create idempotent token account."""
     mint = Pubkey([0] * 31 + [0])
