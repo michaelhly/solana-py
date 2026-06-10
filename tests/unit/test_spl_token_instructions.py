@@ -3,7 +3,7 @@
 import spl.token.instructions as spl_token
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYSTEM_PROGRAM_ID
-from spl.token.constants import TOKEN_PROGRAM_ID, WRAPPED_SOL_MINT, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, WRAPPED_SOL_MINT, ASSOCIATED_TOKEN_PROGRAM_ID
 from spl.token.instructions import get_associated_token_address
 
 
@@ -475,6 +475,180 @@ def test_initialize_immutable_owner():
     params = spl_token.InitializeImmutableOwnerParams(program_id=TOKEN_PROGRAM_ID, account=account)
     instruction = spl_token.initialize_immutable_owner(params)
     assert spl_token.decode_initialize_immutable_owner(instruction) == params
+
+
+def test_initialize_transfer_fee_config():
+    """Test initialize_transfer_fee_config."""
+    mint = Pubkey([0] * 31 + [0])
+    transfer_fee_config_authority = Pubkey([11] * 32)
+    params = spl_token.InitializeTransferFeeConfigParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        mint=mint,
+        transfer_fee_config_authority=transfer_fee_config_authority,
+        withdraw_withheld_authority=None,
+        transfer_fee_basis_points=111,
+        maximum_fee=2**64 - 1,
+    )
+    instruction = spl_token.initialize_transfer_fee_config(params)
+
+    expected_data = bytes([26, 0, 1])
+    expected_data += bytes(transfer_fee_config_authority)
+    expected_data += bytes([0, 111, 0])
+    expected_data += (2**64 - 1).to_bytes(8, "little")
+
+    assert instruction.program_id == TOKEN_2022_PROGRAM_ID
+    assert instruction.data == expected_data
+    assert len(instruction.accounts) == 1
+    assert instruction.accounts[0].pubkey == mint
+    assert not instruction.accounts[0].is_signer
+    assert instruction.accounts[0].is_writable
+    assert spl_token.decode_initialize_transfer_fee_config(instruction) == params
+
+    params_no_authorities = spl_token.InitializeTransferFeeConfigParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        mint=mint,
+        transfer_fee_config_authority=None,
+        withdraw_withheld_authority=None,
+        transfer_fee_basis_points=25,
+        maximum_fee=10_000,
+    )
+    instruction = spl_token.initialize_transfer_fee_config(params_no_authorities)
+
+    assert instruction.data == bytes([26, 0, 0, 0, 25, 0]) + (10_000).to_bytes(8, "little")
+    assert spl_token.decode_initialize_transfer_fee_config(instruction) == params_no_authorities
+
+
+def test_withdraw_withheld_tokens_from_accounts():
+    """Test withdraw_withheld_tokens_from_accounts."""
+    mint = Pubkey([0] * 31 + [0])
+    dest = Pubkey([0] * 31 + [1])
+    authority = Pubkey([0] * 31 + [2])
+    sources = [Pubkey([0] * 31 + [i]) for i in range(3, 6)]
+    params = spl_token.WithdrawWithheldTokensFromAccountsParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        mint=mint,
+        dest=dest,
+        authority=authority,
+        sources=sources,
+    )
+    instruction = spl_token.withdraw_withheld_tokens_from_accounts(params)
+
+    assert instruction.program_id == TOKEN_2022_PROGRAM_ID
+    assert instruction.data == bytes([26, 3, len(sources)])
+    assert spl_token.decode_withdraw_withheld_tokens_from_accounts(instruction) == params
+    assert len(instruction.accounts) == 3 + len(sources)
+    assert instruction.accounts[0].pubkey == mint
+    assert not instruction.accounts[0].is_signer
+    assert not instruction.accounts[0].is_writable
+    assert instruction.accounts[1].pubkey == dest
+    assert not instruction.accounts[1].is_signer
+    assert instruction.accounts[1].is_writable
+    assert instruction.accounts[2].pubkey == authority
+    assert instruction.accounts[2].is_signer
+    assert not instruction.accounts[2].is_writable
+    for account, source in zip(instruction.accounts[3:], sources):
+        assert account.pubkey == source
+        assert not account.is_signer
+        assert account.is_writable
+
+    signers = [Pubkey([0] * 31 + [i]) for i in range(6, 9)]
+    multisig_params = spl_token.WithdrawWithheldTokensFromAccountsParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        mint=mint,
+        dest=dest,
+        authority=authority,
+        signers=signers,
+        sources=sources,
+    )
+    instruction = spl_token.withdraw_withheld_tokens_from_accounts(multisig_params)
+
+    assert instruction.data == bytes([26, 3, len(sources)])
+    assert spl_token.decode_withdraw_withheld_tokens_from_accounts(instruction) == multisig_params
+    assert len(instruction.accounts) == 3 + len(signers) + len(sources)
+    assert instruction.accounts[2].pubkey == authority
+    assert not instruction.accounts[2].is_signer
+    assert not instruction.accounts[2].is_writable
+    for account, signer in zip(instruction.accounts[3 : 3 + len(signers)], signers):
+        assert account.pubkey == signer
+        assert account.is_signer
+        assert not account.is_writable
+    for account, source in zip(instruction.accounts[3 + len(signers) :], sources):
+        assert account.pubkey == source
+        assert not account.is_signer
+        assert account.is_writable
+
+
+def test_withdraw_withheld_tokens_from_mint():
+    """Test withdraw_withheld_tokens_from_mint."""
+    mint = Pubkey([0] * 31 + [0])
+    dest = Pubkey([0] * 31 + [1])
+    authority = Pubkey([0] * 31 + [2])
+    params = spl_token.WithdrawWithheldTokensFromMintParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        mint=mint,
+        dest=dest,
+        authority=authority,
+    )
+    instruction = spl_token.withdraw_withheld_tokens_from_mint(params)
+
+    assert instruction.program_id == TOKEN_2022_PROGRAM_ID
+    assert instruction.data == bytes([26, 2])
+    assert spl_token.decode_withdraw_withheld_tokens_from_mint(instruction) == params
+    assert len(instruction.accounts) == 3
+    assert instruction.accounts[0].pubkey == mint
+    assert not instruction.accounts[0].is_signer
+    assert instruction.accounts[0].is_writable
+    assert instruction.accounts[1].pubkey == dest
+    assert not instruction.accounts[1].is_signer
+    assert instruction.accounts[1].is_writable
+    assert instruction.accounts[2].pubkey == authority
+    assert instruction.accounts[2].is_signer
+    assert not instruction.accounts[2].is_writable
+
+    signers = [Pubkey([0] * 31 + [i]) for i in range(3, 6)]
+    multisig_params = spl_token.WithdrawWithheldTokensFromMintParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        mint=mint,
+        dest=dest,
+        authority=authority,
+        signers=signers,
+    )
+    instruction = spl_token.withdraw_withheld_tokens_from_mint(multisig_params)
+
+    assert instruction.data == bytes([26, 2])
+    assert spl_token.decode_withdraw_withheld_tokens_from_mint(instruction) == multisig_params
+    assert len(instruction.accounts) == 3 + len(signers)
+    assert instruction.accounts[2].pubkey == authority
+    assert not instruction.accounts[2].is_signer
+    assert not instruction.accounts[2].is_writable
+    for account, signer in zip(instruction.accounts[3:], signers):
+        assert account.pubkey == signer
+        assert account.is_signer
+        assert not account.is_writable
+
+
+def test_harvest_withheld_tokens_to_mint():
+    """Test harvest_withheld_tokens_to_mint."""
+    mint = Pubkey([0] * 31 + [0])
+    sources = [Pubkey([0] * 31 + [i]) for i in range(1, 4)]
+    params = spl_token.HarvestWithheldTokensToMintParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        mint=mint,
+        sources=sources,
+    )
+    instruction = spl_token.harvest_withheld_tokens_to_mint(params)
+
+    assert instruction.program_id == TOKEN_2022_PROGRAM_ID
+    assert instruction.data == bytes([26, 4])
+    assert spl_token.decode_harvest_withheld_tokens_to_mint(instruction) == params
+    assert len(instruction.accounts) == 1 + len(sources)
+    assert instruction.accounts[0].pubkey == mint
+    assert not instruction.accounts[0].is_signer
+    assert instruction.accounts[0].is_writable
+    for account, source in zip(instruction.accounts[1:], sources):
+        assert account.pubkey == source
+        assert not account.is_signer
+        assert account.is_writable
 
 
 def test_amount_to_ui_amount():

@@ -2,7 +2,7 @@
 
 from enum import IntEnum
 
-from construct import Bytes, GreedyBytes, Int8ul, Int32ul, Int64ul, Pass, Switch
+from construct import Bytes, GreedyBytes, If, Int8ul, Int16ul, Int32ul, Int64ul, Pass, Switch
 from construct import Struct as cStruct
 
 PUBLIC_KEY_LAYOUT = Bytes(32)
@@ -36,6 +36,16 @@ class InstructionType(IntEnum):
     INITIALIZE_IMMUTABLE_OWNER = 22
     AMOUNT_TO_UI_AMOUNT = 23
     UI_AMOUNT_TO_AMOUNT = 24
+    TRANSFER_FEE_EXTENSION = 26
+
+
+class TransferFeeInstructionType(IntEnum):
+    """Transfer fee extension instruction types."""
+
+    INITIALIZE_TRANSFER_FEE_CONFIG = 0
+    WITHDRAW_WITHHELD_TOKENS_FROM_MINT = 2
+    WITHDRAW_WITHHELD_TOKENS_FROM_ACCOUNTS = 3
+    HARVEST_WITHHELD_TOKENS_TO_MINT = 4
 
 
 _INITIALIZE_MINT_LAYOUT = cStruct(
@@ -60,6 +70,34 @@ _SET_AUTHORITY_LAYOUT = cStruct(
 _AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimals" / Int8ul)
 
 _UI_AMOUNT_LAYOUT = cStruct("ui_amount" / GreedyBytes)
+
+_PUBKEY_OPTION_LAYOUT = cStruct(
+    "option" / Int8ul,
+    "pubkey" / If(lambda this: this.option, PUBLIC_KEY_LAYOUT),
+)
+
+_INITIALIZE_TRANSFER_FEE_CONFIG_LAYOUT = cStruct(
+    "transfer_fee_config_authority" / _PUBKEY_OPTION_LAYOUT,
+    "withdraw_withheld_authority" / _PUBKEY_OPTION_LAYOUT,
+    "transfer_fee_basis_points" / Int16ul,
+    "maximum_fee" / Int64ul,
+)
+
+_WITHDRAW_WITHHELD_TOKENS_FROM_ACCOUNTS_LAYOUT = cStruct("num_token_accounts" / Int8ul)
+
+_TRANSFER_FEE_EXTENSION_LAYOUT = cStruct(
+    "transfer_fee_instruction_type" / Int8ul,
+    "args"
+    / Switch(
+        lambda this: this.transfer_fee_instruction_type,
+        {
+            TransferFeeInstructionType.INITIALIZE_TRANSFER_FEE_CONFIG: _INITIALIZE_TRANSFER_FEE_CONFIG_LAYOUT,
+            TransferFeeInstructionType.WITHDRAW_WITHHELD_TOKENS_FROM_ACCOUNTS: (
+                _WITHDRAW_WITHHELD_TOKENS_FROM_ACCOUNTS_LAYOUT
+            ),
+        },
+    ),
+)
 
 INSTRUCTIONS_LAYOUT = cStruct(
     "instruction_type" / Int8ul,
@@ -92,6 +130,7 @@ INSTRUCTIONS_LAYOUT = cStruct(
             InstructionType.INITIALIZE_IMMUTABLE_OWNER: Pass,
             InstructionType.AMOUNT_TO_UI_AMOUNT: _AMOUNT_LAYOUT,
             InstructionType.UI_AMOUNT_TO_AMOUNT: _UI_AMOUNT_LAYOUT,
+            InstructionType.TRANSFER_FEE_EXTENSION: _TRANSFER_FEE_EXTENSION_LAYOUT,
         },
     ),
 )
