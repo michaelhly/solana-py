@@ -9,7 +9,7 @@ from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.sysvar import RENT
 
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
-from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType
+from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType, TransferFeeInstructionType
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID
 
 
@@ -370,6 +370,66 @@ class InitializeImmutableOwnerParams(NamedTuple):
     """SPL Token program account."""
     account: Pubkey
     """Token account to initialize immutable owner for."""
+
+
+class InitializeTransferFeeConfigParams(NamedTuple):
+    """InitializeTransferFeeConfig token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token 2022 program account."""
+    mint: Pubkey
+    """Mint to initialize transfer fee config for."""
+    transfer_fee_config_authority: Optional[Pubkey]
+    """Authority that may update the transfer fee config."""
+    withdraw_withheld_authority: Optional[Pubkey]
+    """Authority that may withdraw withheld tokens."""
+    transfer_fee_basis_points: int
+    """Amount of transfer collected as fees, expressed in basis points."""
+    maximum_fee: int
+    """Maximum fee assessed on transfers."""
+
+
+class WithdrawWithheldTokensFromAccountsParams(NamedTuple):
+    """WithdrawWithheldTokensFromAccounts token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token 2022 program account."""
+    mint: Pubkey
+    """Mint that includes the TransferFeeConfig extension."""
+    dest: Pubkey
+    """Fee receiver token account."""
+    authority: Pubkey
+    """Withdraw withheld authority."""
+    signers: List[Pubkey] = []
+    """Signing accounts if `authority` is a multiSig."""
+    sources: List[Pubkey] = []
+    """Token accounts to withdraw withheld tokens from."""
+
+
+class WithdrawWithheldTokensFromMintParams(NamedTuple):
+    """WithdrawWithheldTokensFromMint token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token 2022 program account."""
+    mint: Pubkey
+    """Mint that includes the TransferFeeConfig extension."""
+    dest: Pubkey
+    """Fee receiver token account."""
+    authority: Pubkey
+    """Withdraw withheld authority."""
+    signers: List[Pubkey] = []
+    """Signing accounts if `authority` is a multiSig."""
+
+
+class HarvestWithheldTokensToMintParams(NamedTuple):
+    """HarvestWithheldTokensToMint token transaction params."""
+
+    program_id: Pubkey
+    """SPL Token 2022 program account."""
+    mint: Pubkey
+    """Mint to harvest withheld tokens to."""
+    sources: List[Pubkey] = []
+    """Token accounts to harvest withheld tokens from."""
 
 
 class AmountToUiAmountParams(NamedTuple):
@@ -805,6 +865,78 @@ def decode_initialize_immutable_owner(instruction: Instruction) -> InitializeImm
     return InitializeImmutableOwnerParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
+    )
+
+
+def decode_initialize_transfer_fee_config(instruction: Instruction) -> InitializeTransferFeeConfigParams:
+    """Decode an initialize_transfer_fee_config token transaction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.TRANSFER_FEE_EXTENSION)
+    if parsed_data.args.transfer_fee_instruction_type != TransferFeeInstructionType.INITIALIZE_TRANSFER_FEE_CONFIG:
+        raise ValueError("invalid transfer fee instruction type")
+    args = parsed_data.args.args
+    transfer_fee_config_authority = args.transfer_fee_config_authority
+    withdraw_withheld_authority = args.withdraw_withheld_authority
+    return InitializeTransferFeeConfigParams(
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+        transfer_fee_config_authority=Pubkey(transfer_fee_config_authority.pubkey)
+        if transfer_fee_config_authority.option
+        else None,
+        withdraw_withheld_authority=Pubkey(withdraw_withheld_authority.pubkey)
+        if withdraw_withheld_authority.option
+        else None,
+        transfer_fee_basis_points=args.transfer_fee_basis_points,
+        maximum_fee=args.maximum_fee,
+    )
+
+
+def decode_withdraw_withheld_tokens_from_accounts(
+    instruction: Instruction,
+) -> WithdrawWithheldTokensFromAccountsParams:
+    """Decode a withdraw_withheld_tokens_from_accounts token transaction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.TRANSFER_FEE_EXTENSION)
+    if (
+        parsed_data.args.transfer_fee_instruction_type
+        != TransferFeeInstructionType.WITHDRAW_WITHHELD_TOKENS_FROM_ACCOUNTS
+    ):
+        raise ValueError("invalid transfer fee instruction type")
+    num_token_accounts = parsed_data.args.args.num_token_accounts
+    validate_instruction_keys(instruction, 3 + num_token_accounts)
+    signers = instruction.accounts[3:-num_token_accounts] if num_token_accounts else instruction.accounts[3:]
+    sources = instruction.accounts[-num_token_accounts:] if num_token_accounts else []
+    return WithdrawWithheldTokensFromAccountsParams(
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+        dest=instruction.accounts[1].pubkey,
+        authority=instruction.accounts[2].pubkey,
+        signers=[signer.pubkey for signer in signers],
+        sources=[source.pubkey for source in sources],
+    )
+
+
+def decode_withdraw_withheld_tokens_from_mint(instruction: Instruction) -> WithdrawWithheldTokensFromMintParams:
+    """Decode a withdraw_withheld_tokens_from_mint token transaction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.TRANSFER_FEE_EXTENSION)
+    if parsed_data.args.transfer_fee_instruction_type != TransferFeeInstructionType.WITHDRAW_WITHHELD_TOKENS_FROM_MINT:
+        raise ValueError("invalid transfer fee instruction type")
+    return WithdrawWithheldTokensFromMintParams(
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+        dest=instruction.accounts[1].pubkey,
+        authority=instruction.accounts[2].pubkey,
+        signers=[signer.pubkey for signer in instruction.accounts[3:]],
+    )
+
+
+def decode_harvest_withheld_tokens_to_mint(instruction: Instruction) -> HarvestWithheldTokensToMintParams:
+    """Decode a harvest_withheld_tokens_to_mint token transaction and retrieve the instruction params."""
+    parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.TRANSFER_FEE_EXTENSION)
+    if parsed_data.args.transfer_fee_instruction_type != TransferFeeInstructionType.HARVEST_WITHHELD_TOKENS_TO_MINT:
+        raise ValueError("invalid transfer fee instruction type")
+    return HarvestWithheldTokensToMintParams(
+        program_id=instruction.program_id,
+        mint=instruction.accounts[0].pubkey,
+        sources=[source.pubkey for source in instruction.accounts[1:]],
     )
 
 
@@ -1485,6 +1617,106 @@ def initialize_immutable_owner(params: InitializeImmutableOwnerParams) -> Instru
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.INITIALIZE_IMMUTABLE_OWNER, "args": None})
     return Instruction(
         accounts=[AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def initialize_transfer_fee_config(params: InitializeTransferFeeConfigParams) -> Instruction:
+    """Initializes the TransferFeeConfig extension for a mint."""
+    transfer_fee_config_authority = (
+        {"option": 1, "pubkey": bytes(params.transfer_fee_config_authority)}
+        if params.transfer_fee_config_authority
+        else {"option": 0, "pubkey": None}
+    )
+    withdraw_withheld_authority = (
+        {"option": 1, "pubkey": bytes(params.withdraw_withheld_authority)}
+        if params.withdraw_withheld_authority
+        else {"option": 0, "pubkey": None}
+    )
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.TRANSFER_FEE_EXTENSION,
+            "args": {
+                "transfer_fee_instruction_type": TransferFeeInstructionType.INITIALIZE_TRANSFER_FEE_CONFIG,
+                "args": {
+                    "transfer_fee_config_authority": transfer_fee_config_authority,
+                    "withdraw_withheld_authority": withdraw_withheld_authority,
+                    "transfer_fee_basis_points": params.transfer_fee_basis_points,
+                    "maximum_fee": params.maximum_fee,
+                },
+            },
+        }
+    )
+    return Instruction(
+        accounts=[AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True)],
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def withdraw_withheld_tokens_from_accounts(params: WithdrawWithheldTokensFromAccountsParams) -> Instruction:
+    """Withdraws withheld tokens from token accounts to a fee receiver account."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.TRANSFER_FEE_EXTENSION,
+            "args": {
+                "transfer_fee_instruction_type": TransferFeeInstructionType.WITHDRAW_WITHHELD_TOKENS_FROM_ACCOUNTS,
+                "args": {"num_token_accounts": len(params.sources)},
+            },
+        }
+    )
+    keys = [
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.authority, params.signers)
+    keys.extend(AccountMeta(pubkey=source, is_signer=False, is_writable=True) for source in params.sources)
+    return Instruction(
+        accounts=keys,
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def withdraw_withheld_tokens_from_mint(params: WithdrawWithheldTokensFromMintParams) -> Instruction:
+    """Withdraws withheld tokens from a mint to a fee receiver account."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.TRANSFER_FEE_EXTENSION,
+            "args": {
+                "transfer_fee_instruction_type": TransferFeeInstructionType.WITHDRAW_WITHHELD_TOKENS_FROM_MINT,
+                "args": None,
+            },
+        }
+    )
+    keys = [
+        AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
+        AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
+    ]
+    __add_signers(keys, params.authority, params.signers)
+    return Instruction(
+        accounts=keys,
+        program_id=params.program_id,
+        data=data,
+    )
+
+
+def harvest_withheld_tokens_to_mint(params: HarvestWithheldTokensToMintParams) -> Instruction:
+    """Harvests withheld tokens from token accounts to the mint."""
+    data = INSTRUCTIONS_LAYOUT.build(
+        {
+            "instruction_type": InstructionType.TRANSFER_FEE_EXTENSION,
+            "args": {
+                "transfer_fee_instruction_type": TransferFeeInstructionType.HARVEST_WITHHELD_TOKENS_TO_MINT,
+                "args": None,
+            },
+        }
+    )
+    keys = [AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True)]
+    keys.extend(AccountMeta(pubkey=source, is_signer=False, is_writable=True) for source in params.sources)
+    return Instruction(
+        accounts=keys,
         program_id=params.program_id,
         data=data,
     )
