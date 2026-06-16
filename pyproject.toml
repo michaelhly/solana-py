@@ -55,6 +55,30 @@ ruff = "^0.7.3"
 name = "solana"
 version = "0.36.12"
 requires-python = ">=3.9"
+dependencies = [
+    "construct-typing>=0.6.2,<0.8.0",
+    "httpx>=0.28.0",
+    "typing-extensions>=4.2.0",
+    "websockets>=9.0,<=15.0.1",
+    "solders>=0.23,<0.28",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "mypy>=1.19",
+    "pyyaml==6.0.2",
+    "pytest-docker>=3.2.0",
+    "bump2version>=1.0.1",
+    "pytest-asyncio>=0.18.3",
+    "pytest-cov>=7.1.0",
+    "pytest-html>=4.2.0",
+    "pytest-xdist>=3.6.1",
+    "asyncstdlib>=3.14.0",
+    "mkdocstrings>=0.18.0",
+    "mkdocs-material>=9.7.6",
+    "ruff>=0.7.3",
+]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
