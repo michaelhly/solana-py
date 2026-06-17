@@ -84,6 +84,18 @@ def async_stubbed_sender_prefetched_blockhash() -> Keypair:
 
 
 @pytest.fixture(scope="session")
+def async_stubbed_sender_for_token() -> Keypair:
+    """Arbitrary known account to be used as sender in async token tests."""
+    return Keypair.from_seed(bytes([3] * Pubkey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_for_websockets() -> Keypair:
+    """Arbitrary known account to be used as sender in websocket tests."""
+    return Keypair.from_seed(bytes([4] * Pubkey.LENGTH))
+
+
+@pytest.fixture(scope="session")
 def freeze_authority() -> Keypair:
     """Arbitrary known account to be used as freeze authority."""
     return Keypair.from_seed(bytes([6] * Pubkey.LENGTH))
@@ -103,7 +115,7 @@ def unit_test_http_client_async() -> AsyncClient:
     return client
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def _sleep_for_first_blocks(docker_ip, docker_services) -> None:
     """Wait until the validator has finalized enough blocks for early slots to be accessible."""
     port = docker_services.port_for("localnet", 8899)
@@ -119,7 +131,7 @@ def _sleep_for_first_blocks(docker_ip, docker_services) -> None:
         time.sleep(1)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def test_http_client(
     docker_ip, docker_services, _sleep_for_first_blocks
 ) -> Client:  # pylint: disable=redefined-outer-name

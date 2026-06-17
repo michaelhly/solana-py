@@ -42,8 +42,8 @@ addopts = [
     "--color=yes",
     "--cov-report=xml",
     "--cov-report=html",
-    "--container-scope=module", # restart container for each module
-    "--dist=loadscope",         # distribute tests by module
+    "--container-scope=session", # share one container for the whole test session
+    "--dist=loadscope",          # distribute tests by module
     "-vv",
     "-s",
 ]

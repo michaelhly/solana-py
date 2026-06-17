@@ -15,8 +15,9 @@ from ..core import RPCException
 from ..types import URI
 
 DEFAULT_TIMEOUT = 10
-# httpcore2 2.x no longer auto-retries stale keepalive connections (unlike httpcore 1.x).
-# RemoteProtocolError on reuse is handled explicitly in the provider layer.
+# httpcore2 2.x no longer auto-retries dropped connections (unlike httpcore 1.x).
+# RemoteProtocolError (stale keepalive) and ReadError (ECONNRESET) are both retried
+# once explicitly in the provider layer.
 # We keep the pool small (single-endpoint RPC client) but leave keepalive_expiry at the
 # httpx2 default so long-running clients don't reconnect unnecessarily.
 DEFAULT_LIMITS = httpx2.Limits(max_connections=10, max_keepalive_connections=5)

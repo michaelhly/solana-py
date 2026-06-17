@@ -75,9 +75,10 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         request_kwargs = self._before_request(body=body)
         try:
             raw_response = await self.session.post(**request_kwargs)
-        except httpx2.RemoteProtocolError:
+        except (httpx2.RemoteProtocolError, httpx2.ReadError):
             # httpcore2 does not auto-retry stale keepalive connections (unlike httpcore 1.x).
-            # Retry once with a fresh connection.
+            # Also retry on ReadError (ECONNRESET) which occurs when the server forcibly
+            # closes the connection mid-response under load.
             raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
@@ -86,7 +87,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         request_kwargs = self._before_batch_request(reqs)
         try:
             raw_response = await self.session.post(**request_kwargs)
-        except httpx2.RemoteProtocolError:
+        except (httpx2.RemoteProtocolError, httpx2.ReadError):
             raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
