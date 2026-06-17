@@ -11,13 +11,9 @@ from ..utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 
 
 @pytest.fixture(scope="module")
-async def test_token(
-    stubbed_sender, freeze_authority, test_http_client_async
-) -> AsyncToken:
+async def test_token(stubbed_sender, freeze_authority, test_http_client_async) -> AsyncToken:
     """Test create mint."""
-    resp = await test_http_client_async.request_airdrop(
-        stubbed_sender.pubkey(), AIRDROP_AMOUNT
-    )
+    resp = await test_http_client_async.request_airdrop(stubbed_sender.pubkey(), AIRDROP_AMOUNT)
     await test_http_client_async.confirm_transaction(resp.value)
     assert_valid_response(resp)
 
@@ -49,9 +45,7 @@ async def test_token(
 
 
 @pytest.fixture(scope="module")
-async def stubbed_sender_token_account_pk(
-    stubbed_sender, test_token
-) -> Pubkey:  # pylint: disable=redefined-outer-name
+async def stubbed_sender_token_account_pk(stubbed_sender, test_token) -> Pubkey:  # pylint: disable=redefined-outer-name
     """Token account for stubbed sender."""
     return await test_token.create_account(stubbed_sender.pubkey())
 
@@ -66,9 +60,7 @@ async def async_stubbed_receiver_token_account_pk(
 
 
 @pytest.mark.integration
-async def test_new_account(
-    stubbed_sender, test_http_client_async, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_new_account(stubbed_sender, test_http_client_async, test_token):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
     token_account_pk = await test_token.create_account(stubbed_sender.pubkey())
     resp = await test_http_client_async.get_account_info(token_account_pk)
@@ -83,9 +75,7 @@ async def test_new_account(
         and not account_data.delegated_amount
         and Pubkey(account_data.delegate) == Pubkey([0] * 31 + [0])
     )
-    assert not account_data.close_authority_option and Pubkey(
-        account_data.close_authority
-    ) == Pubkey([0] * 31 + [0])
+    assert not account_data.close_authority_option and Pubkey(account_data.close_authority) == Pubkey([0] * 31 + [0])
     assert not account_data.is_native_option and not account_data.is_native
     assert Pubkey(account_data.mint) == test_token.pubkey
     assert Pubkey(account_data.owner) == stubbed_sender.pubkey()
@@ -106,9 +96,7 @@ async def test_new_associated_account(
 
 
 @pytest.mark.integration
-async def test_get_account_info(
-    stubbed_sender, stubbed_sender_token_account_pk, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_get_account_info(stubbed_sender, stubbed_sender_token_account_pk, test_token):  # pylint: disable=redefined-outer-name
     """Test get token account info."""
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_initialized is True
@@ -124,9 +112,7 @@ async def test_get_account_info(
 
 
 @pytest.mark.integration
-async def test_get_mint_info(
-    stubbed_sender, freeze_authority, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_get_mint_info(stubbed_sender, freeze_authority, test_token):  # pylint: disable=redefined-outer-name
     """Test get token mint info."""
     mint_info = await test_token.get_mint_info()
     assert mint_info.mint_authority == stubbed_sender.pubkey()
@@ -137,9 +123,7 @@ async def test_get_mint_info(
 
 
 @pytest.mark.integration
-async def test_mint_to(
-    stubbed_sender, stubbed_sender_token_account_pk, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_mint_to(stubbed_sender, stubbed_sender_token_account_pk, test_token):  # pylint: disable=redefined-outer-name
     """Test mint token to account and get balance."""
     expected_amount = 1000
     resp = await test_token.mint_to(
@@ -181,9 +165,7 @@ async def test_transfer(
 
 
 @pytest.mark.integration
-async def test_burn(
-    stubbed_sender, stubbed_sender_token_account_pk, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_burn(stubbed_sender, stubbed_sender_token_account_pk, test_token):  # pylint: disable=redefined-outer-name
     """Test burning tokens."""
     burn_amount = 200
     expected_amount = 300
@@ -263,9 +245,7 @@ async def test_transfer_checked(
 
 
 @pytest.mark.integration
-async def test_burn_checked(
-    stubbed_sender, stubbed_sender_token_account_pk, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_burn_checked(stubbed_sender, stubbed_sender_token_account_pk, test_token):  # pylint: disable=redefined-outer-name
     """Test burning tokens checked."""
     burn_amount = 500
     expected_decimals = 6
@@ -288,9 +268,7 @@ async def test_burn_checked(
 
 
 @pytest.mark.integration
-async def test_get_accounts(
-    stubbed_sender, test_token
-):  # pylint: disable=redefined-outer-name
+async def test_get_accounts(stubbed_sender, test_token):  # pylint: disable=redefined-outer-name
     """Test get token accounts."""
     resp = await test_token.get_accounts_by_owner_json_parsed(stubbed_sender.pubkey())
     assert_valid_response(resp)
@@ -384,18 +362,14 @@ async def test_freeze_account(
     test_http_client_async,
 ):  # pylint: disable=redefined-outer-name
     """Test freezing an account."""
-    resp = await test_http_client_async.request_airdrop(
-        freeze_authority.pubkey(), AIRDROP_AMOUNT
-    )
+    resp = await test_http_client_async.request_airdrop(freeze_authority.pubkey(), AIRDROP_AMOUNT)
     await test_http_client_async.confirm_transaction(resp.value)
     assert_valid_response(resp)
 
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is False
 
-    freeze_resp = await test_token.freeze_account(
-        stubbed_sender_token_account_pk, freeze_authority, opts=OPTS
-    )
+    freeze_resp = await test_token.freeze_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     await test_http_client_async.confirm_transaction(freeze_resp.value)
     assert_valid_response(freeze_resp)
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
@@ -413,9 +387,7 @@ async def test_thaw_account(
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
     assert account_info.is_frozen is True
 
-    thaw_resp = await test_token.thaw_account(
-        stubbed_sender_token_account_pk, freeze_authority, opts=OPTS
-    )
+    thaw_resp = await test_token.thaw_account(stubbed_sender_token_account_pk, freeze_authority, opts=OPTS)
     await test_http_client_async.confirm_transaction(thaw_resp.value)
     assert_valid_response(thaw_resp)
     account_info = await test_token.get_account_info(stubbed_sender_token_account_pk)
@@ -431,9 +403,7 @@ async def test_close_account(
     test_http_client_async,
 ):  # pylint: disable=redefined-outer-name
     """Test closing a token account."""
-    create_resp = await test_http_client_async.get_account_info(
-        stubbed_sender_token_account_pk
-    )
+    create_resp = await test_http_client_async.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(create_resp)
     assert create_resp.value.data
 
@@ -446,17 +416,13 @@ async def test_close_account(
     await test_http_client_async.confirm_transaction(close_resp.value)
     assert_valid_response(close_resp)
 
-    info_resp = await test_http_client_async.get_account_info(
-        stubbed_sender_token_account_pk
-    )
+    info_resp = await test_http_client_async.get_account_info(stubbed_sender_token_account_pk)
     assert_valid_response(info_resp)
     assert info_resp.value is None
 
 
 @pytest.mark.integration
-async def test_create_multisig(
-    stubbed_sender, async_stubbed_receiver, test_token, test_http_client
-):  # pylint: disable=redefined-outer-name
+async def test_create_multisig(stubbed_sender, async_stubbed_receiver, test_token, test_http_client):  # pylint: disable=redefined-outer-name
     """Test creating a multisig account."""
     min_signers = 2
     multisig_pubkey = await test_token.create_multisig(

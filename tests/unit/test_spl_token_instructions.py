@@ -3,7 +3,12 @@
 import spl.token.instructions as spl_token
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYSTEM_PROGRAM_ID
-from spl.token.constants import TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, WRAPPED_SOL_MINT, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import (
+    TOKEN_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID,
+    WRAPPED_SOL_MINT,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+)
 from spl.token.instructions import get_associated_token_address
 
 
@@ -196,7 +201,11 @@ def test_revoke(stubbed_sender):
 
 def test_set_authority():
     """Test set authority."""
-    account, new_authority, current_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1]), Pubkey([0] * 31 + [2])
+    account, new_authority, current_authority = (
+        Pubkey([0] * 31 + [0]),
+        Pubkey([0] * 31 + [1]),
+        Pubkey([0] * 31 + [2]),
+    )
     params = spl_token.SetAuthorityParams(
         program_id=TOKEN_PROGRAM_ID,
         account=account,
@@ -453,8 +462,12 @@ def test_burn_checked(stubbed_receiver):
 
 def test_sync_native(stubbed_sender):
     """Test sync account amount value with lamports."""
-    token_account = get_associated_token_address(stubbed_sender.pubkey(), WRAPPED_SOL_MINT)
-    params = spl_token.SyncNativeParams(program_id=TOKEN_PROGRAM_ID, account=token_account)
+    token_account = get_associated_token_address(
+        stubbed_sender.pubkey(), WRAPPED_SOL_MINT
+    )
+    params = spl_token.SyncNativeParams(
+        program_id=TOKEN_PROGRAM_ID, account=token_account
+    )
 
     instruction = spl_token.sync_native(params)
     decoded_params = spl_token.decode_sync_native(instruction)
@@ -472,7 +485,9 @@ def test_get_account_data_size():
 def test_initialize_immutable_owner():
     """Test initialize_immutable_owner."""
     account = Pubkey([0] * 31 + [0])
-    params = spl_token.InitializeImmutableOwnerParams(program_id=TOKEN_PROGRAM_ID, account=account)
+    params = spl_token.InitializeImmutableOwnerParams(
+        program_id=TOKEN_PROGRAM_ID, account=account
+    )
     instruction = spl_token.initialize_immutable_owner(params)
     assert spl_token.decode_initialize_immutable_owner(instruction) == params
 
@@ -514,8 +529,13 @@ def test_initialize_transfer_fee_config():
     )
     instruction = spl_token.initialize_transfer_fee_config(params_no_authorities)
 
-    assert instruction.data == bytes([26, 0, 0, 0, 25, 0]) + (10_000).to_bytes(8, "little")
-    assert spl_token.decode_initialize_transfer_fee_config(instruction) == params_no_authorities
+    assert instruction.data == bytes([26, 0, 0, 0, 25, 0]) + (10_000).to_bytes(
+        8, "little"
+    )
+    assert (
+        spl_token.decode_initialize_transfer_fee_config(instruction)
+        == params_no_authorities
+    )
 
 
 def test_withdraw_withheld_tokens_from_accounts():
@@ -535,7 +555,9 @@ def test_withdraw_withheld_tokens_from_accounts():
 
     assert instruction.program_id == TOKEN_2022_PROGRAM_ID
     assert instruction.data == bytes([26, 3, len(sources)])
-    assert spl_token.decode_withdraw_withheld_tokens_from_accounts(instruction) == params
+    assert (
+        spl_token.decode_withdraw_withheld_tokens_from_accounts(instruction) == params
+    )
     assert len(instruction.accounts) == 3 + len(sources)
     assert instruction.accounts[0].pubkey == mint
     assert not instruction.accounts[0].is_signer
@@ -546,7 +568,7 @@ def test_withdraw_withheld_tokens_from_accounts():
     assert instruction.accounts[2].pubkey == authority
     assert instruction.accounts[2].is_signer
     assert not instruction.accounts[2].is_writable
-    for account, source in zip(instruction.accounts[3:], sources):
+    for account, source in zip(instruction.accounts[3:], sources, strict=False):
         assert account.pubkey == source
         assert not account.is_signer
         assert account.is_writable
@@ -563,16 +585,23 @@ def test_withdraw_withheld_tokens_from_accounts():
     instruction = spl_token.withdraw_withheld_tokens_from_accounts(multisig_params)
 
     assert instruction.data == bytes([26, 3, len(sources)])
-    assert spl_token.decode_withdraw_withheld_tokens_from_accounts(instruction) == multisig_params
+    assert (
+        spl_token.decode_withdraw_withheld_tokens_from_accounts(instruction)
+        == multisig_params
+    )
     assert len(instruction.accounts) == 3 + len(signers) + len(sources)
     assert instruction.accounts[2].pubkey == authority
     assert not instruction.accounts[2].is_signer
     assert not instruction.accounts[2].is_writable
-    for account, signer in zip(instruction.accounts[3 : 3 + len(signers)], signers):
+    for account, signer in zip(
+        instruction.accounts[3 : 3 + len(signers)], signers, strict=False
+    ):
         assert account.pubkey == signer
         assert account.is_signer
         assert not account.is_writable
-    for account, source in zip(instruction.accounts[3 + len(signers) :], sources):
+    for account, source in zip(
+        instruction.accounts[3 + len(signers) :], sources, strict=False
+    ):
         assert account.pubkey == source
         assert not account.is_signer
         assert account.is_writable
@@ -616,12 +645,15 @@ def test_withdraw_withheld_tokens_from_mint():
     instruction = spl_token.withdraw_withheld_tokens_from_mint(multisig_params)
 
     assert instruction.data == bytes([26, 2])
-    assert spl_token.decode_withdraw_withheld_tokens_from_mint(instruction) == multisig_params
+    assert (
+        spl_token.decode_withdraw_withheld_tokens_from_mint(instruction)
+        == multisig_params
+    )
     assert len(instruction.accounts) == 3 + len(signers)
     assert instruction.accounts[2].pubkey == authority
     assert not instruction.accounts[2].is_signer
     assert not instruction.accounts[2].is_writable
-    for account, signer in zip(instruction.accounts[3:], signers):
+    for account, signer in zip(instruction.accounts[3:], signers, strict=False):
         assert account.pubkey == signer
         assert account.is_signer
         assert not account.is_writable
@@ -645,7 +677,7 @@ def test_harvest_withheld_tokens_to_mint():
     assert instruction.accounts[0].pubkey == mint
     assert not instruction.accounts[0].is_signer
     assert instruction.accounts[0].is_writable
-    for account, source in zip(instruction.accounts[1:], sources):
+    for account, source in zip(instruction.accounts[1:], sources, strict=False):
         assert account.pubkey == source
         assert not account.is_signer
         assert account.is_writable
@@ -654,7 +686,9 @@ def test_harvest_withheld_tokens_to_mint():
 def test_amount_to_ui_amount():
     """Test amount_to_ui_amount."""
     mint = Pubkey([0] * 31 + [0])
-    params = spl_token.AmountToUiAmountParams(program_id=TOKEN_PROGRAM_ID, mint=mint, amount=42)
+    params = spl_token.AmountToUiAmountParams(
+        program_id=TOKEN_PROGRAM_ID, mint=mint, amount=42
+    )
     instruction = spl_token.amount_to_ui_amount(params)
     assert spl_token.decode_amount_to_ui_amount(instruction) == params
 
@@ -662,7 +696,9 @@ def test_amount_to_ui_amount():
 def test_ui_amount_to_amount():
     """Test ui_amount_to_amount."""
     mint = Pubkey([0] * 31 + [0])
-    params = spl_token.UiAmountToAmountParams(program_id=TOKEN_PROGRAM_ID, mint=mint, ui_amount="0.42")
+    params = spl_token.UiAmountToAmountParams(
+        program_id=TOKEN_PROGRAM_ID, mint=mint, ui_amount="0.42"
+    )
     instruction = spl_token.ui_amount_to_amount(params)
     assert spl_token.decode_ui_amount_to_amount(instruction) == params
 
@@ -676,7 +712,9 @@ def test_get_associated_token_address_uses_expected_seed_order():
         program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
     )
 
-    actual = get_associated_token_address(owner=owner, mint=mint, token_program_id=TOKEN_PROGRAM_ID)
+    actual = get_associated_token_address(
+        owner=owner, mint=mint, token_program_id=TOKEN_PROGRAM_ID
+    )
 
     assert actual == expected
 

@@ -121,15 +121,11 @@ def _sleep_for_first_blocks() -> None:
 
 
 @pytest.fixture(scope="module")
-def test_http_client(
-    docker_ip, docker_services, _sleep_for_first_blocks
-) -> Client:  # pylint: disable=redefined-outer-name
+def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
     http_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(
-        timeout=15, pause=1, check=http_client.is_connected
-    )
+    docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
 
@@ -142,9 +138,7 @@ def test_http_client_async(
 ) -> Generator[AsyncClient, None, None]:
     """Test http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
-    http_client = AsyncClient(
-        endpoint=f"http://{docker_ip}:{port}", commitment=Processed
-    )
+    http_client = AsyncClient(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())
