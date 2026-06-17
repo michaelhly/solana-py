@@ -2,32 +2,32 @@ clean:
 	rm -rf dist build __pycache__ *.egg-info
 
 format:
-	poetry run ruff format src tests
+	uv run ruff format src tests
 
 lint:
-	poetry run ruff format --check --diff src tests
-	poetry run ruff check src tests
-	poetry run mypy src
+	uv run ruff format --check --diff src tests
+	uv run ruff check src tests
+	uv run mypy src
 
 publish: clean
-	poetry build
-	poetry publish
+	uv build
+	uv publish
 
 test-publish: clean
-	poetry build
-	poetry publish -r testpypi
+	uv build
+	uv publish --publish-url https://test.pypi.org/legacy/
 
 tests:
-	poetry run pytest
+	uv run pytest
 
 tests-parallel:
-	poetry run pytest -n auto
+	uv run pytest -n auto
 
 unit-tests:
-	poetry run pytest -m "not integration" --doctest-modules
+	uv run pytest -m "not integration" --doctest-modules
 
 int-tests:
-	poetry run pytest -m integration
+	uv run pytest -m integration
 
 update-localnet:
 	./bin/localnet.sh update

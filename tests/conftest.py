@@ -2,7 +2,7 @@
 
 import asyncio
 import time
-from typing import NamedTuple
+from typing import Generator, NamedTuple
 
 import pytest
 from solders.hash import Hash as Blockhash
@@ -120,27 +120,31 @@ def _sleep_for_first_blocks() -> None:
     time.sleep(10)
 
 
-@pytest.mark.integration
 @pytest.fixture(scope="module")
-def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
+def test_http_client(
+    docker_ip, docker_services, _sleep_for_first_blocks
+) -> Client:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
     http_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
+    docker_services.wait_until_responsive(
+        timeout=15, pause=1, check=http_client.is_connected
+    )
     return http_client
 
 
-@pytest.mark.integration
 @pytest.fixture(scope="module")
 def test_http_client_async(
     docker_ip,
     docker_services,
     event_loop,
     _sleep_for_first_blocks,  # pylint: disable=redefined-outer-name
-) -> AsyncClient:
+) -> Generator[AsyncClient, None, None]:
     """Test http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
-    http_client = AsyncClient(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
+    http_client = AsyncClient(
+        endpoint=f"http://{docker_ip}:{port}", commitment=Processed
+    )
 
     def check() -> bool:
         return event_loop.run_until_complete(http_client.is_connected())
@@ -150,7 +154,6 @@ def test_http_client_async(
     event_loop.run_until_complete(http_client.close())
 
 
-@pytest.mark.integration
 @pytest.fixture(scope="function")
 def random_funded_keypair(test_http_client: Client) -> Keypair:
     """A new keypair with some lamports."""

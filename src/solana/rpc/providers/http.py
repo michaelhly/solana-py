@@ -2,7 +2,7 @@
 
 from typing import Optional, Tuple, Dict, Type, overload
 
-import httpx
+import httpx2
 from solders.rpc.requests import Body
 from solders.rpc.responses import RPCResult
 
@@ -49,13 +49,13 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     ):
         """Init HTTPProvider."""
         super().__init__(endpoint, extra_headers)
-        self.session = httpx.Client(timeout=timeout, proxy=proxy)
+        self.session = httpx2.Client(timeout=timeout, proxy=proxy)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
         return f"HTTP RPC connection {self.endpoint_uri}"
 
-    @handle_exceptions(SolanaRpcException, httpx.HTTPError)
+    @handle_exceptions(SolanaRpcException, httpx2.HTTPError)
     def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make an HTTP request to an http rpc endpoint."""
         raw = self.make_request_unparsed(body)
@@ -91,7 +91,9 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     @overload
     def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5: ...
 
-    def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
+    def make_batch_request(
+        self, reqs: Tuple[Body, ...], parsers: _Tuples
+    ) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint.
 
         Args:
