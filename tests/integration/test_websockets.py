@@ -84,7 +84,9 @@ async def account_subscribed(
 
 
 @pytest.fixture
-async def logs_subscribed(stubbed_sender_for_websockets: Keypair, websocket: SolanaWsClientProtocol) -> AsyncGenerator[None, None]:
+async def logs_subscribed(
+    stubbed_sender_for_websockets: Keypair, websocket: SolanaWsClientProtocol
+) -> AsyncGenerator[None, None]:
     """Setup logs subscription."""
     await websocket.logs_subscribe()
     first_resp = await websocket.recv()

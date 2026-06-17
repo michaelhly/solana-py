@@ -56,9 +56,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
                 limits=DEFAULT_LIMITS,
             )
         else:
-            self.session = httpx2.Client(
-                timeout=timeout, proxy=proxy, limits=DEFAULT_LIMITS
-            )
+            self.session = httpx2.Client(timeout=timeout, proxy=proxy, limits=DEFAULT_LIMITS)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
@@ -109,9 +107,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     @overload
     def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5: ...
 
-    def make_batch_request(
-        self, reqs: Tuple[Body, ...], parsers: _Tuples
-    ) -> Tuple[RPCResult, ...]:
+    def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint.
 
         Args:

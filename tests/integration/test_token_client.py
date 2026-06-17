@@ -417,7 +417,9 @@ def test_close_account(
 def test_create_multisig(stubbed_sender_for_token, stubbed_receiver, test_token, test_http_client):  # pylint: disable=redefined-outer-name
     """Test creating a multisig account."""
     min_signers = 2
-    multisig_pubkey = test_token.create_multisig(min_signers, [stubbed_sender_for_token.pubkey(), stubbed_receiver], opts=OPTS)
+    multisig_pubkey = test_token.create_multisig(
+        min_signers, [stubbed_sender_for_token.pubkey(), stubbed_receiver], opts=OPTS
+    )
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)
     assert resp.value.owner == TOKEN_PROGRAM_ID

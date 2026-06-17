@@ -132,15 +132,11 @@ def _sleep_for_first_blocks(docker_ip, docker_services) -> None:
 
 
 @pytest.fixture(scope="session")
-def test_http_client(
-    docker_ip, docker_services, _sleep_for_first_blocks
-) -> Client:  # pylint: disable=redefined-outer-name
+def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
     http_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(
-        timeout=15, pause=1, check=http_client.is_connected
-    )
+    docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
     return http_client
 
 
@@ -152,15 +148,11 @@ async def test_http_client_async(
 ) -> AsyncGenerator[AsyncClient, None]:
     """Test async http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
-    http_client = AsyncClient(
-        endpoint=f"http://{docker_ip}:{port}", commitment=Processed
-    )
+    http_client = AsyncClient(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
     # Use sync client for the readiness check so the async client's connection pool
     # is not seeded with connections tied to the setup event loop.
     sync_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(
-        timeout=15, pause=1, check=sync_client.is_connected
-    )
+    docker_services.wait_until_responsive(timeout=15, pause=1, check=sync_client.is_connected)
     yield http_client
     await http_client.close()
 
