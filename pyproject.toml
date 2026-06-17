@@ -48,6 +48,8 @@ addopts = [
     "-s",
 ]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "module"
+asyncio_default_test_loop_scope = "module"
 markers = ["integration: mark a test as a integration test."]
 testpaths = ["src", "tests"]
 

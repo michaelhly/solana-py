@@ -43,7 +43,7 @@ jobs:
         # first list entry: lower bound, second list entry: upper bound
         # of the supported python versions, versions in between are assumed
         # to be supported as well without further testing
-        python-version: ["3.10", "3.13"]
+        python-version: ["3.10", "3.14"]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     defaults:
