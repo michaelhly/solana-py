@@ -1,5 +1,7 @@
 """Helper code for HTTP provider classes."""
 
+from __future__ import annotations
+
 import itertools
 import logging
 import os
@@ -60,7 +62,7 @@ def get_default_endpoint() -> URI:
 
 
 class _HTTPProviderCore:  # pylint: disable=too-few-public-methods
-    logger = logging.getLogger("solanaweb3.rpc.httprpc.HTTPClient")
+    logger = logging.getLogger("solana.rpc.providers")
 
     def __init__(
         self,
@@ -143,25 +145,37 @@ def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup) -> _RespT
 
 
 @overload
-def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup1) -> _RespTup1: ...
+def _after_batch_request(
+    raw_response: httpx2.Response, parsers: _Tup1
+) -> _RespTup1: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup2) -> _RespTup2: ...
+def _after_batch_request(
+    raw_response: httpx2.Response, parsers: _Tup2
+) -> _RespTup2: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup3) -> _RespTup3: ...
+def _after_batch_request(
+    raw_response: httpx2.Response, parsers: _Tup3
+) -> _RespTup3: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup4) -> _RespTup4: ...
+def _after_batch_request(
+    raw_response: httpx2.Response, parsers: _Tup4
+) -> _RespTup4: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup5) -> _RespTup5: ...
+def _after_batch_request(
+    raw_response: httpx2.Response, parsers: _Tup5
+) -> _RespTup5: ...
 
 
-def _after_batch_request(raw_response: httpx2.Response, parsers: _Tuples) -> Tuple[RPCResult, ...]:
+def _after_batch_request(
+    raw_response: httpx2.Response, parsers: _Tuples
+) -> Tuple[RPCResult, ...]:
     text = _after_request_unparsed(raw_response)
     return _parse_raw_batch(text, parsers)  # type: ignore

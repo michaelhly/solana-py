@@ -1,6 +1,8 @@
 """RPC types."""
 
-from typing import NamedTuple, NewType, Optional
+from __future__ import annotations
+
+from typing import NamedTuple, NewType
 
 from solders.pubkey import Pubkey
 from typing_extensions import TypedDict
@@ -47,13 +49,13 @@ class TokenAccountOpts(NamedTuple):
     Provide one of mint or program_id.
     """
 
-    mint: Optional[Pubkey] = None
+    mint: Pubkey | None = None
     """Public key of the specific token Mint to limit accounts to."""
-    program_id: Optional[Pubkey] = None
+    program_id: Pubkey | None = None
     """Public key of the Token program ID that owns the accounts."""
     encoding: str = "base64"
     """Encoding for Account data, either "base58" (slow) or "base64"."""
-    data_slice: Optional[DataSliceOpts] = None
+    data_slice: DataSliceOpts | None = None
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
 
@@ -70,12 +72,12 @@ class TxOpts(NamedTuple):
     """If true, skip the preflight transaction checks."""
     preflight_commitment: Commitment = Finalized
     """Commitment level to use for preflight."""
-    max_retries: Optional[int] = None
+    max_retries: int | None = None
     """Maximum number of times for the RPC node to retry sending the transaction to the leader.
     If this parameter not provided, the RPC node will retry the transaction until it is finalized
     or until the blockhash expires.
     """
-    last_valid_block_height: Optional[int] = None
+    last_valid_block_height: int | None = None
     """Pass the latest valid block height here, to be consumed by confirm_transaction.
     Valid only if skip_confirmation is False.
     """

@@ -11,7 +11,7 @@ from solana.constants import VOTE_PROGRAM_ID
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
 
 
-# Instrection Params
+# Instruction Params
 class WithdrawFromVoteAccountParams(NamedTuple):
     """Transfer SOL from vote account to identity."""
 

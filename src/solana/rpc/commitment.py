@@ -5,6 +5,7 @@ Solana nodes choose which bank state to query based on a commitment requirement 
 In descending order of commitment (most finalized to least finalized), clients may specify:
 """
 
+import warnings
 from typing import NewType
 
 Commitment = NewType("Commitment", str)
@@ -25,15 +26,18 @@ Confirmed = Commitment("confirmed")
 Processed = Commitment("processed")
 """The node will query its most recent block. Note that the block may not be complete."""
 
+_DEPRECATED = {
+    "Max": Commitment("max"),
+    "Root": Commitment("root"),
+    "Single": Commitment("singleGossip"),
+    "Recent": Commitment("recent"),
+}
 
-Max = Commitment("max")
-"""Deprecated"""
 
-Root = Commitment("root")
-"""Deprecated"""
-
-Single = Commitment("singleGossip")
-"""Deprecated"""
-
-Recent = Commitment("recent")
-"""Deprecated"""
+def __getattr__(name: str) -> Commitment:
+    if name in _DEPRECATED:
+        warnings.warn(
+            f"Commitment.{name} is deprecated.", DeprecationWarning, stacklevel=2
+        )
+        return _DEPRECATED[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

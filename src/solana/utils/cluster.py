@@ -1,6 +1,8 @@
 """Tools for getting RPC cluster information."""
 
-from typing import Literal, NamedTuple, Optional
+from __future__ import annotations
+
+from typing import Literal, NamedTuple
 
 
 class ClusterUrls(NamedTuple):
@@ -35,7 +37,7 @@ ENDPOINT = Endpoint(
 Cluster = Literal["devnet", "testnet", "mainnet-beta"]
 
 
-def cluster_api_url(cluster: Optional[Cluster] = None, tls: bool = True) -> str:
+def cluster_api_url(cluster: Cluster | None = None, tls: bool = True) -> str:
     """Retrieve the RPC API URL for the specified cluster.
 
     :param cluster: The name of the cluster to use.

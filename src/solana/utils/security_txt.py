@@ -1,7 +1,7 @@
 """Utils for security.txt."""
 
 from dataclasses import dataclass, fields
-from typing import Any, List, Optional
+from typing import Any
 
 HEADER = "=======BEGIN SECURITY.TXT V1=======\0"
 """Header of the security.txt."""
@@ -18,12 +18,16 @@ class SecurityTxt:
     project_url: str
     contacts: str
     policy: str
-    preferred_languages: Optional[str] = None
-    source_code: Optional[str] = None
-    encryption: Optional[str] = None
-    auditors: Optional[str] = None
-    acknowledgements: Optional[str] = None
-    expiry: Optional[str] = None
+    preferred_languages: str | None = None
+    source_code: str | None = None
+    encryption: str | None = None
+    auditors: str | None = None
+    acknowledgements: str | None = None
+    expiry: str | None = None
+
+
+# Build the set of known field names from the dataclass definition
+_KNOWN_KEYS = {f.name for f in fields(SecurityTxt)}
 
 
 class NoSecurityTxtFoundError(Exception):
@@ -40,34 +44,30 @@ def parse_security_txt(data: bytes) -> SecurityTxt:
         The Security Txt.
     """
     if not isinstance(data, bytes):
-        raise TypeError(f"data provided in parse(data) must be bytes, found: {type(data)}")
+        raise TypeError(
+            f"data provided in parse(data) must be bytes, found: {type(data)}"
+        )
 
-    s_idx = data.find(bytes(HEADER, "utf-8"))
-    e_idx = data.find(bytes(FOOTER, "utf-8"))
-
+    header_bytes = HEADER.encode("utf-8")
+    footer_bytes = FOOTER.encode("utf-8")
+    s_idx = data.find(header_bytes)
     if s_idx == -1:
         raise NoSecurityTxtFoundError("Program doesn't have security.txt section")
 
-    content_arr = data[s_idx + len(HEADER) : e_idx]
-    content_da: List[Any] = [[]]
+    e_idx = data.find(footer_bytes, s_idx + len(header_bytes))
+    content_bytes = data[s_idx + len(header_bytes) : e_idx]
 
-    for char in content_arr:
-        if char == 0:
-            content_da.append([])
-        else:
-            content_da[len(content_da) - 1].append(chr(char))
+    # Split by null byte, convert each segment to string, strip trailing empty
+    parts = [segment.decode("utf-8") for segment in content_bytes.split(b"\x00")]
+    if parts and parts[-1] == "":
+        parts.pop()
 
-    content_da.pop()
-
-    content_dict = {}
-
-    for idx, content in enumerate(content_da):
-        content_da[idx] = "".join(content)
-
-    for iidx, idata in enumerate(content_da):
-        if any(idata == x.name for x in fields(SecurityTxt)):
-            next_key = iidx + 1
-            content_dict.update({str(idata): content_da[next_key]})
+    # Walk key-value pairs: field names alternate with values
+    content_dict: dict[str, Any] = {}
+    for i, part in enumerate(parts):
+        if part in _KNOWN_KEYS:
+            if i + 1 < len(parts):
+                content_dict[part] = parts[i + 1]
 
     try:
         security_txt = SecurityTxt(**content_dict)
