@@ -84,8 +84,8 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: |
           solana-test-validator \
+            --reset \
             --rpc-pubsub-enable-vote-subscription \
-            --rpc-pubsub-enable-block-subscription \
             --quiet &
           # Poll until the validator is healthy (up to 60 s)
           for i in $(seq 1 60); do

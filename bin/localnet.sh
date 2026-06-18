@@ -4,8 +4,9 @@
 set -e
 
 VALIDATOR_ARGS=(
+    --reset
     --rpc-pubsub-enable-vote-subscription
-    --rpc-pubsub-enable-block-subscription
+    #--rpc-pubsub-enable-block-subscription  # Removed: causes clap panic in Agave 4.0.0
     --quiet
 )
 LEDGER_DIR="test-ledger"
