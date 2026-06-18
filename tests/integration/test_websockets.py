@@ -78,9 +78,7 @@ async def multiple_subscriptions(
     yield reqs
     unsubscribe_reqs: List[Body] = [
         LogsUnsubscribe(logs_subscription_id, websocket.increment_counter_and_get_id()),
-        AccountUnsubscribe(
-            account_subscription_id, websocket.increment_counter_and_get_id()
-        ),
+        AccountUnsubscribe(account_subscription_id, websocket.increment_counter_and_get_id()),
     ]
     await websocket.send_request(unsubscribe_reqs)
 
@@ -149,9 +147,7 @@ async def program_subscribed(
     """Setup program subscription."""
     program = Keypair()
     owned = Keypair()
-    airdrop_resp = await test_http_client_async.request_airdrop(
-        owned.pubkey(), AIRDROP_AMOUNT
-    )
+    airdrop_resp = await test_http_client_async.request_airdrop(owned.pubkey(), AIRDROP_AMOUNT)
     await test_http_client_async.confirm_transaction(airdrop_resp.value)
     await websocket.program_subscribe(program.pubkey())
     first_resp = await websocket.recv()
@@ -168,9 +164,7 @@ async def signature_subscribed(
 ) -> AsyncGenerator[None, None]:
     """Setup signature subscription."""
     recipient = Keypair()
-    airdrop_resp = await test_http_client_async.request_airdrop(
-        recipient.pubkey(), AIRDROP_AMOUNT
-    )
+    airdrop_resp = await test_http_client_async.request_airdrop(recipient.pubkey(), AIRDROP_AMOUNT)
     await websocket.signature_subscribe(airdrop_resp.value)
     first_resp = await websocket.recv()
     msg = first_resp[0]
@@ -244,9 +238,7 @@ async def test_multiple_subscriptions(
     websocket: SolanaWsClientProtocol,
 ):
     """Test subscribing to multiple feeds."""
-    await test_http_client_async.request_airdrop(
-        stubbed_sender_for_websockets.pubkey(), AIRDROP_AMOUNT
-    )
+    await test_http_client_async.request_airdrop(stubbed_sender_for_websockets.pubkey(), AIRDROP_AMOUNT)
     async for idx, message in asyncstdlib.enumerate(websocket):
         for item in message:
             if isinstance(item, (AccountNotification, LogsNotification)):
@@ -255,9 +247,7 @@ async def test_multiple_subscriptions(
                 raise ValueError(f"Unexpected message for this test: {item}")
         if idx == len(multiple_subscriptions) - 1:
             break
-    balance = await test_http_client_async.get_balance(
-        stubbed_sender_for_websockets.pubkey(), Finalized
-    )
+    balance = await test_http_client_async.get_balance(stubbed_sender_for_websockets.pubkey(), Finalized)
     assert balance.value == AIRDROP_AMOUNT
 
 
@@ -287,10 +277,7 @@ async def test_logs_subscribe(
     main_resp = await websocket.recv()
     msg = main_resp[0]
     assert isinstance(msg, LogsNotification)
-    assert (
-        msg.result.value.logs[0]
-        == "Program 11111111111111111111111111111111 invoke [1]"
-    )
+    assert msg.result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
 
 
 @pytest.mark.integration
@@ -305,10 +292,7 @@ async def test_logs_subscribe_mentions_filter(
     main_resp = await websocket.recv()
     msg = main_resp[0]
     assert isinstance(msg, LogsNotification)
-    assert (
-        msg.result.value.logs[0]
-        == "Program 11111111111111111111111111111111 invoke [1]"
-    )
+    assert msg.result.value.logs[0] == "Program 11111111111111111111111111111111 invoke [1]"
 
 
 @pytest.mark.integration
