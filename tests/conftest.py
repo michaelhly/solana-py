@@ -111,19 +111,11 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
     worker_count = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
     if os.environ.get("SOLANA_VALIDATOR_EXTERNAL") == "1":
         if worker_count > 1:
-            pytest.skip(
-                "SOLANA_VALIDATOR_EXTERNAL=1 does not support xdist isolation; run with -n 1"
-            )
-        rpc_url = os.environ.get(
-            "SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899"
-        )
-        ws_url = os.environ.get(
-            "SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900"
-        )
+            pytest.skip("SOLANA_VALIDATOR_EXTERNAL=1 does not support xdist isolation; run with -n 1")
+        rpc_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899")
+        ws_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900")
         if not _validator_is_healthy(rpc_url):
-            pytest.skip(
-                f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}"
-            )
+            pytest.skip(f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}")
         yield ValidatorConfig(
             rpc_url=rpc_url,
             ws_url=ws_url,
@@ -134,9 +126,7 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
         return
 
     if not shutil.which("solana-test-validator"):
-        pytest.skip(
-            "solana-test-validator not found in PATH; skipping integration tests"
-        )
+        pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
         return
 
     index = _worker_index(worker_id)
