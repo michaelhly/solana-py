@@ -42,77 +42,83 @@ def _ensure_minimum_balance(
 
 
 @pytest.mark.integration
-def test_request_air_drop(
-    stubbed_sender: Keypair, stubbed_receiver: Pubkey, test_http_client: Client
-):
+def test_request_air_drop(test_http_client: Client):
     """Test air drop to stubbed_sender and stubbed_receiver."""
+    sender = Keypair()
+    receiver = Keypair().pubkey()
+    sender_balance_before = test_http_client.get_balance(sender.pubkey())
+    assert_valid_response(sender_balance_before)
+    receiver_balance_before = test_http_client.get_balance(receiver)
+    assert_valid_response(receiver_balance_before)
     # Airdrop to stubbed_sender
-    resp = test_http_client.request_airdrop(stubbed_sender.pubkey(), AIRDROP_AMOUNT)
+    resp = test_http_client.request_airdrop(sender.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp.value)
-    balance = test_http_client.get_balance(stubbed_sender.pubkey())
-    assert balance.value == AIRDROP_AMOUNT
+    balance = test_http_client.get_balance(sender.pubkey())
+    assert_valid_response(balance)
+    assert balance.value == sender_balance_before.value + AIRDROP_AMOUNT
     # Airdrop to stubbed_receiver
-    resp = test_http_client.request_airdrop(stubbed_receiver, AIRDROP_AMOUNT)
+    resp = test_http_client.request_airdrop(receiver, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp.value)
-    balance = test_http_client.get_balance(stubbed_receiver)
-    assert balance.value == AIRDROP_AMOUNT
+    balance = test_http_client.get_balance(receiver)
+    assert_valid_response(balance)
+    assert balance.value == receiver_balance_before.value + AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
 def test_request_air_drop_prefetched_blockhash(
-    stubbed_sender_prefetched_blockhash,
-    stubbed_receiver_prefetched_blockhash,
     test_http_client: Client,
 ):
     """Test air drop to stubbed_sender and stubbed_receiver."""
+    sender = Keypair()
+    receiver = Keypair().pubkey()
+    sender_balance_before = test_http_client.get_balance(sender.pubkey())
+    assert_valid_response(sender_balance_before)
+    receiver_balance_before = test_http_client.get_balance(receiver)
+    assert_valid_response(receiver_balance_before)
     # Airdrop to stubbed_sender
-    resp = test_http_client.request_airdrop(
-        stubbed_sender_prefetched_blockhash.pubkey(), AIRDROP_AMOUNT
-    )
+    resp = test_http_client.request_airdrop(sender.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp.value)
-    balance = test_http_client.get_balance(stubbed_sender_prefetched_blockhash.pubkey())
-    assert balance.value == AIRDROP_AMOUNT
+    balance = test_http_client.get_balance(sender.pubkey())
+    assert_valid_response(balance)
+    assert balance.value == sender_balance_before.value + AIRDROP_AMOUNT
     # Airdrop to stubbed_receiver
-    resp = test_http_client.request_airdrop(
-        stubbed_receiver_prefetched_blockhash, AIRDROP_AMOUNT
-    )
+    resp = test_http_client.request_airdrop(receiver, AIRDROP_AMOUNT)
     assert_valid_response(resp)
     test_http_client.confirm_transaction(resp.value)
-    balance = test_http_client.get_balance(stubbed_receiver_prefetched_blockhash)
-    assert balance.value == AIRDROP_AMOUNT
+    balance = test_http_client.get_balance(receiver)
+    assert_valid_response(balance)
+    assert balance.value == receiver_balance_before.value + AIRDROP_AMOUNT
 
 
 @pytest.mark.integration
-def test_send_transaction_and_get_balance(
-    stubbed_sender, stubbed_receiver, test_http_client: Client
-):
+def test_send_transaction_and_get_balance(test_http_client: Client):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    sender = Keypair()
+    receiver = Keypair().pubkey()
     amount = 1000
     sender_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_sender.pubkey(), amount + 50_000
+        test_http_client, sender.pubkey(), amount + 50_000
     )
-    receiver_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_receiver, 1
-    )
+    receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
     blockhash = test_http_client.get_latest_blockhash().value.blockhash
     ixs = [
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=stubbed_sender.pubkey(),
-                to_pubkey=stubbed_receiver,
+                from_pubkey=sender.pubkey(),
+                to_pubkey=receiver,
                 lamports=amount,
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
+    transfer_tx = Transaction([sender], msg, blockhash)
     sim_resp = test_http_client.simulate_transaction(transfer_tx)
     assert_valid_response(sim_resp)
     resp = test_http_client.send_transaction(transfer_tx)
@@ -120,10 +126,10 @@ def test_send_transaction_and_get_balance(
     # Confirm transaction
     test_http_client.confirm_transaction(resp.value)
     # Check balances
-    bal_resp = test_http_client.get_balance(stubbed_sender.pubkey())
+    bal_resp = test_http_client.get_balance(sender.pubkey())
     assert_valid_response(bal_resp)
     assert bal_resp.value == sender_balance_before - amount - fee_resp.value
-    bal_resp2 = test_http_client.get_balance(stubbed_receiver)
+    bal_resp2 = test_http_client.get_balance(receiver)
     assert_valid_response(bal_resp2)
     assert bal_resp2.value == receiver_balance_before + amount
 
@@ -205,66 +211,58 @@ def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client: Client
 
 @pytest.mark.integration
 def test_send_transaction_prefetched_blockhash(
-    stubbed_sender_prefetched_blockhash,
-    stubbed_receiver_prefetched_blockhash,
     test_http_client,
 ):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to stubbed_receiver
+    sender = Keypair()
+    receiver = Keypair().pubkey()
     amount = 1000
     sender_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_sender_prefetched_blockhash.pubkey(), amount + 50_000
+        test_http_client, sender.pubkey(), amount + 50_000
     )
-    receiver_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_receiver_prefetched_blockhash, 1
-    )
+    receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
     recent_blockhash = test_http_client.parse_recent_blockhash(
         test_http_client.get_latest_blockhash()
     )
     ixs = [
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=stubbed_sender_prefetched_blockhash.pubkey(),
-                to_pubkey=stubbed_receiver_prefetched_blockhash,
+                from_pubkey=sender.pubkey(),
+                to_pubkey=receiver,
                 lamports=amount,
             )
         )
     ]
-    msg = Message.new_with_blockhash(
-        ixs, stubbed_sender_prefetched_blockhash.pubkey(), recent_blockhash
-    )
+    msg = Message.new_with_blockhash(ixs, sender.pubkey(), recent_blockhash)
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction(
-        [stubbed_sender_prefetched_blockhash], msg, recent_blockhash
-    )
+    transfer_tx = Transaction([sender], msg, recent_blockhash)
     resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
     test_http_client.confirm_transaction(resp.value)
     # Check balances
-    resp = test_http_client.get_balance(stubbed_sender_prefetched_blockhash.pubkey())
+    resp = test_http_client.get_balance(sender.pubkey())
     assert_valid_response(resp)
     assert resp.value == sender_balance_before - amount - fee_resp.value
-    resp = test_http_client.get_balance(stubbed_receiver_prefetched_blockhash)
+    resp = test_http_client.get_balance(receiver)
     assert_valid_response(resp)
     assert resp.value == receiver_balance_before + amount
 
 
 @pytest.mark.integration
-def test_send_raw_transaction_and_get_balance(
-    stubbed_sender, stubbed_receiver, test_http_client: Client
-):
+def test_send_raw_transaction_and_get_balance(test_http_client: Client):
     """Test sending a raw transaction to localnet."""
     # Get a recent blockhash
+    sender = Keypair()
+    receiver = Keypair().pubkey()
     amount = 1000
     sender_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_sender.pubkey(), amount + 50_000
+        test_http_client, sender.pubkey(), amount + 50_000
     )
-    receiver_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_receiver, 1
-    )
+    receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
     resp = test_http_client.get_latest_blockhash()
     assert_valid_response(resp)
     recent_blockhash = resp.value.blockhash
@@ -274,44 +272,44 @@ def test_send_raw_transaction_and_get_balance(
     ixs = [
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=stubbed_sender.pubkey(),
-                to_pubkey=stubbed_receiver,
+                from_pubkey=sender.pubkey(),
+                to_pubkey=receiver,
                 lamports=amount,
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
+    transfer_tx = Transaction([sender], msg, blockhash)
     # Send raw transaction
     tx_resp = test_http_client.send_raw_transaction(bytes(transfer_tx))
     assert_valid_response(tx_resp)
     # Confirm transaction
     test_http_client.confirm_transaction(tx_resp.value)
     # Check balances
-    bal_resp = test_http_client.get_balance(stubbed_sender.pubkey())
+    bal_resp = test_http_client.get_balance(sender.pubkey())
     assert_valid_response(bal_resp)
     assert bal_resp.value == sender_balance_before - amount - fee_resp.value
-    bal_resp2 = test_http_client.get_balance(stubbed_receiver)
+    bal_resp2 = test_http_client.get_balance(receiver)
     assert_valid_response(bal_resp2)
     assert bal_resp2.value == receiver_balance_before + amount
 
 
 @pytest.mark.integration
 def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
-    stubbed_sender, stubbed_receiver, test_http_client
+    test_http_client,
 ):
     """Test sending a raw transaction to localnet using latest blockhash."""
     # Get a recent blockhash
+    sender = Keypair()
+    receiver = Keypair().pubkey()
     amount = 1000
     sender_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_sender.pubkey(), amount + 50_000
+        test_http_client, sender.pubkey(), amount + 50_000
     )
-    receiver_balance_before = _ensure_minimum_balance(
-        test_http_client, stubbed_receiver, 1
-    )
+    receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
     resp = test_http_client.get_latest_blockhash(Finalized)
     assert_valid_response(resp)
     recent_blockhash = resp.value.blockhash
@@ -322,17 +320,17 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     ixs = [
         sp.transfer(
             sp.TransferParams(
-                from_pubkey=stubbed_sender.pubkey(),
-                to_pubkey=stubbed_receiver,
+                from_pubkey=sender.pubkey(),
+                to_pubkey=receiver,
                 lamports=amount,
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
+    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
+    transfer_tx = Transaction([sender], msg, blockhash)
     # Send raw transaction
     resp = test_http_client.send_raw_transaction(
         bytes(transfer_tx),
@@ -347,10 +345,10 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
         resp.value, last_valid_block_height=last_valid_block_height
     )
     # Check balances
-    resp = test_http_client.get_balance(stubbed_sender.pubkey())
+    resp = test_http_client.get_balance(sender.pubkey())
     assert_valid_response(resp)
     assert resp.value == sender_balance_before - amount - fee_resp.value
-    resp = test_http_client.get_balance(stubbed_receiver)
+    resp = test_http_client.get_balance(receiver)
     assert_valid_response(resp)
     assert resp.value == receiver_balance_before + amount
 

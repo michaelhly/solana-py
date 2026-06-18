@@ -91,7 +91,7 @@ def _validator_is_healthy(rpc_url: str) -> bool:
             data=payload,
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=2) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=2) as resp:
             return json.loads(resp.read()).get("result") == "ok"
     except Exception:  # noqa: BLE001
         return False
@@ -111,19 +111,11 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
     worker_count = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
     if os.environ.get("SOLANA_VALIDATOR_EXTERNAL") == "1":
         if worker_count > 1:
-            pytest.skip(
-                "SOLANA_VALIDATOR_EXTERNAL=1 does not support xdist isolation; run with -n 1"
-            )
-        rpc_url = os.environ.get(
-            "SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899"
-        )
-        ws_url = os.environ.get(
-            "SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900"
-        )
+            pytest.skip("SOLANA_VALIDATOR_EXTERNAL=1 does not support xdist isolation; run with -n 1")
+        rpc_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899")
+        ws_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900")
         if not _validator_is_healthy(rpc_url):
-            pytest.skip(
-                f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}"
-            )
+            pytest.skip(f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}")
         yield ValidatorConfig(
             rpc_url=rpc_url,
             ws_url=ws_url,
@@ -134,9 +126,7 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
         return
 
     if not shutil.which("solana-test-validator"):
-        pytest.skip(
-            "solana-test-validator not found in PATH; skipping integration tests"
-        )
+        pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
         return
 
     index = _worker_index(worker_id)
@@ -166,7 +156,7 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
     ]
 
     with validator_log_path.open("w", encoding="utf-8") as validator_log:
-        proc = subprocess.Popen(  # noqa: S603
+        proc = subprocess.Popen(
             validator_args,
             stdout=validator_log,
             stderr=validator_log,
@@ -325,7 +315,7 @@ def unit_test_http_client_async() -> AsyncClient:
 
 @pytest.fixture(scope="session")
 def test_http_client(
-    solana_test_validator: ValidatorConfig,  # noqa: ARG001
+    solana_test_validator: ValidatorConfig,
     validator_rpc_url: str,
 ) -> Client:
     """Sync HTTP client pointed at the local test validator."""
@@ -338,14 +328,12 @@ def test_http_client(
             return client
         except Exception:  # noqa: BLE001
             time.sleep(1)
-    raise RuntimeError(
-        f"Validator did not finalize slot 5 within 60 s — check validator at {validator_rpc_url}."
-    )
+    raise RuntimeError(f"Validator did not finalize slot 5 within 60 s — check validator at {validator_rpc_url}.")
 
 
 @pytest.fixture(scope="module")
 async def test_http_client_async(
-    solana_test_validator: ValidatorConfig,  # noqa: ARG001
+    solana_test_validator: ValidatorConfig,
     validator_rpc_url: str,
 ) -> AsyncGenerator[AsyncClient, None]:
     """Async HTTP client pointed at the local test validator."""

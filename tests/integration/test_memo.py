@@ -39,9 +39,7 @@ def test_send_memo_in_transaction(test_http_client: Client):
     txn_id = resp.value
     # Txn needs to be finalized in order to parse the logs.
     test_http_client.confirm_transaction(txn_id, commitment=Finalized)
-    resp2_val = test_http_client.get_transaction(
-        txn_id, commitment=Finalized, encoding="jsonParsed"
-    ).value
+    resp2_val = test_http_client.get_transaction(txn_id, commitment=Finalized, encoding="jsonParsed").value
     assert resp2_val is not None
     resp2_transaction = resp2_val.transaction
     meta = resp2_transaction.meta
