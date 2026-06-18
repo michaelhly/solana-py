@@ -21,7 +21,7 @@ tests:
 	uv run pytest
 
 tests-parallel:
-	uv run pytest -n auto
+	uv run pytest -n auto 
 
 unit-tests:
 	uv run pytest -m "not integration" --doctest-modules
@@ -30,7 +30,7 @@ int-tests:
 	uv run pytest -m integration
 
 update-localnet:
-	./bin/localnet.sh update
+	agave-install update
 
 start-localnet:
 	./bin/localnet.sh up

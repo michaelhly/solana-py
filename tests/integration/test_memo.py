@@ -3,7 +3,7 @@
 import pytest
 from solders.keypair import Keypair
 from solders.message import Message
-from solders.transaction_status import ParsedInstruction
+from solders.transaction_status import ParsedInstruction, UiTransaction
 from spl.memo.constants import MEMO_PROGRAM_ID
 from spl.memo.instructions import MemoParams, create_memo
 
@@ -15,9 +15,10 @@ from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
 
 @pytest.mark.integration
-def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Client):
+def test_send_memo_in_transaction(test_http_client: Client):
     """Test sending a memo instruction to localnet."""
-    airdrop_resp = test_http_client.request_airdrop(stubbed_sender.pubkey(), AIRDROP_AMOUNT)
+    sender = Keypair()
+    airdrop_resp = test_http_client.request_airdrop(sender.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(airdrop_resp)
     test_http_client.confirm_transaction(airdrop_resp.value)
     raw_message = "test"
@@ -25,14 +26,14 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     # Create memo params
     memo_params = MemoParams(
         program_id=MEMO_PROGRAM_ID,
-        signer=stubbed_sender.pubkey(),
+        signer=sender.pubkey(),
         message=message,
     )
     # Create transfer tx to add memo to transaction from stubbed sender
     blockhash = test_http_client.get_latest_blockhash().value.blockhash
     ixs = [create_memo(memo_params)]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), blockhash)
-    transfer_tx = Transaction([stubbed_sender], msg, blockhash)
+    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
+    transfer_tx = Transaction([sender], msg, blockhash)
     resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     txn_id = resp.value
@@ -47,6 +48,7 @@ def test_send_memo_in_transaction(stubbed_sender: Keypair, test_http_client: Cli
     assert messages is not None
     log_message = messages[2].split('"')
     assert log_message[1] == raw_message
+    assert isinstance(resp2_transaction.transaction, UiTransaction)
     ixn = resp2_transaction.transaction.message.instructions[0]
     assert isinstance(ixn, ParsedInstruction)
     assert ixn.parsed == raw_message

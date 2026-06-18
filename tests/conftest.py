@@ -1,104 +1,76 @@
 """Fixtures for pytest."""
 
-import asyncio
+import os
+import shutil
 import time
-from typing import AsyncGenerator, NamedTuple
+from contextlib import suppress
+from pathlib import Path
+from typing import AsyncGenerator, Generator
 
 import pytest
-from solders.hash import Hash as Blockhash
 from solders.keypair import Keypair
-from solders.pubkey import Pubkey
 
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
+from tests.validator_runtime import (
+    ValidatorConfig,
+    acquire_shared_validator,
+    env_int,
+    release_shared_validator,
+    tail_file,
+    validator_is_healthy,
+)
 from tests.utils import AIRDROP_AMOUNT, assert_valid_response
 
-
-class Clients(NamedTuple):
-    """Container for http clients."""
-
-    sync: Client
-    async_: AsyncClient
-    loop: asyncio.AbstractEventLoop
+pytest_plugins = ["tests.fixture_accounts"]
 
 
 @pytest.fixture(scope="session")
-def stubbed_blockhash() -> Blockhash:
-    """Arbitrary block hash."""
-    return Blockhash.from_string("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k")
+def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, None]:
+    """Manage the lifecycle of solana-test-validator for the test session.
+
+    The default mode uses a single shared validator process for all workers.
+    Isolation is maintained at test-session level by using independent accounts
+    and avoiding shared mutable test assumptions.
+
+    Set ``SOLANA_VALIDATOR_EXTERNAL=1`` to opt in to using a pre-existing
+    validator as-is.
+    """
+    if os.environ.get("SOLANA_VALIDATOR_EXTERNAL") == "1":
+        rpc_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899")
+        ws_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900")
+        if not validator_is_healthy(rpc_url):
+            pytest.skip(f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}")
+        yield ValidatorConfig(
+            rpc_url=rpc_url,
+            ws_url=ws_url,
+            worker_id=worker_id,
+            rpc_port=0,
+            ledger_dir="",
+        )
+        return
+
+    if not shutil.which("solana-test-validator"):
+        pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
+        return
+    config = acquire_shared_validator(worker_id)
+    try:
+        yield config
+    finally:
+        release_shared_validator()
 
 
 @pytest.fixture(scope="session")
-def stubbed_receiver() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
+def validator_rpc_url(solana_test_validator: ValidatorConfig) -> str:
+    """RPC URL for this test worker's validator."""
+    return solana_test_validator.rpc_url
 
 
 @pytest.fixture(scope="session")
-def stubbed_receiver_prefetched_blockhash() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97")
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_receiver() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98")
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_receiver_prefetched_blockhash() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96")
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([8] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_prefetched_blockhash() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([9] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_for_token() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([2] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_sender() -> Keypair:
-    """Another arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([7] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_sender_prefetched_blockhash() -> Keypair:
-    """Another arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([5] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_sender_for_token() -> Keypair:
-    """Arbitrary known account to be used as sender in async token tests."""
-    return Keypair.from_seed(bytes([3] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_for_websockets() -> Keypair:
-    """Arbitrary known account to be used as sender in websocket tests."""
-    return Keypair.from_seed(bytes([4] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def freeze_authority() -> Keypair:
-    """Arbitrary known account to be used as freeze authority."""
-    return Keypair.from_seed(bytes([6] * Pubkey.LENGTH))
+def validator_ws_url(solana_test_validator: ValidatorConfig) -> str:
+    """WS URL for this test worker's validator."""
+    return solana_test_validator.ws_url
 
 
 @pytest.fixture(scope="session")
@@ -116,43 +88,54 @@ def unit_test_http_client_async() -> AsyncClient:
 
 
 @pytest.fixture(scope="session")
-def _sleep_for_first_blocks(docker_ip, docker_services) -> None:
-    """Wait until the validator has finalized enough blocks for early slots to be accessible."""
-    port = docker_services.port_for("localnet", 8899)
-    client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    deadline = time.time() + 60
+def test_http_client(
+    solana_test_validator: ValidatorConfig,
+    validator_rpc_url: str,
+) -> Client:
+    """Sync HTTP client pointed at the local test validator."""
+    client = Client(endpoint=validator_rpc_url, commitment=Processed)
+    # Wait until slot 5 is finalized so early-slot tests (e.g. get_block) pass
+    timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 120)
+    deadline = time.time() + timeout_secs
+    last_error: Exception | None = None
     while time.time() < deadline:
         try:
-            # get_block uses finalized commitment; verify slot 5 is accessible before testing
             client.get_block(5)
-            return
-        except Exception:  # noqa: BLE001
-            pass
-        time.sleep(1)
-
-
-@pytest.fixture(scope="session")
-def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
-    """Test http_client.is_connected."""
-    port = docker_services.port_for("localnet", 8899)
-    http_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
-    return http_client
+            return client
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            time.sleep(1)
+    slot_debug = "unknown"
+    block_height_debug = "unknown"
+    with suppress(Exception):
+        slot_debug = str(client.get_slot().value)
+    with suppress(Exception):
+        block_height_debug = str(client.get_block_height().value)
+    log_tail = tail_file(Path(solana_test_validator.ledger_dir) / "validator.log")
+    raise RuntimeError(
+        "Validator did not finalize slot 5 within "
+        f"{timeout_secs} s at {validator_rpc_url} "
+        f"(worker={solana_test_validator.worker_id}, slot={slot_debug}, block_height={block_height_debug}).\n"
+        f"last_error={last_error!r}\n"
+        f"validator_log_tail:\n{log_tail}"
+    )
 
 
 @pytest.fixture(scope="module")
 async def test_http_client_async(
-    docker_ip,
-    docker_services,
-    _sleep_for_first_blocks,  # pylint: disable=redefined-outer-name
+    solana_test_validator: ValidatorConfig,
+    validator_rpc_url: str,
 ) -> AsyncGenerator[AsyncClient, None]:
-    """Test async http_client.is_connected."""
-    port = docker_services.port_for("localnet", 8899)
-    http_client = AsyncClient(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    # Use sync client for the readiness check so the async client's connection pool
-    # is not seeded with connections tied to the setup event loop.
-    sync_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=sync_client.is_connected)
+    """Async HTTP client pointed at the local test validator."""
+    http_client = AsyncClient(endpoint=validator_rpc_url, commitment=Processed)
+    # Use a sync client for the readiness check so the async client's connection
+    # pool is not seeded with connections tied to the setup event loop.
+    sync_client = Client(endpoint=validator_rpc_url, commitment=Processed)
+    deadline = time.time() + 15
+    while time.time() < deadline:
+        if sync_client.is_connected():
+            break
+        time.sleep(1)
     yield http_client
     await http_client.close()
 
