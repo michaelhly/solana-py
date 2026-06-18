@@ -14,8 +14,7 @@ dependencies = [
 dev = [
     "pytest>=8.4.2",
     "mypy>=1.19",
-    "pyyaml==6.0.2",
-    "pytest-docker>=3.2.0",
+    "pyyaml>=6.0.2",
     "bump2version>=1.0.1",
     "pytest-asyncio>=0.18.3",
     "pytest-cov>=7.1.0",
@@ -43,8 +42,7 @@ addopts = [
     "--color=yes",
     "--cov-report=xml",
     "--cov-report=html",
-    "--container-scope=session", # share one container for the whole test session
-    "--dist=loadscope",          # distribute tests by module
+    "--dist=loadscope",  # distribute tests by module
     "-vv",
     "-s",
 ]

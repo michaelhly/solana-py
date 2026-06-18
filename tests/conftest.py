@@ -14,6 +14,9 @@ from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
 from tests.utils import AIRDROP_AMOUNT, assert_valid_response
 
+VALIDATOR_RPC_URL = "http://127.0.0.1:8899"
+VALIDATOR_WS_URL = "ws://127.0.0.1:8900"
+
 
 class Clients(NamedTuple):
     """Container for http clients."""
@@ -116,43 +119,38 @@ def unit_test_http_client_async() -> AsyncClient:
 
 
 @pytest.fixture(scope="session")
-def _sleep_for_first_blocks(docker_ip, docker_services) -> None:
-    """Wait until the validator has finalized enough blocks for early slots to be accessible."""
-    port = docker_services.port_for("localnet", 8899)
-    client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
+def test_http_client() -> Client:
+    """Sync HTTP client pointed at the local test validator.
+
+    Assumes solana-test-validator is already running on 127.0.0.1:8899.
+    In CI this is started as a separate workflow step; locally run `make start-localnet`.
+    """
+    client = Client(endpoint=VALIDATOR_RPC_URL, commitment=Processed)
+    # Wait until slot 5 is finalized so early-slot tests (e.g. get_block) pass
     deadline = time.time() + 60
     while time.time() < deadline:
         try:
-            # get_block uses finalized commitment; verify slot 5 is accessible before testing
             client.get_block(5)
-            return
+            return client
         except Exception:  # noqa: BLE001
-            pass
-        time.sleep(1)
-
-
-@pytest.fixture(scope="session")
-def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
-    """Test http_client.is_connected."""
-    port = docker_services.port_for("localnet", 8899)
-    http_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=http_client.is_connected)
-    return http_client
+            time.sleep(1)
+    raise RuntimeError(
+        "Validator did not finalize slot 5 within 60 s — is solana-test-validator running on 127.0.0.1:8899?"
+    )
 
 
 @pytest.fixture(scope="module")
-async def test_http_client_async(
-    docker_ip,
-    docker_services,
-    _sleep_for_first_blocks,  # pylint: disable=redefined-outer-name
-) -> AsyncGenerator[AsyncClient, None]:
-    """Test async http_client.is_connected."""
-    port = docker_services.port_for("localnet", 8899)
-    http_client = AsyncClient(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    # Use sync client for the readiness check so the async client's connection pool
-    # is not seeded with connections tied to the setup event loop.
-    sync_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=sync_client.is_connected)
+async def test_http_client_async() -> AsyncGenerator[AsyncClient, None]:
+    """Async HTTP client pointed at the local test validator."""
+    http_client = AsyncClient(endpoint=VALIDATOR_RPC_URL, commitment=Processed)
+    # Use a sync client for the readiness check so the async client's connection
+    # pool is not seeded with connections tied to the setup event loop.
+    sync_client = Client(endpoint=VALIDATOR_RPC_URL, commitment=Processed)
+    deadline = time.time() + 15
+    while time.time() < deadline:
+        if sync_client.is_connected():
+            break
+        time.sleep(1)
     yield http_client
     await http_client.close()
 

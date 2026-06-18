@@ -30,7 +30,7 @@ int-tests:
 	uv run pytest -m integration
 
 update-localnet:
-	./bin/localnet.sh update
+	agave-install update
 
 start-localnet:
 	./bin/localnet.sh up

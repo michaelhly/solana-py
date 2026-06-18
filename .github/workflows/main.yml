@@ -69,13 +69,43 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      #----------------------------------------------
+      # install Agave CLI + start test validator
+      #----------------------------------------------
+      - name: Install Agave CLI
+        if: matrix.os != 'windows-latest'
+        run: sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+
+      - name: Add Agave bin to PATH
+        if: matrix.os != 'windows-latest'
+        run: echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Start solana-test-validator
+        if: matrix.os != 'windows-latest'
+        run: |
+          solana-test-validator \
+            --rpc-pubsub-enable-vote-subscription \
+            --rpc-pubsub-enable-block-subscription \
+            --quiet &
+          # Poll until the validator is healthy (up to 60 s)
+          for i in $(seq 1 60); do
+            if curl -sf \
+                -X POST -H "Content-Type: application/json" \
+                -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' \
+                http://127.0.0.1:8899 > /dev/null 2>&1; then
+              echo "Validator healthy after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
       - name: Run all tests
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os != 'windows-latest'
         run: |
           make tests-parallel
 
       - name: Run unit tests
-        if: matrix.os != 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
         run: |
           make unit-tests
 
