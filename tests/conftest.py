@@ -1,43 +1,29 @@
 """Fixtures for pytest."""
 
-import asyncio
-import json
 import os
 import shutil
-import subprocess
-import tempfile
 import time
-import urllib.error
-import urllib.request
 from contextlib import suppress
 from pathlib import Path
-from typing import AsyncGenerator, Generator, NamedTuple
+from typing import AsyncGenerator, Generator
 
 import pytest
-from solders.hash import Hash as Blockhash
 from solders.keypair import Keypair
-from solders.pubkey import Pubkey
 
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
+from tests.validator_runtime import (
+    ValidatorConfig,
+    acquire_shared_validator,
+    env_int,
+    release_shared_validator,
+    tail_file,
+    validator_is_healthy,
+)
 from tests.utils import AIRDROP_AMOUNT, assert_valid_response
 
-_VALIDATOR_ARGS = [
-    "--reset",
-    "--rpc-pubsub-enable-vote-subscription",
-    "--quiet",
-]
-
-
-class ValidatorConfig(NamedTuple):
-    """Runtime configuration for a single validator instance."""
-
-    rpc_url: str
-    ws_url: str
-    worker_id: str
-    rpc_port: int
-    ledger_dir: str
+pytest_plugins = ["tests.fixture_accounts"]
 
 
 def _markexpr_includes_integration(markexpr: str) -> bool:
@@ -62,61 +48,32 @@ def pytest_xdist_auto_num_workers(config: pytest.Config) -> int | None:
         return None
 
     cpu_count = os.cpu_count() or 1
-    max_workers = int(os.environ.get("SOLANA_TEST_MAX_AUTO_WORKERS", "8"))
+    max_workers = env_int("SOLANA_TEST_MAX_AUTO_WORKERS", 16)
     return max(1, min(cpu_count, max_workers))
-
-
-def _tail_file(path: Path, max_lines: int = 30) -> str:
-    """Read the last few lines from a text file for error diagnostics."""
-    if not path.exists():
-        return ""
-    with path.open("r", encoding="utf-8", errors="replace") as f:
-        lines = f.readlines()
-    return "".join(lines[-max_lines:])
-
-
-def _worker_index(worker_id: str) -> int:
-    """Map xdist worker id to a stable integer."""
-    if worker_id == "master":
-        return 0
-    if worker_id.startswith("gw") and worker_id[2:].isdigit():
-        return int(worker_id[2:])
-    return 0
-
-
-def _validator_is_healthy(rpc_url: str) -> bool:
-    payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "getHealth"}).encode()
-    try:
-        req = urllib.request.Request(
-            rpc_url,
-            data=payload,
-            headers={"Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=2) as resp:
-            return json.loads(resp.read()).get("result") == "ok"
-    except Exception:  # noqa: BLE001
-        return False
 
 
 @pytest.fixture(scope="session")
 def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, None]:
     """Manage the lifecycle of solana-test-validator for the test session.
 
-    Under xdist, each worker gets its own validator process, ledger dir, and
-    RPC/WS ports, which enables safe parallel integration tests.
+    The default mode uses a single shared validator process for all workers.
+    Isolation is maintained at test-session level by using independent accounts
+    and avoiding shared mutable test assumptions.
 
     Set ``SOLANA_VALIDATOR_EXTERNAL=1`` to opt in to using a pre-existing
-    validator as-is. This mode is not isolated across workers and therefore is
-    only supported when not using xdist parallel workers.
+    validator as-is.
     """
-    worker_count = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
     if os.environ.get("SOLANA_VALIDATOR_EXTERNAL") == "1":
-        if worker_count > 1:
-            pytest.skip("SOLANA_VALIDATOR_EXTERNAL=1 does not support xdist isolation; run with -n 1")
-        rpc_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899")
-        ws_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900")
-        if not _validator_is_healthy(rpc_url):
-            pytest.skip(f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}")
+        rpc_url = os.environ.get(
+            "SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899"
+        )
+        ws_url = os.environ.get(
+            "SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900"
+        )
+        if not validator_is_healthy(rpc_url):
+            pytest.skip(
+                f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}"
+            )
         yield ValidatorConfig(
             rpc_url=rpc_url,
             ws_url=ws_url,
@@ -127,79 +84,15 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
         return
 
     if not shutil.which("solana-test-validator"):
-        pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
-        return
-
-    index = _worker_index(worker_id)
-    base_rpc_port = int(os.environ.get("SOLANA_TEST_VALIDATOR_BASE_RPC_PORT", "18899"))
-    rpc_port = base_rpc_port + (index * 2)
-    ws_port = rpc_port + 1
-    rpc_url = f"http://127.0.0.1:{rpc_port}"
-    ws_url = f"ws://127.0.0.1:{ws_port}"
-    ledger_dir = tempfile.mkdtemp(prefix=f"solana-test-ledger-{worker_id}-")
-    validator_log_path = Path(ledger_dir) / "validator.log"
-    dynamic_port_start = 20000 + (index * 100)
-    gossip_port = 23000 + (index * 100)
-    faucet_port = 24000 + (index * 100)
-    validator_args = [
-        "solana-test-validator",
-        *_VALIDATOR_ARGS,
-        "--ledger",
-        ledger_dir,
-        "--rpc-port",
-        str(rpc_port),
-        "--gossip-port",
-        str(gossip_port),
-        "--faucet-port",
-        str(faucet_port),
-        "--dynamic-port-range",
-        f"{dynamic_port_start}-{dynamic_port_start + 99}",
-    ]
-
-    with validator_log_path.open("w", encoding="utf-8") as validator_log:
-        proc = subprocess.Popen(
-            validator_args,
-            stdout=validator_log,
-            stderr=validator_log,
+        pytest.skip(
+            "solana-test-validator not found in PATH; skipping integration tests"
         )
-
-        deadline = time.time() + 60
-        while time.time() < deadline:
-            if _validator_is_healthy(rpc_url):
-                break
-            if proc.poll() is not None:
-                log_tail = _tail_file(validator_log_path)
-                raise RuntimeError(
-                    "solana-test-validator exited prematurely "
-                    f"(code {proc.returncode}) for worker {worker_id} at {rpc_url}.\n"
-                    f"args={validator_args}\n"
-                    f"log_tail:\n{log_tail}"
-                )
-            time.sleep(1)
-        else:
-            proc.terminate()
-            proc.wait(timeout=10)
-            log_tail = _tail_file(validator_log_path)
-            raise RuntimeError(
-                f"solana-test-validator did not become healthy within 60 s at {rpc_url}.\n"
-                f"args={validator_args}\n"
-                f"log_tail:\n{log_tail}"
-            )
-
-    yield ValidatorConfig(
-        rpc_url=rpc_url,
-        ws_url=ws_url,
-        worker_id=worker_id,
-        rpc_port=rpc_port,
-        ledger_dir=ledger_dir,
-    )
-
-    proc.terminate()
+        return
+    config = acquire_shared_validator(worker_id)
     try:
-        proc.wait(timeout=10)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-    shutil.rmtree(ledger_dir, ignore_errors=True)
+        yield config
+    finally:
+        release_shared_validator()
 
 
 @pytest.fixture(scope="session")
@@ -212,92 +105,6 @@ def validator_rpc_url(solana_test_validator: ValidatorConfig) -> str:
 def validator_ws_url(solana_test_validator: ValidatorConfig) -> str:
     """WS URL for this test worker's validator."""
     return solana_test_validator.ws_url
-
-
-class Clients(NamedTuple):
-    """Container for http clients."""
-
-    sync: Client
-    async_: AsyncClient
-    loop: asyncio.AbstractEventLoop
-
-
-@pytest.fixture(scope="session")
-def stubbed_blockhash() -> Blockhash:
-    """Arbitrary block hash."""
-    return Blockhash.from_string("EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k")
-
-
-@pytest.fixture(scope="session")
-def stubbed_receiver() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
-
-
-@pytest.fixture(scope="session")
-def stubbed_receiver_prefetched_blockhash() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i97")
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_receiver() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i98")
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_receiver_prefetched_blockhash() -> Pubkey:
-    """Arbitrary known public key to be used as receiver."""
-    return Pubkey.from_string("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i96")
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([8] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_prefetched_blockhash() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([9] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_for_token() -> Keypair:
-    """Arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([2] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_sender() -> Keypair:
-    """Another arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([7] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_sender_prefetched_blockhash() -> Keypair:
-    """Another arbitrary known account to be used as sender."""
-    return Keypair.from_seed(bytes([5] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def async_stubbed_sender_for_token() -> Keypair:
-    """Arbitrary known account to be used as sender in async token tests."""
-    return Keypair.from_seed(bytes([3] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def stubbed_sender_for_websockets() -> Keypair:
-    """Arbitrary known account to be used as sender in websocket tests."""
-    return Keypair.from_seed(bytes([4] * Pubkey.LENGTH))
-
-
-@pytest.fixture(scope="session")
-def freeze_authority() -> Keypair:
-    """Arbitrary known account to be used as freeze authority."""
-    return Keypair.from_seed(bytes([6] * Pubkey.LENGTH))
 
 
 @pytest.fixture(scope="session")
@@ -322,7 +129,7 @@ def test_http_client(
     """Sync HTTP client pointed at the local test validator."""
     client = Client(endpoint=validator_rpc_url, commitment=Processed)
     # Wait until slot 5 is finalized so early-slot tests (e.g. get_block) pass
-    timeout_secs = int(os.environ.get("SOLANA_TEST_BLOCK_READY_TIMEOUT", "120"))
+    timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 120)
     deadline = time.time() + timeout_secs
     last_error: Exception | None = None
     while time.time() < deadline:
@@ -338,7 +145,7 @@ def test_http_client(
         slot_debug = str(client.get_slot().value)
     with suppress(Exception):
         block_height_debug = str(client.get_block_height().value)
-    log_tail = _tail_file(Path(solana_test_validator.ledger_dir) / "validator.log")
+    log_tail = tail_file(Path(solana_test_validator.ledger_dir) / "validator.log")
     raise RuntimeError(
         "Validator did not finalize slot 5 within "
         f"{timeout_secs} s at {validator_rpc_url} "
