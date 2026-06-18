@@ -80,27 +80,16 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
 
-      - name: Start solana-test-validator
-        if: matrix.os != 'windows-latest'
+      - name: Run all tests (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          solana-test-validator \
-            --reset \
-            --rpc-pubsub-enable-vote-subscription \
-            --quiet &
-          # Poll until the validator is healthy (up to 60 s)
-          for i in $(seq 1 60); do
-            if curl -sf \
-                -X POST -H "Content-Type: application/json" \
-                -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' \
-                http://127.0.0.1:8899 > /dev/null 2>&1; then
-              echo "Validator healthy after ${i}s"
-              break
-            fi
-            sleep 1
-          done
+          make tests-parallel
 
-      - name: Run all tests
-        if: matrix.os != 'windows-latest'
+      - name: Run all tests (macos)
+        if: matrix.os == 'macos-latest'
+        env:
+          SOLANA_TEST_MAX_AUTO_WORKERS: "2"
+          SOLANA_TEST_BLOCK_READY_TIMEOUT: "180"
         run: |
           make tests-parallel
 
