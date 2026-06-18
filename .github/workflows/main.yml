@@ -88,9 +88,6 @@ jobs:
 
       - name: Run all tests (macos)
         if: matrix.os == 'macos-latest'
-        env:
-          SOLANA_TEST_MAX_AUTO_WORKERS: "2"
-          SOLANA_TEST_BLOCK_READY_TIMEOUT: "180"
         run: |
           make tests-parallel
 

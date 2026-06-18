@@ -26,32 +26,6 @@ from tests.utils import AIRDROP_AMOUNT, assert_valid_response
 pytest_plugins = ["tests.fixture_accounts"]
 
 
-def _markexpr_includes_integration(markexpr: str) -> bool:
-    """Return True when the current marker expression includes integration tests."""
-    normalized = (markexpr or "").replace(" ", "")
-    if not normalized:
-        return True
-    if "integration" not in normalized:
-        return False
-    return "notintegration" not in normalized
-
-
-def pytest_xdist_auto_num_workers(config: pytest.Config) -> int | None:
-    """Cap ``-n auto`` workers when integration tests are in scope.
-
-    Running too many concurrent validator instances can exhaust host resources
-    and cause startup failures (for example exit code 101). This hook keeps
-    parallelism high while protecting stability.
-    """
-    markexpr = config.getoption("markexpr") or ""
-    if not _markexpr_includes_integration(markexpr):
-        return None
-
-    cpu_count = os.cpu_count() or 1
-    max_workers = env_int("SOLANA_TEST_MAX_AUTO_WORKERS", 16)
-    return max(1, min(cpu_count, max_workers))
-
-
 @pytest.fixture(scope="session")
 def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, None]:
     """Manage the lifecycle of solana-test-validator for the test session.
@@ -64,10 +38,16 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
     validator as-is.
     """
     if os.environ.get("SOLANA_VALIDATOR_EXTERNAL") == "1":
-        rpc_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899")
-        ws_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900")
+        rpc_url = os.environ.get(
+            "SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899"
+        )
+        ws_url = os.environ.get(
+            "SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900"
+        )
         if not validator_is_healthy(rpc_url):
-            pytest.skip(f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}")
+            pytest.skip(
+                f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}"
+            )
         yield ValidatorConfig(
             rpc_url=rpc_url,
             ws_url=ws_url,
@@ -78,7 +58,9 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
         return
 
     if not shutil.which("solana-test-validator"):
-        pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
+        pytest.skip(
+            "solana-test-validator not found in PATH; skipping integration tests"
+        )
         return
     config = acquire_shared_validator(worker_id)
     try:
