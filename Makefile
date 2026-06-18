@@ -21,7 +21,7 @@ tests:
 	uv run pytest
 
 tests-parallel:
-	SOLANA_TEST_MAX_AUTO_WORKERS=$${SOLANA_TEST_MAX_AUTO_WORKERS:-8} uv run pytest -n auto
+	uv run pytest -n auto 
 
 unit-tests:
 	uv run pytest -m "not integration" --doctest-modules
