@@ -44,9 +44,7 @@ def parse_security_txt(data: bytes) -> SecurityTxt:
         The Security Txt.
     """
     if not isinstance(data, bytes):
-        raise TypeError(
-            f"data provided in parse(data) must be bytes, found: {type(data)}"
-        )
+        raise TypeError(f"data provided in parse(data) must be bytes, found: {type(data)}")
 
     header_bytes = HEADER.encode("utf-8")
     footer_bytes = FOOTER.encode("utf-8")
@@ -65,9 +63,8 @@ def parse_security_txt(data: bytes) -> SecurityTxt:
     # Walk key-value pairs: field names alternate with values
     content_dict: dict[str, Any] = {}
     for i, part in enumerate(parts):
-        if part in _KNOWN_KEYS:
-            if i + 1 < len(parts):
-                content_dict[part] = parts[i + 1]
+        if part in _KNOWN_KEYS and i + 1 < len(parts):
+            content_dict[part] = parts[i + 1]
 
     try:
         security_txt = SecurityTxt(**content_dict)
