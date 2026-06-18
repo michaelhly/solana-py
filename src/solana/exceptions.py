@@ -10,7 +10,9 @@ P = ParamSpec("P")
 class SolanaExceptionBase(Exception):
     """Base class for Solana-py exceptions."""
 
-    def __init__(self, exc: Exception, func: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, exc: Exception, func: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> None:
         """Init."""
         self.error_msg = self._build_error_message(exc, func, *args, **kwargs)
         super().__init__(self.error_msg)
@@ -60,7 +62,9 @@ def handle_exceptions(
 def handle_async_exceptions(
     internal_exception_cls: type[SolanaRpcException],
     *exception_types_caught: type[Exception],
-) -> Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]]:
+) -> Callable[
+    [Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]
+]:
     """Decorator for handling async exception."""
 
     def func_decorator(

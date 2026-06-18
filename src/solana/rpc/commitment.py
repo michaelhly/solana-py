@@ -36,6 +36,8 @@ _DEPRECATED = {
 
 def __getattr__(name: str) -> Commitment:
     if name in _DEPRECATED:
-        warnings.warn(f"Commitment.{name} is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            f"Commitment.{name} is deprecated.", DeprecationWarning, stacklevel=2
+        )
         return _DEPRECATED[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

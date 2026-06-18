@@ -73,7 +73,9 @@ class SubscriptionError(Exception):
         self.type = err.error.__class__
         self.msg: str = err.error.message  # type: ignore #  TODO: narrow this union type
         self.subscription = subscription
-        super().__init__(f"{self.type.__name__}: {self.msg}\n Caused by subscription: {subscription}")
+        super().__init__(
+            f"{self.type.__name__}: {self.msg}\n Caused by subscription: {subscription}"
+        )
 
 
 class SolanaWsClientProtocol(ClientConnection):
@@ -132,12 +134,18 @@ class SolanaWsClientProtocol(ClientConnection):
             encoding: Encoding to use.
         """
         req_id = self.increment_counter_and_get_id()
-        commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
-        encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
+        commitment_to_use = (
+            None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+        )
+        encoding_to_use = (
+            None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
+        )
         config = (
             None
             if commitment_to_use is None and encoding_to_use is None
-            else RpcAccountInfoConfig(encoding=encoding_to_use, commitment=commitment_to_use)
+            else RpcAccountInfoConfig(
+                encoding=encoding_to_use, commitment=commitment_to_use
+            )
         )
         req = AccountSubscribe(pubkey, config, req_id)
         await self.send_request(req)
@@ -158,7 +166,9 @@ class SolanaWsClientProtocol(ClientConnection):
 
     async def logs_subscribe(
         self,
-        filter_: Union[RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions] = RpcTransactionLogsFilter.All,
+        filter_: Union[
+            RpcTransactionLogsFilter, RpcTransactionLogsFilterMentions
+        ] = RpcTransactionLogsFilter.All,
         commitment: Optional[Commitment] = None,
     ) -> None:
         """Subscribe to transaction logging.
@@ -168,7 +178,9 @@ class SolanaWsClientProtocol(ClientConnection):
             commitment: The commitment level to use.
         """
         req_id = self.increment_counter_and_get_id()
-        commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+        commitment_to_use = (
+            None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+        )
         config = RpcTransactionLogsConfig(commitment_to_use)
         req = LogsSubscribe(filter_, config, req_id)
         await self.send_request(req)
@@ -189,7 +201,9 @@ class SolanaWsClientProtocol(ClientConnection):
 
     async def block_subscribe(
         self,
-        filter_: Union[RpcBlockSubscribeFilter, RpcBlockSubscribeFilterMentions] = RpcBlockSubscribeFilter.All,
+        filter_: Union[
+            RpcBlockSubscribeFilter, RpcBlockSubscribeFilterMentions
+        ] = RpcBlockSubscribeFilter.All,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
         transaction_details: Union[TransactionDetails, None] = None,
@@ -207,8 +221,12 @@ class SolanaWsClientProtocol(ClientConnection):
             max_supported_transaction_version: the max transaction version to return in responses.
         """
         req_id = self.increment_counter_and_get_id()
-        commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
-        encoding_to_use = None if encoding is None else _TX_ENCODING_TO_SOLDERS[encoding]
+        commitment_to_use = (
+            None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+        )
+        encoding_to_use = (
+            None if encoding is None else _TX_ENCODING_TO_SOLDERS[encoding]
+        )
         config = RpcBlockSubscribeConfig(
             commitment=commitment_to_use,
             encoding=encoding_to_use,
@@ -253,13 +271,26 @@ class SolanaWsClientProtocol(ClientConnection):
                 Note: an int entry is converted to a `dataSize` filter.
         """  # noqa: E501 # pylint: disable=line-too-long
         req_id = self.increment_counter_and_get_id()
-        if commitment is None and encoding is None and data_slice is None and filters is None:
+        if (
+            commitment is None
+            and encoding is None
+            and data_slice is None
+            and filters is None
+        ):
             config = None
         else:
-            encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
-            commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+            encoding_to_use = (
+                None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
+            )
+            commitment_to_use = (
+                None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+            )
             data_slice_to_use = (
-                None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
+                None
+                if data_slice is None
+                else UiDataSliceConfig(
+                    offset=data_slice.offset, length=data_slice.length
+                )
             )
             account_config = RpcAccountInfoConfig(
                 encoding=encoding_to_use,
@@ -267,7 +298,9 @@ class SolanaWsClientProtocol(ClientConnection):
                 data_slice=data_slice_to_use,
             )
             filters_to_use: Optional[List[Union[int, Memcmp]]] = (
-                None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
+                None
+                if filters is None
+                else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
             )
             config = RpcProgramAccountsConfig(account_config, filters_to_use)
         req = ProgramSubscribe(program_id, config, req_id)
@@ -299,8 +332,14 @@ class SolanaWsClientProtocol(ClientConnection):
             commitment: Commitment level.
         """
         req_id = self.increment_counter_and_get_id()
-        commitment_to_use = None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
-        config = None if commitment_to_use is None else RpcSignatureSubscribeConfig(commitment=commitment_to_use)
+        commitment_to_use = (
+            None if commitment is None else _COMMITMENT_TO_SOLDERS[commitment]
+        )
+        config = (
+            None
+            if commitment_to_use is None
+            else RpcSignatureSubscribeConfig(commitment=commitment_to_use)
+        )
         req = SignatureSubscribe(signature, config, req_id)
         await self.send_request(req)
 
@@ -398,7 +437,9 @@ class SolanaWsClientProtocol(ClientConnection):
         await self.send_request(req)
         del self.subscriptions[subscription]
 
-    def _process_rpc_response(self, raw: str) -> List[Union[Notification, SubscriptionResult]]:
+    def _process_rpc_response(
+        self, raw: str
+    ) -> List[Union[Notification, SubscriptionResult]]:
         parsed = parse_websocket_message(raw)
         for item in parsed:
             if isinstance(item, SoldersSubscriptionError):
