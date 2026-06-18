@@ -1,5 +1,7 @@
 """Helper code for HTTP provider classes."""
 
+from __future__ import annotations
+
 import itertools
 import logging
 import os
@@ -60,7 +62,7 @@ def get_default_endpoint() -> URI:
 
 
 class _HTTPProviderCore:  # pylint: disable=too-few-public-methods
-    logger = logging.getLogger("solanaweb3.rpc.httprpc.HTTPClient")
+    logger = logging.getLogger("solana.rpc.providers")
 
     def __init__(
         self,

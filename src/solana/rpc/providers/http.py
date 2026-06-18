@@ -1,6 +1,8 @@
 """HTTP RPC Provider."""
 
-from typing import Optional, Tuple, Dict, Type, overload
+from __future__ import annotations
+
+from typing import Dict, Optional, Tuple, Type, overload
 
 import httpx2
 from solders.rpc.requests import Body

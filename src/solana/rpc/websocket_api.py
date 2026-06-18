@@ -1,7 +1,10 @@
 """This module contains code for interacting with the RPC Websocket endpoint."""
 
+from __future__ import annotations
+
 import itertools
-from typing import Any, Dict, List, Optional, Sequence, Union, cast
+from collections.abc import Sequence
+from typing import Any, Dict, List, Optional, Union, cast
 
 from solders.account_decoder import UiDataSliceConfig
 from solders.pubkey import Pubkey

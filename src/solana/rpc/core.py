@@ -1,7 +1,10 @@
 # pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
 
-from typing import List, Optional, Sequence, Tuple, Union, overload
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import List, Optional, Tuple, Union, overload
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
@@ -228,7 +231,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> GetSignaturesForAddress:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcSignaturesForAddressConfig(
-            before=before, until=until, limit=limit, commitment=commitment_to_use, min_context_slot=min_context_slot
+            before=before,
+            until=until,
+            limit=limit,
+            commitment=commitment_to_use,
+            min_context_slot=min_context_slot,
         )
         return GetSignaturesForAddress(address, config)
 

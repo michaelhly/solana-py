@@ -1,5 +1,7 @@
 """Async API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
 
+from __future__ import annotations
+
 import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
@@ -521,7 +523,10 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(self._get_inflation_rate, GetInflationRateResp)
 
     async def get_inflation_reward(
-        self, pubkeys: List[Pubkey], epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+        self,
+        pubkeys: List[Pubkey],
+        epoch: Optional[int] = None,
+        commitment: Optional[Commitment] = None,
     ) -> GetInflationRewardResp:
         """Returns the inflation / staking reward for a list of addresses for an epoch.
 

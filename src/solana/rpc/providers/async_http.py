@@ -1,5 +1,7 @@
 """Async HTTP RPC Provider."""
 
+from __future__ import annotations
+
 from typing import Dict, Optional, Tuple, Type, overload
 
 import httpx2
