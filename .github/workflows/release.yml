@@ -9,19 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: 3.9
-      #----------------------------------------------
-      #  -----  install & configure poetry  -----
-      #----------------------------------------------
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.4
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      - run: poetry build
-      - run: poetry publish --username=__token__ --password=${{ secrets.PYPI_TOKEN }}
+          python-version: "3.10"
+          enable-cache: true
+
+      - run: uv build
+      - run: uv publish --token ${{ secrets.PYPI_TOKEN }}

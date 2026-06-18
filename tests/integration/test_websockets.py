@@ -46,12 +46,12 @@ async def websocket(
 
 @pytest.fixture
 async def multiple_subscriptions(
-    stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
+    stubbed_sender_for_websockets: Keypair, websocket: SolanaWsClientProtocol
 ) -> AsyncGenerator[List[Body], None]:
     """Setup multiple subscriptions."""
     reqs: List[Body] = [
         LogsSubscribe(filter_=RpcTransactionLogsFilter.All, id=websocket.increment_counter_and_get_id()),
-        AccountSubscribe(stubbed_sender.pubkey(), id=websocket.increment_counter_and_get_id()),
+        AccountSubscribe(stubbed_sender_for_websockets.pubkey(), id=websocket.increment_counter_and_get_id()),
     ]
     await websocket.send_data(reqs)  # None
     first_resp = await websocket.recv()
@@ -70,7 +70,7 @@ async def multiple_subscriptions(
 
 @pytest.fixture
 async def account_subscribed(
-    stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
+    stubbed_sender_for_websockets: Keypair, websocket: SolanaWsClientProtocol
 ) -> AsyncGenerator[Pubkey, None]:
     """Setup account subscription."""
     recipient = Keypair()
@@ -84,7 +84,9 @@ async def account_subscribed(
 
 
 @pytest.fixture
-async def logs_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProtocol) -> AsyncGenerator[None, None]:
+async def logs_subscribed(
+    stubbed_sender_for_websockets: Keypair, websocket: SolanaWsClientProtocol
+) -> AsyncGenerator[None, None]:
     """Setup logs subscription."""
     await websocket.logs_subscribe()
     first_resp = await websocket.recv()
@@ -97,7 +99,7 @@ async def logs_subscribed(stubbed_sender: Keypair, websocket: SolanaWsClientProt
 
 @pytest.fixture
 async def logs_subscribed_mentions_filter(
-    stubbed_sender: Keypair, websocket: SolanaWsClientProtocol
+    stubbed_sender_for_websockets: Keypair, websocket: SolanaWsClientProtocol
 ) -> AsyncGenerator[None, None]:
     """Setup logs subscription with a mentions filter."""
     await websocket.logs_subscribe(RpcTransactionLogsFilterMentions(SYS_PROGRAM_ID))
@@ -205,13 +207,13 @@ async def vote_subscribed(websocket: SolanaWsClientProtocol) -> AsyncGenerator[N
 
 @pytest.mark.integration
 async def test_multiple_subscriptions(
-    stubbed_sender: Keypair,
+    stubbed_sender_for_websockets: Keypair,
     test_http_client_async: AsyncClient,
     multiple_subscriptions: List[Body],
     websocket: SolanaWsClientProtocol,
 ):
     """Test subscribing to multiple feeds."""
-    await test_http_client_async.request_airdrop(stubbed_sender.pubkey(), AIRDROP_AMOUNT)
+    await test_http_client_async.request_airdrop(stubbed_sender_for_websockets.pubkey(), AIRDROP_AMOUNT)
     async for idx, message in asyncstdlib.enumerate(websocket):
         for item in message:
             if isinstance(item, (AccountNotification, LogsNotification)):
@@ -220,7 +222,7 @@ async def test_multiple_subscriptions(
                 raise ValueError(f"Unexpected message for this test: {item}")
         if idx == len(multiple_subscriptions) - 1:
             break
-    balance = await test_http_client_async.get_balance(stubbed_sender.pubkey(), Finalized)
+    balance = await test_http_client_async.get_balance(stubbed_sender_for_websockets.pubkey(), Finalized)
     assert balance.value == AIRDROP_AMOUNT
 
 

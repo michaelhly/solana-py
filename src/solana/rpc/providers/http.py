@@ -2,13 +2,14 @@
 
 from typing import Optional, Tuple, Dict, Type, overload
 
-import httpx
+import httpx2
 from solders.rpc.requests import Body
 from solders.rpc.responses import RPCResult
 
 from ...exceptions import SolanaRpcException, handle_exceptions
 from .base import BaseProvider
 from .core import (
+    DEFAULT_LIMITS,
     DEFAULT_TIMEOUT,
     T,
     _after_request_unparsed,
@@ -49,28 +50,43 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     ):
         """Init HTTPProvider."""
         super().__init__(endpoint, extra_headers)
-        self.session = httpx.Client(timeout=timeout, proxy=proxy)
+        if proxy is None:
+            self.session = httpx2.Client(
+                timeout=timeout,
+                limits=DEFAULT_LIMITS,
+            )
+        else:
+            self.session = httpx2.Client(timeout=timeout, proxy=proxy, limits=DEFAULT_LIMITS)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
         return f"HTTP RPC connection {self.endpoint_uri}"
 
-    @handle_exceptions(SolanaRpcException, httpx.HTTPError)
+    @handle_exceptions(SolanaRpcException, httpx2.HTTPError)
     def make_request(self, body: Body, parser: Type[T]) -> T:
         """Make an HTTP request to an http rpc endpoint."""
         raw = self.make_request_unparsed(body)
         return _parse_raw(raw, parser=parser)
 
     def make_request_unparsed(self, body: Body) -> str:
-        """Make an async HTTP request to an http rpc endpoint."""
+        """Make an HTTP request to an http rpc endpoint."""
         request_kwargs = self._before_request(body=body)
-        raw_response = self.session.post(**request_kwargs)
+        try:
+            raw_response = self.session.post(**request_kwargs)
+        except (httpx2.RemoteProtocolError, httpx2.ReadError):
+            # httpcore2 does not auto-retry stale keepalive connections (unlike httpcore 1.x).
+            # Also retry on ReadError (ECONNRESET) which occurs when the server forcibly
+            # closes the connection mid-response under load.
+            raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
-        """Make an async HTTP request to an http rpc endpoint."""
+        """Make an HTTP batch request to an http rpc endpoint."""
         request_kwargs = self._before_batch_request(reqs)
-        raw_response = self.session.post(**request_kwargs)
+        try:
+            raw_response = self.session.post(**request_kwargs)
+        except (httpx2.RemoteProtocolError, httpx2.ReadError):
+            raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
     @overload

@@ -3,7 +3,12 @@
 import spl.token.instructions as spl_token
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYSTEM_PROGRAM_ID
-from spl.token.constants import TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, WRAPPED_SOL_MINT, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import (
+    TOKEN_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID,
+    WRAPPED_SOL_MINT,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+)
 from spl.token.instructions import get_associated_token_address
 
 
@@ -196,7 +201,11 @@ def test_revoke(stubbed_sender):
 
 def test_set_authority():
     """Test set authority."""
-    account, new_authority, current_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1]), Pubkey([0] * 31 + [2])
+    account, new_authority, current_authority = (
+        Pubkey([0] * 31 + [0]),
+        Pubkey([0] * 31 + [1]),
+        Pubkey([0] * 31 + [2]),
+    )
     params = spl_token.SetAuthorityParams(
         program_id=TOKEN_PROGRAM_ID,
         account=account,
@@ -546,7 +555,7 @@ def test_withdraw_withheld_tokens_from_accounts():
     assert instruction.accounts[2].pubkey == authority
     assert instruction.accounts[2].is_signer
     assert not instruction.accounts[2].is_writable
-    for account, source in zip(instruction.accounts[3:], sources):
+    for account, source in zip(instruction.accounts[3:], sources, strict=False):
         assert account.pubkey == source
         assert not account.is_signer
         assert account.is_writable
@@ -568,11 +577,11 @@ def test_withdraw_withheld_tokens_from_accounts():
     assert instruction.accounts[2].pubkey == authority
     assert not instruction.accounts[2].is_signer
     assert not instruction.accounts[2].is_writable
-    for account, signer in zip(instruction.accounts[3 : 3 + len(signers)], signers):
+    for account, signer in zip(instruction.accounts[3 : 3 + len(signers)], signers, strict=False):
         assert account.pubkey == signer
         assert account.is_signer
         assert not account.is_writable
-    for account, source in zip(instruction.accounts[3 + len(signers) :], sources):
+    for account, source in zip(instruction.accounts[3 + len(signers) :], sources, strict=False):
         assert account.pubkey == source
         assert not account.is_signer
         assert account.is_writable
@@ -621,7 +630,7 @@ def test_withdraw_withheld_tokens_from_mint():
     assert instruction.accounts[2].pubkey == authority
     assert not instruction.accounts[2].is_signer
     assert not instruction.accounts[2].is_writable
-    for account, signer in zip(instruction.accounts[3:], signers):
+    for account, signer in zip(instruction.accounts[3:], signers, strict=False):
         assert account.pubkey == signer
         assert account.is_signer
         assert not account.is_writable
@@ -645,7 +654,7 @@ def test_harvest_withheld_tokens_to_mint():
     assert instruction.accounts[0].pubkey == mint
     assert not instruction.accounts[0].is_signer
     assert instruction.accounts[0].is_writable
-    for account, source in zip(instruction.accounts[1:], sources):
+    for account, source in zip(instruction.accounts[1:], sources, strict=False):
         assert account.pubkey == source
         assert not account.is_signer
         assert account.is_writable

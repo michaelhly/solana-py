@@ -2,7 +2,7 @@
 
 import asyncio
 import time
-from typing import NamedTuple
+from typing import AsyncGenerator, NamedTuple
 
 import pytest
 from solders.hash import Hash as Blockhash
@@ -21,17 +21,6 @@ class Clients(NamedTuple):
     sync: Client
     async_: AsyncClient
     loop: asyncio.AbstractEventLoop
-
-
-@pytest.fixture(scope="module")
-def event_loop():
-    """Event loop for pytest-asyncio."""
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture(scope="session")
@@ -95,6 +84,18 @@ def async_stubbed_sender_prefetched_blockhash() -> Keypair:
 
 
 @pytest.fixture(scope="session")
+def async_stubbed_sender_for_token() -> Keypair:
+    """Arbitrary known account to be used as sender in async token tests."""
+    return Keypair.from_seed(bytes([3] * Pubkey.LENGTH))
+
+
+@pytest.fixture(scope="session")
+def stubbed_sender_for_websockets() -> Keypair:
+    """Arbitrary known account to be used as sender in websocket tests."""
+    return Keypair.from_seed(bytes([4] * Pubkey.LENGTH))
+
+
+@pytest.fixture(scope="session")
 def freeze_authority() -> Keypair:
     """Arbitrary known account to be used as freeze authority."""
     return Keypair.from_seed(bytes([6] * Pubkey.LENGTH))
@@ -114,14 +115,23 @@ def unit_test_http_client_async() -> AsyncClient:
     return client
 
 
-@pytest.fixture(scope="module")
-def _sleep_for_first_blocks() -> None:
-    """Blocks 0 and 1 are unavailable so we sleep until they're done."""
-    time.sleep(10)
+@pytest.fixture(scope="session")
+def _sleep_for_first_blocks(docker_ip, docker_services) -> None:
+    """Wait until the validator has finalized enough blocks for early slots to be accessible."""
+    port = docker_services.port_for("localnet", 8899)
+    client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
+    deadline = time.time() + 60
+    while time.time() < deadline:
+        try:
+            # get_block uses finalized commitment; verify slot 5 is accessible before testing
+            client.get_block(5)
+            return
+        except Exception:  # noqa: BLE001
+            pass
+        time.sleep(1)
 
 
-@pytest.mark.integration
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Client:  # pylint: disable=redefined-outer-name
     """Test http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
@@ -130,27 +140,23 @@ def test_http_client(docker_ip, docker_services, _sleep_for_first_blocks) -> Cli
     return http_client
 
 
-@pytest.mark.integration
 @pytest.fixture(scope="module")
-def test_http_client_async(
+async def test_http_client_async(
     docker_ip,
     docker_services,
-    event_loop,
     _sleep_for_first_blocks,  # pylint: disable=redefined-outer-name
-) -> AsyncClient:
-    """Test http_client.is_connected."""
+) -> AsyncGenerator[AsyncClient, None]:
+    """Test async http_client.is_connected."""
     port = docker_services.port_for("localnet", 8899)
     http_client = AsyncClient(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
-
-    def check() -> bool:
-        return event_loop.run_until_complete(http_client.is_connected())
-
-    docker_services.wait_until_responsive(timeout=15, pause=1, check=check)
+    # Use sync client for the readiness check so the async client's connection pool
+    # is not seeded with connections tied to the setup event loop.
+    sync_client = Client(endpoint=f"http://{docker_ip}:{port}", commitment=Processed)
+    docker_services.wait_until_responsive(timeout=15, pause=1, check=sync_client.is_connected)
     yield http_client
-    event_loop.run_until_complete(http_client.close())
+    await http_client.close()
 
 
-@pytest.mark.integration
 @pytest.fixture(scope="function")
 def random_funded_keypair(test_http_client: Client) -> Keypair:
     """A new keypair with some lamports."""

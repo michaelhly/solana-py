@@ -115,18 +115,19 @@ asyncio.run(main())
 
 ### Setup
 
-1. Install [poetry](https://python-poetry.org/docs/#installation)
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
 2. Install dev dependencies:
 
 ```sh
-poetry install
+uv sync
 
 ```
 
-3. Activate the poetry shell.
+3. Activate the virtual environment.
 
 ```sh
-poetry shell
+.venv\Scripts\activate   # Windows
+source .venv/bin/activate  # Linux/macOS
 ```
 
 ### Lint

@@ -18,28 +18,17 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v6
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v6
+      #----------------------------------------------
+      #  -----  install & configure uv  -----
+      #----------------------------------------------
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: 3.11
+          python-version: "3.10"
+          enable-cache: true
 
-      #----------------------------------------------
-      #  -----  install & configure poetry  -----
-      #----------------------------------------------
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.4
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
-      #----------------------------------------------
-      # install your root project
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
+        run: uv sync
 
       - name: Run linters
         run: |
@@ -54,7 +43,7 @@ jobs:
         # first list entry: lower bound, second list entry: upper bound
         # of the supported python versions, versions in between are assumed
         # to be supported as well without further testing
-        python-version: [3.9, 3.13]
+        python-version: ["3.10", "3.14"]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     defaults:
@@ -64,42 +53,21 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v6
-      - name: Set up Python 3.9
-        id: setup-python
-        uses: actions/setup-python@v6
+      #----------------------------------------------
+      #  -----  install & configure uv  -----
+      #----------------------------------------------
+      - name: Set up uv
+        id: setup-uv
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
       #----------------------------------------------
-      #  -----  install & configure poetry  -----
-      #----------------------------------------------
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.4
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      #----------------------------------------------
-      #       load cached venv if cache exists
-      #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v5
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
+      # install dependencies
       #----------------------------------------------
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
-      #----------------------------------------------
-      # install your root project
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
+        run: uv sync
 
       - name: Run all tests
         if: matrix.os == 'ubuntu-latest'
@@ -120,7 +88,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         # Do not upload/fail for PRs in forks
         if: github.repository == 'michaelhly/solana-py'
         with:

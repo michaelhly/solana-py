@@ -5,7 +5,7 @@ import logging
 import os
 from typing import Any, Dict, Optional, Tuple, Type, TypeVar, Union, overload
 
-import httpx
+import httpx2
 from solders.rpc.requests import Body
 from solders.rpc.requests import batch_to_json as batch_req_json
 from solders.rpc.responses import Resp, RPCError, RPCResult
@@ -15,6 +15,12 @@ from ..core import RPCException
 from ..types import URI
 
 DEFAULT_TIMEOUT = 10
+# httpcore2 2.x no longer auto-retries dropped connections (unlike httpcore 1.x).
+# RemoteProtocolError (stale keepalive) and ReadError (ECONNRESET) are both retried
+# once explicitly in the provider layer.
+# We keep the pool small (single-endpoint RPC client) but leave keepalive_expiry at the
+# httpx2 default so long-running clients don't reconnect unnecessarily.
+DEFAULT_LIMITS = httpx2.Limits(max_connections=10, max_keepalive_connections=5)
 
 
 T = TypeVar("T", bound=RPCResult)
@@ -127,35 +133,35 @@ def _parse_raw_batch(raw: str, parsers: _Tuples) -> Tuple[RPCResult, ...]:
     return tuple(batch_resp_json(raw, parsers))
 
 
-def _after_request_unparsed(raw_response: httpx.Response) -> str:
+def _after_request_unparsed(raw_response: httpx2.Response) -> str:
     raw_response.raise_for_status()
     return raw_response.text
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup) -> _RespTup: ...
+def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup) -> _RespTup: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup1) -> _RespTup1: ...
+def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup1) -> _RespTup1: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup2) -> _RespTup2: ...
+def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup2) -> _RespTup2: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup3) -> _RespTup3: ...
+def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup3) -> _RespTup3: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup4) -> _RespTup4: ...
+def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup4) -> _RespTup4: ...
 
 
 @overload
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tup5) -> _RespTup5: ...
+def _after_batch_request(raw_response: httpx2.Response, parsers: _Tup5) -> _RespTup5: ...
 
 
-def _after_batch_request(raw_response: httpx.Response, parsers: _Tuples) -> Tuple[RPCResult, ...]:
+def _after_batch_request(raw_response: httpx2.Response, parsers: _Tuples) -> Tuple[RPCResult, ...]:
     text = _after_request_unparsed(raw_response)
     return _parse_raw_batch(text, parsers)  # type: ignore
