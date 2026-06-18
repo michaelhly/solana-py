@@ -210,11 +210,7 @@ def acquire_shared_validator(worker_id: str) -> ValidatorConfig:
     try:
         state = _read_shared_state() or {}
         pid = int(state.get("pid", 0))
-        managed_ok = (
-            bool(state)
-            and _process_is_alive(pid)
-            and validator_is_healthy(state.get("rpc_url", ""))
-        )
+        managed_ok = bool(state) and _process_is_alive(pid) and validator_is_healthy(state.get("rpc_url", ""))
 
         if managed_ok:
             state["refcount"] = int(state.get("refcount", 0)) + 1
@@ -225,9 +221,7 @@ def acquire_shared_validator(worker_id: str) -> ValidatorConfig:
             old_ledger = state.get("ledger_dir", "")
             if old_ledger:
                 shutil.rmtree(old_ledger, ignore_errors=True)
-            state = _launch_shared_validator(
-                rpc_port=rpc_port, rpc_url=rpc_url, ws_url=ws_url
-            )
+            state = _launch_shared_validator(rpc_port=rpc_port, rpc_url=rpc_url, ws_url=ws_url)
             _write_shared_state(state)
 
         return ValidatorConfig(
