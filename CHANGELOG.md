@@ -1,12 +1,87 @@
 # Changelog
 
+## [0.37.1] - 2026-06-19
+
+### Added
+
+- Add support for the SPL Token transfer fees extension instructions [(#637)](https://github.com/michaelhly/solana-py/pull/637)
+- Add recent prioritization fees RPC helper (`get_recent_prioritization_fees`) [(#633)](https://github.com/michaelhly/solana-py/pull/633)
+- Add `min_context_slot` parameter to `get_signatures_for_address` [(#632)](https://github.com/michaelhly/solana-py/pull/632)
+- Add support for the latest SPL Token instructions [(#609)](https://github.com/michaelhly/solana-py/pull/609)
+- Enhance transaction simulation with additional parameters [(#583)](https://github.com/michaelhly/solana-py/pull/583)
+- Update `get_vote_accounts` to support all RPC parameters [(#580)](https://github.com/michaelhly/solana-py/pull/580)
+- Add support for `getSlotLeaders` [(#551)](https://github.com/michaelhly/solana-py/pull/551)
+- Improve Token 2022 support [(#503)](https://github.com/michaelhly/solana-py/pull/503)
+- Add proxy support [(#479)](https://github.com/michaelhly/solana-py/pull/479)
+- Websocket: return request Id on subscribe [(#647)](https://github.com/michaelhly/solana-py/pull/647)
+
+### Changed
+
+- **BREAKING**: Drop support for Python 3.9
+- Migrate to the `httpx2` library
+- Mark `make_batch_request` as deprecated [(#648)](https://github.com/michaelhly/solana-py/pull/648)
+- Upgrade websockets version [(#642)](https://github.com/michaelhly/solana-py/pull/642)
+- Migrate off Poetry to uv for package management and update dependencies [(#638)](https://github.com/michaelhly/solana-py/pull/638), [(#640)](https://github.com/michaelhly/solana-py/pull/640)
+- Modernize code style [(#643)](https://github.com/michaelhly/solana-py/pull/643)
+- Renovate test framework [(#646)](https://github.com/michaelhly/solana-py/pull/646)
+- Add `new_keypair` as a signer when constructing an SPL `create_wrapped_native_account` transaction [(#493)](https://github.com/michaelhly/solana-py/pull/493)
+
+### Fixed
+
+- Fix `UnboundLocalError` for `resp` when `last_valid_block_height` has already expired [(#631)](https://github.com/michaelhly/solana-py/pull/631)
+- Preserve Solana exception messages [(#629)](https://github.com/michaelhly/solana-py/pull/629)
+- Fix incorrect program ID in `create_associated_token_account` for `TOKEN_2022_PROGRAM_ID` [(#518)](https://github.com/michaelhly/solana-py/pull/518)
+
+### Docs
+
+- Add cookbook [(#567)](https://github.com/michaelhly/solana-py/pull/567)
+- Fix mkdocs `gh-deploy` by adding `mkdocstrings-python` dependency
+- Fix `send_transaction` example [(#539)](https://github.com/michaelhly/solana-py/pull/539)
+
+### Dependencies
+
+- Bump `solders` (0.23.0 → 0.27.1) [(#515)](https://github.com/michaelhly/solana-py/pull/515), [(#520)](https://github.com/michaelhly/solana-py/pull/520), [(#604)](https://github.com/michaelhly/solana-py/pull/604)
+- Bump `websockets` (13.1 → 15.0.1) [(#510)](https://github.com/michaelhly/solana-py/pull/510), [(#521)](https://github.com/michaelhly/solana-py/pull/521), [(#541)](https://github.com/michaelhly/solana-py/pull/541)
+- Bump `construct-typing` (0.5.2 → 0.7.0) [(#559)](https://github.com/michaelhly/solana-py/pull/559), [(#600)](https://github.com/michaelhly/solana-py/pull/600)
+- Bump `typing-extensions`, `mypy`, `pytest`, and other dev/CI dependencies (various)
+
+## [0.36.0] - 2024-12-11
+
+### Changed
+
+- **BREAKING**: Remove support for legacy transaction [(#477)](https://github.com/michaelhly/solana-py/pull/477)
+- **BREAKING**: Bump to `solders` 0.23.0 and remove `GetStakeActivationResp` RPC [(#459)](https://github.com/michaelhly/solana-py/pull/459)
+- Add httpx session in `http.py` [(#475)](https://github.com/michaelhly/solana-py/pull/475)
+- Use all signers when constructing a SPL transfer transaction [(#476)](https://github.com/michaelhly/solana-py/pull/476)
+- Update CI and devtools [(#462)](https://github.com/michaelhly/solana-py/pull/462), [(#465)](https://github.com/michaelhly/solana-py/pull/465)
+
+### Dependencies
+
+- Bump `websockets` to 12.0 [(#469)](https://github.com/michaelhly/solana-py/pull/469)
+
+## [0.35.1] - 2024-11-10
+
+### Added
+
+- Add Token2022 Program ID constant [(#435)](https://github.com/michaelhly/solana-py/pull/435)
+- Add `NATIVE_DECIMALS` & solana constants [(#436)](https://github.com/michaelhly/solana-py/pull/436)
+- spl-token: Add associated token account `CreateIdempotent` instruction [(#449)](https://github.com/michaelhly/solana-py/pull/449)
+- spl-token: Add `token_program_id` parameter to associated token endpoints [(#456)](https://github.com/michaelhly/solana-py/pull/456)
+
+### Changed
+
+- Enhance type hinting for WebSocket connection [(#437)](https://github.com/michaelhly/solana-py/pull/437)
+- Better typing hints for `make_request` [(#447)](https://github.com/michaelhly/solana-py/pull/447)
+- Deprecate transaction module [(#442)](https://github.com/michaelhly/solana-py/pull/442)
+- Add deprecated warning to `get_stake_activation` method [(#455)](https://github.com/michaelhly/solana-py/pull/455)
+- Use RPC health check instead of `/health` for `is_connected` [(#460)](https://github.com/michaelhly/solana-py/pull/460)
+
 ## [0.34.0] - 2024-04-17
 
 ### Added
 
 - Add block subscribe/unsubscribe websocket methods [(#418)](https://github.com/michaelhly/solana-py/pull/418)
 - Add getInflationReward RPC method [(#413)](https://github.com/michaelhly/solana-py/pull/413)
-
 
 ## [0.33.0] - 2024-03-29
 
@@ -72,22 +147,22 @@ Fix accidentally ignoring tx_opts in `send_transaction` methods [(#343)](https:/
 ### Changed
 
 - Remove redundant classes and modules ([#329](https://github.com/michaelhly/solana-py/pull/329), [#335](https://github.com/michaelhly/solana-py/pull/335) and [#338](https://github.com/michaelhly/solana-py/pull/338)):
-    - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
-    - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
-    - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
-    - Remove `Keypair` in favour of `solders.keypair.Keypair`. Your code will need to change as follows: 
-        - `my_keypair.public_key` -> `my_keypair.pubkey()`
-        - `my_keypair.secret_key` -> `bytes(my_keypair)`
-        - `my_keypair.seed` -> `my_keypair.secret()`
-        - `my_keypair.sign(msg)` -> `my_keypair.sign_message(msg)`
-        - `Keypair.from_secret_key(key)` -> `Keypair.from_bytes(key)`
-    - Remove `Message` in favour of `solders.message.Message`.
-    - Remove `system_program` in favour of `solders.system_program`. Note: where previously a params object like `AssignParams` called a field `program_id`, it now calls it `owner`.
-    - Remove `sysvar` in favour of `solders.sysvar`. The constants in `solders.sysvar` have short names, so instead of `solana.sysvar.SYSVAR_RENT_PUBKEY` you'll use `solders.sysvar.RENT`.
-    - Remove `solana.blockhash.Blockhash` in favour of `solders.hash.Hash`. Note: `Blockhash(my_str)` -> `Hash.from_str(my_str)`.
-    - Remove `solana.transaction.TransactionSignature` newtype. This was unused - solana-py is already using `solders.signature.Signature`.
-    - Remove constant `solana.transaction.SIG_LENGTH` in favour of `solders.signature.Signature.LENGTH`.
-    - Remove unused `solana.transaction.SigPubkeyPair`.
+  - Remove `PublicKey`, in favour of `solders.pubkey.Pubkey`.
+  - Remove `AccountMeta` in favour of `solders.instruction.AccountMeta`.
+  - Remove `TransactionInstruction` in favour of `solders.instruction.Instruction`.
+  - Remove `Keypair` in favour of `solders.keypair.Keypair`. Your code will need to change as follows:
+    - `my_keypair.public_key` -> `my_keypair.pubkey()`
+    - `my_keypair.secret_key` -> `bytes(my_keypair)`
+    - `my_keypair.seed` -> `my_keypair.secret()`
+    - `my_keypair.sign(msg)` -> `my_keypair.sign_message(msg)`
+    - `Keypair.from_secret_key(key)` -> `Keypair.from_bytes(key)`
+  - Remove `Message` in favour of `solders.message.Message`.
+  - Remove `system_program` in favour of `solders.system_program`. Note: where previously a params object like `AssignParams` called a field `program_id`, it now calls it `owner`.
+  - Remove `sysvar` in favour of `solders.sysvar`. The constants in `solders.sysvar` have short names, so instead of `solana.sysvar.SYSVAR_RENT_PUBKEY` you'll use `solders.sysvar.RENT`.
+  - Remove `solana.blockhash.Blockhash` in favour of `solders.hash.Hash`. Note: `Blockhash(my_str)` -> `Hash.from_str(my_str)`.
+  - Remove `solana.transaction.TransactionSignature` newtype. This was unused - solana-py is already using `solders.signature.Signature`.
+  - Remove constant `solana.transaction.SIG_LENGTH` in favour of `solders.signature.Signature.LENGTH`.
+  - Remove unused `solana.transaction.SigPubkeyPair`.
 - Use latest solders [(#334)](https://github.com/michaelhly/solana-py/pull/334)
 - Use new `solders.rpc.requests.SendRawTransaction` in `send_raw_transaction` methods [(#332)](https://github.com/michaelhly/solana-py/pull/332)
 
@@ -126,11 +201,10 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 - Replace SubscriptionError.code with SubscriptionError.type [(#309)](https://github.com/michaelhly/solana-py/pull/309)
 
-### Fixed 
+### Fixed
 
 - Fix parsing of RPC error messages [(#309)](https://github.com/michaelhly/solana-py/pull/309)
-- Correctly filter by program_id in _get_token_accounts_convert [(#308)](https://github.com/michaelhly/solana-py/pull/308)
-
+- Correctly filter by program_id in \_get_token_accounts_convert [(#308)](https://github.com/michaelhly/solana-py/pull/308)
 
 ## [0.26.0] - 2022-10-13
 
@@ -142,22 +216,22 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 ### Changed
 
 - Use solders for parsing RPC requests [(#302)](https://github.com/michaelhly/solana-py/pull/302):
-    - **Breaking change**: Every RPC method now returns a strongly typed object instead of a dictionary.
-        For example, `client.get_balance` returns `GetBalanceResp`.
-    - **Breaking change**: RPC methods now raise `RPCException` if the RPC returns an error result.
-        Previously only the transaction sending methods did this.
-    - **Breaking change**: RPC methods that can return `jsonParsed` data now have their own dedicated Python
-        method you should use. For example, instead of `client.get_account_info(..., encoding="jsonParsed")`
-        you should do `client.get_account_info_json_parsed(...)`. This is done for the sake of static typing.
-    - **Breaking change**: The `get_accounts` method on the SPL Token client has been split into four separate methods:
-        `get_accounts_by_delegate`, `get_accounts_by_owner`, `get_accounts_by_delegate_json_parsed`, and `get_accounts_by_owner_json_parsed`.
-    - **Breaking change**: `solana.rpc.responses` has been removed and supplanted by `solders.rpc.responses`.
+  - **Breaking change**: Every RPC method now returns a strongly typed object instead of a dictionary.
+    For example, `client.get_balance` returns `GetBalanceResp`.
+  - **Breaking change**: RPC methods now raise `RPCException` if the RPC returns an error result.
+    Previously only the transaction sending methods did this.
+  - **Breaking change**: RPC methods that can return `jsonParsed` data now have their own dedicated Python
+    method you should use. For example, instead of `client.get_account_info(..., encoding="jsonParsed")`
+    you should do `client.get_account_info_json_parsed(...)`. This is done for the sake of static typing.
+  - **Breaking change**: The `get_accounts` method on the SPL Token client has been split into four separate methods:
+    `get_accounts_by_delegate`, `get_accounts_by_owner`, `get_accounts_by_delegate_json_parsed`, and `get_accounts_by_owner_json_parsed`.
+  - **Breaking change**: `solana.rpc.responses` has been removed and supplanted by `solders.rpc.responses`.
 - Remove unused deps: `apischema`, `based58`, `jsonrpcclient`, `jsonrpcserver`.
 
 - Use Solders for building RPC requests:
-    - **Breaking change**: Removed deprecated RPC methods.
-    - **Breaking change**: Functions that accepted Union[PublicKey, str] now only accept PublicKey.
-    - **Breaking change**: RPC functions that accepted a `str` signature param now expect a `solders.signature.Signature`.
+  - **Breaking change**: Removed deprecated RPC methods.
+  - **Breaking change**: Functions that accepted Union[PublicKey, str] now only accept PublicKey.
+  - **Breaking change**: RPC functions that accepted a `str` signature param now expect a `solders.signature.Signature`.
 
 ### Fixed
 
@@ -169,13 +243,11 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 
 - Use latest Solders version to make objects pickleable again [(#252)](https://github.com/michaelhly/solana-py/pull/252).
 
-
 ### Changed
 
 - Updated httpx to fix critical vulnerability [(#248)](https://github.com/michaelhly/solana-py/pull/248).
 - Updated pytest, websockets, pytest-docker, pytest-asyncio to latest. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
 - Updated apischema to latest. [(#254)](https://github.com/michaelhly/solana-py/pull/254).
-
 
 ### Added
 
@@ -185,7 +257,6 @@ Fix conversion of MemcmpOpts in `get_program_accounts` methods [(#328)](https://
 - Added `asyncio_mode = auto` in pytest.ini. [(#248)](https://github.com/michaelhly/solana-py/pull/254).
 - Added an optional `verify_signature` bool when `transaction.serialize()` is called [(#249)](https://github.com/michaelhly/solana-py/pull/249).
 - Added Memo program [(#249)](https://github.com/michaelhly/solana-py/pull/249).
-
 
 ## [0.24.0] - 2022-06-04
 
