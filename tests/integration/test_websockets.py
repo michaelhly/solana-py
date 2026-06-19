@@ -238,7 +238,7 @@ async def test_multiple_subscriptions(
     websocket: SolanaWsClientProtocol,
 ):
     """Test subscribing to multiple feeds."""
-    await test_http_client_async.request_airdrop(stubbed_sender_for_websockets.pubkey(), AIRDROP_AMOUNT)
+    airdrop_resp = await test_http_client_async.request_airdrop(stubbed_sender_for_websockets.pubkey(), AIRDROP_AMOUNT)
     async for idx, message in asyncstdlib.enumerate(websocket):
         for item in message:
             if isinstance(item, (AccountNotification, LogsNotification)):
@@ -247,6 +247,7 @@ async def test_multiple_subscriptions(
                 raise ValueError(f"Unexpected message for this test: {item}")
         if idx == len(multiple_subscriptions) - 1:
             break
+    await test_http_client_async.confirm_transaction(airdrop_resp.value, Finalized)
     balance = await test_http_client_async.get_balance(stubbed_sender_for_websockets.pubkey(), Finalized)
     assert balance.value == AIRDROP_AMOUNT
 
