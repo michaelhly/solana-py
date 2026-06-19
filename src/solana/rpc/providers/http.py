@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import Dict, Optional, Tuple, Type, overload
 
 import httpx2
@@ -112,6 +113,11 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
     def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
         """Make a HTTP batch request to an http rpc endpoint.
 
+        .. deprecated::
+            ``make_batch_request`` is deprecated and will be removed in a future release.
+            Use individual requests with ``asyncio.gather`` (async) or sequential calls (sync) instead.
+            See https://github.com/michaelhly/solana-py/issues/645 for details.
+
         Args:
             reqs: A tuple of request objects from ``solders.rpc.requests``.
             parsers: A tuple of response classes from ``solders.rpc.responses``.
@@ -131,5 +137,12 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
                 86753592,
             ))
         """
+        warnings.warn(
+            "make_batch_request is deprecated and will be removed in a future release. "
+            "Use individual requests instead. "
+            "See https://github.com/michaelhly/solana-py/issues/645 for details.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         raw = self.make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)

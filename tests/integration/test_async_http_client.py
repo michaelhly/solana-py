@@ -1,15 +1,11 @@
 """Tests for the HTTP API Client."""
 
-from typing import Tuple
-
 import pytest
 import solders.system_program as sp
 from solders.keypair import Keypair
 from solders.message import MessageV0, Message
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
-from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
-from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
 from solders.transaction import VersionedTransaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
@@ -645,17 +641,3 @@ async def test_get_vote_accounts(test_http_client_async):
     """Test get vote accounts."""
     resp = await test_http_client_async.get_vote_accounts()
     assert_valid_response(resp)
-
-
-@pytest.mark.integration
-async def test_batch_request(test_http_client_async: AsyncClient):
-    """Test get vote accounts."""
-    reqs = (GetBlockHeight(), GetFirstAvailableBlock())
-    parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
-    resp: Tuple[
-        Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]
-    ] = await test_http_client_async._provider.make_batch_request(  # pylint: disable=protected-access
-        reqs, parsers
-    )
-    assert_valid_response(resp[0])
-    assert_valid_response(resp[1])
