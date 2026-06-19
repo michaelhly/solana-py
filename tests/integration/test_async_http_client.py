@@ -1,5 +1,8 @@
 """Tests for the HTTP API Client."""
 
+import asyncio
+from time import monotonic
+
 import pytest
 import solders.system_program as sp
 from solders.keypair import Keypair
@@ -641,3 +644,38 @@ async def test_get_vote_accounts(test_http_client_async):
     """Test get vote accounts."""
     resp = await test_http_client_async.get_vote_accounts()
     assert_valid_response(resp)
+
+
+@pytest.mark.integration
+async def test_rate_limiter_throttles_requests(validator_rpc_url: str):
+    """Rate-limited AsyncClient should queue requests and throttle throughput.
+
+    Strategy: create a dedicated client with rate_limit=50 req/s, fire
+    500 requests concurrently via asyncio.gather, then assert the total wall
+    time is at least as long as the limiter's theoretical minimum.
+
+    With max_rate=50/s the first 50 slots are consumed immediately; each
+    subsequent request must wait an additional 1/50 s = 20 ms, so the minimum
+    total elapsed time for 500 requests is (500-50)/50 = 9.0 s. A 0.90
+    safety factor (10% jitter tolerance) keeps the assertion resilient to
+    scheduler variance while still catching a broken/missing limiter (which
+    would complete in < 0.1 s on localhost).
+    """
+    rate_limit = 50  # requests per second
+    n_requests = 500
+    time_period = 1.0  # seconds (matches AsyncLimiter default)
+
+    async with AsyncClient(endpoint=validator_rpc_url, commitment=Processed, rate_limit=rate_limit) as client:
+        start = monotonic()
+        responses = await asyncio.gather(*[client.get_slot() for _ in range(n_requests)])
+        elapsed = monotonic() - start
+
+    for resp in responses:
+        assert_valid_response(resp)
+
+    # Theoretical min: (n_requests - rate_limit) / rate_limit * time_period
+    expected_min = (n_requests - rate_limit) / rate_limit * time_period * 0.90
+    assert elapsed >= expected_min, (
+        f"Rate limiter did not throttle: elapsed={elapsed:.3f}s, expected >= {expected_min:.3f}s "
+        f"(rate_limit={rate_limit}/s, n_requests={n_requests})"
+    )
