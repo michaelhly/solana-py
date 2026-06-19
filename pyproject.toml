@@ -1,6 +1,6 @@
 [project]
 name = "solana"
-version = "0.36.12"
+version = "0.37.0"
 requires-python = ">=3.10"
 dependencies = [
     "construct-typing>=0.6.2,<0.8.0",
