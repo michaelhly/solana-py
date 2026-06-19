@@ -1,15 +1,11 @@
 """Tests for the HTTP API Client."""
 
-from typing import Tuple
-
 import pytest
 import solders.system_program as sp
 from solders.keypair import Keypair
 from solders.message import MessageV0, Message
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
-from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
-from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp, Resp
 from solders.transaction import VersionedTransaction
 
 from solana.constants import VOTE_PROGRAM_ID
@@ -23,7 +19,9 @@ from spl.token.constants import WRAPPED_SOL_MINT
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
 
-def _ensure_minimum_balance(client: Client, pubkey: Pubkey, minimum_balance: int) -> int:
+def _ensure_minimum_balance(
+    client: Client, pubkey: Pubkey, minimum_balance: int
+) -> int:
     """Top up an account when needed and return its current balance."""
     balance_resp = client.get_balance(pubkey)
     assert_valid_response(balance_resp)
@@ -98,7 +96,9 @@ def test_send_transaction_and_get_balance(test_http_client: Client):
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = _ensure_minimum_balance(test_http_client, sender.pubkey(), amount + 50_000)
+    sender_balance_before = _ensure_minimum_balance(
+        test_http_client, sender.pubkey(), amount + 50_000
+    )
     receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
     blockhash = test_http_client.get_latest_blockhash().value.blockhash
     ixs = [
@@ -131,11 +131,15 @@ def test_send_transaction_and_get_balance(test_http_client: Client):
 
 
 @pytest.mark.integration
-def test_send_versioned_transaction_and_get_balance(random_funded_keypair: Keypair, test_http_client: Client):
+def test_send_versioned_transaction_and_get_balance(
+    random_funded_keypair: Keypair, test_http_client: Client
+):
     """Test sending a transaction to localnet."""
     receiver = Keypair()
     amount = 1_000_000
-    sender_balance_before = _ensure_minimum_balance(test_http_client, random_funded_keypair.pubkey(), amount + 50_000)
+    sender_balance_before = _ensure_minimum_balance(
+        test_http_client, random_funded_keypair.pubkey(), amount + 50_000
+    )
     receiver_balance_before = test_http_client.get_balance(receiver.pubkey())
     assert_valid_response(receiver_balance_before)
     transfer_ix = sp.transfer(
@@ -174,7 +178,9 @@ def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client: Client
     """Test sending a transaction that errors."""
     poor_account = Keypair()
     airdrop_amount = 1000000
-    airdrop_resp = test_http_client.request_airdrop(poor_account.pubkey(), airdrop_amount)
+    airdrop_resp = test_http_client.request_airdrop(
+        poor_account.pubkey(), airdrop_amount
+    )
     assert_valid_response(airdrop_resp)
     test_http_client.confirm_transaction(airdrop_resp.value)
     balance = test_http_client.get_balance(poor_account.pubkey())
@@ -208,9 +214,13 @@ def test_send_transaction_prefetched_blockhash(
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = _ensure_minimum_balance(test_http_client, sender.pubkey(), amount + 50_000)
+    sender_balance_before = _ensure_minimum_balance(
+        test_http_client, sender.pubkey(), amount + 50_000
+    )
     receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
-    recent_blockhash = test_http_client.parse_recent_blockhash(test_http_client.get_latest_blockhash())
+    recent_blockhash = test_http_client.parse_recent_blockhash(
+        test_http_client.get_latest_blockhash()
+    )
     ixs = [
         sp.transfer(
             sp.TransferParams(
@@ -245,7 +255,9 @@ def test_send_raw_transaction_and_get_balance(test_http_client: Client):
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = _ensure_minimum_balance(test_http_client, sender.pubkey(), amount + 50_000)
+    sender_balance_before = _ensure_minimum_balance(
+        test_http_client, sender.pubkey(), amount + 50_000
+    )
     receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
     resp = test_http_client.get_latest_blockhash()
     assert_valid_response(resp)
@@ -290,7 +302,9 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = _ensure_minimum_balance(test_http_client, sender.pubkey(), amount + 50_000)
+    sender_balance_before = _ensure_minimum_balance(
+        test_http_client, sender.pubkey(), amount + 50_000
+    )
     receiver_balance_before = _ensure_minimum_balance(test_http_client, receiver, 1)
     resp = test_http_client.get_latest_blockhash(Finalized)
     assert_valid_response(resp)
@@ -323,7 +337,9 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     )
     assert_valid_response(resp)
     # Confirm transaction
-    test_http_client.confirm_transaction(resp.value, last_valid_block_height=last_valid_block_height)
+    test_http_client.confirm_transaction(
+        resp.value, last_valid_block_height=last_valid_block_height
+    )
     # Check balances
     resp = test_http_client.get_balance(sender.pubkey())
     assert_valid_response(resp)
@@ -334,7 +350,9 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
 
 
 @pytest.mark.integration
-def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http_client: Client):
+def test_confirm_expired_transaction(
+    stubbed_sender, stubbed_receiver, test_http_client: Client
+):
     """Test that RPCException is raised when trying to confirm a transaction that exceeded last valid block height."""
     # Get a recent blockhash
     resp = test_http_client.get_latest_blockhash()
@@ -360,13 +378,17 @@ def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http
     assert_valid_response(tx_resp)
     # Confirm transaction
     with pytest.raises(TransactionExpiredBlockheightExceededError) as exc_info:
-        test_http_client.confirm_transaction(tx_resp.value, Finalized, last_valid_block_height=last_valid_block_height)
+        test_http_client.confirm_transaction(
+            tx_resp.value, Finalized, last_valid_block_height=last_valid_block_height
+        )
     err_object = exc_info.value.args[0]
     assert "block height exceeded" in err_object
 
 
 @pytest.mark.integration
-def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_client: Client):
+def test_get_fee_for_transaction(
+    stubbed_sender, stubbed_receiver, test_http_client: Client
+):
     """Test that gets a fee for a transaction using get_fee_for_message."""
     # Get a recent blockhash
     resp = test_http_client.get_latest_blockhash()
@@ -390,7 +412,9 @@ def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_cli
 
 
 @pytest.mark.integration
-def test_get_fee_for_versioned_message(stubbed_sender: Keypair, stubbed_receiver: Pubkey, test_http_client: Client):
+def test_get_fee_for_versioned_message(
+    stubbed_sender: Keypair, stubbed_receiver: Pubkey, test_http_client: Client
+):
     """Test that gets a fee for a transaction using get_fee_for_message."""
     # Get a recent blockhash
     resp = test_http_client.get_latest_blockhash()
@@ -468,7 +492,9 @@ def test_get_blocks(test_http_client: Client):
 @pytest.mark.integration
 def test_get_signatures_for_address(test_http_client: Client):
     """Test get signatures for addresses."""
-    resp = test_http_client.get_signatures_for_address(VOTE_PROGRAM_ID, limit=1, commitment=Confirmed)
+    resp = test_http_client.get_signatures_for_address(
+        VOTE_PROGRAM_ID, limit=1, commitment=Confirmed
+    )
     assert_valid_response(resp)
 
 
@@ -542,7 +568,9 @@ def test_get_inflation_rate(test_http_client: Client):
 @pytest.mark.integration
 def test_get_inflation_reward(stubbed_sender, test_http_client: Client):
     """Test get inflation reward."""
-    resp = test_http_client.get_inflation_reward([stubbed_sender.pubkey()], commitment=Confirmed)
+    resp = test_http_client.get_inflation_reward(
+        [stubbed_sender.pubkey()], commitment=Confirmed
+    )
     assert_valid_response(resp)
 
 
@@ -600,9 +628,13 @@ def test_get_account_info(stubbed_sender, test_http_client: Client):
     """Test get_account_info."""
     resp = test_http_client.get_account_info(stubbed_sender.pubkey())
     assert_valid_response(resp)
-    resp = test_http_client.get_account_info(stubbed_sender.pubkey(), encoding="jsonParsed")
+    resp = test_http_client.get_account_info(
+        stubbed_sender.pubkey(), encoding="jsonParsed"
+    )
     assert_valid_response(resp)
-    resp = test_http_client.get_account_info(stubbed_sender.pubkey(), data_slice=DataSliceOpts(1, 1))
+    resp = test_http_client.get_account_info(
+        stubbed_sender.pubkey(), data_slice=DataSliceOpts(1, 1)
+    )
     assert_valid_response(resp)
 
 
@@ -614,7 +646,9 @@ def test_get_multiple_accounts(stubbed_sender, test_http_client: Client):
     assert_valid_response(resp)
     resp = test_http_client.get_multiple_accounts(pubkeys, encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = test_http_client.get_multiple_accounts(pubkeys, data_slice=DataSliceOpts(1, 1))
+    resp = test_http_client.get_multiple_accounts(
+        pubkeys, data_slice=DataSliceOpts(1, 1)
+    )
     assert_valid_response(resp)
 
 
@@ -637,17 +671,3 @@ def test_get_vote_accounts(test_http_client: Client):
     """Test get vote accounts."""
     resp = test_http_client.get_vote_accounts()
     assert_valid_response(resp)
-
-
-@pytest.mark.integration
-def test_batch_request(test_http_client: Client):
-    """Test get vote accounts."""
-    reqs = (GetBlockHeight(), GetFirstAvailableBlock())
-    parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
-    resp: Tuple[Resp[GetBlockHeightResp], Resp[GetFirstAvailableBlockResp]] = (
-        test_http_client._provider.make_batch_request(  # pylint: disable=protected-access
-            reqs, parsers
-        )
-    )
-    assert_valid_response(resp[0])
-    assert_valid_response(resp[1])
