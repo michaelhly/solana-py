@@ -1,5 +1,50 @@
 # Changelog
 
+## [0.37.0] - 2026-06-19
+
+### Added
+
+- Add support for the SPL Token transfer fees extension instructions [(#637)](https://github.com/michaelhly/solana-py/pull/637)
+- Add recent prioritization fees RPC helper (`get_recent_prioritization_fees`) [(#633)](https://github.com/michaelhly/solana-py/pull/633)
+- Add `min_context_slot` parameter to `get_signatures_for_address` [(#632)](https://github.com/michaelhly/solana-py/pull/632)
+- Add support for the latest SPL Token instructions [(#609)](https://github.com/michaelhly/solana-py/pull/609)
+- Enhance transaction simulation with additional parameters [(#583)](https://github.com/michaelhly/solana-py/pull/583)
+- Update `get_vote_accounts` to support all RPC parameters [(#580)](https://github.com/michaelhly/solana-py/pull/580)
+- Add support for `getSlotLeaders` [(#551)](https://github.com/michaelhly/solana-py/pull/551)
+- Improve Token 2022 support [(#503)](https://github.com/michaelhly/solana-py/pull/503)
+- Add proxy support [(#479)](https://github.com/michaelhly/solana-py/pull/479)
+- Websocket: return request Id on subscribe [(#647)](https://github.com/michaelhly/solana-py/pull/647)
+
+### Changed
+
+- Mark `make_batch_request` as deprecated [(#648)](https://github.com/michaelhly/solana-py/pull/648)
+- Upgrade websockets version [(#642)](https://github.com/michaelhly/solana-py/pull/642)
+- Migrate off Poetry to uv for package management and update dependencies [(#638)](https://github.com/michaelhly/solana-py/pull/638), [(#640)](https://github.com/michaelhly/solana-py/pull/640)
+- Modernize code style [(#643)](https://github.com/michaelhly/solana-py/pull/643)
+- Renovate test framework [(#646)](https://github.com/michaelhly/solana-py/pull/646)
+- Add `new_keypair` as a signer when constructing an SPL `create_wrapped_native_account` transaction [(#493)](https://github.com/michaelhly/solana-py/pull/493)
+- Bump `httpx` version [(#568)](https://github.com/michaelhly/solana-py/pull/568)
+
+### Fixed
+
+- Fix `UnboundLocalError` for `resp` when `last_valid_block_height` has already expired [(#631)](https://github.com/michaelhly/solana-py/pull/631)
+- Preserve Solana exception messages [(#629)](https://github.com/michaelhly/solana-py/pull/629)
+- Fix incorrect program ID in `create_associated_token_account` for `TOKEN_2022_PROGRAM_ID` [(#518)](https://github.com/michaelhly/solana-py/pull/518)
+
+### Docs
+
+- Add cookbook [(#567)](https://github.com/michaelhly/solana-py/pull/567)
+- Fix mkdocs `gh-deploy` by adding `mkdocstrings-python` dependency
+- Fix `send_transaction` example [(#539)](https://github.com/michaelhly/solana-py/pull/539)
+
+### Dependencies
+
+- Bump `solders` (0.23.0 → 0.27.1) [(#515)](https://github.com/michaelhly/solana-py/pull/515), [(#520)](https://github.com/michaelhly/solana-py/pull/520), [(#604)](https://github.com/michaelhly/solana-py/pull/604)
+- Bump `websockets` (13.1 → 15.0.1) [(#510)](https://github.com/michaelhly/solana-py/pull/510), [(#521)](https://github.com/michaelhly/solana-py/pull/521), [(#541)](https://github.com/michaelhly/solana-py/pull/541)
+- Bump `construct-typing` (0.5.2 → 0.7.0) [(#559)](https://github.com/michaelhly/solana-py/pull/559), [(#600)](https://github.com/michaelhly/solana-py/pull/600)
+- Bump `typing-extensions`, `mypy`, `pytest`, and other dev/CI dependencies (various)
+
+
 ## [0.34.0] - 2024-04-17
 
 ### Added
