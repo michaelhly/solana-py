@@ -1201,7 +1201,7 @@ wheels = [
 
 [[package]]
 name = "solana"
-version = "0.36.12"
+version = "0.37.1"
 source = { editable = "." }
 dependencies = [
     { name = "construct-typing" },
