@@ -22,9 +22,7 @@ from solders.transaction import Transaction
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
 
-async def _ensure_minimum_balance(
-    client: AsyncClient, pubkey: Pubkey, minimum_balance: int
-) -> int:
+async def _ensure_minimum_balance(client: AsyncClient, pubkey: Pubkey, minimum_balance: int) -> int:
     """Top up an account when needed and return its current balance."""
     balance_resp = await client.get_balance(pubkey)
     assert_valid_response(balance_resp)
@@ -103,12 +101,8 @@ async def test_send_transaction_and_get_balance(
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, sender.pubkey(), amount + 50_000
-    )
-    receiver_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, receiver, 1
-    )
+    sender_balance_before = await _ensure_minimum_balance(test_http_client_async, sender.pubkey(), amount + 50_000)
+    receiver_balance_before = await _ensure_minimum_balance(test_http_client_async, receiver, 1)
     ixs = [
         sp.transfer(
             sp.TransferParams(
@@ -147,9 +141,7 @@ async def test_send_versioned_transaction_and_get_balance(
     sender_balance_before = await _ensure_minimum_balance(
         test_http_client_async, random_funded_keypair.pubkey(), amount + 50_000
     )
-    receiver_balance_before = await test_http_client_async.get_balance(
-        receiver.pubkey()
-    )
+    receiver_balance_before = await test_http_client_async.get_balance(receiver.pubkey())
     assert_valid_response(receiver_balance_before)
     transfer_ix = sp.transfer(
         sp.TransferParams(
@@ -158,9 +150,7 @@ async def test_send_versioned_transaction_and_get_balance(
             lamports=amount,
         )
     )
-    recent_blockhash = (
-        await test_http_client_async.get_latest_blockhash()
-    ).value.blockhash
+    recent_blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
     msg = MessageV0.try_compile(
         payer=random_funded_keypair.pubkey(),
         instructions=[transfer_ix],
@@ -178,9 +168,7 @@ async def test_send_versioned_transaction_and_get_balance(
     # Confirm transaction
     await test_http_client_async.confirm_transaction(resp.value)
     # Check balances
-    sender_balance_resp = await test_http_client_async.get_balance(
-        random_funded_keypair.pubkey()
-    )
+    sender_balance_resp = await test_http_client_async.get_balance(random_funded_keypair.pubkey())
     assert_valid_response(sender_balance_resp)
     assert sender_balance_resp.value == sender_balance_before - amount - fee_resp.value
     receiver_balance_resp = await test_http_client_async.get_balance(receiver.pubkey())
@@ -189,15 +177,11 @@ async def test_send_versioned_transaction_and_get_balance(
 
 
 @pytest.mark.integration
-async def test_send_bad_transaction(
-    stubbed_receiver: Pubkey, test_http_client_async: AsyncClient
-):
+async def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client_async: AsyncClient):
     """Test sending a transaction that errors."""
     poor_account = Keypair()
     airdrop_amount = 1000000
-    airdrop_resp = await test_http_client_async.request_airdrop(
-        poor_account.pubkey(), airdrop_amount
-    )
+    airdrop_resp = await test_http_client_async.request_airdrop(poor_account.pubkey(), airdrop_amount)
     assert_valid_response(airdrop_resp)
     await test_http_client_async.confirm_transaction(airdrop_resp.value)
     balance = await test_http_client_async.get_balance(poor_account.pubkey())
@@ -231,12 +215,8 @@ async def test_send_transaction_prefetched_blockhash(
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, sender.pubkey(), amount + 50_000
-    )
-    receiver_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, receiver, 1
-    )
+    sender_balance_before = await _ensure_minimum_balance(test_http_client_async, sender.pubkey(), amount + 50_000)
+    receiver_balance_before = await _ensure_minimum_balance(test_http_client_async, receiver, 1)
     blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
     ixs = [
         sp.transfer(
@@ -272,12 +252,8 @@ async def test_send_raw_transaction_and_get_balance(test_http_client_async):
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, sender.pubkey(), amount + 50_000
-    )
-    receiver_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, receiver, 1
-    )
+    sender_balance_before = await _ensure_minimum_balance(test_http_client_async, sender.pubkey(), amount + 50_000)
+    receiver_balance_before = await _ensure_minimum_balance(test_http_client_async, receiver, 1)
     resp = await test_http_client_async.get_latest_blockhash(Finalized)
     assert_valid_response(resp)
     recent_blockhash = resp.value.blockhash
@@ -321,12 +297,8 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     sender = Keypair()
     receiver = Keypair().pubkey()
     amount = 1000
-    sender_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, sender.pubkey(), amount + 50_000
-    )
-    receiver_balance_before = await _ensure_minimum_balance(
-        test_http_client_async, receiver, 1
-    )
+    sender_balance_before = await _ensure_minimum_balance(test_http_client_async, sender.pubkey(), amount + 50_000)
+    receiver_balance_before = await _ensure_minimum_balance(test_http_client_async, receiver, 1)
     resp = await test_http_client_async.get_latest_blockhash(Finalized)
     assert_valid_response(resp)
     recent_blockhash = resp.value.blockhash
@@ -358,9 +330,7 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
     )
     assert_valid_response(resp)
     # Confirm transaction
-    resp = await test_http_client_async.confirm_transaction(
-        resp.value, last_valid_block_height=last_valid_block_height
-    )
+    resp = await test_http_client_async.confirm_transaction(resp.value, last_valid_block_height=last_valid_block_height)
     # Check balances
     resp = await test_http_client_async.get_balance(sender.pubkey())
     assert_valid_response(resp)
@@ -371,9 +341,7 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
 
 
 @pytest.mark.integration
-async def test_confirm_expired_transaction(
-    stubbed_sender, stubbed_receiver, test_http_client_async
-):
+async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http_client_async):
     """Test that RPCException is raised when trying to confirm a transaction that exceeded last valid block height."""
     # Get a recent blockhash
     resp = await test_http_client_async.get_latest_blockhash()
@@ -408,9 +376,7 @@ async def test_confirm_expired_transaction(
 
 
 @pytest.mark.integration
-async def test_get_fee_for_transaction_message(
-    stubbed_sender, stubbed_receiver, test_http_client_async: AsyncClient
-):
+async def test_get_fee_for_transaction_message(stubbed_sender, stubbed_receiver, test_http_client_async: AsyncClient):
     """Test that gets a fee for a transaction using get fee for message."""
     # Get latest blockhash
     resp = await test_http_client_async.get_latest_blockhash()
@@ -509,9 +475,7 @@ async def test_get_blocks(test_http_client_async):
 @pytest.mark.integration
 async def test_get_signatures_for_address(test_http_client_async: AsyncClient):
     """Test get signatures for addresses."""
-    resp = await test_http_client_async.get_signatures_for_address(
-        VOTE_PROGRAM_ID, limit=1, commitment=Confirmed
-    )
+    resp = await test_http_client_async.get_signatures_for_address(VOTE_PROGRAM_ID, limit=1, commitment=Confirmed)
     assert_valid_response(resp)
 
 
@@ -585,9 +549,7 @@ async def test_get_inflation_rate(test_http_client_async):
 @pytest.mark.integration
 async def test_get_inflation_reward(stubbed_sender, test_http_client_async):
     """Test get inflation reward."""
-    resp = await test_http_client_async.get_inflation_reward(
-        [stubbed_sender.pubkey()], commitment=Confirmed
-    )
+    resp = await test_http_client_async.get_inflation_reward([stubbed_sender.pubkey()], commitment=Confirmed)
     assert_valid_response(resp)
 
 
@@ -659,13 +621,9 @@ async def test_get_account_info(async_stubbed_sender, test_http_client_async):
     """Test get_account_info."""
     resp = await test_http_client_async.get_account_info(async_stubbed_sender.pubkey())
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_account_info(
-        async_stubbed_sender.pubkey(), encoding="jsonParsed"
-    )
+    resp = await test_http_client_async.get_account_info(async_stubbed_sender.pubkey(), encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_account_info(
-        async_stubbed_sender.pubkey(), data_slice=DataSliceOpts(1, 1)
-    )
+    resp = await test_http_client_async.get_account_info(async_stubbed_sender.pubkey(), data_slice=DataSliceOpts(1, 1))
     assert_valid_response(resp)
 
 
@@ -675,13 +633,9 @@ async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_asyn
     pubkeys = [async_stubbed_sender.pubkey()] * 2
     resp = await test_http_client_async.get_multiple_accounts(pubkeys)
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_multiple_accounts(
-        pubkeys, encoding="jsonParsed"
-    )
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys, encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_multiple_accounts(
-        pubkeys, data_slice=DataSliceOpts(1, 1)
-    )
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys, data_slice=DataSliceOpts(1, 1))
     assert_valid_response(resp)
 
 
@@ -711,13 +665,9 @@ async def test_rate_limiter_throttles_requests(validator_rpc_url: str):
     n_requests = 500
     time_period = 1.0  # seconds (matches AsyncLimiter default)
 
-    async with AsyncClient(
-        endpoint=validator_rpc_url, commitment=Processed, rate_limit=rate_limit
-    ) as client:
+    async with AsyncClient(endpoint=validator_rpc_url, commitment=Processed, rate_limit=rate_limit) as client:
         start = monotonic()
-        responses = await asyncio.gather(
-            *[client.get_slot() for _ in range(n_requests)]
-        )
+        responses = await asyncio.gather(*[client.get_slot() for _ in range(n_requests)])
         elapsed = monotonic() - start
 
     for resp in responses:
