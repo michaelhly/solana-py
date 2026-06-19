@@ -2,6 +2,13 @@
 name = "solana"
 version = "0.37.0"
 requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 dependencies = [
     "construct-typing>=0.6.2,<0.8.0",
     "typing-extensions>=4.2.0",
