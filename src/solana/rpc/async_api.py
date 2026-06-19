@@ -86,6 +86,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         timeout: HTTP request timeout in seconds.
         extra_headers: Extra headers to pass for HTTP request.
         proxy: Proxy URL to pass to the HTTP client.
+        rate_limit: Maximum requests per second. ``0`` (default) disables rate limiting.
     """
 
     def __init__(
@@ -95,11 +96,16 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         timeout: float = 10,
         extra_headers: Optional[Dict[str, str]] = None,
         proxy: Optional[str] = None,
+        rate_limit: float = 0,
     ) -> None:
         """Init API client."""
         super().__init__(commitment)
         self._provider = async_http.AsyncHTTPProvider(
-            endpoint, timeout=timeout, extra_headers=extra_headers, proxy=proxy
+            endpoint,
+            timeout=timeout,
+            extra_headers=extra_headers,
+            proxy=proxy,
+            rate_limit=rate_limit,
         )
 
     async def __aenter__(self) -> "AsyncClient":

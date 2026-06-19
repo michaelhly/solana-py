@@ -6,6 +6,7 @@ import warnings
 from typing import Dict, Optional, Tuple, Type, overload
 
 import httpx2
+from aiolimiter import AsyncLimiter
 from solders.rpc.requests import Body
 from solders.rpc.responses import RPCResult
 
@@ -50,8 +51,17 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: float = DEFAULT_TIMEOUT,
         proxy: Optional[str] = None,
+        rate_limit: float = 0,
     ):
-        """Init AsyncHTTPProvider."""
+        """Init AsyncHTTPProvider.
+
+        Args:
+            endpoint: URL of the RPC endpoint.
+            extra_headers: Extra headers to pass for HTTP request.
+            timeout: HTTP request timeout in seconds.
+            proxy: Proxy URL to pass to the HTTP client.
+            rate_limit: Maximum requests per second. ``0`` (default) disables rate limiting.
+        """
         super().__init__(endpoint, extra_headers)
         if proxy is None:
             self.session = httpx2.AsyncClient(
@@ -60,6 +70,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
             )
         else:
             self.session = httpx2.AsyncClient(timeout=timeout, proxy=proxy, limits=DEFAULT_LIMITS)
+        self._limiter: Optional[AsyncLimiter] = AsyncLimiter(rate_limit, time_period=1) if rate_limit > 0 else None
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
@@ -73,6 +84,14 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
 
     async def make_request_unparsed(self, body: Body) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
+        if self._limiter is not None:
+            async with self._limiter:
+                request_kwargs = self._before_request(body=body)
+                try:
+                    raw_response = await self.session.post(**request_kwargs)
+                except (httpx2.RemoteProtocolError, httpx2.ReadError):
+                    raw_response = await self.session.post(**request_kwargs)
+                return _after_request_unparsed(raw_response)
         request_kwargs = self._before_request(body=body)
         try:
             raw_response = await self.session.post(**request_kwargs)
@@ -85,6 +104,14 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
 
     async def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP batch request to an http rpc endpoint."""
+        if self._limiter is not None:
+            async with self._limiter:
+                request_kwargs = self._before_batch_request(reqs)
+                try:
+                    raw_response = await self.session.post(**request_kwargs)
+                except (httpx2.RemoteProtocolError, httpx2.ReadError):
+                    raw_response = await self.session.post(**request_kwargs)
+                return _after_request_unparsed(raw_response)
         request_kwargs = self._before_batch_request(reqs)
         try:
             raw_response = await self.session.post(**request_kwargs)
