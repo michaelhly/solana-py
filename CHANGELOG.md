@@ -17,6 +17,8 @@
 
 ### Changed
 
+- **BREAKING**: Drop support for Python 3.9
+- Migrate to the `httpx2` library
 - Mark `make_batch_request` as deprecated [(#648)](https://github.com/michaelhly/solana-py/pull/648)
 - Upgrade websockets version [(#642)](https://github.com/michaelhly/solana-py/pull/642)
 - Migrate off Poetry to uv for package management and update dependencies [(#638)](https://github.com/michaelhly/solana-py/pull/638), [(#640)](https://github.com/michaelhly/solana-py/pull/640)
