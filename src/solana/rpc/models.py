@@ -1,32 +1,22 @@
-"""RPC types."""
+"""Pydantic models for RPC types.
+
+These are the Pydantic successors to the deprecated ``NamedTuple`` types in
+:mod:`solana.rpc.types`. They carry the same field names and defaults, so migrating is
+a matter of changing the import path.
+"""
 
 from __future__ import annotations
 
-from typing import NamedTuple, NewType
+from typing import Optional
 
 from solders.pubkey import Pubkey
-from typing_extensions import TypedDict, deprecated
+
+from solana._pydantic import PydanticModel
 
 from .commitment import Commitment, Finalized
 
-URI = NewType("URI", str)
-"""Type for endpoint URI."""
 
-RPCMethod = NewType("RPCMethod", str)
-"""Type for RPC method."""
-
-
-class RPCError(TypedDict):
-    """RPC error."""
-
-    code: int
-    """HTTP status code."""
-    message: str
-    """Error message."""
-
-
-@deprecated("DataSliceOpts is deprecated; use solana.rpc.models instead.")
-class DataSliceOpts(NamedTuple):
+class DataSliceOpts(PydanticModel):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
     offset: int
@@ -35,8 +25,7 @@ class DataSliceOpts(NamedTuple):
     """Limit the returned account data using the provided length: <usize>."""
 
 
-@deprecated("MemcmpOpts is deprecated; use solana.rpc.models instead.")
-class MemcmpOpts(NamedTuple):
+class MemcmpOpts(PydanticModel):
     """Option to compare a provided series of bytes with program account data at a particular offset."""
 
     offset: int
@@ -45,25 +34,23 @@ class MemcmpOpts(NamedTuple):
     """Data to match, as base-58 encoded string: <string>."""
 
 
-@deprecated("TokenAccountOpts is deprecated; use solana.rpc.models instead.")
-class TokenAccountOpts(NamedTuple):
+class TokenAccountOpts(PydanticModel):
     """Options when querying token accounts.
 
     Provide one of mint or program_id.
     """
 
-    mint: Pubkey | None = None
+    mint: Optional[Pubkey] = None
     """Public key of the specific token Mint to limit accounts to."""
-    program_id: Pubkey | None = None
+    program_id: Optional[Pubkey] = None
     """Public key of the Token program ID that owns the accounts."""
     encoding: str = "base64"
     """Encoding for Account data, either "base58" (slow) or "base64"."""
-    data_slice: DataSliceOpts | None = None
+    data_slice: Optional[DataSliceOpts] = None
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
 
-@deprecated("TxOpts is deprecated; use solana.rpc.models instead.")
-class TxOpts(NamedTuple):
+class TxOpts(PydanticModel):
     """Options to specify when broadcasting a transaction."""
 
     skip_confirmation: bool = True
@@ -76,12 +63,12 @@ class TxOpts(NamedTuple):
     """If true, skip the preflight transaction checks."""
     preflight_commitment: Commitment = Finalized
     """Commitment level to use for preflight."""
-    max_retries: int | None = None
+    max_retries: Optional[int] = None
     """Maximum number of times for the RPC node to retry sending the transaction to the leader.
     If this parameter not provided, the RPC node will retry the transaction until it is finalized
     or until the blockhash expires.
     """
-    last_valid_block_height: int | None = None
+    last_valid_block_height: Optional[int] = None
     """Pass the latest valid block height here, to be consumed by confirm_transaction.
     Valid only if skip_confirmation is False.
     """

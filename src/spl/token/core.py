@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from spl.token.client import Token
 
 
-@deprecated("AccountInfo is deprecated and will be replaced by a Pydantic model.")
+@deprecated("AccountInfo is deprecated; use spl.token.models instead.")
 class AccountInfo(NamedTuple):
     """Information about an account."""
 
@@ -57,7 +57,7 @@ class AccountInfo(NamedTuple):
     """Optional authority to close the account."""
 
 
-@deprecated("MintInfo is deprecated and will be replaced by a Pydantic model.")
+@deprecated("MintInfo is deprecated; use spl.token.models instead.")
 class MintInfo(NamedTuple):
     """Information about the mint."""
 

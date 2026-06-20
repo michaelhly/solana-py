@@ -2,9 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add Pydantic model equivalents of every deprecated `NamedTuple`, under the same names in new `models` modules (`solana.rpc.models`, `solana.utils.models`, `solana.models`, `spl.token.models`, `spl.memo.models`). They carry the same field names, defaults, and field descriptions, so migrating is just an import-path change.
+- Add `PydanticModel.from_namedtuple`, a thin helper that coerces a deprecated `NamedTuple` (or an existing model) into the new Pydantic model, to ease migration at API boundaries.
+
 ### Changed
 
-- Deprecate all `NamedTuple` classes (params/options/info types in `solana` and `spl`); they will be replaced by Pydantic models in a future release. Usage now emits a `DeprecationWarning` and is flagged by type checkers.
+- Deprecate all `NamedTuple` classes (params/options/info types in `solana` and `spl`). Usage now emits a `DeprecationWarning` pointing to the new `models` module and is flagged by type checkers. The deprecated types remain fully functional for backwards compatibility.
 
 ## [0.37.1] - 2026-06-19
 

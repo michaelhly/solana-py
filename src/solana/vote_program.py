@@ -13,7 +13,7 @@ from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, Instruct
 
 
 # Instruction Params
-@deprecated("WithdrawFromVoteAccountParams is deprecated and will be replaced by a Pydantic model.")
+@deprecated("WithdrawFromVoteAccountParams is deprecated; use solana.models instead.")
 class WithdrawFromVoteAccountParams(NamedTuple):
     """Transfer SOL from vote account to identity."""
 
