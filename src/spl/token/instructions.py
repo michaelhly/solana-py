@@ -2,6 +2,7 @@
 
 from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
+from typing_extensions import deprecated
 
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
@@ -27,6 +28,7 @@ class AuthorityType(IntEnum):
 
 
 # Instruction Params
+@deprecated("InitializeMintParams is deprecated and will be replaced by a Pydantic model.")
 class InitializeMintParams(NamedTuple):
     """Initialize token mint transaction params."""
 
@@ -42,6 +44,7 @@ class InitializeMintParams(NamedTuple):
     """The freeze authority/multisignature of the mint."""
 
 
+@deprecated("InitializeMint2Params is deprecated and will be replaced by a Pydantic model.")
 class InitializeMint2Params(NamedTuple):
     """Initialize token mint transaction params without Rent sysvar."""
 
@@ -57,6 +60,7 @@ class InitializeMint2Params(NamedTuple):
     """The freeze authority/multisignature of the mint."""
 
 
+@deprecated("InitializeAccountParams is deprecated and will be replaced by a Pydantic model.")
 class InitializeAccountParams(NamedTuple):
     """Initialize token account transaction params."""
 
@@ -70,6 +74,7 @@ class InitializeAccountParams(NamedTuple):
     """Owner of the new account."""
 
 
+@deprecated("InitializeAccount2Params is deprecated and will be replaced by a Pydantic model.")
 class InitializeAccount2Params(NamedTuple):
     """Initialize token account transaction params with owner in instruction data."""
 
@@ -83,6 +88,7 @@ class InitializeAccount2Params(NamedTuple):
     """Owner of the new account."""
 
 
+@deprecated("InitializeAccount3Params is deprecated and will be replaced by a Pydantic model.")
 class InitializeAccount3Params(NamedTuple):
     """Initialize token account transaction params with owner in instruction data and no Rent sysvar."""
 
@@ -96,6 +102,7 @@ class InitializeAccount3Params(NamedTuple):
     """Owner of the new account."""
 
 
+@deprecated("InitializeMultisigParams is deprecated and will be replaced by a Pydantic model.")
 class InitializeMultisigParams(NamedTuple):
     """Initialize multisig token account transaction params."""
 
@@ -109,6 +116,7 @@ class InitializeMultisigParams(NamedTuple):
     """Addresses of multisig signers."""
 
 
+@deprecated("InitializeMultisig2Params is deprecated and will be replaced by a Pydantic model.")
 class InitializeMultisig2Params(NamedTuple):
     """Initialize multisig token account transaction params without Rent sysvar."""
 
@@ -122,6 +130,7 @@ class InitializeMultisig2Params(NamedTuple):
     """Addresses of multisig signers."""
 
 
+@deprecated("TransferParams is deprecated and will be replaced by a Pydantic model.")
 class TransferParams(NamedTuple):
     """Transfer token transaction params."""
 
@@ -139,6 +148,7 @@ class TransferParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig."""
 
 
+@deprecated("ApproveParams is deprecated and will be replaced by a Pydantic model.")
 class ApproveParams(NamedTuple):
     """Approve token transaction params."""
 
@@ -156,6 +166,7 @@ class ApproveParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig."""
 
 
+@deprecated("RevokeParams is deprecated and will be replaced by a Pydantic model.")
 class RevokeParams(NamedTuple):
     """Revoke token transaction params."""
 
@@ -169,6 +180,7 @@ class RevokeParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig."""
 
 
+@deprecated("SetAuthorityParams is deprecated and will be replaced by a Pydantic model.")
 class SetAuthorityParams(NamedTuple):
     """Set token authority transaction params."""
 
@@ -186,6 +198,7 @@ class SetAuthorityParams(NamedTuple):
     """New authority of the account."""
 
 
+@deprecated("MintToParams is deprecated and will be replaced by a Pydantic model.")
 class MintToParams(NamedTuple):
     """Mint token transaction params."""
 
@@ -203,6 +216,7 @@ class MintToParams(NamedTuple):
     """Signing accounts if `mint_authority` is a multiSig."""
 
 
+@deprecated("BurnParams is deprecated and will be replaced by a Pydantic model.")
 class BurnParams(NamedTuple):
     """Burn token transaction params."""
 
@@ -220,6 +234,7 @@ class BurnParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig"""
 
 
+@deprecated("CloseAccountParams is deprecated and will be replaced by a Pydantic model.")
 class CloseAccountParams(NamedTuple):
     """Close token account transaction params."""
 
@@ -235,6 +250,7 @@ class CloseAccountParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig"""
 
 
+@deprecated("FreezeAccountParams is deprecated and will be replaced by a Pydantic model.")
 class FreezeAccountParams(NamedTuple):
     """Freeze token account transaction params."""
 
@@ -250,6 +266,7 @@ class FreezeAccountParams(NamedTuple):
     """Signing accounts if `authority` is a multiSig"""
 
 
+@deprecated("ThawAccountParams is deprecated and will be replaced by a Pydantic model.")
 class ThawAccountParams(NamedTuple):
     """Thaw token account transaction params."""
 
@@ -265,6 +282,7 @@ class ThawAccountParams(NamedTuple):
     """Signing accounts if `authority` is a multiSig"""
 
 
+@deprecated("TransferCheckedParams is deprecated and will be replaced by a Pydantic model.")
 class TransferCheckedParams(NamedTuple):
     """TransferChecked token transaction params."""
 
@@ -286,6 +304,7 @@ class TransferCheckedParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig."""
 
 
+@deprecated("ApproveCheckedParams is deprecated and will be replaced by a Pydantic model.")
 class ApproveCheckedParams(NamedTuple):
     """ApproveChecked token transaction params."""
 
@@ -307,6 +326,7 @@ class ApproveCheckedParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig."""
 
 
+@deprecated("MintToCheckedParams is deprecated and will be replaced by a Pydantic model.")
 class MintToCheckedParams(NamedTuple):
     """MintToChecked token transaction params."""
 
@@ -326,6 +346,7 @@ class MintToCheckedParams(NamedTuple):
     """Signing accounts if `mint_authority` is a multiSig."""
 
 
+@deprecated("BurnCheckedParams is deprecated and will be replaced by a Pydantic model.")
 class BurnCheckedParams(NamedTuple):
     """BurnChecked token transaction params."""
 
@@ -345,6 +366,7 @@ class BurnCheckedParams(NamedTuple):
     """Signing accounts if `owner` is a multiSig"""
 
 
+@deprecated("SyncNativeParams is deprecated and will be replaced by a Pydantic model.")
 class SyncNativeParams(NamedTuple):
     """BurnChecked token transaction params."""
 
@@ -354,6 +376,7 @@ class SyncNativeParams(NamedTuple):
     """Account to sync."""
 
 
+@deprecated("GetAccountDataSizeParams is deprecated and will be replaced by a Pydantic model.")
 class GetAccountDataSizeParams(NamedTuple):
     """GetAccountDataSize token transaction params."""
 
@@ -363,6 +386,7 @@ class GetAccountDataSizeParams(NamedTuple):
     """Mint to calculate account size for."""
 
 
+@deprecated("InitializeImmutableOwnerParams is deprecated and will be replaced by a Pydantic model.")
 class InitializeImmutableOwnerParams(NamedTuple):
     """InitializeImmutableOwner token transaction params."""
 
@@ -372,6 +396,7 @@ class InitializeImmutableOwnerParams(NamedTuple):
     """Token account to initialize immutable owner for."""
 
 
+@deprecated("InitializeTransferFeeConfigParams is deprecated and will be replaced by a Pydantic model.")
 class InitializeTransferFeeConfigParams(NamedTuple):
     """InitializeTransferFeeConfig token transaction params."""
 
@@ -389,6 +414,7 @@ class InitializeTransferFeeConfigParams(NamedTuple):
     """Maximum fee assessed on transfers."""
 
 
+@deprecated("WithdrawWithheldTokensFromAccountsParams is deprecated and will be replaced by a Pydantic model.")
 class WithdrawWithheldTokensFromAccountsParams(NamedTuple):
     """WithdrawWithheldTokensFromAccounts token transaction params."""
 
@@ -406,6 +432,7 @@ class WithdrawWithheldTokensFromAccountsParams(NamedTuple):
     """Token accounts to withdraw withheld tokens from."""
 
 
+@deprecated("WithdrawWithheldTokensFromMintParams is deprecated and will be replaced by a Pydantic model.")
 class WithdrawWithheldTokensFromMintParams(NamedTuple):
     """WithdrawWithheldTokensFromMint token transaction params."""
 
@@ -421,6 +448,7 @@ class WithdrawWithheldTokensFromMintParams(NamedTuple):
     """Signing accounts if `authority` is a multiSig."""
 
 
+@deprecated("HarvestWithheldTokensToMintParams is deprecated and will be replaced by a Pydantic model.")
 class HarvestWithheldTokensToMintParams(NamedTuple):
     """HarvestWithheldTokensToMint token transaction params."""
 
@@ -432,6 +460,7 @@ class HarvestWithheldTokensToMintParams(NamedTuple):
     """Token accounts to harvest withheld tokens from."""
 
 
+@deprecated("AmountToUiAmountParams is deprecated and will be replaced by a Pydantic model.")
 class AmountToUiAmountParams(NamedTuple):
     """AmountToUiAmount token transaction params."""
 
@@ -443,6 +472,7 @@ class AmountToUiAmountParams(NamedTuple):
     """Amount of tokens to reformat."""
 
 
+@deprecated("UiAmountToAmountParams is deprecated and will be replaced by a Pydantic model.")
 class UiAmountToAmountParams(NamedTuple):
     """UiAmountToAmount token transaction params."""
 

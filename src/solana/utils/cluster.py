@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from typing import Literal, NamedTuple
+from typing_extensions import deprecated
 
 
+@deprecated("ClusterUrls is deprecated and will be replaced by a Pydantic model.")
 class ClusterUrls(NamedTuple):
     """A collection of urls for each cluster."""
 
@@ -13,6 +15,7 @@ class ClusterUrls(NamedTuple):
     mainnet_beta: str
 
 
+@deprecated("Endpoint is deprecated and will be replaced by a Pydantic model.")
 class Endpoint(NamedTuple):
     """Container for http and https cluster urls."""
 

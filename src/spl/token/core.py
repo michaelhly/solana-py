@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple, Type, Union
+from typing_extensions import deprecated
 
 import solders.system_program as sp
 from solders.keypair import Keypair
@@ -26,6 +27,7 @@ if TYPE_CHECKING:
     from spl.token.client import Token
 
 
+@deprecated("AccountInfo is deprecated and will be replaced by a Pydantic model.")
 class AccountInfo(NamedTuple):
     """Information about an account."""
 
@@ -55,6 +57,7 @@ class AccountInfo(NamedTuple):
     """Optional authority to close the account."""
 
 
+@deprecated("MintInfo is deprecated and will be replaced by a Pydantic model.")
 class MintInfo(NamedTuple):
     """Information about the mint."""
 

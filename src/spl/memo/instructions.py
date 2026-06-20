@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from typing import NamedTuple
+from typing_extensions import deprecated
 
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 
 
+@deprecated("MemoParams is deprecated and will be replaced by a Pydantic model.")
 class MemoParams(NamedTuple):
     """Create memo transaction params."""
 
