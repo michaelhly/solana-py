@@ -1244,7 +1244,7 @@ requires-dist = [
     { name = "construct-typing", specifier = ">=0.6.2,<0.8.0" },
     { name = "httpx2", extras = ["http2"], specifier = ">=2.4.0" },
     { name = "solders", specifier = ">=0.23,<0.28" },
-    { name = "typing-extensions", specifier = ">=4.2.0" },
+    { name = "typing-extensions", specifier = ">=4.5.0" },
     { name = "websockets", specifier = ">=14.0" },
 ]
 

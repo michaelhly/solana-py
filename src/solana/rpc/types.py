@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import NamedTuple, NewType
 
 from solders.pubkey import Pubkey
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, deprecated
 
 from .commitment import Commitment, Finalized
 
@@ -25,6 +25,7 @@ class RPCError(TypedDict):
     """Error message."""
 
 
+@deprecated("DataSliceOpts is deprecated and will be replaced by a Pydantic model.")
 class DataSliceOpts(NamedTuple):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
@@ -34,6 +35,7 @@ class DataSliceOpts(NamedTuple):
     """Limit the returned account data using the provided length: <usize>."""
 
 
+@deprecated("MemcmpOpts is deprecated and will be replaced by a Pydantic model.")
 class MemcmpOpts(NamedTuple):
     """Option to compare a provided series of bytes with program account data at a particular offset."""
 
@@ -43,6 +45,7 @@ class MemcmpOpts(NamedTuple):
     """Data to match, as base-58 encoded string: <string>."""
 
 
+@deprecated("TokenAccountOpts is deprecated and will be replaced by a Pydantic model.")
 class TokenAccountOpts(NamedTuple):
     """Options when querying token accounts.
 
@@ -59,6 +62,7 @@ class TokenAccountOpts(NamedTuple):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
 
+@deprecated("TxOpts is deprecated and will be replaced by a Pydantic model.")
 class TxOpts(NamedTuple):
     """Options to specify when broadcasting a transaction."""
 

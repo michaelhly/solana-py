@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Deprecate all `NamedTuple` classes (params/options/info types in `solana` and `spl`); they will be replaced by Pydantic models in a future release. Usage now emits a `DeprecationWarning` and is flagged by type checkers.
+
 ## [0.37.1] - 2026-06-19
 
 ### Added

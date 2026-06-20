@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import NamedTuple
+from typing_extensions import deprecated
 
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
@@ -12,6 +13,7 @@ from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, Instruct
 
 
 # Instruction Params
+@deprecated("WithdrawFromVoteAccountParams is deprecated and will be replaced by a Pydantic model.")
 class WithdrawFromVoteAccountParams(NamedTuple):
     """Transfer SOL from vote account to identity."""
 
