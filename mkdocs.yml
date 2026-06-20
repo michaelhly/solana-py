@@ -49,6 +49,7 @@ nav:
       - rpc/websocket.md
       - rpc/commitment.md
       - rpc/types.md
+      - rpc/models.md
       - rpc/providers.md
   - Core API:
       - core/api.md
@@ -60,10 +61,12 @@ nav:
           - spl/token/constants.md
           - spl/token/instructions.md
           - spl/token/core.md
+          - spl/token/models.md
       - Memo Program:
           - spl/memo/intro.md
           - spl/memo/constants.md
           - spl/memo/instructions.md
+          - spl/memo/models.md
   - Cookbook:
       - cookbook/index.md
       - Development Guides:

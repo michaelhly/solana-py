@@ -9,7 +9,7 @@ from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 
 
-@deprecated("MemoParams is deprecated and will be replaced by a Pydantic model.")
+@deprecated("MemoParams is deprecated; use spl.memo.models instead.")
 class MemoParams(NamedTuple):
     """Create memo transaction params."""
 
