@@ -88,6 +88,7 @@ from solders.transaction import Transaction, VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.rpc import types
+from solana.rpc.models import DataSliceOpts, TokenAccountOpts, TxOpts as TxOptsModel
 
 from .commitment import Commitment, Confirmed, Finalized, Processed
 
@@ -401,7 +402,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_convert(
         self,
         pubkey: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
         commitment: Optional[Commitment],
     ) -> Tuple[
         Pubkey,
@@ -435,7 +436,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_delegate_body(
         self,
         delegate: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByDelegate:
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts, commitment)
@@ -444,7 +445,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_owner_body(
         self,
         owner: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByOwner:
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts, commitment)
@@ -453,20 +454,30 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_delegate_json_parsed_body(
         self,
         delegate: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByDelegate:
-        opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
+        opts_to_use = TokenAccountOpts(
+            mint=opts.mint,
+            program_id=opts.program_id,
+            encoding="jsonParsed",
+            data_slice=None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice),
+        )
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts_to_use, commitment)
         return GetTokenAccountsByDelegate(pubkey, filter_, config)
 
     def _get_token_accounts_by_owner_json_parsed_body(
         self,
         owner: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByOwner:
-        opts_to_use = types.TokenAccountOpts(opts.mint, opts.program_id, "jsonParsed", opts.data_slice)
+        opts_to_use = TokenAccountOpts(
+            mint=opts.mint,
+            program_id=opts.program_id,
+            encoding="jsonParsed",
+            data_slice=None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice),
+        )
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts_to_use, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
 
@@ -504,7 +515,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return RequestAirdrop(pubkey, lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
 
-    def _send_raw_transaction_body(self, txn: bytes, opts: types.TxOpts) -> SendRawTransaction:
+    def _send_raw_transaction_body(self, txn: bytes, opts: Union[types.TxOpts, TxOptsModel]) -> SendRawTransaction:
         preflight_commitment_to_use = _COMMITMENT_TO_SOLDERS[opts.preflight_commitment or self._commitment]
         config = RpcSendTransactionConfig(
             skip_preflight=opts.skip_preflight,
@@ -518,7 +529,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _send_raw_transaction_post_send_args(
-        resp: SendTransactionResp, opts: types.TxOpts
+        resp: SendTransactionResp, opts: Union[types.TxOpts, TxOptsModel]
     ) -> Tuple[SendTransactionResp, Commitment, Optional[int]]:
         return resp, opts.preflight_commitment, opts.last_valid_block_height
 

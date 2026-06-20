@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Literal, NamedTuple
 from typing_extensions import deprecated
 
+from solana.utils import models as cluster_models
+
 
 @deprecated("ClusterUrls is deprecated; use solana.utils.models instead.")
 class ClusterUrls(NamedTuple):
@@ -23,13 +25,13 @@ class Endpoint(NamedTuple):
     https: ClusterUrls
 
 
-ENDPOINT = Endpoint(
-    http=ClusterUrls(
+ENDPOINT = cluster_models.Endpoint(
+    http=cluster_models.ClusterUrls(
         devnet="http://api.devnet.solana.com",
         testnet="http://api.testnet.solana.com",
         mainnet_beta="http://api.mainnet-beta.solana.com/",
     ),
-    https=ClusterUrls(
+    https=cluster_models.ClusterUrls(
         devnet="https://api.devnet.solana.com",
         testnet="https://api.testnet.solana.com",
         mainnet_beta="https://api.mainnet-beta.solana.com/",
