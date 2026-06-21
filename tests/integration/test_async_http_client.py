@@ -16,7 +16,7 @@ from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
-from solana.rpc.types import DataSliceOpts, TxOpts
+from solana.rpc.models import DataSliceOpts, TxOpts
 from solders.transaction import Transaction
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
@@ -623,7 +623,9 @@ async def test_get_account_info(async_stubbed_sender, test_http_client_async):
     assert_valid_response(resp)
     resp = await test_http_client_async.get_account_info(async_stubbed_sender.pubkey(), encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_account_info(async_stubbed_sender.pubkey(), data_slice=DataSliceOpts(1, 1))
+    resp = await test_http_client_async.get_account_info(
+        async_stubbed_sender.pubkey(), data_slice=DataSliceOpts(offset=1, length=1)
+    )
     assert_valid_response(resp)
 
 
@@ -635,7 +637,7 @@ async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_asyn
     assert_valid_response(resp)
     resp = await test_http_client_async.get_multiple_accounts(pubkeys, encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = await test_http_client_async.get_multiple_accounts(pubkeys, data_slice=DataSliceOpts(1, 1))
+    resp = await test_http_client_async.get_multiple_accounts(pubkeys, data_slice=DataSliceOpts(offset=1, length=1))
     assert_valid_response(resp)
 
 

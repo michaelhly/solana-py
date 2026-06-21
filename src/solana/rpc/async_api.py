@@ -66,6 +66,7 @@ from solders.signature import Signature
 from solders.transaction import Transaction, VersionedTransaction
 
 from solana.rpc import types
+from solana.rpc.models import TokenAccountOpts as TokenAccountOptsModel, TxOpts as TxOptsModel
 
 from .commitment import Commitment
 from .core import (
@@ -686,11 +687,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> memcmp_opts = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
+            >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
             >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
-            >>> filters: List[Union[int, types.MemcmpOpts]] = [17, memcmp_opts]
+            >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -718,11 +720,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> memcmp_opts = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
+            >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
             >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
-            >>> filters: List[Union[int, types.MemcmpOpts]] = [17, memcmp_opts]
+            >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -860,7 +863,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_delegate(
         self,
         delegate: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateResp:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
@@ -876,7 +879,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_delegate_json_parsed(
         self,
         delegate: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateJsonParsedResp:
         """Returns all SPL Token accounts by approved delegate in JSON format (UNSTABLE).
@@ -892,7 +895,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_owner_json_parsed(
         self,
         owner: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerJsonParsedResp:
         """Returns all SPL Token accounts by token owner in JSON format (UNSTABLE).
@@ -908,7 +911,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_owner(
         self,
         owner: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerResp:
         """Returns all SPL Token accounts by token owner (UNSTABLE).
@@ -1016,7 +1019,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return await self._provider.make_request(body, RequestAirdropResp)
 
-    async def send_raw_transaction(self, txn: bytes, opts: Optional[types.TxOpts] = None) -> SendTransactionResp:
+    async def send_raw_transaction(
+        self, txn: bytes, opts: Optional[Union[types.TxOpts, TxOptsModel]] = None
+    ) -> SendTransactionResp:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1045,7 +1050,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """  # noqa: E501 # pylint: disable=line-too-long
-        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        opts_to_use = TxOptsModel(preflight_commitment=self._commitment) if opts is None else opts
         body = self._send_raw_transaction_body(txn, opts_to_use)
 
         resp = await self._provider.make_request(body, SendTransactionResp)
@@ -1057,7 +1062,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def send_transaction(
         self,
         txn: Union[VersionedTransaction, Transaction],
-        opts: Optional[types.TxOpts] = None,
+        opts: Optional[Union[types.TxOpts, TxOptsModel]] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
 

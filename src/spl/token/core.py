@@ -15,7 +15,8 @@ import spl.token.instructions as spl_token
 from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
-from solana.rpc.types import TokenAccountOpts, TxOpts
+from solana.rpc.models import TokenAccountOpts, TxOpts
+from spl.token.models import AccountInfo as AccountInfoModel, MintInfo as MintInfoModel
 from solders.hash import Hash as Blockhash
 from solders.message import Message
 from solders.transaction import Transaction
@@ -358,7 +359,7 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         txn = Transaction([self.payer], msg, recent_blockhash)
         return txn, opts
 
-    def _create_mint_info(self, info: GetAccountInfoResp) -> MintInfo:
+    def _create_mint_info(self, info: GetAccountInfoResp) -> MintInfoModel:
         value = info.value
         if value is None:
             raise ValueError("Failed to find mint account")
@@ -382,9 +383,15 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
 
         freeze_authority = None if decoded_data.freeze_authority_option == 0 else Pubkey(decoded_data.freeze_authority)
 
-        return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
+        return MintInfoModel(
+            mint_authority=mint_authority,
+            supply=supply,
+            decimals=decimals,
+            is_initialized=is_initialized,
+            freeze_authority=freeze_authority,
+        )
 
-    def _create_account_info(self, info: GetAccountInfoResp) -> AccountInfo:
+    def _create_account_info(self, info: GetAccountInfoResp) -> AccountInfoModel:
         value = info.value
         if value is None:
             raise ValueError("Invalid account owner")
@@ -425,17 +432,17 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
         if mint != self.pubkey:
             raise AttributeError(f"Invalid account mint: {decoded_data.mint} != {self.pubkey}")
 
-        return AccountInfo(
-            mint,
-            owner,
-            amount,
-            delegate,
-            delegated_amount,
-            is_initialized,
-            is_frozen,
-            is_native,
-            rent_exempt_reserve,
-            close_authority,
+        return AccountInfoModel(
+            mint=mint,
+            owner=owner,
+            amount=amount,
+            delegate=delegate,
+            delegated_amount=delegated_amount,
+            is_initialized=is_initialized,
+            is_frozen=is_frozen,
+            is_native=is_native,
+            rent_exempt_reserve=rent_exempt_reserve,
+            close_authority=close_authority,
         )
 
     def _approve_args(

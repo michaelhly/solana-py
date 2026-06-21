@@ -66,6 +66,7 @@ from solders.signature import Signature
 from solders.transaction import Transaction, VersionedTransaction
 
 from solana.rpc import types
+from solana.rpc.models import TokenAccountOpts as TokenAccountOptsModel, TxOpts as TxOptsModel
 
 from .commitment import Commitment
 from .core import (
@@ -659,7 +660,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
-            >>> from solana.rpc.types import MemcmpOpts
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
@@ -692,7 +693,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
-            >>> from solana.rpc.types import MemcmpOpts
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
@@ -835,7 +836,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_token_accounts_by_delegate(
         self,
         delegate: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateResp:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
@@ -851,7 +852,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_token_accounts_by_delegate_json_parsed(
         self,
         delegate: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateJsonParsedResp:
         """Returns all SPL Token accounts by approved delegate in JSON format (UNSTABLE).
@@ -867,7 +868,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_token_accounts_by_owner(
         self,
         owner: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerResp:
         """Returns all SPL Token accounts by token owner (UNSTABLE).
@@ -883,7 +884,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def get_token_accounts_by_owner_json_parsed(
         self,
         owner: Pubkey,
-        opts: types.TokenAccountOpts,
+        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerJsonParsedResp:
         """Returns all SPL Token accounts by token owner in JSON format (UNSTABLE).
@@ -991,7 +992,9 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return self._provider.make_request(body, RequestAirdropResp)
 
-    def send_raw_transaction(self, txn: bytes, opts: Optional[types.TxOpts] = None) -> SendTransactionResp:
+    def send_raw_transaction(
+        self, txn: bytes, opts: Optional[Union[types.TxOpts, TxOptsModel]] = None
+    ) -> SendTransactionResp:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1019,7 +1022,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
         """  # noqa: E501 # pylint: disable=line-too-long
-        opts_to_use = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        opts_to_use = TxOptsModel(preflight_commitment=self._commitment) if opts is None else opts
         body = self._send_raw_transaction_body(txn, opts_to_use)
         resp = self._provider.make_request(body, SendTransactionResp)
         if opts_to_use.skip_confirmation:
@@ -1030,7 +1033,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     def send_transaction(
         self,
         txn: Union[VersionedTransaction, Transaction],
-        opts: Optional[types.TxOpts] = None,
+        opts: Optional[Union[types.TxOpts, TxOptsModel]] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
 
@@ -1052,7 +1055,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> client = Client("http://localhost:8899")
             >>> client.send_transaction(Transaction([sender], msg, client.get_latest_blockhash().value.blockhash)) # doctest: +SKIP
         """  # noqa: E501
-        tx_opts = types.TxOpts(preflight_commitment=self._commitment) if opts is None else opts
+        tx_opts = TxOptsModel(preflight_commitment=self._commitment) if opts is None else opts
         return self.send_raw_transaction(bytes(txn), opts=tx_opts)
 
     def simulate_transaction(

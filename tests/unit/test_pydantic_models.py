@@ -6,7 +6,6 @@ from solders.keypair import Keypair
 
 import solana.models as solana_models
 import solana.rpc.models as rpc_models
-import solana.utils.models as cluster_models
 import spl.memo.models as memo_models
 import spl.token.models as token_models
 from solana.rpc.commitment import Finalized
@@ -30,8 +29,8 @@ _PARITY_PAIRS = [
     (DeprecatedTxOpts, rpc_models.TxOpts),
     (DeprecatedAccountInfo, token_models.AccountInfo),
     (DeprecatedMintInfo, token_models.MintInfo),
-    (DeprecatedClusterUrls, cluster_models.ClusterUrls),
-    (DeprecatedEndpoint, cluster_models.Endpoint),
+    (DeprecatedClusterUrls, rpc_models.ClusterUrls),
+    (DeprecatedEndpoint, rpc_models.Endpoint),
     (DeprecatedWithdrawFromVoteAccountParams, solana_models.WithdrawFromVoteAccountParams),
     (DeprecatedMemoParams, memo_models.MemoParams),
 ]

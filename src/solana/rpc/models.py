@@ -50,6 +50,21 @@ class TokenAccountOpts(PydanticModel):
     """Option to limit the returned account data, only available for "base58" or "base64" encoding."""
 
 
+class ClusterUrls(PydanticModel):
+    """A collection of urls for each cluster."""
+
+    devnet: str
+    testnet: str
+    mainnet_beta: str
+
+
+class Endpoint(PydanticModel):
+    """Container for http and https cluster urls."""
+
+    http: ClusterUrls
+    https: ClusterUrls
+
+
 class TxOpts(PydanticModel):
     """Options to specify when broadcasting a transaction."""
 

@@ -12,7 +12,7 @@ from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
-from solana.rpc.types import DataSliceOpts, TxOpts
+from solana.rpc.models import DataSliceOpts, TxOpts
 from solders.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
@@ -598,7 +598,7 @@ def test_get_account_info(stubbed_sender, test_http_client: Client):
     assert_valid_response(resp)
     resp = test_http_client.get_account_info(stubbed_sender.pubkey(), encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = test_http_client.get_account_info(stubbed_sender.pubkey(), data_slice=DataSliceOpts(1, 1))
+    resp = test_http_client.get_account_info(stubbed_sender.pubkey(), data_slice=DataSliceOpts(offset=1, length=1))
     assert_valid_response(resp)
 
 
@@ -610,7 +610,7 @@ def test_get_multiple_accounts(stubbed_sender, test_http_client: Client):
     assert_valid_response(resp)
     resp = test_http_client.get_multiple_accounts(pubkeys, encoding="jsonParsed")
     assert_valid_response(resp)
-    resp = test_http_client.get_multiple_accounts(pubkeys, data_slice=DataSliceOpts(1, 1))
+    resp = test_http_client.get_multiple_accounts(pubkeys, data_slice=DataSliceOpts(offset=1, length=1))
     assert_valid_response(resp)
 
 

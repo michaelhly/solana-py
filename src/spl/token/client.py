@@ -20,9 +20,10 @@ from solders.rpc.responses import (
 import spl.token.instructions as spl_token
 from solana.rpc.api import Client
 from solana.rpc.commitment import Commitment
-from solana.rpc.types import TxOpts
+from solana.rpc.models import TxOpts
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT, MULTISIG_LAYOUT
-from spl.token.core import AccountInfo, MintInfo, _TokenCore
+from spl.token.core import _TokenCore
+from spl.token.models import AccountInfo, MintInfo
 
 
 class Token(_TokenCore):  # pylint: disable=too-many-public-methods
