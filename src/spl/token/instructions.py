@@ -1044,12 +1044,13 @@ def initialize_mint(params: Union[InitializeMintParams, models.InitializeMintPar
     Otherwise another party can acquire ownership of the uninitialized account.
 
     Example:
+        >>> from spl.token.models import InitializeMintParams
         >>> from spl.token.constants import TOKEN_PROGRAM_ID
         >>> from solders.pubkey import Pubkey
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i +1]) for i in range(4)]
         >>> mint_account, mint_authority, freeze_authority, owner = pubkeys
-        >>> params = models.InitializeMintParams(
+        >>> params = InitializeMintParams(
         ...     decimals=6,
         ...     freeze_authority=freeze_authority,
         ...     mint=mint_account,
@@ -1117,10 +1118,11 @@ def initialize_account(params: Union[InitializeAccountParams, models.InitializeA
     Otherwise another party can acquire ownership of the uninitialized account.
 
     Example:
+        >>> from spl.token.models import InitializeAccountParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
-        >>> params = models.InitializeAccountParams(
+        >>> params = InitializeAccountParams(
         ...     account=account,
         ...     mint=mint,
         ...     owner=owner,
@@ -1193,11 +1195,12 @@ def initialize_multisig(params: Union[InitializeMultisigParams, models.Initializ
     Otherwise another party can acquire ownership of the uninitialized account.
 
     Example:
+        >>> from spl.token.models import InitializeMultisigParams
         >>> m = 2   # Two signers
         >>> signers = [Pubkey([0] * 31 + [i]) for i in range(m)]
         >>> leading_zeros = [0] * 31
         >>> multisig_account, token = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
-        >>> params = models.InitializeMultisigParams(
+        >>> params = InitializeMultisigParams(
         ...     m=m,
         ...     multisig=multisig_account,
         ...     signers=signers,
@@ -1251,10 +1254,11 @@ def transfer(params: Union[TransferParams, models.TransferParams]) -> Instructio
     Either directly or via a delegate.
 
     Example:
+        >>> from spl.token.models import TransferParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, owner, source, token = pubkeys
-        >>> params = models.TransferParams(
+        >>> params = TransferParams(
         ...     amount=1000,
         ...     dest=dest,
         ...     owner=owner,
@@ -1287,10 +1291,11 @@ def approve(params: Union[ApproveParams, models.ApproveParams]) -> Instruction:
     """Creates a transaction instruction to approve a delegate.
 
     Example:
+        >>> from spl.token.models import ApproveParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> delegate, owner, source, token = pubkeys
-        >>> params = models.ApproveParams(
+        >>> params = ApproveParams(
         ...     amount=123,
         ...     delegate=delegate,
         ...     owner=owner,
@@ -1318,10 +1323,11 @@ def revoke(params: Union[RevokeParams, models.RevokeParams]) -> Instruction:
     """Creates a transaction instruction that revokes delegate authority for a given account.
 
     Example:
+        >>> from spl.token.models import RevokeParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(3)]
         >>> account, owner, token = pubkeys
-        >>> params = models.RevokeParams(
+        >>> params = RevokeParams(
         ...     account=account, owner=owner, program_id=token
         ... )
         >>> type(revoke(params))
@@ -1342,10 +1348,11 @@ def set_authority(params: Union[SetAuthorityParams, models.SetAuthorityParams]) 
     """Creates a transaction instruction to sets a new authority of a mint or account.
 
     Example:
+        >>> from spl.token.models import SetAuthorityParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, current_authority, new_authority, token = pubkeys
-        >>> params = models.SetAuthorityParams(
+        >>> params = SetAuthorityParams(
         ...     account=account,
         ...     authority=AuthorityType.ACCOUNT_OWNER,
         ...     current_authority=current_authority,
@@ -1382,10 +1389,11 @@ def mint_to(params: Union[MintToParams, models.MintToParams]) -> Instruction:
     The native mint does not support minting.
 
     Example:
+        >>> from spl.token.models import MintToParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, mint, mint_authority, token = pubkeys
-        >>> params = models.MintToParams(
+        >>> params = MintToParams(
         ...     amount=123,
         ...     dest=dest,
         ...     mint=mint,
@@ -1407,10 +1415,11 @@ def burn(params: Union[BurnParams, models.BurnParams]) -> Instruction:
     """Creates a transaction instruction to burns tokens by removing them from an account.
 
     Example:
+        >>> from spl.token.models import BurnParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
-        >>> params = models.BurnParams(
+        >>> params = BurnParams(
         ...     amount=123, account=account, mint=mint, owner=owner, program_id=token,
         ... )
         >>> type(burn(params))
@@ -1430,10 +1439,11 @@ def close_account(params: Union[CloseAccountParams, models.CloseAccountParams]) 
     Non-native accounts may only be closed if its token amount is zero.
 
     Example:
+        >>> from spl.token.models import CloseAccountParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, dest, owner, token = pubkeys
-        >>> params = models.CloseAccountParams(
+        >>> params = CloseAccountParams(
         ...     account=account, dest=dest, owner=owner, program_id=token)
         >>> type(close_account(params))
         <class 'solders.instruction.Instruction'>
@@ -1456,10 +1466,11 @@ def freeze_account(params: Union[FreezeAccountParams, models.FreezeAccountParams
     """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set).
 
     Example:
+        >>> from spl.token.models import FreezeAccountParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, authority, token = pubkeys
-        >>> params = models.FreezeAccountParams(
+        >>> params = FreezeAccountParams(
         ...     account=account, mint=mint, authority=authority, program_id=token)
         >>> type(freeze_account(params))
         <class 'solders.instruction.Instruction'>
@@ -1475,10 +1486,11 @@ def thaw_account(params: Union[ThawAccountParams, models.ThawAccountParams]) -> 
     """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set).
 
     Example:
+        >>> from spl.token.models import ThawAccountParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, authority, token = pubkeys
-        >>> params = models.ThawAccountParams(
+        >>> params = ThawAccountParams(
         ...     account=account, mint=mint, authority=authority, program_id=token)
         >>> type(thaw_account(params))
         <class 'solders.instruction.Instruction'>
@@ -1494,10 +1506,11 @@ def transfer_checked(params: Union[TransferCheckedParams, models.TransferChecked
     """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller.
 
     Example:
+        >>> from spl.token.models import TransferCheckedParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
         >>> dest, mint, owner, source, token = pubkeys
-        >>> params = models.TransferCheckedParams(
+        >>> params = TransferCheckedParams(
         ...     amount=1000,
         ...     decimals=6,
         ...     dest=dest,
@@ -1533,10 +1546,11 @@ def approve_checked(params: Union[ApproveCheckedParams, models.ApproveCheckedPar
     """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller.
 
     Example:
+        >>> from spl.token.models import ApproveCheckedParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
         >>> delegate, mint, owner, source, token = pubkeys
-        >>> params = models.ApproveCheckedParams(
+        >>> params = ApproveCheckedParams(
         ...     amount=1000,
         ...     decimals=6,
         ...     delegate=delegate,
@@ -1572,10 +1586,11 @@ def mint_to_checked(params: Union[MintToCheckedParams, models.MintToCheckedParam
     """This instruction differs from `mint_to` in that the decimals value is asserted by the caller.
 
     Example:
+        >>> from spl.token.models import MintToCheckedParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, mint, mint_authority, token = pubkeys
-        >>> params = models.MintToCheckedParams(
+        >>> params = MintToCheckedParams(
         ...     amount=123,
         ...     decimals=6,
         ...     dest=dest,
@@ -1603,10 +1618,11 @@ def burn_checked(params: Union[BurnCheckedParams, models.BurnCheckedParams]) -> 
     """This instruction differs from `burn` in that the decimals value is asserted by the caller.
 
     Example:
+        >>> from spl.token.models import BurnCheckedParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
-        >>> params = models.BurnCheckedParams(
+        >>> params = BurnCheckedParams(
         ...     amount=123, account=account, decimals=6, mint=mint, owner=owner, program_id=token,
         ... )
         >>> type(burn_checked(params))
@@ -1629,8 +1645,9 @@ def sync_native(params: Union[SyncNativeParams, models.SyncNativeParams]) -> Ins
     """Syncs the amount field with the number of lamports of the account.
 
     Example:
+        >>> from spl.token.models import SyncNativeParams
         >>> account = Pubkey.default()
-        >>> params = models.SyncNativeParams(
+        >>> params = SyncNativeParams(
         ...     program_id=TOKEN_PROGRAM_ID, account=account,
         ... )
         >>> type(sync_native(params))
