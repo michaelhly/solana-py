@@ -8,12 +8,25 @@ changing the import path.
 
 from __future__ import annotations
 
+from enum import IntEnum
 from typing import List, Optional
 
 from solders.pubkey import Pubkey
 
 from solana._pydantic import PydanticModel
-from spl.token.instructions import AuthorityType
+
+
+class AuthorityType(IntEnum):
+    """Specifies the authority type for SetAuthority instructions."""
+
+    MINT_TOKENS = 0
+    """"Authority to mint new tokens."""
+    FREEZE_ACCOUNT = 1
+    """Authority to freeze any account associated with the Mint."""
+    ACCOUNT_OWNER = 2
+    """Owner of a given token account."""
+    CLOSE_ACCOUNT = 3
+    """Authority to close a token account."""
 
 
 class AccountInfo(PydanticModel):

@@ -1,6 +1,7 @@
 from solders.keypair import Keypair
 from spl.memo.constants import MEMO_PROGRAM_ID
-from spl.memo.instructions import MemoParams, create_memo, decode_create_memo
+from spl.memo.instructions import create_memo, decode_create_memo
+from spl.memo.models import MemoParams
 
 
 def test_memo():
