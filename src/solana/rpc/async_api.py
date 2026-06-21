@@ -1019,7 +1019,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return await self._provider.make_request(body, RequestAirdropResp)
 
-    async def send_raw_transaction(self, txn: bytes, opts: Optional[TxOptsModel] = None) -> SendTransactionResp:
+    async def send_raw_transaction(
+        self, txn: bytes, opts: Optional[Union[types.TxOpts, TxOptsModel]] = None
+    ) -> SendTransactionResp:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1060,7 +1062,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def send_transaction(
         self,
         txn: Union[VersionedTransaction, Transaction],
-        opts: Optional[TxOptsModel] = None,
+        opts: Optional[Union[types.TxOpts, TxOptsModel]] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
 
