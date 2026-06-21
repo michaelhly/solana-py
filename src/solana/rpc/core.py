@@ -88,7 +88,7 @@ from solders.transaction import Transaction, VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.rpc import types
-from solana.rpc.models import DataSliceOpts, TokenAccountOpts, TxOpts as TxOptsModel
+from solana.rpc.models import DataSliceOpts, MemcmpOpts, TokenAccountOpts, TxOpts as TxOptsModel
 
 from .commitment import Commitment, Confirmed, Finalized, Processed
 
@@ -176,7 +176,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment],
         encoding: str,
-        data_slice: Optional[types.DataSliceOpts],
+        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOpts]],
     ) -> GetAccountInfo:
         data_slice_to_use = (
             None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
@@ -297,7 +297,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkeys: List[Pubkey],
         commitment: Optional[Commitment],
         encoding: str,
-        data_slice: Optional[types.DataSliceOpts],
+        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOpts]],
     ) -> GetMultipleAccounts:
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -316,8 +316,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment],
         encoding: Optional[str],
-        data_slice: Optional[types.DataSliceOpts],
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
+        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOpts]],
+        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOpts]]] = None,
     ) -> GetProgramAccounts:  # pylint: disable=too-many-arguments
         encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
