@@ -66,7 +66,12 @@ from solders.signature import Signature
 from solders.transaction import Transaction, VersionedTransaction
 
 from solana.rpc import types
-from solana.rpc.models import TokenAccountOpts as TokenAccountOptsModel, TxOpts as TxOptsModel
+from solana.rpc.models import (
+    DataSliceOpts as DataSliceOptsModel,
+    MemcmpOpts as MemcmpOptsModel,
+    TokenAccountOpts as TokenAccountOptsModel,
+    TxOpts as TxOptsModel,
+)
 
 from .commitment import Commitment
 from .core import (
@@ -157,7 +162,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
-        data_slice: Optional[types.DataSliceOpts] = None,
+        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
     ) -> GetAccountInfoResp:
         """Returns all the account info for the specified public key.
 
@@ -610,7 +615,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
-        data_slice: Optional[types.DataSliceOpts] = None,
+        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
     ) -> GetMultipleAccountsResp:
         """Returns all the account info for a list of public keys.
 
@@ -671,8 +676,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
-        data_slice: Optional[types.DataSliceOpts] = None,
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
+        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
+        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOptsModel]]] = None,
     ) -> GetProgramAccountsResp:
         """Returns all accounts owned by the provided program Pubkey.
 
@@ -709,7 +714,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
+        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOptsModel]]] = None,
     ) -> GetProgramAccountsMaybeJsonParsedResp:
         """Returns all accounts owned by the provided program Pubkey.
 
