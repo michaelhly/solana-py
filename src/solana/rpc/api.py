@@ -660,7 +660,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
-            >>> from solana.rpc.types import MemcmpOpts
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
@@ -693,7 +693,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
-            >>> from solana.rpc.types import MemcmpOpts
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = Client("http://localhost:8899")
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
