@@ -53,6 +53,7 @@ from websockets.asyncio.client import connect as ws_connect
 
 from solana.rpc import types
 from solana.rpc.commitment import Commitment
+from solana.rpc.models import DataSliceOpts as DataSliceOptsModel, MemcmpOpts as MemcmpOptsModel
 from solana.rpc.core import (
     _ACCOUNT_ENCODING_TO_SOLDERS,
     _COMMITMENT_TO_SOLDERS,
@@ -242,8 +243,8 @@ class SolanaWsClientProtocol(ClientConnection):
         program_id: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
-        data_slice: Optional[types.DataSliceOpts] = None,
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts]]] = None,
+        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
+        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOptsModel]]] = None,
     ) -> int:
         """Receive notifications when the lamports or data for a given account owned by the program changes.
 
@@ -271,7 +272,9 @@ class SolanaWsClientProtocol(ClientConnection):
                 data_slice=data_slice_to_use,
             )
             filters_to_use: Optional[List[Union[int, Memcmp]]] = (
-                None if filters is None else [x if isinstance(x, int) else Memcmp(*x) for x in filters]
+                None
+                if filters is None
+                else [x if isinstance(x, int) else Memcmp(offset=x.offset, bytes_=x.bytes) for x in filters]
             )
             config = RpcProgramAccountsConfig(account_config, filters_to_use)
         req = ProgramSubscribe(program_id, config, req_id)
