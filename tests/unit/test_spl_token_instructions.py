@@ -16,7 +16,7 @@ from spl.token.instructions import get_associated_token_address
 def test_initialize_mint(stubbed_sender):
     """Test initialize mint."""
     mint_authority, freeze_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
-    params_with_freeze = spl_token.InitializeMintParams(
+    params_with_freeze = token_models.InitializeMintParams(
         decimals=18,
         program_id=TOKEN_PROGRAM_ID,
         mint=stubbed_sender.pubkey(),
@@ -24,11 +24,9 @@ def test_initialize_mint(stubbed_sender):
         freeze_authority=freeze_authority,
     )
     instruction = spl_token.initialize_mint(params_with_freeze)
-    assert spl_token.decode_initialize_mint(instruction) == token_models.InitializeMintParams.from_namedtuple(
-        params_with_freeze
-    )
+    assert spl_token.decode_initialize_mint(instruction) == params_with_freeze
 
-    params_no_freeze = spl_token.InitializeMintParams(
+    params_no_freeze = token_models.InitializeMintParams(
         decimals=18,
         program_id=TOKEN_PROGRAM_ID,
         mint=stubbed_sender.pubkey(),
@@ -37,13 +35,13 @@ def test_initialize_mint(stubbed_sender):
     instruction = spl_token.initialize_mint(params_no_freeze)
     decoded_params = spl_token.decode_initialize_mint(instruction)
     assert not decoded_params.freeze_authority
-    assert decoded_params == token_models.InitializeMintParams.from_namedtuple(params_no_freeze)
+    assert decoded_params == params_no_freeze
 
 
 def test_initialize_mint2(stubbed_sender):
     """Test initialize mint2."""
     mint_authority, freeze_authority = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
-    params_with_freeze = spl_token.InitializeMint2Params(
+    params_with_freeze = token_models.InitializeMint2Params(
         decimals=18,
         program_id=TOKEN_PROGRAM_ID,
         mint=stubbed_sender.pubkey(),
@@ -51,11 +49,9 @@ def test_initialize_mint2(stubbed_sender):
         freeze_authority=freeze_authority,
     )
     instruction = spl_token.initialize_mint2(params_with_freeze)
-    assert spl_token.decode_initialize_mint2(instruction) == token_models.InitializeMint2Params.from_namedtuple(
-        params_with_freeze
-    )
+    assert spl_token.decode_initialize_mint2(instruction) == params_with_freeze
 
-    params_no_freeze = spl_token.InitializeMint2Params(
+    params_no_freeze = token_models.InitializeMint2Params(
         decimals=18,
         program_id=TOKEN_PROGRAM_ID,
         mint=stubbed_sender.pubkey(),
@@ -64,84 +60,74 @@ def test_initialize_mint2(stubbed_sender):
     instruction = spl_token.initialize_mint2(params_no_freeze)
     decoded_params = spl_token.decode_initialize_mint2(instruction)
     assert not decoded_params.freeze_authority
-    assert decoded_params == token_models.InitializeMint2Params.from_namedtuple(params_no_freeze)
+    assert decoded_params == params_no_freeze
 
 
 def test_initialize_account(stubbed_sender):
     """Test initialize account."""
     new_account, token_mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
-    params = spl_token.InitializeAccountParams(
+    params = token_models.InitializeAccountParams(
         program_id=TOKEN_PROGRAM_ID,
         account=new_account,
         mint=token_mint,
         owner=stubbed_sender.pubkey(),
     )
     instruction = spl_token.initialize_account(params)
-    assert spl_token.decode_initialize_account(instruction) == token_models.InitializeAccountParams.from_namedtuple(
-        params
-    )
+    assert spl_token.decode_initialize_account(instruction) == params
 
 
 def test_initialize_account2(stubbed_sender):
     """Test initialize account2."""
     new_account, token_mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
-    params = spl_token.InitializeAccount2Params(
+    params = token_models.InitializeAccount2Params(
         program_id=TOKEN_PROGRAM_ID,
         account=new_account,
         mint=token_mint,
         owner=stubbed_sender.pubkey(),
     )
     instruction = spl_token.initialize_account2(params)
-    assert spl_token.decode_initialize_account2(instruction) == token_models.InitializeAccount2Params.from_namedtuple(
-        params
-    )
+    assert spl_token.decode_initialize_account2(instruction) == params
 
 
 def test_initialize_account3(stubbed_sender):
     """Test initialize account3."""
     new_account, token_mint = Pubkey([0] * 31 + [0]), Pubkey([0] * 31 + [1])
-    params = spl_token.InitializeAccount3Params(
+    params = token_models.InitializeAccount3Params(
         program_id=TOKEN_PROGRAM_ID,
         account=new_account,
         mint=token_mint,
         owner=stubbed_sender.pubkey(),
     )
     instruction = spl_token.initialize_account3(params)
-    assert spl_token.decode_initialize_account3(instruction) == token_models.InitializeAccount3Params.from_namedtuple(
-        params
-    )
+    assert spl_token.decode_initialize_account3(instruction) == params
 
 
 def test_initialize_multisig():
     """Test initialize multisig."""
     new_multisig = Pubkey([0] * 31 + [0])
     signers = [Pubkey([0] * 31 + [i + 1]) for i in range(3)]
-    params = spl_token.InitializeMultisigParams(
+    params = token_models.InitializeMultisigParams(
         program_id=TOKEN_PROGRAM_ID,
         multisig=new_multisig,
         signers=signers,
         m=len(signers),
     )
     instruction = spl_token.initialize_multisig(params)
-    assert spl_token.decode_initialize_multisig(instruction) == token_models.InitializeMultisigParams.from_namedtuple(
-        params
-    )
+    assert spl_token.decode_initialize_multisig(instruction) == params
 
 
 def test_initialize_multisig2():
     """Test initialize multisig2."""
     new_multisig = Pubkey([0] * 31 + [0])
     signers = [Pubkey([0] * 31 + [i + 1]) for i in range(3)]
-    params = spl_token.InitializeMultisig2Params(
+    params = token_models.InitializeMultisig2Params(
         program_id=TOKEN_PROGRAM_ID,
         multisig=new_multisig,
         signers=signers,
         m=len(signers),
     )
     instruction = spl_token.initialize_multisig2(params)
-    assert spl_token.decode_initialize_multisig2(instruction) == token_models.InitializeMultisig2Params.from_namedtuple(
-        params
-    )
+    assert spl_token.decode_initialize_multisig2(instruction) == params
 
 
 def test_transfer(stubbed_receiver, stubbed_sender):
