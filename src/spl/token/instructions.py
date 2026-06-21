@@ -1053,7 +1053,7 @@ def initialize_mint(params: Union[InitializeMintParams, models.InitializeMintPar
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i +1]) for i in range(4)]
         >>> mint_account, mint_authority, freeze_authority, owner = pubkeys
-        >>> params = InitializeMintParams(
+        >>> params = models.InitializeMintParams(
         ...     decimals=6,
         ...     freeze_authority=freeze_authority,
         ...     mint=mint_account,
@@ -1124,7 +1124,7 @@ def initialize_account(params: Union[InitializeAccountParams, models.InitializeA
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
-        >>> params = InitializeAccountParams(
+        >>> params = models.InitializeAccountParams(
         ...     account=account,
         ...     mint=mint,
         ...     owner=owner,
@@ -1201,7 +1201,7 @@ def initialize_multisig(params: Union[InitializeMultisigParams, models.Initializ
         >>> signers = [Pubkey([0] * 31 + [i]) for i in range(m)]
         >>> leading_zeros = [0] * 31
         >>> multisig_account, token = Pubkey(leading_zeros + [1]), Pubkey(leading_zeros + [2])
-        >>> params = InitializeMultisigParams(
+        >>> params = models.InitializeMultisigParams(
         ...     m=m,
         ...     multisig=multisig_account,
         ...     signers=signers,
@@ -1258,7 +1258,7 @@ def transfer(params: Union[TransferParams, models.TransferParams]) -> Instructio
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, owner, source, token = pubkeys
-        >>> params = TransferParams(
+        >>> params = models.TransferParams(
         ...     amount=1000,
         ...     dest=dest,
         ...     owner=owner,
@@ -1294,7 +1294,7 @@ def approve(params: Union[ApproveParams, models.ApproveParams]) -> Instruction:
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> delegate, owner, source, token = pubkeys
-        >>> params = ApproveParams(
+        >>> params = models.ApproveParams(
         ...     amount=123,
         ...     delegate=delegate,
         ...     owner=owner,
@@ -1325,7 +1325,7 @@ def revoke(params: Union[RevokeParams, models.RevokeParams]) -> Instruction:
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(3)]
         >>> account, owner, token = pubkeys
-        >>> params = RevokeParams(
+        >>> params = models.RevokeParams(
         ...     account=account, owner=owner, program_id=token
         ... )
         >>> type(revoke(params))
@@ -1349,7 +1349,7 @@ def set_authority(params: Union[SetAuthorityParams, models.SetAuthorityParams]) 
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, current_authority, new_authority, token = pubkeys
-        >>> params = SetAuthorityParams(
+        >>> params = models.SetAuthorityParams(
         ...     account=account,
         ...     authority=AuthorityType.ACCOUNT_OWNER,
         ...     current_authority=current_authority,
@@ -1389,7 +1389,7 @@ def mint_to(params: Union[MintToParams, models.MintToParams]) -> Instruction:
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, mint, mint_authority, token = pubkeys
-        >>> params = MintToParams(
+        >>> params = models.MintToParams(
         ...     amount=123,
         ...     dest=dest,
         ...     mint=mint,
@@ -1414,7 +1414,7 @@ def burn(params: Union[BurnParams, models.BurnParams]) -> Instruction:
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
-        >>> params = BurnParams(
+        >>> params = models.BurnParams(
         ...     amount=123, account=account, mint=mint, owner=owner, program_id=token,
         ... )
         >>> type(burn(params))
@@ -1437,7 +1437,7 @@ def close_account(params: Union[CloseAccountParams, models.CloseAccountParams]) 
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, dest, owner, token = pubkeys
-        >>> params = CloseAccountParams(
+        >>> params = models.CloseAccountParams(
         ...     account=account, dest=dest, owner=owner, program_id=token)
         >>> type(close_account(params))
         <class 'solders.instruction.Instruction'>
@@ -1463,7 +1463,7 @@ def freeze_account(params: Union[FreezeAccountParams, models.FreezeAccountParams
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, authority, token = pubkeys
-        >>> params = FreezeAccountParams(
+        >>> params = models.FreezeAccountParams(
         ...     account=account, mint=mint, authority=authority, program_id=token)
         >>> type(freeze_account(params))
         <class 'solders.instruction.Instruction'>
@@ -1482,7 +1482,7 @@ def thaw_account(params: Union[ThawAccountParams, models.ThawAccountParams]) -> 
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, authority, token = pubkeys
-        >>> params = ThawAccountParams(
+        >>> params = models.ThawAccountParams(
         ...     account=account, mint=mint, authority=authority, program_id=token)
         >>> type(thaw_account(params))
         <class 'solders.instruction.Instruction'>
@@ -1501,7 +1501,7 @@ def transfer_checked(params: Union[TransferCheckedParams, models.TransferChecked
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
         >>> dest, mint, owner, source, token = pubkeys
-        >>> params = TransferCheckedParams(
+        >>> params = models.TransferCheckedParams(
         ...     amount=1000,
         ...     decimals=6,
         ...     dest=dest,
@@ -1540,7 +1540,7 @@ def approve_checked(params: Union[ApproveCheckedParams, models.ApproveCheckedPar
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(5)]
         >>> delegate, mint, owner, source, token = pubkeys
-        >>> params = ApproveCheckedParams(
+        >>> params = models.ApproveCheckedParams(
         ...     amount=1000,
         ...     decimals=6,
         ...     delegate=delegate,
@@ -1579,7 +1579,7 @@ def mint_to_checked(params: Union[MintToCheckedParams, models.MintToCheckedParam
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> dest, mint, mint_authority, token = pubkeys
-        >>> params = MintToCheckedParams(
+        >>> params = models.MintToCheckedParams(
         ...     amount=123,
         ...     decimals=6,
         ...     dest=dest,
@@ -1610,7 +1610,7 @@ def burn_checked(params: Union[BurnCheckedParams, models.BurnCheckedParams]) -> 
         >>> leading_zeros = [0] * 31
         >>> pubkeys = [Pubkey(leading_zeros + [i + 1]) for i in range(4)]
         >>> account, mint, owner, token = pubkeys
-        >>> params = BurnCheckedParams(
+        >>> params = models.BurnCheckedParams(
         ...     amount=123, account=account, decimals=6, mint=mint, owner=owner, program_id=token,
         ... )
         >>> type(burn_checked(params))
@@ -1634,7 +1634,7 @@ def sync_native(params: Union[SyncNativeParams, models.SyncNativeParams]) -> Ins
 
     Example:
         >>> account = Pubkey.default()
-        >>> params = SyncNativeParams(
+        >>> params = models.SyncNativeParams(
         ...     program_id=TOKEN_PROGRAM_ID, account=account,
         ... )
         >>> type(sync_native(params))
