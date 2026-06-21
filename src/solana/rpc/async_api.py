@@ -687,11 +687,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> memcmp_opts = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
+            >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
             >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
-            >>> filters: List[Union[int, types.MemcmpOpts]] = [17, memcmp_opts]
+            >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -719,11 +720,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 Note: an int entry is converted to a `dataSize` filter.
 
         Example:
+            >>> from solana.rpc.models import MemcmpOpts
             >>> from typing import List, Union
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> memcmp_opts = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
+            >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
             >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
-            >>> filters: List[Union[int, types.MemcmpOpts]] = [17, memcmp_opts]
+            >>> filters: List[Union[int, MemcmpOpts]] = [17, memcmp_opts]
             >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
         """  # noqa: E501 # pylint: disable=line-too-long
@@ -1017,7 +1019,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return await self._provider.make_request(body, RequestAirdropResp)
 
-    async def send_raw_transaction(self, txn: bytes, opts: Optional[TxOptsModel] = None) -> SendTransactionResp:
+    async def send_raw_transaction(
+        self, txn: bytes, opts: Optional[Union[types.TxOpts, TxOptsModel]] = None
+    ) -> SendTransactionResp:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1058,7 +1062,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def send_transaction(
         self,
         txn: Union[VersionedTransaction, Transaction],
-        opts: Optional[TxOptsModel] = None,
+        opts: Optional[Union[types.TxOpts, TxOptsModel]] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
 
