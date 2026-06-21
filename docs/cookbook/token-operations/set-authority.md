@@ -16,9 +16,9 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
-from spl.token.instructions import set_authority, SetAuthorityParams
+from spl.token.instructions import set_authority
 from spl.token.constants import TOKEN_PROGRAM_ID
-from spl.token.instructions import AuthorityType
+from spl.token.models import SetAuthorityParams, AuthorityType
 
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")

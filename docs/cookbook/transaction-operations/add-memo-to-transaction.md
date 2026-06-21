@@ -16,7 +16,8 @@ from solders.keypair import Keypair
 from solders.system_program import transfer, TransferParams
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
-from spl.memo.instructions import create_memo, MemoParams
+from spl.memo.instructions import create_memo
+from spl.memo.models import MemoParams
 from solders.pubkey import Pubkey
 
 async def main():

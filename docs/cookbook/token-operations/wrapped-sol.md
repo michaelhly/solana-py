@@ -18,9 +18,13 @@ from solders.message import MessageV0
 from solders.system_program import transfer, TransferParams
 from spl.token.instructions import (
     create_associated_token_account,
-    sync_native, SyncNativeParams,
-    close_account, CloseAccountParams,
+    sync_native,
+    close_account,
     get_associated_token_address
+)
+from spl.token.models import (
+    SyncNativeParams,
+    CloseAccountParams,
 )
 from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
 from solders.pubkey import Pubkey
