@@ -2,14 +2,17 @@
 
 import base64
 
+import pytest
 from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.message import Message
 from solders.pubkey import Pubkey
 import solana.vote_program as vp
+from solana import models
 
 
-def test_withdraw_from_vote_account():
+@pytest.mark.parametrize("params_cls", [vp.WithdrawFromVoteAccountParams, models.WithdrawFromVoteAccountParams])
+def test_withdraw_from_vote_account(params_cls):
     withdrawer_keypair = Keypair.from_bytes(
         [
             134,
@@ -84,7 +87,7 @@ def test_withdraw_from_vote_account():
     msg = Message.new_with_blockhash(
         [
             vp.withdraw_from_vote_account(
-                vp.WithdrawFromVoteAccountParams(
+                params_cls(
                     vote_account_from_pubkey=vote_account_pubkey,
                     to_pubkey=receiver_account_pubkey,
                     withdrawer=withdrawer_keypair.pubkey(),
