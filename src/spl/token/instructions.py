@@ -994,9 +994,7 @@ def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey])
         keys.append(AccountMeta(pubkey=owner, is_signer=True, is_writable=False))
 
 
-def __burn_instruction(
-    params: Union[models.BurnParams, models.BurnCheckedParams], data: Any
-) -> Instruction:
+def __burn_instruction(params: Union[models.BurnParams, models.BurnCheckedParams], data: Any) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
@@ -1028,9 +1026,7 @@ def __freeze_or_thaw_instruction(
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def __mint_to_instruction(
-    params: Union[models.MintToParams, models.MintToCheckedParams], data: Any
-) -> Instruction:
+def __mint_to_instruction(params: Union[models.MintToParams, models.MintToCheckedParams], data: Any) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),
