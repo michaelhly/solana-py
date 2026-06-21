@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from enum import IntEnum
 from typing import Any, List, NamedTuple, Optional, Union
 from typing_extensions import deprecated
 
@@ -12,21 +11,12 @@ from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.sysvar import RENT
 
 from solana.utils.validate import validate_instruction_keys, validate_instruction_type
+from spl.token import models
 from spl.token._layouts import INSTRUCTIONS_LAYOUT, InstructionType, TransferFeeInstructionType
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID
 
-
-class AuthorityType(IntEnum):
-    """Specifies the authority type for SetAuthority instructions."""
-
-    MINT_TOKENS = 0
-    """"Authority to mint new tokens."""
-    FREEZE_ACCOUNT = 1
-    """Authority to freeze any account associated with the Mint."""
-    ACCOUNT_OWNER = 2
-    """Owner of a given token account."""
-    CLOSE_ACCOUNT = 3
-    """Authority to close a token account."""
+# Re-exported for backwards compatibility; the canonical definition now lives in spl.token.models.
+from spl.token.models import AuthorityType
 
 
 # Instruction Params
@@ -497,7 +487,7 @@ def __parse_and_validate_instruction(
     return data
 
 
-def decode_initialize_mint(instruction: Instruction) -> token_models.InitializeMintParams:
+def decode_initialize_mint(instruction: Instruction) -> models.InitializeMintParams:
     """Decode an initialize mint token instruction and retrieve the instruction params.
 
     Args:
@@ -507,7 +497,7 @@ def decode_initialize_mint(instruction: Instruction) -> token_models.InitializeM
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.INITIALIZE_MINT)
-    return token_models.InitializeMintParams(
+    return models.InitializeMintParams(
         decimals=parsed_data.args.decimals,
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
@@ -518,10 +508,10 @@ def decode_initialize_mint(instruction: Instruction) -> token_models.InitializeM
     )
 
 
-def decode_initialize_mint2(instruction: Instruction) -> token_models.InitializeMint2Params:
+def decode_initialize_mint2(instruction: Instruction) -> models.InitializeMint2Params:
     """Decode an initialize mint2 token instruction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_MINT2)
-    return token_models.InitializeMint2Params(
+    return models.InitializeMint2Params(
         decimals=parsed_data.args.decimals,
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
@@ -532,7 +522,7 @@ def decode_initialize_mint2(instruction: Instruction) -> token_models.Initialize
     )
 
 
-def decode_initialize_account(instruction: Instruction) -> token_models.InitializeAccountParams:
+def decode_initialize_account(instruction: Instruction) -> models.InitializeAccountParams:
     """Decode an initialize account token instruction and retrieve the instruction params.
 
     Args:
@@ -542,7 +532,7 @@ def decode_initialize_account(instruction: Instruction) -> token_models.Initiali
         The decoded instruction.
     """
     _ = __parse_and_validate_instruction(instruction, 4, InstructionType.INITIALIZE_ACCOUNT)
-    return token_models.InitializeAccountParams(
+    return models.InitializeAccountParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         mint=instruction.accounts[1].pubkey,
@@ -550,10 +540,10 @@ def decode_initialize_account(instruction: Instruction) -> token_models.Initiali
     )
 
 
-def decode_initialize_account2(instruction: Instruction) -> token_models.InitializeAccount2Params:
+def decode_initialize_account2(instruction: Instruction) -> models.InitializeAccount2Params:
     """Decode an initialize account2 token instruction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.INITIALIZE_ACCOUNT2)
-    return token_models.InitializeAccount2Params(
+    return models.InitializeAccount2Params(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         mint=instruction.accounts[1].pubkey,
@@ -561,10 +551,10 @@ def decode_initialize_account2(instruction: Instruction) -> token_models.Initial
     )
 
 
-def decode_initialize_account3(instruction: Instruction) -> token_models.InitializeAccount3Params:
+def decode_initialize_account3(instruction: Instruction) -> models.InitializeAccount3Params:
     """Decode an initialize account3 token instruction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.INITIALIZE_ACCOUNT3)
-    return token_models.InitializeAccount3Params(
+    return models.InitializeAccount3Params(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         mint=instruction.accounts[1].pubkey,
@@ -572,7 +562,7 @@ def decode_initialize_account3(instruction: Instruction) -> token_models.Initial
     )
 
 
-def decode_initialize_multisig(instruction: Instruction) -> token_models.InitializeMultisigParams:
+def decode_initialize_multisig(instruction: Instruction) -> models.InitializeMultisigParams:
     """Decode an initialize multisig account token instruction and retrieve the instruction params.
 
     Args:
@@ -584,7 +574,7 @@ def decode_initialize_multisig(instruction: Instruction) -> token_models.Initial
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.INITIALIZE_MULTISIG)
     num_signers = parsed_data.args.m
     validate_instruction_keys(instruction, 2 + num_signers)
-    return token_models.InitializeMultisigParams(
+    return models.InitializeMultisigParams(
         program_id=instruction.program_id,
         multisig=instruction.accounts[0].pubkey,
         signers=[signer.pubkey for signer in instruction.accounts[-num_signers:]],
@@ -592,13 +582,13 @@ def decode_initialize_multisig(instruction: Instruction) -> token_models.Initial
     )
 
 
-def decode_initialize_multisig2(instruction: Instruction) -> token_models.InitializeMultisig2Params:
+def decode_initialize_multisig2(instruction: Instruction) -> models.InitializeMultisig2Params:
     """Decode an initialize multisig2 account token instruction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_MULTISIG2)
     num_signers = parsed_data.args.m
     validate_instruction_keys(instruction, 1 + num_signers)
     signers: List[Pubkey] = [signer.pubkey for signer in instruction.accounts[-num_signers:]] if num_signers else []
-    return token_models.InitializeMultisig2Params(
+    return models.InitializeMultisig2Params(
         program_id=instruction.program_id,
         multisig=instruction.accounts[0].pubkey,
         signers=signers,
@@ -606,7 +596,7 @@ def decode_initialize_multisig2(instruction: Instruction) -> token_models.Initia
     )
 
 
-def decode_transfer(instruction: Instruction) -> token_models.TransferParams:
+def decode_transfer(instruction: Instruction) -> models.TransferParams:
     """Decode a transfer token transaction and retrieve the instruction params.
 
     Args:
@@ -616,7 +606,7 @@ def decode_transfer(instruction: Instruction) -> token_models.TransferParams:
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.TRANSFER)
-    return token_models.TransferParams(
+    return models.TransferParams(
         program_id=instruction.program_id,
         source=instruction.accounts[0].pubkey,
         dest=instruction.accounts[1].pubkey,
@@ -626,7 +616,7 @@ def decode_transfer(instruction: Instruction) -> token_models.TransferParams:
     )
 
 
-def decode_approve(instruction: Instruction) -> token_models.ApproveParams:
+def decode_approve(instruction: Instruction) -> models.ApproveParams:
     """Decode a approve token transaction and retrieve the instruction params.
 
     Args:
@@ -636,7 +626,7 @@ def decode_approve(instruction: Instruction) -> token_models.ApproveParams:
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.APPROVE)
-    return token_models.ApproveParams(
+    return models.ApproveParams(
         program_id=instruction.program_id,
         source=instruction.accounts[0].pubkey,
         delegate=instruction.accounts[1].pubkey,
@@ -646,7 +636,7 @@ def decode_approve(instruction: Instruction) -> token_models.ApproveParams:
     )
 
 
-def decode_revoke(instruction: Instruction) -> token_models.RevokeParams:
+def decode_revoke(instruction: Instruction) -> models.RevokeParams:
     """Decode a revoke token transaction and retrieve the instruction params.
 
     Args:
@@ -656,7 +646,7 @@ def decode_revoke(instruction: Instruction) -> token_models.RevokeParams:
         The decoded instruction.
     """
     _ = __parse_and_validate_instruction(instruction, 2, InstructionType.REVOKE)
-    return token_models.RevokeParams(
+    return models.RevokeParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         owner=instruction.accounts[1].pubkey,
@@ -664,7 +654,7 @@ def decode_revoke(instruction: Instruction) -> token_models.RevokeParams:
     )
 
 
-def decode_set_authority(instruction: Instruction) -> token_models.SetAuthorityParams:
+def decode_set_authority(instruction: Instruction) -> models.SetAuthorityParams:
     """Decode a set authority token transaction and retrieve the instruction params.
 
     Args:
@@ -674,7 +664,7 @@ def decode_set_authority(instruction: Instruction) -> token_models.SetAuthorityP
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.SET_AUTHORITY)
-    return token_models.SetAuthorityParams(
+    return models.SetAuthorityParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         authority=AuthorityType(parsed_data.args.authority_type),
@@ -684,7 +674,7 @@ def decode_set_authority(instruction: Instruction) -> token_models.SetAuthorityP
     )
 
 
-def decode_mint_to(instruction: Instruction) -> token_models.MintToParams:
+def decode_mint_to(instruction: Instruction) -> models.MintToParams:
     """Decode a mint to token transaction and retrieve the instruction params.
 
     Args:
@@ -694,7 +684,7 @@ def decode_mint_to(instruction: Instruction) -> token_models.MintToParams:
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MINT_TO)
-    return token_models.MintToParams(
+    return models.MintToParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         mint=instruction.accounts[0].pubkey,
@@ -704,7 +694,7 @@ def decode_mint_to(instruction: Instruction) -> token_models.MintToParams:
     )
 
 
-def decode_burn(instruction: Instruction) -> token_models.BurnParams:
+def decode_burn(instruction: Instruction) -> models.BurnParams:
     """Decode a burn token transaction and retrieve the instruction params.
 
     Args:
@@ -714,7 +704,7 @@ def decode_burn(instruction: Instruction) -> token_models.BurnParams:
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.BURN)
-    return token_models.BurnParams(
+    return models.BurnParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         account=instruction.accounts[0].pubkey,
@@ -724,7 +714,7 @@ def decode_burn(instruction: Instruction) -> token_models.BurnParams:
     )
 
 
-def decode_close_account(instruction: Instruction) -> token_models.CloseAccountParams:
+def decode_close_account(instruction: Instruction) -> models.CloseAccountParams:
     """Decode a close account token transaction and retrieve the instruction params.
 
     Args:
@@ -734,7 +724,7 @@ def decode_close_account(instruction: Instruction) -> token_models.CloseAccountP
         The decoded instruction.
     """
     _ = __parse_and_validate_instruction(instruction, 3, InstructionType.CLOSE_ACCOUNT)
-    return token_models.CloseAccountParams(
+    return models.CloseAccountParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         dest=instruction.accounts[1].pubkey,
@@ -743,7 +733,7 @@ def decode_close_account(instruction: Instruction) -> token_models.CloseAccountP
     )
 
 
-def decode_freeze_account(instruction: Instruction) -> token_models.FreezeAccountParams:
+def decode_freeze_account(instruction: Instruction) -> models.FreezeAccountParams:
     """Decode a freeze account token transaction and retrieve the instruction params.
 
     Args:
@@ -753,7 +743,7 @@ def decode_freeze_account(instruction: Instruction) -> token_models.FreezeAccoun
         The decoded instruction.
     """
     _ = __parse_and_validate_instruction(instruction, 3, InstructionType.FREEZE_ACCOUNT)
-    return token_models.FreezeAccountParams(
+    return models.FreezeAccountParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         mint=instruction.accounts[1].pubkey,
@@ -762,7 +752,7 @@ def decode_freeze_account(instruction: Instruction) -> token_models.FreezeAccoun
     )
 
 
-def decode_thaw_account(instruction: Instruction) -> token_models.ThawAccountParams:
+def decode_thaw_account(instruction: Instruction) -> models.ThawAccountParams:
     """Decode a thaw account token transaction and retrieve the instruction params.
 
     Args:
@@ -772,7 +762,7 @@ def decode_thaw_account(instruction: Instruction) -> token_models.ThawAccountPar
         The decoded instruction.
     """
     _ = __parse_and_validate_instruction(instruction, 3, InstructionType.THAW_ACCOUNT)
-    return token_models.ThawAccountParams(
+    return models.ThawAccountParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
         mint=instruction.accounts[1].pubkey,
@@ -781,7 +771,7 @@ def decode_thaw_account(instruction: Instruction) -> token_models.ThawAccountPar
     )
 
 
-def decode_transfer_checked(instruction: Instruction) -> token_models.TransferCheckedParams:
+def decode_transfer_checked(instruction: Instruction) -> models.TransferCheckedParams:
     """Decode a transfer_checked token transaction and retrieve the instruction params.
 
     Args:
@@ -791,7 +781,7 @@ def decode_transfer_checked(instruction: Instruction) -> token_models.TransferCh
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.TRANSFER2)
-    return token_models.TransferCheckedParams(
+    return models.TransferCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -803,7 +793,7 @@ def decode_transfer_checked(instruction: Instruction) -> token_models.TransferCh
     )
 
 
-def decode_approve_checked(instruction: Instruction) -> token_models.ApproveCheckedParams:
+def decode_approve_checked(instruction: Instruction) -> models.ApproveCheckedParams:
     """Decode a approve_checked token transaction and retrieve the instruction params.
 
     Args:
@@ -813,7 +803,7 @@ def decode_approve_checked(instruction: Instruction) -> token_models.ApproveChec
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 4, InstructionType.APPROVE2)
-    return token_models.ApproveCheckedParams(
+    return models.ApproveCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -825,7 +815,7 @@ def decode_approve_checked(instruction: Instruction) -> token_models.ApproveChec
     )
 
 
-def decode_mint_to_checked(instruction: Instruction) -> token_models.MintToCheckedParams:
+def decode_mint_to_checked(instruction: Instruction) -> models.MintToCheckedParams:
     """Decode a mintTo2 token transaction and retrieve the instruction params.
 
     Args:
@@ -835,7 +825,7 @@ def decode_mint_to_checked(instruction: Instruction) -> token_models.MintToCheck
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.MINT_TO2)
-    return token_models.MintToCheckedParams(
+    return models.MintToCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -846,7 +836,7 @@ def decode_mint_to_checked(instruction: Instruction) -> token_models.MintToCheck
     )
 
 
-def decode_burn_checked(instruction: Instruction) -> token_models.BurnCheckedParams:
+def decode_burn_checked(instruction: Instruction) -> models.BurnCheckedParams:
     """Decode a burn_checked token transaction and retrieve the instruction params.
 
     Args:
@@ -856,7 +846,7 @@ def decode_burn_checked(instruction: Instruction) -> token_models.BurnCheckedPar
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.BURN2)
-    return token_models.BurnCheckedParams(
+    return models.BurnCheckedParams(
         program_id=instruction.program_id,
         amount=parsed_data.args.amount,
         decimals=parsed_data.args.decimals,
@@ -867,7 +857,7 @@ def decode_burn_checked(instruction: Instruction) -> token_models.BurnCheckedPar
     )
 
 
-def decode_sync_native(instruction: Instruction) -> token_models.SyncNativeParams:
+def decode_sync_native(instruction: Instruction) -> models.SyncNativeParams:
     """Decode a burn_checked token transaction and retrieve the instruction params.
 
     Args:
@@ -876,31 +866,31 @@ def decode_sync_native(instruction: Instruction) -> token_models.SyncNativeParam
     Returns:
         The decoded instruction.
     """
-    return token_models.SyncNativeParams(
+    return models.SyncNativeParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
     )
 
 
-def decode_get_account_data_size(instruction: Instruction) -> token_models.GetAccountDataSizeParams:
+def decode_get_account_data_size(instruction: Instruction) -> models.GetAccountDataSizeParams:
     """Decode a get_account_data_size token transaction and retrieve the instruction params."""
     _ = __parse_and_validate_instruction(instruction, 1, InstructionType.GET_ACCOUNT_DATA_SIZE)
-    return token_models.GetAccountDataSizeParams(
+    return models.GetAccountDataSizeParams(
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
     )
 
 
-def decode_initialize_immutable_owner(instruction: Instruction) -> token_models.InitializeImmutableOwnerParams:
+def decode_initialize_immutable_owner(instruction: Instruction) -> models.InitializeImmutableOwnerParams:
     """Decode an initialize_immutable_owner token transaction and retrieve the instruction params."""
     _ = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_IMMUTABLE_OWNER)
-    return token_models.InitializeImmutableOwnerParams(
+    return models.InitializeImmutableOwnerParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
     )
 
 
-def decode_initialize_transfer_fee_config(instruction: Instruction) -> token_models.InitializeTransferFeeConfigParams:
+def decode_initialize_transfer_fee_config(instruction: Instruction) -> models.InitializeTransferFeeConfigParams:
     """Decode an initialize_transfer_fee_config token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.TRANSFER_FEE_EXTENSION)
     if parsed_data.args.transfer_fee_instruction_type != TransferFeeInstructionType.INITIALIZE_TRANSFER_FEE_CONFIG:
@@ -908,7 +898,7 @@ def decode_initialize_transfer_fee_config(instruction: Instruction) -> token_mod
     args = parsed_data.args.args
     transfer_fee_config_authority = args.transfer_fee_config_authority
     withdraw_withheld_authority = args.withdraw_withheld_authority
-    return token_models.InitializeTransferFeeConfigParams(
+    return models.InitializeTransferFeeConfigParams(
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
         transfer_fee_config_authority=Pubkey(transfer_fee_config_authority.pubkey)
@@ -924,7 +914,7 @@ def decode_initialize_transfer_fee_config(instruction: Instruction) -> token_mod
 
 def decode_withdraw_withheld_tokens_from_accounts(
     instruction: Instruction,
-) -> token_models.WithdrawWithheldTokensFromAccountsParams:
+) -> models.WithdrawWithheldTokensFromAccountsParams:
     """Decode a withdraw_withheld_tokens_from_accounts token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.TRANSFER_FEE_EXTENSION)
     if (
@@ -936,7 +926,7 @@ def decode_withdraw_withheld_tokens_from_accounts(
     validate_instruction_keys(instruction, 3 + num_token_accounts)
     signers = instruction.accounts[3:-num_token_accounts] if num_token_accounts else instruction.accounts[3:]
     sources = instruction.accounts[-num_token_accounts:] if num_token_accounts else []
-    return token_models.WithdrawWithheldTokensFromAccountsParams(
+    return models.WithdrawWithheldTokensFromAccountsParams(
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
         dest=instruction.accounts[1].pubkey,
@@ -948,12 +938,12 @@ def decode_withdraw_withheld_tokens_from_accounts(
 
 def decode_withdraw_withheld_tokens_from_mint(
     instruction: Instruction,
-) -> token_models.WithdrawWithheldTokensFromMintParams:
+) -> models.WithdrawWithheldTokensFromMintParams:
     """Decode a withdraw_withheld_tokens_from_mint token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 3, InstructionType.TRANSFER_FEE_EXTENSION)
     if parsed_data.args.transfer_fee_instruction_type != TransferFeeInstructionType.WITHDRAW_WITHHELD_TOKENS_FROM_MINT:
         raise ValueError("invalid transfer fee instruction type")
-    return token_models.WithdrawWithheldTokensFromMintParams(
+    return models.WithdrawWithheldTokensFromMintParams(
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
         dest=instruction.accounts[1].pubkey,
@@ -962,33 +952,33 @@ def decode_withdraw_withheld_tokens_from_mint(
     )
 
 
-def decode_harvest_withheld_tokens_to_mint(instruction: Instruction) -> token_models.HarvestWithheldTokensToMintParams:
+def decode_harvest_withheld_tokens_to_mint(instruction: Instruction) -> models.HarvestWithheldTokensToMintParams:
     """Decode a harvest_withheld_tokens_to_mint token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.TRANSFER_FEE_EXTENSION)
     if parsed_data.args.transfer_fee_instruction_type != TransferFeeInstructionType.HARVEST_WITHHELD_TOKENS_TO_MINT:
         raise ValueError("invalid transfer fee instruction type")
-    return token_models.HarvestWithheldTokensToMintParams(
+    return models.HarvestWithheldTokensToMintParams(
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
         sources=[source.pubkey for source in instruction.accounts[1:]],
     )
 
 
-def decode_amount_to_ui_amount(instruction: Instruction) -> token_models.AmountToUiAmountParams:
+def decode_amount_to_ui_amount(instruction: Instruction) -> models.AmountToUiAmountParams:
     """Decode an amount_to_ui_amount token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.AMOUNT_TO_UI_AMOUNT)
-    return token_models.AmountToUiAmountParams(
+    return models.AmountToUiAmountParams(
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
         amount=parsed_data.args.amount,
     )
 
 
-def decode_ui_amount_to_amount(instruction: Instruction) -> token_models.UiAmountToAmountParams:
+def decode_ui_amount_to_amount(instruction: Instruction) -> models.UiAmountToAmountParams:
     """Decode a ui_amount_to_amount token transaction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.UI_AMOUNT_TO_AMOUNT)
     ui_amount_bytes: bytes = parsed_data.args.ui_amount
-    return token_models.UiAmountToAmountParams(
+    return models.UiAmountToAmountParams(
         program_id=instruction.program_id,
         mint=instruction.accounts[0].pubkey,
         ui_amount=ui_amount_bytes.decode("utf-8"),
@@ -1005,7 +995,7 @@ def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey])
 
 
 def __burn_instruction(
-    params: Union[token_models.BurnParams, token_models.BurnCheckedParams], data: Any
+    params: Union[models.BurnParams, models.BurnCheckedParams], data: Any
 ) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
@@ -1016,7 +1006,7 @@ def __burn_instruction(
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def __sync_native_instruction(params: token_models.SyncNativeParams, data: Any) -> Instruction:
+def __sync_native_instruction(params: models.SyncNativeParams, data: Any) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
     ]
@@ -1025,7 +1015,7 @@ def __sync_native_instruction(params: token_models.SyncNativeParams, data: Any) 
 
 
 def __freeze_or_thaw_instruction(
-    params: Union[token_models.FreezeAccountParams, token_models.ThawAccountParams],
+    params: Union[models.FreezeAccountParams, models.ThawAccountParams],
     instruction_type: InstructionType,
 ) -> Instruction:
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": instruction_type, "args": None})
@@ -1039,7 +1029,7 @@ def __freeze_or_thaw_instruction(
 
 
 def __mint_to_instruction(
-    params: Union[token_models.MintToParams, token_models.MintToCheckedParams], data: Any
+    params: Union[models.MintToParams, models.MintToCheckedParams], data: Any
 ) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
@@ -1050,7 +1040,7 @@ def __mint_to_instruction(
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def initialize_mint(params: Union[InitializeMintParams, token_models.InitializeMintParams]) -> Instruction:
+def initialize_mint(params: Union[InitializeMintParams, models.InitializeMintParams]) -> Instruction:
     """Creates a transaction instruction to initialize a new mint newly.
 
     This instruction requires no signers and MUST be included within the same Transaction as
@@ -1076,7 +1066,7 @@ def initialize_mint(params: Union[InitializeMintParams, token_models.InitializeM
     Returns:
         The instruction to initialize the mint.
     """
-    params = token_models.InitializeMintParams.from_namedtuple(params)
+    params = models.InitializeMintParams.from_namedtuple(params)
     freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         {
@@ -1099,9 +1089,9 @@ def initialize_mint(params: Union[InitializeMintParams, token_models.InitializeM
     )
 
 
-def initialize_mint2(params: Union[InitializeMint2Params, token_models.InitializeMint2Params]) -> Instruction:
+def initialize_mint2(params: Union[InitializeMint2Params, models.InitializeMint2Params]) -> Instruction:
     """Creates a transaction instruction to initialize a new mint without providing the Rent sysvar."""
-    params = token_models.InitializeMint2Params.from_namedtuple(params)
+    params = models.InitializeMint2Params.from_namedtuple(params)
     freeze_authority, opt = (params.freeze_authority, 1) if params.freeze_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         {
@@ -1123,7 +1113,7 @@ def initialize_mint2(params: Union[InitializeMint2Params, token_models.Initializ
     )
 
 
-def initialize_account(params: Union[InitializeAccountParams, token_models.InitializeAccountParams]) -> Instruction:
+def initialize_account(params: Union[InitializeAccountParams, models.InitializeAccountParams]) -> Instruction:
     """Creates a transaction instruction to initialize a new account to hold tokens.
 
     This instruction requires no signers and MUST be included within the same Transaction as
@@ -1146,7 +1136,7 @@ def initialize_account(params: Union[InitializeAccountParams, token_models.Initi
     Returns:
         The instruction to initialize the account.
     """
-    params = token_models.InitializeAccountParams.from_namedtuple(params)
+    params = models.InitializeAccountParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.INITIALIZE_ACCOUNT, "args": None})
     return Instruction(
         accounts=[
@@ -1160,9 +1150,9 @@ def initialize_account(params: Union[InitializeAccountParams, token_models.Initi
     )
 
 
-def initialize_account2(params: Union[InitializeAccount2Params, token_models.InitializeAccount2Params]) -> Instruction:
+def initialize_account2(params: Union[InitializeAccount2Params, models.InitializeAccount2Params]) -> Instruction:
     """Creates a transaction instruction to initialize a new account with owner passed in data."""
-    params = token_models.InitializeAccount2Params.from_namedtuple(params)
+    params = models.InitializeAccount2Params.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.INITIALIZE_ACCOUNT2,
@@ -1180,9 +1170,9 @@ def initialize_account2(params: Union[InitializeAccount2Params, token_models.Ini
     )
 
 
-def initialize_account3(params: Union[InitializeAccount3Params, token_models.InitializeAccount3Params]) -> Instruction:
+def initialize_account3(params: Union[InitializeAccount3Params, models.InitializeAccount3Params]) -> Instruction:
     """Creates a transaction instruction to initialize a new account with owner passed in data and no Rent sysvar."""
-    params = token_models.InitializeAccount3Params.from_namedtuple(params)
+    params = models.InitializeAccount3Params.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.INITIALIZE_ACCOUNT3,
@@ -1199,7 +1189,7 @@ def initialize_account3(params: Union[InitializeAccount3Params, token_models.Ini
     )
 
 
-def initialize_multisig(params: Union[InitializeMultisigParams, token_models.InitializeMultisigParams]) -> Instruction:
+def initialize_multisig(params: Union[InitializeMultisigParams, models.InitializeMultisigParams]) -> Instruction:
     """Creates a transaction instruction to initialize a multisignature account with N provided signers.
 
     This instruction requires no signers and MUST be included within the same Transaction as
@@ -1223,7 +1213,7 @@ def initialize_multisig(params: Union[InitializeMultisigParams, token_models.Ini
     Returns:
         The instruction to initialize the multisig.
     """
-    params = token_models.InitializeMultisigParams.from_namedtuple(params)
+    params = models.InitializeMultisigParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.INITIALIZE_MULTISIG,
@@ -1241,10 +1231,10 @@ def initialize_multisig(params: Union[InitializeMultisigParams, token_models.Ini
 
 
 def initialize_multisig2(
-    params: Union[InitializeMultisig2Params, token_models.InitializeMultisig2Params],
+    params: Union[InitializeMultisig2Params, models.InitializeMultisig2Params],
 ) -> Instruction:
     """Creates a transaction instruction to initialize a multisignature account without providing the Rent sysvar."""
-    params = token_models.InitializeMultisig2Params.from_namedtuple(params)
+    params = models.InitializeMultisig2Params.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.INITIALIZE_MULTISIG2,
@@ -1259,7 +1249,7 @@ def initialize_multisig2(
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def transfer(params: Union[TransferParams, token_models.TransferParams]) -> Instruction:
+def transfer(params: Union[TransferParams, models.TransferParams]) -> Instruction:
     """Creates a transaction instruction to transfers tokens from one account to another.
 
     Either directly or via a delegate.
@@ -1281,7 +1271,7 @@ def transfer(params: Union[TransferParams, token_models.TransferParams]) -> Inst
     Returns:
         The transfer instruction.
     """
-    params = token_models.TransferParams.from_namedtuple(params)
+    params = models.TransferParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.TRANSFER,
@@ -1297,7 +1287,7 @@ def transfer(params: Union[TransferParams, token_models.TransferParams]) -> Inst
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def approve(params: Union[ApproveParams, token_models.ApproveParams]) -> Instruction:
+def approve(params: Union[ApproveParams, models.ApproveParams]) -> Instruction:
     """Creates a transaction instruction to approve a delegate.
 
     Example:
@@ -1317,7 +1307,7 @@ def approve(params: Union[ApproveParams, token_models.ApproveParams]) -> Instruc
     Returns:
         The approve instruction.
     """
-    params = token_models.ApproveParams.from_namedtuple(params)
+    params = models.ApproveParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.APPROVE, "args": {"amount": params.amount}})
     keys = [
         AccountMeta(pubkey=params.source, is_signer=False, is_writable=True),
@@ -1328,7 +1318,7 @@ def approve(params: Union[ApproveParams, token_models.ApproveParams]) -> Instruc
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def revoke(params: Union[RevokeParams, token_models.RevokeParams]) -> Instruction:
+def revoke(params: Union[RevokeParams, models.RevokeParams]) -> Instruction:
     """Creates a transaction instruction that revokes delegate authority for a given account.
 
     Example:
@@ -1344,7 +1334,7 @@ def revoke(params: Union[RevokeParams, token_models.RevokeParams]) -> Instructio
     Returns:
         The revoke instruction.
     """
-    params = token_models.RevokeParams.from_namedtuple(params)
+    params = models.RevokeParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.REVOKE, "args": None})
     keys = [AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)]
     __add_signers(keys, params.owner, params.signers)
@@ -1352,7 +1342,7 @@ def revoke(params: Union[RevokeParams, token_models.RevokeParams]) -> Instructio
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def set_authority(params: Union[SetAuthorityParams, token_models.SetAuthorityParams]) -> Instruction:
+def set_authority(params: Union[SetAuthorityParams, models.SetAuthorityParams]) -> Instruction:
     """Creates a transaction instruction to sets a new authority of a mint or account.
 
     Example:
@@ -1372,7 +1362,7 @@ def set_authority(params: Union[SetAuthorityParams, token_models.SetAuthorityPar
     Returns:
         The set authority instruction.
     """
-    params = token_models.SetAuthorityParams.from_namedtuple(params)
+    params = models.SetAuthorityParams.from_namedtuple(params)
     new_authority, opt = (params.new_authority, 1) if params.new_authority else (Pubkey([0] * 31 + [0]), 0)
     data = INSTRUCTIONS_LAYOUT.build(
         {
@@ -1390,7 +1380,7 @@ def set_authority(params: Union[SetAuthorityParams, token_models.SetAuthorityPar
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def mint_to(params: Union[MintToParams, token_models.MintToParams]) -> Instruction:
+def mint_to(params: Union[MintToParams, models.MintToParams]) -> Instruction:
     """Creates a transaction instruction to mint new tokens to an account.
 
     The native mint does not support minting.
@@ -1412,12 +1402,12 @@ def mint_to(params: Union[MintToParams, token_models.MintToParams]) -> Instructi
     Returns:
         The mint-to instruction.
     """
-    params = token_models.MintToParams.from_namedtuple(params)
+    params = models.MintToParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.MINT_TO, "args": {"amount": params.amount}})
     return __mint_to_instruction(params, data)
 
 
-def burn(params: Union[BurnParams, token_models.BurnParams]) -> Instruction:
+def burn(params: Union[BurnParams, models.BurnParams]) -> Instruction:
     """Creates a transaction instruction to burns tokens by removing them from an account.
 
     Example:
@@ -1433,12 +1423,12 @@ def burn(params: Union[BurnParams, token_models.BurnParams]) -> Instruction:
     Returns:
         The burn instruction.
     """
-    params = token_models.BurnParams.from_namedtuple(params)
+    params = models.BurnParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.BURN, "args": {"amount": params.amount}})
     return __burn_instruction(params, data)
 
 
-def close_account(params: Union[CloseAccountParams, token_models.CloseAccountParams]) -> Instruction:
+def close_account(params: Union[CloseAccountParams, models.CloseAccountParams]) -> Instruction:
     """Creates a transaction instruction to close an account by transferring all its SOL to the destination account.
 
     Non-native accounts may only be closed if its token amount is zero.
@@ -1455,7 +1445,7 @@ def close_account(params: Union[CloseAccountParams, token_models.CloseAccountPar
     Returns:
         The close-account instruction.
     """
-    params = token_models.CloseAccountParams.from_namedtuple(params)
+    params = models.CloseAccountParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.CLOSE_ACCOUNT, "args": None})
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
@@ -1466,7 +1456,7 @@ def close_account(params: Union[CloseAccountParams, token_models.CloseAccountPar
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def freeze_account(params: Union[FreezeAccountParams, token_models.FreezeAccountParams]) -> Instruction:
+def freeze_account(params: Union[FreezeAccountParams, models.FreezeAccountParams]) -> Instruction:
     """Creates a transaction instruction to freeze an initialized account using the mint's freeze_authority (if set).
 
     Example:
@@ -1481,11 +1471,11 @@ def freeze_account(params: Union[FreezeAccountParams, token_models.FreezeAccount
     Returns:
         The freeze-account instruction.
     """
-    params = token_models.FreezeAccountParams.from_namedtuple(params)
+    params = models.FreezeAccountParams.from_namedtuple(params)
     return __freeze_or_thaw_instruction(params, InstructionType.FREEZE_ACCOUNT)
 
 
-def thaw_account(params: Union[ThawAccountParams, token_models.ThawAccountParams]) -> Instruction:
+def thaw_account(params: Union[ThawAccountParams, models.ThawAccountParams]) -> Instruction:
     """Creates a transaction instruction to thaw a frozen account using the Mint's freeze_authority (if set).
 
     Example:
@@ -1500,11 +1490,11 @@ def thaw_account(params: Union[ThawAccountParams, token_models.ThawAccountParams
     Returns:
         The thaw-account instruction.
     """
-    params = token_models.ThawAccountParams.from_namedtuple(params)
+    params = models.ThawAccountParams.from_namedtuple(params)
     return __freeze_or_thaw_instruction(params, InstructionType.THAW_ACCOUNT)
 
 
-def transfer_checked(params: Union[TransferCheckedParams, token_models.TransferCheckedParams]) -> Instruction:
+def transfer_checked(params: Union[TransferCheckedParams, models.TransferCheckedParams]) -> Instruction:
     """This instruction differs from `transfer` in that the token mint and decimals value is asserted by the caller.
 
     Example:
@@ -1526,7 +1516,7 @@ def transfer_checked(params: Union[TransferCheckedParams, token_models.TransferC
     Returns:
         The transfer-checked instruction.
     """
-    params = token_models.TransferCheckedParams.from_namedtuple(params)
+    params = models.TransferCheckedParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.TRANSFER2,
@@ -1543,7 +1533,7 @@ def transfer_checked(params: Union[TransferCheckedParams, token_models.TransferC
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def approve_checked(params: Union[ApproveCheckedParams, token_models.ApproveCheckedParams]) -> Instruction:
+def approve_checked(params: Union[ApproveCheckedParams, models.ApproveCheckedParams]) -> Instruction:
     """This instruction differs from `approve` in that the token mint and decimals value is asserted by the caller.
 
     Example:
@@ -1565,7 +1555,7 @@ def approve_checked(params: Union[ApproveCheckedParams, token_models.ApproveChec
     Returns:
         The approve-checked instruction.
     """
-    params = token_models.ApproveCheckedParams.from_namedtuple(params)
+    params = models.ApproveCheckedParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.APPROVE2,
@@ -1582,7 +1572,7 @@ def approve_checked(params: Union[ApproveCheckedParams, token_models.ApproveChec
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def mint_to_checked(params: Union[MintToCheckedParams, token_models.MintToCheckedParams]) -> Instruction:
+def mint_to_checked(params: Union[MintToCheckedParams, models.MintToCheckedParams]) -> Instruction:
     """This instruction differs from `mint_to` in that the decimals value is asserted by the caller.
 
     Example:
@@ -1603,7 +1593,7 @@ def mint_to_checked(params: Union[MintToCheckedParams, token_models.MintToChecke
     Returns:
         The mint-to-checked instruction.
     """
-    params = token_models.MintToCheckedParams.from_namedtuple(params)
+    params = models.MintToCheckedParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.MINT_TO2,
@@ -1613,7 +1603,7 @@ def mint_to_checked(params: Union[MintToCheckedParams, token_models.MintToChecke
     return __mint_to_instruction(params, data)
 
 
-def burn_checked(params: Union[BurnCheckedParams, token_models.BurnCheckedParams]) -> Instruction:
+def burn_checked(params: Union[BurnCheckedParams, models.BurnCheckedParams]) -> Instruction:
     """This instruction differs from `burn` in that the decimals value is asserted by the caller.
 
     Example:
@@ -1629,7 +1619,7 @@ def burn_checked(params: Union[BurnCheckedParams, token_models.BurnCheckedParams
     Returns:
         The burn-checked instruction.
     """
-    params = token_models.BurnCheckedParams.from_namedtuple(params)
+    params = models.BurnCheckedParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.BURN2,
@@ -1639,7 +1629,7 @@ def burn_checked(params: Union[BurnCheckedParams, token_models.BurnCheckedParams
     return __burn_instruction(params, data)
 
 
-def sync_native(params: Union[SyncNativeParams, token_models.SyncNativeParams]) -> Instruction:
+def sync_native(params: Union[SyncNativeParams, models.SyncNativeParams]) -> Instruction:
     """Syncs the amount field with the number of lamports of the account.
 
     Example:
@@ -1653,7 +1643,7 @@ def sync_native(params: Union[SyncNativeParams, token_models.SyncNativeParams]) 
     Returns:
         The sync-native instruction.
     """
-    params = token_models.SyncNativeParams.from_namedtuple(params)
+    params = models.SyncNativeParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.SYNC_NATIVE,
@@ -1664,10 +1654,10 @@ def sync_native(params: Union[SyncNativeParams, token_models.SyncNativeParams]) 
 
 
 def get_account_data_size(
-    params: Union[GetAccountDataSizeParams, token_models.GetAccountDataSizeParams],
+    params: Union[GetAccountDataSizeParams, models.GetAccountDataSizeParams],
 ) -> Instruction:
     """Gets the required size of an account for the given mint as a little-endian u64."""
-    params = token_models.GetAccountDataSizeParams.from_namedtuple(params)
+    params = models.GetAccountDataSizeParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.GET_ACCOUNT_DATA_SIZE, "args": None})
     return Instruction(
         accounts=[AccountMeta(pubkey=params.mint, is_signer=False, is_writable=False)],
@@ -1677,10 +1667,10 @@ def get_account_data_size(
 
 
 def initialize_immutable_owner(
-    params: Union[InitializeImmutableOwnerParams, token_models.InitializeImmutableOwnerParams],
+    params: Union[InitializeImmutableOwnerParams, models.InitializeImmutableOwnerParams],
 ) -> Instruction:
     """Initializes the Immutable Owner extension for a token account."""
-    params = token_models.InitializeImmutableOwnerParams.from_namedtuple(params)
+    params = models.InitializeImmutableOwnerParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": InstructionType.INITIALIZE_IMMUTABLE_OWNER, "args": None})
     return Instruction(
         accounts=[AccountMeta(pubkey=params.account, is_signer=False, is_writable=True)],
@@ -1690,10 +1680,10 @@ def initialize_immutable_owner(
 
 
 def initialize_transfer_fee_config(
-    params: Union[InitializeTransferFeeConfigParams, token_models.InitializeTransferFeeConfigParams],
+    params: Union[InitializeTransferFeeConfigParams, models.InitializeTransferFeeConfigParams],
 ) -> Instruction:
     """Initializes the TransferFeeConfig extension for a mint."""
-    params = token_models.InitializeTransferFeeConfigParams.from_namedtuple(params)
+    params = models.InitializeTransferFeeConfigParams.from_namedtuple(params)
     transfer_fee_config_authority = (
         {"option": 1, "pubkey": bytes(params.transfer_fee_config_authority)}
         if params.transfer_fee_config_authority
@@ -1726,10 +1716,10 @@ def initialize_transfer_fee_config(
 
 
 def withdraw_withheld_tokens_from_accounts(
-    params: Union[WithdrawWithheldTokensFromAccountsParams, token_models.WithdrawWithheldTokensFromAccountsParams],
+    params: Union[WithdrawWithheldTokensFromAccountsParams, models.WithdrawWithheldTokensFromAccountsParams],
 ) -> Instruction:
     """Withdraws withheld tokens from token accounts to a fee receiver account."""
-    params = token_models.WithdrawWithheldTokensFromAccountsParams.from_namedtuple(params)
+    params = models.WithdrawWithheldTokensFromAccountsParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.TRANSFER_FEE_EXTENSION,
@@ -1753,10 +1743,10 @@ def withdraw_withheld_tokens_from_accounts(
 
 
 def withdraw_withheld_tokens_from_mint(
-    params: Union[WithdrawWithheldTokensFromMintParams, token_models.WithdrawWithheldTokensFromMintParams],
+    params: Union[WithdrawWithheldTokensFromMintParams, models.WithdrawWithheldTokensFromMintParams],
 ) -> Instruction:
     """Withdraws withheld tokens from a mint to a fee receiver account."""
-    params = token_models.WithdrawWithheldTokensFromMintParams.from_namedtuple(params)
+    params = models.WithdrawWithheldTokensFromMintParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.TRANSFER_FEE_EXTENSION,
@@ -1779,10 +1769,10 @@ def withdraw_withheld_tokens_from_mint(
 
 
 def harvest_withheld_tokens_to_mint(
-    params: Union[HarvestWithheldTokensToMintParams, token_models.HarvestWithheldTokensToMintParams],
+    params: Union[HarvestWithheldTokensToMintParams, models.HarvestWithheldTokensToMintParams],
 ) -> Instruction:
     """Harvests withheld tokens from token accounts to the mint."""
-    params = token_models.HarvestWithheldTokensToMintParams.from_namedtuple(params)
+    params = models.HarvestWithheldTokensToMintParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.TRANSFER_FEE_EXTENSION,
@@ -1801,9 +1791,9 @@ def harvest_withheld_tokens_to_mint(
     )
 
 
-def amount_to_ui_amount(params: Union[AmountToUiAmountParams, token_models.AmountToUiAmountParams]) -> Instruction:
+def amount_to_ui_amount(params: Union[AmountToUiAmountParams, models.AmountToUiAmountParams]) -> Instruction:
     """Converts a raw token amount to a UiAmount string using the given mint."""
-    params = token_models.AmountToUiAmountParams.from_namedtuple(params)
+    params = models.AmountToUiAmountParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {"instruction_type": InstructionType.AMOUNT_TO_UI_AMOUNT, "args": {"amount": params.amount}}
     )
@@ -1814,9 +1804,9 @@ def amount_to_ui_amount(params: Union[AmountToUiAmountParams, token_models.Amoun
     )
 
 
-def ui_amount_to_amount(params: Union[UiAmountToAmountParams, token_models.UiAmountToAmountParams]) -> Instruction:
+def ui_amount_to_amount(params: Union[UiAmountToAmountParams, models.UiAmountToAmountParams]) -> Instruction:
     """Converts a UiAmount string to a raw u64 token amount using the given mint."""
-    params = token_models.UiAmountToAmountParams.from_namedtuple(params)
+    params = models.UiAmountToAmountParams.from_namedtuple(params)
     data = INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.UI_AMOUNT_TO_AMOUNT,
@@ -1828,10 +1818,6 @@ def ui_amount_to_amount(params: Union[UiAmountToAmountParams, token_models.UiAmo
         program_id=params.program_id,
         data=data,
     )
-
-
-# Deferred import to avoid circular import: models.py imports AuthorityType from this module.
-from spl.token import models as token_models  # noqa: E402
 
 
 def get_associated_token_address(owner: Pubkey, mint: Pubkey, token_program_id: Pubkey = TOKEN_PROGRAM_ID) -> Pubkey:
