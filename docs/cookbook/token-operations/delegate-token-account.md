@@ -17,11 +17,16 @@ from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
 from solders.system_program import create_account, CreateAccountParams
 from spl.token.instructions import (
-    initialize_mint, InitializeMintParams,
-    create_associated_token_account, 
-    mint_to_checked, MintToCheckedParams,
-    approve_checked, ApproveCheckedParams,
+    initialize_mint,
+    create_associated_token_account,
+    mint_to_checked,
+    approve_checked,
     get_associated_token_address
+)
+from spl.token.models import (
+    InitializeMintParams,
+    MintToCheckedParams,
+    ApproveCheckedParams,
 )
 from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
 

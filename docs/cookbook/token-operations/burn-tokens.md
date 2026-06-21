@@ -16,7 +16,8 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
-from spl.token.instructions import burn, BurnParams
+from spl.token.instructions import burn
+from spl.token.models import BurnParams
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 async def main():

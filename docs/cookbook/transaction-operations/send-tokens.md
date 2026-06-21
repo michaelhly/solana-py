@@ -16,7 +16,8 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
-from spl.token.instructions import transfer_checked, TransferCheckedParams
+from spl.token.instructions import transfer_checked
+from spl.token.models import TransferCheckedParams
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 async def main():

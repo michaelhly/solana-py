@@ -15,7 +15,8 @@ from solana.rpc.async_api import AsyncClient
 from solders.keypair import Keypair
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
-from spl.token.instructions import initialize_mint, InitializeMintParams
+from spl.token.instructions import initialize_mint
+from spl.token.models import InitializeMintParams
 from spl.token.constants import TOKEN_PROGRAM_ID
 from solders.system_program import create_account, CreateAccountParams
 
