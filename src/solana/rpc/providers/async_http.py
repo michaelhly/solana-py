@@ -102,7 +102,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
             raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
-    async def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
+    async def _make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an async HTTP batch request to an http rpc endpoint."""
         if self._limiter is not None:
             async with self._limiter:
@@ -118,6 +118,23 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
         except (httpx2.RemoteProtocolError, httpx2.ReadError):
             raw_response = await self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
+
+    async def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
+        """Make an async HTTP batch request to an http rpc endpoint.
+
+        .. deprecated::
+            ``make_batch_request_unparsed`` is deprecated and will be removed in a future release.
+            Use individual requests with ``asyncio.gather`` instead.
+            See https://github.com/michaelhly/solana-py/issues/645 for details.
+        """
+        warnings.warn(
+            "make_batch_request_unparsed is deprecated and will be removed in a future release. "
+            "Use individual requests with asyncio.gather instead. "
+            "See https://github.com/michaelhly/solana-py/issues/645 for details.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return await self._make_batch_request_unparsed(reqs)
 
     @overload
     async def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup: ...
@@ -171,7 +188,7 @@ class AsyncHTTPProvider(AsyncBaseProvider, _HTTPProviderCore):
             DeprecationWarning,
             stacklevel=2,
         )
-        raw = await self.make_batch_request_unparsed(reqs)
+        raw = await self._make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
 
     async def __aenter__(self) -> "AsyncHTTPProvider":
