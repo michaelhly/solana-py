@@ -2,14 +2,15 @@
 
 import pytest
 from solders.keypair import Keypair
-from solders.message import Message
+from solders.message import MessageV0
+from solders.transaction import VersionedTransaction
 from solders.transaction_status import ParsedInstruction, UiTransaction
 from spl.memo.constants import MEMO_PROGRAM_ID
-from spl.memo.instructions import MemoParams, create_memo
+from spl.memo.instructions import create_memo
+from spl.memo.models import MemoParams
 
 from solana.rpc.api import Client
 from solana.rpc.commitment import Finalized
-from solders.transaction import Transaction
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
@@ -32,14 +33,24 @@ def test_send_memo_in_transaction(test_http_client: Client):
     # Create transfer tx to add memo to transaction from stubbed sender
     blockhash = test_http_client.get_latest_blockhash().value.blockhash
     ixs = [create_memo(memo_params)]
-    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
-    transfer_tx = Transaction([sender], msg, blockhash)
+    msg = MessageV0.try_compile(
+        payer=sender.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=blockhash,
+    )
+    transfer_tx = VersionedTransaction(msg, [sender])
     resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     txn_id = resp.value
     # Txn needs to be finalized in order to parse the logs.
     test_http_client.confirm_transaction(txn_id, commitment=Finalized)
-    resp2_val = test_http_client.get_transaction(txn_id, commitment=Finalized, encoding="jsonParsed").value
+    resp2_val = test_http_client.get_transaction(
+        txn_id,
+        commitment=Finalized,
+        encoding="jsonParsed",
+        max_supported_transaction_version=0,
+    ).value
     assert resp2_val is not None
     resp2_transaction = resp2_val.transaction
     meta = resp2_transaction.meta

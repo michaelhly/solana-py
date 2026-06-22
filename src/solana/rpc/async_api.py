@@ -6,7 +6,7 @@ import asyncio
 from time import time
 from typing import Dict, List, Optional, Sequence, Union
 
-from solders.message import VersionedMessage
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.requests import GetRecentPrioritizationFees
 from solders.rpc.responses import (
@@ -63,7 +63,7 @@ from solders.rpc.responses import (
     ValidatorExitResp,
 )
 from solders.signature import Signature
-from solders.transaction import Transaction, VersionedTransaction
+from solders.transaction import VersionedTransaction
 
 from solana.rpc import types
 from solana.rpc.models import (
@@ -453,7 +453,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         return await self._provider.make_request(self._get_epoch_schedule, GetEpochScheduleResp)
 
     async def get_fee_for_message(
-        self, message: VersionedMessage, commitment: Optional[Commitment] = None
+        self, message: MessageV0, commitment: Optional[Commitment] = None
     ) -> GetFeeForMessageResp:
         """Returns the fee for a message.
 
@@ -464,12 +464,17 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solders.keypair import Keypair
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solders.message import Message
+            >>> from solders.message import MessageV0
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> msg = Message([transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))])
             >>> solana_client = AsyncClient("http://localhost:8899")
+            >>> msg = MessageV0.try_compile( # doctest: +SKIP
+            ...     payer=sender.pubkey(),
+            ...     instructions=[transfer(TransferParams(
+            ...         from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))],
+            ...     address_lookup_table_accounts=[],
+            ...     recent_blockhash=(await solana_client.get_latest_blockhash()).value.blockhash,
+            ... )
             >>> (await solana_client.get_fee_for_message(msg)).value # doctest: +SKIP
             5000
         """
@@ -1066,7 +1071,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
     async def send_transaction(
         self,
-        txn: Union[VersionedTransaction, Transaction],
+        txn: VersionedTransaction,
         opts: Optional[Union[types.TxOpts, TxOptsModel]] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
@@ -1078,21 +1083,26 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solders.keypair import Keypair
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solders.message import Message
-            >>> from solders.transaction import Transaction
+            >>> from solders.message import MessageV0
+            >>> from solders.transaction import VersionedTransaction
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> ixns = [transfer(TransferParams(
             ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))]
-            >>> msg = Message(ixns, sender.pubkey())
             >>> client = AsyncClient("http://localhost:8899")
-            >>> (await client.send_transaction(Transaction([sender], msg, (await client.get_latest_blockhash()).value.blockhash))) # doctest: +SKIP
-        """  # noqa: E501
+            >>> msg = MessageV0.try_compile( # doctest: +SKIP
+            ...     payer=sender.pubkey(),
+            ...     instructions=ixns,
+            ...     address_lookup_table_accounts=[],
+            ...     recent_blockhash=(await client.get_latest_blockhash()).value.blockhash,
+            ... )
+            >>> (await client.send_transaction(VersionedTransaction(msg, [sender]))) # doctest: +SKIP
+        """
         return await self.send_raw_transaction(bytes(txn), opts=opts)
 
     async def simulate_transaction(
         self,
-        txn: Union[Transaction, VersionedTransaction],
+        txn: VersionedTransaction,
         sig_verify: bool = False,
         commitment: Optional[Commitment] = None,
         replace_recent_blockhash: bool = False,
@@ -1130,7 +1140,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'
             ...     '1851a106901020200010c0200000040420f0000000000'
             ... )
-            >>> tx = Transaction.from_bytes(bytes.fromhex(full_signed_tx_hex))
+            >>> tx = VersionedTransaction.from_bytes(bytes.fromhex(full_signed_tx_hex))
             >>> (await solana_client.simulate_transaction(tx)).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
         """
