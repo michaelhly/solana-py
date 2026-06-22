@@ -3,7 +3,7 @@
 import pytest
 import solders.system_program as sp
 from solders.keypair import Keypair
-from solders.message import MessageV0, Message
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.transaction import VersionedTransaction
@@ -13,7 +13,6 @@ from solana.rpc.api import Client
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.models import DataSliceOpts, TxOpts
-from solders.transaction import Transaction
 from spl.token.constants import WRAPPED_SOL_MINT
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
@@ -106,11 +105,16 @@ def test_send_transaction_and_get_balance(test_http_client: Client):
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
+    msg = MessageV0.try_compile(
+        payer=sender.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=blockhash,
+    )
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction([sender], msg, blockhash)
+    transfer_tx = VersionedTransaction(msg, [sender])
     sim_resp = test_http_client.simulate_transaction(transfer_tx)
     assert_valid_response(sim_resp)
     resp = test_http_client.send_transaction(transfer_tx)
@@ -186,8 +190,13 @@ def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client: Client
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, poor_account.pubkey(), blockhash)
-    transfer_tx = Transaction([poor_account], msg, blockhash)
+    msg = MessageV0.try_compile(
+        payer=poor_account.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=blockhash,
+    )
+    transfer_tx = VersionedTransaction(msg, [poor_account])
     with pytest.raises(RPCException) as exc_info:
         test_http_client.send_transaction(transfer_tx)
     err = exc_info.value.args[0]
@@ -216,11 +225,16 @@ def test_send_transaction_prefetched_blockhash(
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, sender.pubkey(), recent_blockhash)
+    msg = MessageV0.try_compile(
+        payer=sender.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=recent_blockhash,
+    )
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction([sender], msg, recent_blockhash)
+    transfer_tx = VersionedTransaction(msg, [sender])
     resp = test_http_client.send_transaction(transfer_tx)
     assert_valid_response(resp)
     # Confirm transaction
@@ -258,11 +272,16 @@ def test_send_raw_transaction_and_get_balance(test_http_client: Client):
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
+    msg = MessageV0.try_compile(
+        payer=sender.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=blockhash,
+    )
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction([sender], msg, blockhash)
+    transfer_tx = VersionedTransaction(msg, [sender])
     # Send raw transaction
     tx_resp = test_http_client.send_raw_transaction(bytes(transfer_tx))
     assert_valid_response(tx_resp)
@@ -304,11 +323,16 @@ def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, sender.pubkey(), blockhash)
+    msg = MessageV0.try_compile(
+        payer=sender.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=blockhash,
+    )
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)
     assert fee_resp.value is not None
-    transfer_tx = Transaction([sender], msg, blockhash)
+    transfer_tx = VersionedTransaction(msg, [sender])
     # Send raw transaction
     resp = test_http_client.send_raw_transaction(
         bytes(transfer_tx),
@@ -347,8 +371,13 @@ def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), recent_blockhash)
-    transfer_tx = Transaction([stubbed_sender], msg, recent_blockhash)
+    msg = MessageV0.try_compile(
+        payer=stubbed_sender.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=recent_blockhash,
+    )
+    transfer_tx = VersionedTransaction(msg, [stubbed_sender])
     # Send raw transaction
     tx_resp = test_http_client.send_raw_transaction(
         bytes(transfer_tx), opts=TxOpts(skip_confirmation=True, skip_preflight=True)
@@ -378,7 +407,12 @@ def test_get_fee_for_transaction(stubbed_sender, stubbed_receiver, test_http_cli
             )
         )
     ]
-    msg = Message.new_with_blockhash(ixs, stubbed_sender.pubkey(), recent_blockhash)
+    msg = MessageV0.try_compile(
+        payer=stubbed_sender.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=recent_blockhash,
+    )
     # get fee for transaction
     fee_resp = test_http_client.get_fee_for_message(msg)
     assert_valid_response(fee_resp)

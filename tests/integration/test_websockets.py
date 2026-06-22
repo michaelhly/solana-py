@@ -7,7 +7,7 @@ import asyncstdlib
 import pytest
 from solders import system_program as sp
 from solders.keypair import Keypair
-from solders.message import Message
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcTransactionLogsFilter,
@@ -38,7 +38,7 @@ from websockets.asyncio.client import ClientConnection
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
 from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
-from solders.transaction import Transaction
+from solders.transaction import VersionedTransaction
 
 from ..utils import AIRDROP_AMOUNT
 
@@ -320,8 +320,13 @@ async def test_program_subscribe(
     program, owned = program_subscribed
     ixs = [sp.assign(sp.AssignParams(pubkey=owned.pubkey(), owner=program.pubkey()))]
     blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
-    msg = Message.new_with_blockhash(ixs, owned.pubkey(), blockhash)
-    transaction = Transaction([owned], msg, blockhash)
+    msg = MessageV0.try_compile(
+        payer=owned.pubkey(),
+        instructions=ixs,
+        address_lookup_table_accounts=[],
+        recent_blockhash=blockhash,
+    )
+    transaction = VersionedTransaction(msg, [owned])
     await test_http_client_async.send_transaction(transaction)
     main_resp = await websocket.recv()
     msg = main_resp[0]

@@ -5,7 +5,7 @@ from __future__ import annotations
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 
-from solders.message import VersionedMessage
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.requests import GetRecentPrioritizationFees
 from solders.rpc.responses import (
@@ -63,7 +63,7 @@ from solders.rpc.responses import (
     ValidatorExitResp,
 )
 from solders.signature import Signature
-from solders.transaction import Transaction, VersionedTransaction
+from solders.transaction import VersionedTransaction
 
 from solana.rpc import types
 from solana.rpc.models import (
@@ -429,9 +429,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         return self._provider.make_request(self._get_epoch_schedule, GetEpochScheduleResp)
 
-    def get_fee_for_message(
-        self, message: VersionedMessage, commitment: Optional[Commitment] = None
-    ) -> GetFeeForMessageResp:
+    def get_fee_for_message(self, message: MessageV0, commitment: Optional[Commitment] = None) -> GetFeeForMessageResp:
         """Returns the fee for a message.
 
         Args:
@@ -441,12 +439,17 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         Example:
             >>> from solders.keypair import Keypair
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solders.message import Message
+            >>> from solders.message import MessageV0
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
-            >>> msg = Message([transfer(TransferParams(
-            ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))])
             >>> solana_client = Client("http://localhost:8899")
+            >>> msg = MessageV0.try_compile(
+            ...     payer=sender.pubkey(),
+            ...     instructions=[transfer(TransferParams(
+            ...         from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))],
+            ...     address_lookup_table_accounts=[],
+            ...     recent_blockhash=solana_client.get_latest_blockhash().value.blockhash,
+            ... )
             >>> solana_client.get_fee_for_message(msg).value # doctest: +SKIP
             5000
         """
@@ -512,7 +515,10 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         return self._provider.make_request(self._get_inflation_rate, GetInflationRateResp)
 
     def get_inflation_reward(
-        self, pubkeys: List[Pubkey], epoch: Optional[int] = None, commitment: Optional[Commitment] = None
+        self,
+        pubkeys: List[Pubkey],
+        epoch: Optional[int] = None,
+        commitment: Optional[Commitment] = None,
     ) -> GetInflationRewardResp:
         """Returns the inflation / staking reward for a list of addresses for an epoch.
 
@@ -1037,7 +1043,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
 
     def send_transaction(
         self,
-        txn: Union[VersionedTransaction, Transaction],
+        txn: VersionedTransaction,
         opts: Optional[Union[types.TxOpts, TxOptsModel]] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
@@ -1051,21 +1057,27 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solders.pubkey import Pubkey
             >>> from solana.rpc.api import Client
             >>> from solders.system_program import TransferParams, transfer
-            >>> from solders.message import Message
+            >>> from solders.message import MessageV0
+            >>> from solders.transaction import VersionedTransaction
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
+            >>> client = Client("http://localhost:8899")
             >>> ixns = [transfer(TransferParams(
             ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))]
-            >>> msg = Message(ixns, sender.pubkey())
-            >>> client = Client("http://localhost:8899")
-            >>> client.send_transaction(Transaction([sender], msg, client.get_latest_blockhash().value.blockhash)) # doctest: +SKIP
-        """  # noqa: E501
+            >>> msg = MessageV0.try_compile(
+            ...     payer=sender.pubkey(),
+            ...     instructions=ixns,
+            ...     address_lookup_table_accounts=[],
+            ...     recent_blockhash=client.get_latest_blockhash().value.blockhash,
+            ... )
+            >>> client.send_transaction(VersionedTransaction(msg, [sender])) # doctest: +SKIP
+        """
         tx_opts = TxOptsModel(preflight_commitment=self._commitment) if opts is None else opts
         return self.send_raw_transaction(bytes(txn), opts=tx_opts)
 
     def simulate_transaction(
         self,
-        txn: Union[Transaction, VersionedTransaction],
+        txn: VersionedTransaction,
         sig_verify: bool = False,
         commitment: Optional[Commitment] = None,
         replace_recent_blockhash: bool = False,
@@ -1095,7 +1107,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
                 accounts field is type string.
 
         Example:
-            >>> from solders.transaction import Transaction
+            >>> from solders.transaction import VersionedTransaction
             >>> solana_client = Client("http://localhost:8899")
             >>> full_signed_tx_hex = (
             ...     '01b3795ccfaac3eee838bb05c3b8284122c18acedcd645c914fe8e178c3b62640d8616d061cc818b26cab8ecf3855ecc'
@@ -1104,7 +1116,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             ...     '000000000000000000000000000000000000000000839618f701ba7e9ba27ae59825dd6d6bb66d14f6d5d0eae215161d7'
             ...     '1851a106901020200010c0200000040420f0000000000'
             ... )
-            >>> tx = Transaction.from_bytes(bytes.fromhex(full_signed_tx_hex))
+            >>> tx = VersionedTransaction.from_bytes(bytes.fromhex(full_signed_tx_hex))
             >>> solana_client.simulate_transaction(tx).value.logs  # doctest: +SKIP
             ['BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success']
         """

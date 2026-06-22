@@ -4,12 +4,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import List, Optional, Tuple, Union, overload
+from typing import List, Optional, Tuple, Union
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
 from solders.hash import Hash as Blockhash
-from solders.message import MessageV0, VersionedMessage
+from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
@@ -78,17 +78,21 @@ from solders.rpc.requests import (
     MinimumLedgerSlot,
     RequestAirdrop,
     SendRawTransaction,
-    SimulateLegacyTransaction,
     SimulateVersionedTransaction,
     ValidatorExit,
 )
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
-from solders.transaction import Transaction, VersionedTransaction
+from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
 from solana.rpc import types
-from solana.rpc.models import DataSliceOpts, MemcmpOpts, TokenAccountOpts, TxOpts as TxOptsModel
+from solana.rpc.models import (
+    DataSliceOpts,
+    MemcmpOpts,
+    TokenAccountOpts,
+    TxOpts as TxOptsModel,
+)
 
 from .commitment import Commitment, Confirmed, Finalized, Processed
 
@@ -261,13 +265,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcContextConfig(commitment=commitment_to_use)
         return GetEpochInfo(config)
 
-    def _get_fee_for_message_body(
-        self, message: VersionedMessage, commitment: Optional[Commitment]
-    ) -> GetFeeForMessage:
+    def _get_fee_for_message_body(self, message: MessageV0, commitment: Optional[Commitment]) -> GetFeeForMessage:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        # weird mypy hack:
-        if isinstance(message, MessageV0):
-            return GetFeeForMessage(message, commitment_to_use)
         return GetFeeForMessage(message, commitment_to_use)
 
     def _get_inflation_governor_body(self, commitment: Optional[Commitment]) -> GetInflationGovernor:
@@ -461,7 +460,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             mint=opts.mint,
             program_id=opts.program_id,
             encoding="jsonParsed",
-            data_slice=None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice),
+            data_slice=(None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice)),
         )
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts_to_use, commitment)
         return GetTokenAccountsByDelegate(pubkey, filter_, config)
@@ -476,7 +475,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             mint=opts.mint,
             program_id=opts.program_id,
             encoding="jsonParsed",
-            data_slice=None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice),
+            data_slice=(None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice)),
         )
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts_to_use, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
@@ -533,20 +532,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     ) -> Tuple[SendTransactionResp, Commitment, Optional[int]]:
         return resp, opts.preflight_commitment, opts.last_valid_block_height
 
-    @overload
-    def _simulate_transaction_body(
-        self,
-        txn: Transaction,
-        sig_verify: bool,
-        commitment: Optional[Commitment],
-        replace_recent_blockhash: bool,
-        min_context_slot: Optional[int],
-        inner_instructions: bool,
-        accounts_addresses: Optional[List[Pubkey]],
-        accounts_encoding: str,
-    ) -> SimulateLegacyTransaction: ...
-
-    @overload
     def _simulate_transaction_body(
         self,
         txn: VersionedTransaction,
@@ -555,21 +540,9 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         replace_recent_blockhash: bool,
         min_context_slot: Optional[int],
         inner_instructions: bool,
-        accounts_addresses: Optional[List[Pubkey]],
-        accounts_encoding: str,
-    ) -> SimulateVersionedTransaction: ...
-
-    def _simulate_transaction_body(
-        self,
-        txn: Union[Transaction, VersionedTransaction],
-        sig_verify: bool,
-        commitment: Optional[Commitment],
-        replace_recent_blockhash: bool,
-        min_context_slot: Optional[int],
-        inner_instructions: bool,
         accounts_addresses: Optional[Sequence[Pubkey]],
         accounts_encoding: str,
-    ) -> Union[SimulateLegacyTransaction, SimulateVersionedTransaction]:
+    ) -> SimulateVersionedTransaction:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         accounts = None
         if accounts_addresses is not None:
@@ -585,8 +558,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             inner_instructions=inner_instructions,
             accounts=accounts,
         )
-        if isinstance(txn, Transaction):
-            return SimulateLegacyTransaction(txn, config)
         return SimulateVersionedTransaction(txn, config)
 
     @staticmethod
