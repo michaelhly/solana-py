@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import List, Optional, Union, cast
 
 from solders.hash import Hash as Blockhash
@@ -16,6 +17,7 @@ from solders.rpc.responses import (
     GetTokenAccountsByOwnerResp,
     SendTransactionResp,
 )
+from typing_extensions import deprecated
 
 import spl.token.instructions as spl_token
 from solana.rpc import types
@@ -27,11 +29,17 @@ from spl.token.core import _TokenCore
 from spl.token.models import AccountInfo, MintInfo
 
 
+@deprecated("AsyncToken is deprecated; use solana.rpc.async_api.AsyncClient and token instructions instead.")
 class AsyncToken(_TokenCore):  # pylint: disable=too-many-public-methods
     """An ERC20-like Token."""
 
     def __init__(self, conn: AsyncClient, pubkey: Pubkey, program_id: Pubkey, payer: Keypair) -> None:
         """Initialize a client to a SPL-Token program."""
+        warnings.warn(
+            "AsyncToken is deprecated; use solana.rpc.async_api.AsyncClient and token instructions instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
         super().__init__(pubkey, program_id, payer)
         self._conn = conn
 
