@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Add deprecated mark to `batch request`
+- Add deprecated marks to `Client`, `Token`, and `AsyncToken`
+
 ## [0.38.0] - 2026-06-21
 
 This release replaces the library's deprecated `NamedTuple` types with Pydantic models. The deprecated types still work, so most code keeps running unchanged — see the migration notes below for the two cases that need attention.
