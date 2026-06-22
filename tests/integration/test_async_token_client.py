@@ -6,12 +6,17 @@ import spl.token._layouts as layouts
 from solders.pubkey import Pubkey
 from spl.token.async_client import AsyncToken
 from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
+from solana.rpc.async_api import AsyncClient
 
 from ..utils import AIRDROP_AMOUNT, OPTS, assert_valid_response
 
 
 @pytest.fixture(scope="module")
-async def test_token(async_stubbed_sender_for_token, freeze_authority, test_http_client_async) -> AsyncToken:
+async def test_token(
+    async_stubbed_sender_for_token,
+    freeze_authority,
+    test_http_client_async: AsyncClient,
+) -> AsyncToken:
     """Test create mint."""
     resp = await test_http_client_async.request_airdrop(async_stubbed_sender_for_token.pubkey(), AIRDROP_AMOUNT)
     await test_http_client_async.confirm_transaction(resp.value)
@@ -60,7 +65,11 @@ async def async_stubbed_receiver_token_account_pk(
 
 
 @pytest.mark.integration
-async def test_new_account(async_stubbed_sender_for_token, test_http_client_async, test_token):  # pylint: disable=redefined-outer-name
+async def test_new_account(
+    async_stubbed_sender_for_token,
+    test_http_client_async: AsyncClient,
+    test_token,
+):  # pylint: disable=redefined-outer-name
     """Test creating a new token account."""
     token_account_pk = await test_token.create_account(async_stubbed_sender_for_token.pubkey())
     resp = await test_http_client_async.get_account_info(token_account_pk)
@@ -426,7 +435,9 @@ async def test_create_multisig(async_stubbed_sender_for_token, async_stubbed_rec
     """Test creating a multisig account."""
     min_signers = 2
     multisig_pubkey = await test_token.create_multisig(
-        min_signers, [async_stubbed_sender_for_token.pubkey(), async_stubbed_receiver], opts=OPTS
+        min_signers,
+        [async_stubbed_sender_for_token.pubkey(), async_stubbed_receiver],
+        opts=OPTS,
     )
     resp = test_http_client.get_account_info(multisig_pubkey)
     assert_valid_response(resp)

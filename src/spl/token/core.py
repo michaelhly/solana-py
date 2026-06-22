@@ -320,7 +320,11 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             address_lookup_table_accounts=[],
             recent_blockhash=recent_blockhash,
         )
-        txn = VersionedTransaction(msg, [self.payer, *signers])
+        tx_signers = [
+            self.payer,
+            *[signer for signer in signers if signer.pubkey() != self.payer.pubkey()],
+        ]
+        txn = VersionedTransaction(msg, tx_signers)
         return txn, opts
 
     def _set_authority_args(
@@ -769,7 +773,11 @@ class _TokenCore:  # pylint: disable=too-few-public-methods
             address_lookup_table_accounts=[],
             recent_blockhash=recent_blockhash,
         )
-        txn = VersionedTransaction(msg, [self.payer, *signers])
+        tx_signers = [
+            self.payer,
+            *[signer for signer in signers if signer.pubkey() != self.payer.pubkey()],
+        ]
+        txn = VersionedTransaction(msg, tx_signers)
         return txn, opts
 
     def _mint_to_checked_args(

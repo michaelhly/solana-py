@@ -468,7 +468,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> leading_zeros = [0] * 31
             >>> sender, receiver = Keypair.from_seed(leading_zeros + [1]), Keypair.from_seed(leading_zeros + [2])
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> msg = MessageV0.try_compile(
+            >>> msg = MessageV0.try_compile( # doctest: +SKIP
             ...     payer=sender.pubkey(),
             ...     instructions=[transfer(TransferParams(
             ...         from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))],
@@ -1090,7 +1090,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> ixns = [transfer(TransferParams(
             ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))]
             >>> client = AsyncClient("http://localhost:8899")
-            >>> msg = MessageV0.try_compile(
+            >>> msg = MessageV0.try_compile( # doctest: +SKIP
             ...     payer=sender.pubkey(),
             ...     instructions=ixns,
             ...     address_lookup_table_accounts=[],

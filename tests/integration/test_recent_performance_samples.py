@@ -3,6 +3,7 @@
 import time
 
 from pytest import fixture, mark
+from solana.rpc.async_api import AsyncClient
 
 from ..utils import assert_valid_response
 
@@ -15,7 +16,7 @@ def _wait_until_ready() -> None:
 
 @mark.integration
 @mark.asyncio
-async def test_get_recent_performance_samples_async(test_http_client_async, _wait_until_ready):
+async def test_get_recent_performance_samples_async(test_http_client_async: AsyncClient, _wait_until_ready):
     """Test get recent performance samples (async)."""
     resp = await test_http_client_async.get_recent_performance_samples(4)
     assert_valid_response(resp)

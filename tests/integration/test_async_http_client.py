@@ -66,7 +66,7 @@ async def test_request_air_drop(
 
 @pytest.mark.integration
 async def test_request_air_drop_prefetched_blockhash(
-    test_http_client_async,
+    test_http_client_async: AsyncClient,
 ):
     """Test air drop to async_stubbed_sender and async_stubbed_receiver."""
     sender = Keypair()
@@ -217,7 +217,7 @@ async def test_send_bad_transaction(stubbed_receiver: Pubkey, test_http_client_a
 
 @pytest.mark.integration
 async def test_send_transaction_prefetched_blockhash(
-    test_http_client_async,
+    test_http_client_async: AsyncClient,
 ):
     """Test sending a transaction to localnet."""
     # Create transfer tx to transfer lamports from stubbed sender to async_stubbed_receiver
@@ -260,7 +260,9 @@ async def test_send_transaction_prefetched_blockhash(
 
 
 @pytest.mark.integration
-async def test_send_raw_transaction_and_get_balance(test_http_client_async):
+async def test_send_raw_transaction_and_get_balance(
+    test_http_client_async: AsyncClient,
+):
     """Test sending a raw transaction to localnet."""
     # Get a recent blockhash
     sender = Keypair()
@@ -309,7 +311,7 @@ async def test_send_raw_transaction_and_get_balance(test_http_client_async):
 
 @pytest.mark.integration
 async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
-    test_http_client_async,
+    test_http_client_async: AsyncClient,
 ):
     """Test sending a raw transaction to localnet using latest blockhash."""
     # Get latest blockhash
@@ -365,7 +367,7 @@ async def test_send_raw_transaction_and_get_balance_using_latest_blockheight(
 
 
 @pytest.mark.integration
-async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http_client_async):
+async def test_confirm_expired_transaction(stubbed_sender, stubbed_receiver, test_http_client_async: AsyncClient):
     """Test that RPCException is raised when trying to confirm a transaction that exceeded last valid block height."""
     # Get a recent blockhash
     resp = await test_http_client_async.get_latest_blockhash()
@@ -465,42 +467,42 @@ async def test_get_fee_for_versioned_message(
 
 
 @pytest.mark.integration
-async def test_get_block_commitment(test_http_client_async):
+async def test_get_block_commitment(test_http_client_async: AsyncClient):
     """Test get block commitment."""
     resp = await test_http_client_async.get_block_commitment(5)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_block_time(test_http_client_async):
+async def test_get_block_time(test_http_client_async: AsyncClient):
     """Test get block time."""
     resp = await test_http_client_async.get_block_time(5)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_cluster_nodes(test_http_client_async):
+async def test_get_cluster_nodes(test_http_client_async: AsyncClient):
     """Test get cluster nodes."""
     resp = await test_http_client_async.get_cluster_nodes()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_block(test_http_client_async):
+async def test_get_block(test_http_client_async: AsyncClient):
     """Test get confirmed block."""
     resp = await test_http_client_async.get_block(2)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_block_height(test_http_client_async):
+async def test_get_block_height(test_http_client_async: AsyncClient):
     """Test get height."""
     resp = await test_http_client_async.get_block_height()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_blocks(test_http_client_async):
+async def test_get_blocks(test_http_client_async: AsyncClient):
     """Test get blocks."""
     resp = await test_http_client_async.get_blocks(5, 10)
     assert_valid_response(resp)
@@ -514,21 +516,21 @@ async def test_get_signatures_for_address(test_http_client_async: AsyncClient):
 
 
 @pytest.mark.integration
-async def test_get_epoch_info(test_http_client_async):
+async def test_get_epoch_info(test_http_client_async: AsyncClient):
     """Test get epoch info."""
     resp = await test_http_client_async.get_epoch_info()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_epoch_schedule(test_http_client_async):
+async def test_get_epoch_schedule(test_http_client_async: AsyncClient):
     """Test get epoch schedule."""
     resp = await test_http_client_async.get_epoch_schedule()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_latest_blockhash(test_http_client_async):
+async def test_get_latest_blockhash(test_http_client_async: AsyncClient):
     """Test get latest blockhash."""
     resp = await test_http_client_async.get_latest_blockhash(Finalized)
     assert_valid_response(resp)
@@ -537,42 +539,42 @@ async def test_get_latest_blockhash(test_http_client_async):
 
 
 @pytest.mark.integration
-async def test_get_slot(test_http_client_async):
+async def test_get_slot(test_http_client_async: AsyncClient):
     """Test get slot."""
     resp = await test_http_client_async.get_slot()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_first_available_block(test_http_client_async):
+async def test_get_first_available_block(test_http_client_async: AsyncClient):
     """Test get first available block."""
     resp = await test_http_client_async.get_first_available_block()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_genesis_hash(test_http_client_async):
+async def test_get_genesis_hash(test_http_client_async: AsyncClient):
     """Test get genesis hash."""
     resp = await test_http_client_async.get_genesis_hash()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_identity(test_http_client_async):
+async def test_get_identity(test_http_client_async: AsyncClient):
     """Test get identity."""
     resp = await test_http_client_async.get_genesis_hash()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_inflation_governor(test_http_client_async):
+async def test_get_inflation_governor(test_http_client_async: AsyncClient):
     """Test get inflation governor."""
     resp = await test_http_client_async.get_inflation_governor()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_inflation_rate(test_http_client_async):
+async def test_get_inflation_rate(test_http_client_async: AsyncClient):
     """Test get inflation rate."""
     resp = await test_http_client_async.get_inflation_rate()
     assert_valid_response(resp)
@@ -581,77 +583,79 @@ async def test_get_inflation_rate(test_http_client_async):
 # XXX: Block not available for slot on local cluster
 @pytest.mark.skip
 @pytest.mark.integration
-async def test_get_inflation_reward(stubbed_sender, test_http_client_async):
+async def test_get_inflation_reward(stubbed_sender, test_http_client_async: AsyncClient):
     """Test get inflation reward."""
     resp = await test_http_client_async.get_inflation_reward([stubbed_sender.pubkey()], commitment=Confirmed)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_largest_accounts(test_http_client_async):
+async def test_get_largest_accounts(test_http_client_async: AsyncClient):
     """Test get largest accounts."""
     resp = await test_http_client_async.get_largest_accounts()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_leader_schedule(test_http_client_async):
+async def test_get_leader_schedule(test_http_client_async: AsyncClient):
     """Test get leader schedule."""
     resp = await test_http_client_async.get_leader_schedule()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_minimum_balance_for_rent_exemption(test_http_client_async):
+async def test_get_minimum_balance_for_rent_exemption(
+    test_http_client_async: AsyncClient,
+):
     """Test get minimum balance for rent exemption."""
     resp = await test_http_client_async.get_minimum_balance_for_rent_exemption(50)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_slot_leader(test_http_client_async):
+async def test_get_slot_leader(test_http_client_async: AsyncClient):
     """Test get slot leader."""
     resp = await test_http_client_async.get_slot_leader()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_supply(test_http_client_async):
+async def test_get_supply(test_http_client_async: AsyncClient):
     """Test get slot leader."""
     resp = await test_http_client_async.get_supply()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_token_largest_accounts(test_http_client_async):
+async def test_get_token_largest_accounts(test_http_client_async: AsyncClient):
     """Test get token largest accounts."""
     resp = await test_http_client_async.get_token_largest_accounts(WRAPPED_SOL_MINT)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_token_supply(test_http_client_async):
+async def test_get_token_supply(test_http_client_async: AsyncClient):
     """Test get token supply."""
     resp = await test_http_client_async.get_token_supply(WRAPPED_SOL_MINT)
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_transaction_count(test_http_client_async):
+async def test_get_transaction_count(test_http_client_async: AsyncClient):
     """Test get transactinon count."""
     resp = await test_http_client_async.get_transaction_count()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_version(test_http_client_async):
+async def test_get_version(test_http_client_async: AsyncClient):
     """Test get version."""
     resp = await test_http_client_async.get_version()
     assert_valid_response(resp)
 
 
 @pytest.mark.integration
-async def test_get_account_info(async_stubbed_sender, test_http_client_async):
+async def test_get_account_info(async_stubbed_sender, test_http_client_async: AsyncClient):
     """Test get_account_info."""
     resp = await test_http_client_async.get_account_info(async_stubbed_sender.pubkey())
     assert_valid_response(resp)
@@ -664,7 +668,7 @@ async def test_get_account_info(async_stubbed_sender, test_http_client_async):
 
 
 @pytest.mark.integration
-async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_async):
+async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_async: AsyncClient):
     """Test get_multiple_accounts."""
     pubkeys = [async_stubbed_sender.pubkey()] * 2
     resp = await test_http_client_async.get_multiple_accounts(pubkeys)
@@ -676,7 +680,7 @@ async def test_get_multiple_accounts(async_stubbed_sender, test_http_client_asyn
 
 
 @pytest.mark.integration
-async def test_get_vote_accounts(test_http_client_async):
+async def test_get_vote_accounts(test_http_client_async: AsyncClient):
     """Test get vote accounts."""
     resp = await test_http_client_async.get_vote_accounts()
     assert_valid_response(resp)

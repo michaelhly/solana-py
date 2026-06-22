@@ -448,7 +448,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             ...     instructions=[transfer(TransferParams(
             ...         from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))],
             ...     address_lookup_table_accounts=[],
-            ...     recent_blockhash=solana_client.get_latest_blockhash().value.blockhash,
+            ...     recent_blockhash=solana_client.get_latest_blockhash().value.blockhash, # doctest: +SKIP
             ... )
             >>> solana_client.get_fee_for_message(msg).value # doctest: +SKIP
             5000
@@ -1064,7 +1064,7 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> client = Client("http://localhost:8899")
             >>> ixns = [transfer(TransferParams(
             ...     from_pubkey=sender.pubkey(), to_pubkey=receiver.pubkey(), lamports=1000))]
-            >>> msg = MessageV0.try_compile(
+            >>> msg = MessageV0.try_compile( # doctest: +SKIP
             ...     payer=sender.pubkey(),
             ...     instructions=ixns,
             ...     address_lookup_table_accounts=[],
