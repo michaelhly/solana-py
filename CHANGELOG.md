@@ -2,14 +2,30 @@
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-06-21
+
+This release replaces the library's deprecated `NamedTuple` types with Pydantic models. The deprecated types still work, so most code keeps running unchanged — see the migration notes below for the two cases that need attention.
+
+### Pydantic model migration
+
+- Add Pydantic model equivalents of every deprecated `NamedTuple`, under the same names in new `models` modules (`solana.rpc.models`, `solana.models`, `spl.token.models`, `spl.memo.models`). They keep the same field names, defaults, and descriptions, so migrating is just an import-path change [(#656)](https://github.com/michaelhly/solana-py/pull/656).
+- Add `PydanticModel.from_namedtuple`, a helper that coerces a deprecated `NamedTuple` (or an existing model) into the new Pydantic model to ease migration at API boundaries [(#656)](https://github.com/michaelhly/solana-py/pull/656).
+- Deprecate all `NamedTuple` classes (params/options/info types in `solana` and `spl`). They now emit a `DeprecationWarning` pointing to the new `models` module and are flagged by type checkers, but remain fully functional for backwards compatibility [(#655)](https://github.com/michaelhly/solana-py/pull/655).
+- Instruction builders and RPC client methods accept both the deprecated `NamedTuple` and the new Pydantic model for their params/options arguments, so existing call sites keep working [(#659)](https://github.com/michaelhly/solana-py/pull/659), [(#660)](https://github.com/michaelhly/solana-py/pull/660), [(#662)](https://github.com/michaelhly/solana-py/pull/662), [(#664)](https://github.com/michaelhly/solana-py/pull/664), [(#666)](https://github.com/michaelhly/solana-py/pull/666), [(#667)](https://github.com/michaelhly/solana-py/pull/667).
+- **BREAKING**: Functions that returned deprecated `NamedTuple` instances now return the new Pydantic models at runtime. This affects all `decode_*` instruction helpers in `spl.token.instructions` and `spl.memo.instructions`, and `Token.get_mint_info()` / `Token.get_account_info()` (sync and async). Pydantic models are **not** tuples, so code relying on tuple behavior — positional unpacking (`a, b = decode_transfer(ix)`), integer indexing (`info[0]`), or `isinstance(x, tuple)` — will break. Access fields by name instead [(#660)](https://github.com/michaelhly/solana-py/pull/660), [(#666)](https://github.com/michaelhly/solana-py/pull/666).
+- Migrated internal call sites and documentation off the deprecated `NamedTuple` types to the new Pydantic models [(#668)](https://github.com/michaelhly/solana-py/pull/668).
+
 ### Added
 
-- Add Pydantic model equivalents of every deprecated `NamedTuple`, under the same names in new `models` modules (`solana.rpc.models`, `solana.utils.models`, `solana.models`, `spl.token.models`, `spl.memo.models`). They carry the same field names, defaults, and field descriptions, so migrating is just an import-path change.
-- Add `PydanticModel.from_namedtuple`, a thin helper that coerces a deprecated `NamedTuple` (or an existing model) into the new Pydantic model, to ease migration at API boundaries.
+- Add a `rate_limit` parameter to `AsyncClient` and `AsyncHTTPProvider` to cap outgoing requests per second. Defaults to `0` (disabled), so existing behavior is unchanged [(#653)](https://github.com/michaelhly/solana-py/pull/653).
 
 ### Changed
 
-- Deprecate all `NamedTuple` classes (params/options/info types in `solana` and `spl`). Usage now emits a `DeprecationWarning` pointing to the new `models` module and is flagged by type checkers. The deprecated types remain fully functional for backwards compatibility.
+- **BREAKING**: Remove the remaining legacy `Transaction` / `Message` support from the client API. `Client.send_transaction` / `AsyncClient.send_transaction` and `simulate_transaction` now accept only `VersionedTransaction` (no longer `Union[Transaction, VersionedTransaction]`), and `get_fee_for_message` now takes `MessageV0` instead of `VersionedMessage`. The `SimulateLegacyTransaction` request path was removed, so passing a legacy `Transaction` to `simulate_transaction` no longer works at runtime. Use `MessageV0` / `VersionedTransaction` instead [(#669)](https://github.com/michaelhly/solana-py/pull/669).
+
+### Dependencies
+
+- Add `aiolimiter` (>=1.1.0) for `AsyncClient` rate limiting [(#653)](https://github.com/michaelhly/solana-py/pull/653).
 
 ## [0.37.1] - 2026-06-19
 
