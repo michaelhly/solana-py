@@ -83,7 +83,7 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
             raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
 
-    def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
+    def _make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
         """Make an HTTP batch request to an http rpc endpoint."""
         request_kwargs = self._before_batch_request(reqs)
         try:
@@ -91,6 +91,23 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
         except (httpx2.RemoteProtocolError, httpx2.ReadError):
             raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
+
+    def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
+        """Make an HTTP batch request to an http rpc endpoint.
+
+        .. deprecated::
+            ``make_batch_request_unparsed`` is deprecated and will be removed in a future release.
+            Use individual requests instead.
+            See https://github.com/michaelhly/solana-py/issues/645 for details.
+        """
+        warnings.warn(
+            "make_batch_request_unparsed is deprecated and will be removed in a future release. "
+            "Use individual requests instead. "
+            "See https://github.com/michaelhly/solana-py/issues/645 for details.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._make_batch_request_unparsed(reqs)
 
     @overload
     def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup: ...
@@ -144,5 +161,5 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
             DeprecationWarning,
             stacklevel=2,
         )
-        raw = self.make_batch_request_unparsed(reqs)
+        raw = self._make_batch_request_unparsed(reqs)
         return _parse_raw_batch(raw, parsers)
