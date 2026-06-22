@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from time import sleep, time
 from typing import Dict, List, Optional, Sequence, Union
 
@@ -64,6 +65,7 @@ from solders.rpc.responses import (
 )
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
+from typing_extensions import deprecated
 
 from solana.rpc import types
 from solana.rpc.models import (
@@ -84,6 +86,7 @@ from .core import (
 from .providers import http
 
 
+@deprecated("Client is deprecated; use solana.rpc.async_api.AsyncClient instead.")
 class Client(_ClientCore):  # pylint: disable=too-many-public-methods
     """Client class.
 
@@ -104,6 +107,11 @@ class Client(_ClientCore):  # pylint: disable=too-many-public-methods
         proxy: Optional[str] = None,
     ):
         """Init API client."""
+        warnings.warn(
+            "Client is deprecated; use solana.rpc.async_api.AsyncClient instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
         super().__init__(commitment)
         self._provider = http.HTTPProvider(endpoint, timeout=timeout, extra_headers=extra_headers, proxy=proxy)
 
