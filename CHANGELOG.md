@@ -2,11 +2,14 @@
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-06-22
+
 ### Changed
 
 - **BREAKING**: Refactor `Commitment` from `NewType("Commitment", str)` to `StrEnum`. The valid values are now `Commitment.PROCESSED`, `Commitment.CONFIRMED`, and `Commitment.FINALIZED`. Module-level aliases (`Processed`, `Confirmed`, `Finalized`) are preserved for backward compatibility.
 - **BREAKING**: Remove deprecated commitment constants `Max`, `Root`, `Single`, and `Recent`. These values were never valid on the current Solana wire protocol and have emitted deprecation warnings since earlier versions.
 - **BREAKING**: Drop Python 3.10 support — the minimum required Python version is now 3.11.
+- Add deprecated marks to `Client`, `Token`, and `AsyncToken`
 
 ### Added
 
@@ -16,7 +19,6 @@
 ### Removed
 
 - **BREAKING**: Remove `make_batch_request`, `make_batch_request_unparsed`, and all batch-related type aliases from `solana.rpc.providers`. Use individual requests with `asyncio.gather` (async) or sequential calls (sync) instead.
-- Add deprecated marks to `Client`, `Token`, and `AsyncToken`
 
 ## [0.38.0] - 2026-06-21
 
