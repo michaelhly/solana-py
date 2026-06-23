@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import itertools
 
-import pytest
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
 from solders.rpc.config import RpcAccountInfoConfig, RpcProgramAccountsConfig
 from solders.rpc.filter import Memcmp
 
-from solana.rpc import types
 from solana.rpc.commitment import Processed
 from solana.rpc.models import DataSliceOpts, MemcmpOpts
 from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
@@ -69,44 +67,6 @@ async def test_program_subscribe_with_config(monkeypatch):
         encoding="base64",
         data_slice=DataSliceOpts(offset=1, length=2),
         filters=[17, MemcmpOpts(offset=4, bytes="3Mc6vR")],
-    )
-
-    expected_config = RpcProgramAccountsConfig(
-        RpcAccountInfoConfig(
-            encoding=UiAccountEncoding.Base64,
-            commitment=CommitmentLevel.Processed,
-            data_slice=UiDataSliceConfig(offset=1, length=2),
-        ),
-        [17, Memcmp(offset=4, bytes_="3Mc6vR")],
-    )
-    assert request_id == 1
-    assert sent_messages[0].id == request_id
-    assert sent_messages[0].config == expected_config
-
-
-async def test_program_subscribe_with_config_from_deprecated_namedtuples(monkeypatch):
-    """program_subscribe should still accept the deprecated DataSliceOpts/MemcmpOpts NamedTuples."""
-    protocol = SolanaWsClientProtocol.__new__(SolanaWsClientProtocol)
-    protocol.request_counter = itertools.count()
-    sent_messages = []
-
-    async def fake_send_request(self, message):
-        sent_messages.append(message)
-
-    monkeypatch.setattr(SolanaWsClientProtocol, "send_request", fake_send_request)
-
-    program_id = Pubkey.default()
-    with pytest.deprecated_call():
-        deprecated_data_slice = types.DataSliceOpts(offset=1, length=2)
-    with pytest.deprecated_call():
-        deprecated_memcmp = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
-
-    request_id = await protocol.program_subscribe(
-        program_id,
-        commitment=Processed,
-        encoding="base64",
-        data_slice=deprecated_data_slice,
-        filters=[17, deprecated_memcmp],
     )
 
     expected_config = RpcProgramAccountsConfig(

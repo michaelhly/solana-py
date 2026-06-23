@@ -1,9 +1,4 @@
-"""Pydantic models for the solana package.
-
-These are the Pydantic successors to the deprecated ``NamedTuple`` types defined directly
-under the :mod:`solana` package (currently the vote program params in
-:mod:`solana.vote_program`).
-"""
+"""Pydantic models for the solana package."""
 
 from __future__ import annotations
 

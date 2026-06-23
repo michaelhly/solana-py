@@ -8,8 +8,11 @@
 - **BREAKING**: Remove deprecated `Token` (sync SPL Token client) and `AsyncToken` (async SPL Token client) — use `AsyncClient` with `spl.token.instructions` directly instead.
 - **BREAKING**: Remove deprecated `_TokenCore`, `AccountInfo`, and `MintInfo` from `spl.token.core` — use `spl.token.models` instead.
 - **BREAKING**: Remove sync HTTP provider (`solana.rpc.providers.http.HTTPProvider`) and sync base provider (`solana.rpc.providers.base.BaseProvider`) — use `solana.rpc.providers.async_http.AsyncHTTPProvider` instead.
+- **BREAKING**: Remove deprecated `NamedTuple` compatibility types from `solana.rpc.types`, `solana.vote_program`, `spl.memo.instructions`, and `spl.token.instructions`. Use model types from `solana.rpc.models`, `solana.models`, `spl.memo.models`, and `spl.token.models`.
+- **BREAKING**: Remove `PydanticModel.from_namedtuple` and all API boundary coercion paths. RPC and instruction helpers now accept only the Pydantic model params/options types.
 - Remove integration test `test_http_client.py` and unit test `test_client.py`.
 - Remove obsolete documentation pages (`docs/rpc/api.md`, `docs/spl/token/client.md`, `docs/spl/token/async_client.md`, `docs/spl/token/core.md`).
+- Remove obsolete `docs/rpc/types.md`.
 - Update `random_funded_keypair` fixture to be async.
 
 ### Changed

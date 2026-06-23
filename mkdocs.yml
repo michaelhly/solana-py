@@ -47,7 +47,6 @@ nav:
       - rpc/async_api.md
       - rpc/websocket.md
       - rpc/commitment.md
-      - rpc/types.md
       - rpc/models.md
       - rpc/providers.md
   - Core API:

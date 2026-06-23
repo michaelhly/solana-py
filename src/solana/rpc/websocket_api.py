@@ -51,9 +51,11 @@ from solders.transaction_status import TransactionDetails
 from websockets.asyncio.client import ClientConnection
 from websockets.asyncio.client import connect as ws_connect
 
-from solana.rpc import types
 from solana.rpc.commitment import Commitment
-from solana.rpc.models import DataSliceOpts as DataSliceOptsModel, MemcmpOpts as MemcmpOptsModel
+from solana.rpc.models import (
+    DataSliceOpts as DataSliceOptsModel,
+    MemcmpOpts as MemcmpOptsModel,
+)
 from solana.rpc.core import (
     _ACCOUNT_ENCODING_TO_SOLDERS,
     _COMMITMENT_TO_SOLDERS,
@@ -243,8 +245,8 @@ class SolanaWsClientProtocol(ClientConnection):
         program_id: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
-        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOptsModel]]] = None,
+        data_slice: Optional[DataSliceOptsModel] = None,
+        filters: Optional[Sequence[Union[int, MemcmpOptsModel]]] = None,
     ) -> int:
         """Receive notifications when the lamports or data for a given account owned by the program changes.
 

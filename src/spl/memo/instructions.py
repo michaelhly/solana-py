@@ -2,25 +2,9 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple, Union
-from typing_extensions import deprecated
-
 from solders.instruction import AccountMeta, Instruction
-from solders.pubkey import Pubkey
 
 from spl.memo import models
-
-
-@deprecated("MemoParams is deprecated; use spl.memo.models instead.")
-class MemoParams(NamedTuple):
-    """Create memo transaction params."""
-
-    program_id: Pubkey
-    """Memo program account."""
-    signer: Pubkey
-    """Signing account."""
-    message: bytes
-    """Memo message in bytes."""
 
 
 def decode_create_memo(instruction: Instruction) -> models.MemoParams:
@@ -39,7 +23,7 @@ def decode_create_memo(instruction: Instruction) -> models.MemoParams:
     )
 
 
-def create_memo(params: Union[MemoParams, models.MemoParams]) -> Instruction:
+def create_memo(params: models.MemoParams) -> Instruction:
     """Creates a transaction instruction that creates a memo.
 
     Message need to be encoded in bytes.

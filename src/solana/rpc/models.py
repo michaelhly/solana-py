@@ -1,9 +1,4 @@
-"""Pydantic models for RPC types.
-
-These are the Pydantic successors to the deprecated ``NamedTuple`` types in
-:mod:`solana.rpc.types`. They carry the same field names and defaults, so migrating is
-a matter of changing the import path.
-"""
+"""Pydantic models for RPC types."""
 
 from __future__ import annotations
 
