@@ -4,6 +4,7 @@ import asyncio
 from time import monotonic
 
 import pytest
+from pydantic import BaseModel, Field
 import solders.system_program as sp
 from solders.keypair import Keypair
 from solders.message import MessageV0
@@ -16,6 +17,7 @@ from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
+from solana.rpc.jsonrpc import JsonRpcRequest
 from solana.rpc.models import DataSliceOpts, TxOpts
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
@@ -652,6 +654,27 @@ async def test_get_version(test_http_client_async: AsyncClient):
     """Test get version."""
     resp = await test_http_client_async.get_version()
     assert_valid_response(resp)
+
+
+@pytest.mark.integration
+async def test_send_rpc_request_get_version(test_http_client_async: AsyncClient):
+    """Test a custom JSON-RPC request and Pydantic parser against local validator."""
+
+    class GetVersionRequest(JsonRpcRequest):
+        """Custom getVersion JSON-RPC request."""
+
+        id: str | int = "0"
+        method: str = "getVersion"
+
+    class GetVersionResult(BaseModel):
+        """Custom getVersion JSON-RPC result parser."""
+
+        feature_set: int = Field(alias="feature-set")
+        solana_core: str = Field(alias="solana-core")
+
+    resp = await test_http_client_async.send_rpc_request(GetVersionRequest(), GetVersionResult)
+    assert resp.feature_set >= 0
+    assert resp.solana_core
 
 
 @pytest.mark.integration

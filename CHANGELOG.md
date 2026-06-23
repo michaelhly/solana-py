@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add `AsyncClient.send_rpc_request(...)` for custom JSON-RPC methods backed by Pydantic request serializers, result models, and an optional custom JSON-RPC error parser hook.
+
 ### Removed
 
 - **BREAKING**: Remove deprecated `Client` (sync RPC client) — use `solana.rpc.async_api.AsyncClient` instead.
@@ -10,6 +14,7 @@
 - **BREAKING**: Remove sync HTTP provider (`solana.rpc.providers.http.HTTPProvider`) and sync base provider (`solana.rpc.providers.base.BaseProvider`) — use `solana.rpc.providers.async_http.AsyncHTTPProvider` instead.
 - **BREAKING**: Remove deprecated `NamedTuple` compatibility types from `solana.rpc.types`, `solana.vote_program`, `spl.memo.instructions`, and `spl.token.instructions`. Use model types from `solana.rpc.models`, `solana.models`, `spl.memo.models`, and `spl.token.models`.
 - **BREAKING**: Remove `PydanticModel.from_namedtuple` and all API boundary coercion paths. RPC and instruction helpers now accept only the Pydantic model params/options types.
+- Remove HTTP batch request plumbing from the HTTP provider path; use individual async requests and compose concurrency with `asyncio.gather` when needed.
 - Remove integration test `test_http_client.py` and unit test `test_client.py`.
 - Remove obsolete documentation pages (`docs/rpc/api.md`, `docs/spl/token/client.md`, `docs/spl/token/async_client.md`, `docs/spl/token/core.md`).
 - Remove obsolete `docs/rpc/types.md`.
@@ -17,6 +22,7 @@
 
 ### Changed
 
+- Simplify `AsyncClient` RPC plumbing by removing unnecessary internal abstractions while preserving the existing `solders` request/response path for built-in RPC methods.
 - Rewrite `test_spl_token.py` to use `AsyncClient` with `spl.token.instructions` directly instead of the removed `Token`/`AsyncToken` classes.
 - Rewrite `test_spl_memo.py` to use `AsyncClient` with `spl.memo.instructions` directly instead of the removed `Client` class.
 - Update `README.md` code examples to use `AsyncClient`.
