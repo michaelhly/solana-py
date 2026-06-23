@@ -136,9 +136,7 @@ def default_jsonrpc_error_parser(
     method: str | None = None,
 ) -> SolanaJsonRpcError:
     """Default JSON-RPC error parser."""
-    return SolanaJsonRpcError.from_error_object(
-        error, request_id=request_id, method=method
-    )
+    return SolanaJsonRpcError.from_error_object(error, request_id=request_id, method=method)
 
 
 class JsonRpcResponseEnvelope(PydanticModel):

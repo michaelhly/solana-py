@@ -4,25 +4,17 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Optional, Type, TypeVar
+from typing import Any, TypeVar
 
 import httpx2
 from aiolimiter import AsyncLimiter
 from solders.rpc.requests import Body
 from solders.rpc.responses import RPCError, RPCResult
 
-from ...exceptions import SolanaRpcException, handle_async_exceptions
-from ..core import RPCException
-from ..jsonrpc import JsonRpcRequestSerializer
-from ..types import URI
-
-DEFAULT_TIMEOUT = 10
-# httpcore2 2.x no longer auto-retries dropped connections (unlike httpcore 1.x).
-# RemoteProtocolError (stale keepalive) and ReadError (ECONNRESET) are both retried
-# once explicitly in the provider layer.
-# We keep the pool small (single-endpoint RPC client) but leave keepalive_expiry at the
-# httpx2 default so long-running clients don't reconnect unnecessarily.
-DEFAULT_LIMITS = httpx2.Limits(max_connections=10, max_keepalive_connections=5)
+from ..exceptions import SolanaRpcException, handle_async_exceptions
+from .core import RPCException
+from .jsonrpc import JsonRpcRequestSerializer
+from .types import URI
 
 T = TypeVar("T", bound=RPCResult)
 
@@ -35,47 +27,65 @@ def get_default_endpoint() -> URI:
 class AsyncHTTPProvider:
     """Async HTTP provider to interact with the http rpc endpoint."""
 
-    logger = logging.getLogger("solana.rpc.providers")
+    logger = logging.getLogger("solana.rpc.async_http_provider")
 
     def __init__(
         self,
-        endpoint: Optional[str] = None,
-        extra_headers: Optional[dict[str, str]] = None,
-        timeout: float = DEFAULT_TIMEOUT,
-        proxy: Optional[str] = None,
+        endpoint: str | None = None,
+        extra_headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+        proxy: str | None = None,
         rate_limit: float = 0,
+        max_connections: int | None = None,
+        max_keepalive_connections: int | None = None,
+        keepalive_expiry: float | None = None,
+        http2: bool = True,
     ):
         """Init AsyncHTTPProvider.
 
         Args:
             endpoint: URL of the RPC endpoint.
             extra_headers: Extra headers to pass for HTTP request.
-            timeout: HTTP request timeout in seconds.
+            timeout: HTTP request timeout in seconds. ``None`` uses the httpx2 default.
             proxy: Proxy URL to pass to the HTTP client.
             rate_limit: Maximum requests per second. ``0`` (default) disables rate limiting.
+            max_connections: Maximum number of concurrent connections. ``None`` uses the httpx2 default.
+            max_keepalive_connections: Maximum number of idle keep-alive connections. ``None`` uses the
+                httpx2 default.
+            keepalive_expiry: Idle keep-alive connection expiry in seconds. ``None`` uses the httpx2
+                default.
+            http2: Enable HTTP/2 support.
         """
         self.endpoint_uri = get_default_endpoint() if not endpoint else URI(endpoint)
         self.timeout = timeout
         self.extra_headers = extra_headers
-        if proxy is None:
-            self.session = httpx2.AsyncClient(
-                timeout=timeout,
-                limits=DEFAULT_LIMITS,
+        client_kwargs: dict[str, Any] = {"http2": http2}
+        if timeout is not None:
+            client_kwargs["timeout"] = httpx2.Timeout(timeout)
+        if proxy is not None:
+            client_kwargs["proxy"] = proxy
+        if any(
+            value is not None
+            for value in (
+                max_connections,
+                max_keepalive_connections,
+                keepalive_expiry,
             )
-        else:
-            self.session = httpx2.AsyncClient(
-                timeout=timeout, proxy=proxy, limits=DEFAULT_LIMITS
+        ):
+            client_kwargs["limits"] = httpx2.Limits(
+                max_connections=max_connections,
+                max_keepalive_connections=max_keepalive_connections,
+                keepalive_expiry=keepalive_expiry,
             )
-        self._limiter: Optional[AsyncLimiter] = (
-            AsyncLimiter(rate_limit, time_period=1) if rate_limit > 0 else None
-        )
+        self.session = httpx2.AsyncClient(**client_kwargs)
+        self._limiter: AsyncLimiter | None = AsyncLimiter(rate_limit, time_period=1) if rate_limit > 0 else None
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
         return f"Async HTTP RPC connection {self.endpoint_uri}"
 
     @handle_async_exceptions(SolanaRpcException, httpx2.HTTPError)
-    async def make_request(self, body: Body, parser: Type[T]) -> T:
+    async def make_request(self, body: Body, parser: type[T]) -> T:
         """Make an async HTTP request to an http rpc endpoint."""
         raw = await self.make_request_unparsed(body)
         return _parse_raw(raw, parser=parser)
@@ -93,22 +103,10 @@ class AsyncHTTPProvider:
         raw_response = await self._post_request(body, headers)
         return _after_request_unparsed(raw_response)
 
-    async def _post_request(
-        self, body: JsonRpcRequestSerializer, headers: dict[str, str]
-    ) -> httpx2.Response:
-        try:
-            return await self.session.post(
-                self.endpoint_uri, content=body.to_json(), headers=headers
-            )
-        except (httpx2.RemoteProtocolError, httpx2.ReadError):
-            # httpcore2 does not auto-retry stale keepalive connections (unlike httpcore 1.x).
-            # Also retry on ReadError (ECONNRESET) which occurs when the server forcibly
-            # closes the connection mid-response under load.
-            return await self.session.post(
-                self.endpoint_uri, content=body.to_json(), headers=headers
-            )
+    async def _post_request(self, body: JsonRpcRequestSerializer, headers: dict[str, str]) -> httpx2.Response:
+        return await self.session.post(self.endpoint_uri, content=body.to_json(), headers=headers)
 
-    async def __aenter__(self) -> "AsyncHTTPProvider":
+    async def __aenter__(self) -> AsyncHTTPProvider:
         """Use as a context manager."""
         await self.session.__aenter__()
         return self
@@ -122,7 +120,7 @@ class AsyncHTTPProvider:
         await self.session.aclose()
 
 
-def _parse_raw(raw: str, parser: Type[T]) -> T:
+def _parse_raw(raw: str, parser: type[T]) -> T:
     parsed = parser.from_json(raw)  # type: ignore
     if isinstance(parsed, RPCError.__args__):  # type: ignore # TODO: drop py37 and use typing.get_args
         raise RPCException(parsed)
