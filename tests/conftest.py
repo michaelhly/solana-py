@@ -2,6 +2,9 @@
 
 import os
 import shutil
+import time
+from contextlib import suppress
+from pathlib import Path
 from typing import AsyncGenerator, Generator
 
 import pytest
@@ -12,7 +15,9 @@ from solana.rpc.commitment import Processed
 from tests.validator_runtime import (
     ValidatorConfig,
     acquire_shared_validator,
+    env_int,
     release_shared_validator,
+    tail_file,
     validator_is_healthy,
 )
 from tests.utils import AIRDROP_AMOUNT, assert_valid_response
@@ -81,6 +86,31 @@ async def test_http_client_async(
 ) -> AsyncGenerator[AsyncClient, None]:
     """Async HTTP client pointed at the local test validator."""
     http_client = AsyncClient(endpoint=validator_rpc_url, commitment=Processed)
+    timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 120)
+    deadline = time.time() + timeout_secs
+    last_error: Exception | None = None
+    while time.time() < deadline:
+        try:
+            await http_client.get_block(5)
+            break
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+        time.sleep(1)
+    else:
+        slot_debug = "unknown"
+        block_height_debug = "unknown"
+        with suppress(Exception):
+            slot_debug = str((await http_client.get_slot()).value)
+        with suppress(Exception):
+            block_height_debug = str((await http_client.get_block_height()).value)
+        log_tail = tail_file(Path(solana_test_validator.ledger_dir) / "validator.log")
+        raise RuntimeError(
+            "Validator did not finalize slot 5 within "
+            f"{timeout_secs} s at {validator_rpc_url} "
+            f"(worker={solana_test_validator.worker_id}, slot={slot_debug}, block_height={block_height_debug}).\n"
+            f"last_error={last_error!r}\n"
+            f"validator_log_tail:\n{log_tail}"
+        )
     yield http_client
     await http_client.close()
 
@@ -89,9 +119,12 @@ async def test_http_client_async(
 async def random_funded_keypair(test_http_client_async: AsyncClient) -> Keypair:
     """A new keypair with some lamports."""
     kp = Keypair()
+    before = await test_http_client_async.get_balance(kp.pubkey())
+    assert_valid_response(before)
     resp = await test_http_client_async.request_airdrop(kp.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(resp)
     await test_http_client_async.confirm_transaction(resp.value)
     balance = await test_http_client_async.get_balance(kp.pubkey())
-    assert balance.value == AIRDROP_AMOUNT
+    assert_valid_response(balance)
+    assert balance.value - before.value >= AIRDROP_AMOUNT
     return kp

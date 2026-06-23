@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import itertools
 
+import pytest
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
@@ -95,12 +96,17 @@ async def test_program_subscribe_with_config_from_deprecated_namedtuples(monkeyp
     monkeypatch.setattr(SolanaWsClientProtocol, "send_request", fake_send_request)
 
     program_id = Pubkey.default()
+    with pytest.deprecated_call():
+        deprecated_data_slice = types.DataSliceOpts(offset=1, length=2)
+    with pytest.deprecated_call():
+        deprecated_memcmp = types.MemcmpOpts(offset=4, bytes="3Mc6vR")
+
     request_id = await protocol.program_subscribe(
         program_id,
         commitment=Processed,
         encoding="base64",
-        data_slice=types.DataSliceOpts(offset=1, length=2),
-        filters=[17, types.MemcmpOpts(offset=4, bytes="3Mc6vR")],
+        data_slice=deprecated_data_slice,
+        filters=[17, deprecated_memcmp],
     )
 
     expected_config = RpcProgramAccountsConfig(

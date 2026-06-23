@@ -1,5 +1,7 @@
 """Tests for the Pydantic models that supersede the deprecated NamedTuple types."""
 
+from typing import cast
+
 import pytest
 from pydantic import ValidationError
 from solders.keypair import Keypair
@@ -86,7 +88,7 @@ def test_models_are_frozen():
 def test_validation_rejects_bad_types():
     """Field validation is enforced."""
     with pytest.raises(ValidationError):
-        rpc_models.MemcmpOpts(offset="not-an-int", bytes="3Mc6vR")
+        rpc_models.MemcmpOpts(offset=cast(int, "not-an-int"), bytes="3Mc6vR")
 
 
 def test_field_descriptions_carried_over():
@@ -96,7 +98,8 @@ def test_field_descriptions_carried_over():
 
 def test_from_namedtuple_converts_deprecated_instance():
     """from_namedtuple builds a model from a deprecated NamedTuple instance."""
-    deprecated = DeprecatedMemcmpOpts(offset=4, bytes="3Mc6vR")
+    with pytest.deprecated_call():
+        deprecated = DeprecatedMemcmpOpts(offset=4, bytes="3Mc6vR")
     model = rpc_models.MemcmpOpts.from_namedtuple(deprecated)
     assert isinstance(model, rpc_models.MemcmpOpts)
     assert model.offset == 4
@@ -105,7 +108,8 @@ def test_from_namedtuple_converts_deprecated_instance():
 
 def test_from_namedtuple_preserves_defaults():
     """Defaulted fields survive conversion from a deprecated NamedTuple."""
-    deprecated = DeprecatedTxOpts(skip_confirmation=False)
+    with pytest.deprecated_call():
+        deprecated = DeprecatedTxOpts(skip_confirmation=False)
     model = rpc_models.TxOpts.from_namedtuple(deprecated)
     assert model.skip_confirmation is False
     assert model.preflight_commitment == Finalized
@@ -121,9 +125,10 @@ def test_from_namedtuple_is_idempotent():
 def test_from_namedtuple_converts_params_with_pubkeys():
     """A token params NamedTuple with Pubkey fields and a list default converts cleanly."""
     pubkey = Keypair().pubkey()
-    deprecated = token_instructions.TransferParams(
-        program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=7
-    )
+    with pytest.deprecated_call():
+        deprecated = token_instructions.TransferParams(
+            program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=7
+        )
     model = token_models.TransferParams.from_namedtuple(deprecated)
     assert isinstance(model, token_models.TransferParams)
     assert model.amount == 7

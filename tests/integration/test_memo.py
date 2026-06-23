@@ -1,4 +1,4 @@
-"""Tests for the Memo program — rewritten to use AsyncClient + spl.memo.instructions."""
+"""Tests for the Memo program."""
 
 import pytest
 from solders.keypair import Keypair
@@ -19,26 +19,23 @@ from ..utils import AIRDROP_AMOUNT, assert_valid_response
 async def test_send_memo_in_transaction(test_http_client_async: AsyncClient):
     """Test sending a memo instruction to localnet."""
     sender = Keypair()
-    airdrop_resp = await test_http_client_async.request_airdrop(
-        sender.pubkey(), AIRDROP_AMOUNT
-    )
+    airdrop_resp = await test_http_client_async.request_airdrop(sender.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(airdrop_resp)
     await test_http_client_async.confirm_transaction(airdrop_resp.value)
-
     raw_message = "test"
     message = bytes(raw_message, encoding="utf8")
-
     # Create memo params
     memo_params = MemoParams(
         program_id=MEMO_PROGRAM_ID,
         signer=sender.pubkey(),
         message=message,
     )
-
+    # Create transfer tx to add memo to transaction from stubbed sender
     blockhash = (await test_http_client_async.get_latest_blockhash()).value.blockhash
+    ixs = [create_memo(memo_params)]
     msg = MessageV0.try_compile(
         payer=sender.pubkey(),
-        instructions=[create_memo(memo_params)],
+        instructions=ixs,
         address_lookup_table_accounts=[],
         recent_blockhash=blockhash,
     )
@@ -46,7 +43,6 @@ async def test_send_memo_in_transaction(test_http_client_async: AsyncClient):
     resp = await test_http_client_async.send_transaction(transfer_tx)
     assert_valid_response(resp)
     txn_id = resp.value
-
     # Txn needs to be finalized in order to parse the logs.
     await test_http_client_async.confirm_transaction(txn_id, commitment=Finalized)
     resp2_val = (

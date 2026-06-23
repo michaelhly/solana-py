@@ -87,18 +87,25 @@ def test_withdraw_from_vote_account(params_cls):
     vote_account_pubkey = Pubkey.from_string("CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk")
     receiver_account_pubkey = Pubkey.from_string("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
     recent_blockhash = Hash.from_string("Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH")
+    if params_cls is vp.WithdrawFromVoteAccountParams:
+        with pytest.deprecated_call():
+            params = params_cls(
+                vote_account_from_pubkey=vote_account_pubkey,
+                to_pubkey=receiver_account_pubkey,
+                withdrawer=withdrawer_keypair.pubkey(),
+                lamports=2_000_000_000,
+            )
+    else:
+        params = params_cls(
+            vote_account_from_pubkey=vote_account_pubkey,
+            to_pubkey=receiver_account_pubkey,
+            withdrawer=withdrawer_keypair.pubkey(),
+            lamports=2_000_000_000,
+        )
+
     msg = MessageV0.try_compile(
         payer=withdrawer_keypair.pubkey(),
-        instructions=[
-            vp.withdraw_from_vote_account(
-                params_cls(
-                    vote_account_from_pubkey=vote_account_pubkey,
-                    to_pubkey=receiver_account_pubkey,
-                    withdrawer=withdrawer_keypair.pubkey(),
-                    lamports=2_000_000_000,
-                )
-            )
-        ],
+        instructions=[vp.withdraw_from_vote_account(params)],
         address_lookup_table_accounts=[],
         recent_blockhash=recent_blockhash,
     )
