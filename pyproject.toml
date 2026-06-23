@@ -1,8 +1,16 @@
 [project]
 name = "solana"
 version = "0.39.0"
+description = "Solana.py"
+readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Michael Huang", email = "michaelhly@gmail.com" }]
+keywords = ["solana", "blockchain", "web3"]
 classifiers = [
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -18,6 +26,11 @@ dependencies = [
     "aiolimiter>=1.1.0",
     "pydantic>=2.13.4",
 ]
+
+[project.urls]
+Homepage = "https://github.com/michaelhly/solana-py"
+Repository = "https://github.com/michaelhly/solana-py"
+Documentation = "https://michaelhly.com/solana-py/"
 
 [dependency-groups]
 dev = [
