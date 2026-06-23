@@ -2,7 +2,9 @@
 
 from unittest.mock import patch
 
+import httpx2
 import pytest
+from pydantic import RootModel, ValidationError
 from httpx2 import ReadTimeout
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
@@ -24,9 +26,47 @@ from solders.rpc.requests import (
 from solders.signature import Signature
 
 from solana.constants import SYSTEM_PROGRAM_ID
+from solana._pydantic import PydanticModel
 from solana.exceptions import SolanaRpcException
 from solana.rpc.commitment import Finalized
+from solana.rpc.jsonrpc import JsonRpcErrorObject, JsonRpcRequest, SolanaJsonRpcError
 from solana.rpc.models import DataSliceOpts, MemcmpOpts, TokenAccountOpts
+
+
+class _TestRpcRequest(JsonRpcRequest):
+    """Test JSON-RPC request."""
+
+    method: str = "testMethod"
+
+
+class _TestRpcResult(PydanticModel):
+    """Test JSON-RPC result."""
+
+    value: int
+
+
+class _ScalarRpcResult(RootModel[int]):
+    """Test scalar JSON-RPC result."""
+
+
+class _CustomRpcError(Exception):
+    """Test custom JSON-RPC error."""
+
+    def __init__(
+        self, code: int, message: str, request_id: int | str | None, method: str | None
+    ) -> None:
+        """Initialize test custom JSON-RPC error."""
+        self.code = code
+        self.message = message
+        self.request_id = request_id
+        self.method = method
+        super().__init__(message)
+
+
+def _mock_response(text: str) -> httpx2.Response:
+    return httpx2.Response(
+        200, text=text, request=httpx2.Request("POST", "http://localhost:8899")
+    )
 
 
 async def test_async_client_http_exception(unit_test_http_client_async):
@@ -36,7 +76,106 @@ async def test_async_client_http_exception(unit_test_http_client_async):
         with pytest.raises(SolanaRpcException) as exc_info:
             await unit_test_http_client_async.get_epoch_info()
         assert exc_info.type == SolanaRpcException
-        assert exc_info.value.error_msg == "<class 'httpx2.ReadTimeout'> raised in \"GetEpochInfo\" endpoint request"
+        assert (
+            exc_info.value.error_msg
+            == "<class 'httpx2.ReadTimeout'> raised in \"GetEpochInfo\" endpoint request"
+        )
+
+
+async def test_send_rpc_request_success(unit_test_http_client_async):
+    """Test sending a Pydantic-owned JSON-RPC request."""
+    raw = '{"jsonrpc":"2.0","id":1,"result":{"value":42}}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        result = await unit_test_http_client_async.send_rpc_request(
+            _TestRpcRequest(), _TestRpcResult
+        )
+    assert result == _TestRpcResult(value=42)
+    assert (
+        post_mock.call_args.kwargs["content"]
+        == '{"jsonrpc":"2.0","id":1,"method":"testMethod"}'
+    )
+
+
+async def test_send_rpc_request_scalar_result(unit_test_http_client_async):
+    """Test sending a JSON-RPC request with a scalar result model."""
+    raw = '{"jsonrpc":"2.0","id":1,"result":42}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        result = await unit_test_http_client_async.send_rpc_request(
+            _TestRpcRequest(), _ScalarRpcResult
+        )
+    assert result.root == 42
+
+
+async def test_send_rpc_request_jsonrpc_error(unit_test_http_client_async):
+    """Test JSON-RPC error responses are raised before result parsing."""
+    raw = (
+        '{"jsonrpc":"2.0","id":null,"error":{"code":-32602,"message":"Invalid params"}}'
+    )
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        with pytest.raises(SolanaJsonRpcError) as exc_info:
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(), _TestRpcResult
+            )
+    assert exc_info.value.code == -32602
+    assert exc_info.value.message == "Invalid params"
+    assert exc_info.value.data is None
+    assert exc_info.value.request_id is None
+    assert exc_info.value.method == "testMethod"
+    assert exc_info.value.name == "INVALID_PARAMS"
+
+
+async def test_send_rpc_request_custom_error_parser(unit_test_http_client_async):
+    """Test send_rpc_request accepts a custom JSON-RPC error parser."""
+
+    def parse_error(
+        error: JsonRpcErrorObject,
+        *,
+        request_id: int | str | None = None,
+        method: str | None = None,
+    ) -> Exception:
+        return _CustomRpcError(error.code, error.message, request_id, method)
+
+    raw = '{"jsonrpc":"2.0","id":7,"error":{"code":-32603,"message":"Provider-specific failure"}}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        with pytest.raises(_CustomRpcError) as exc_info:
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(id=7),
+                _TestRpcResult,
+                error_parser=parse_error,
+            )
+    assert exc_info.value.code == -32603
+    assert exc_info.value.message == "Provider-specific failure"
+    assert exc_info.value.request_id == 7
+    assert exc_info.value.method == "testMethod"
+
+
+async def test_send_rpc_request_malformed_envelope(unit_test_http_client_async):
+    """Test malformed JSON-RPC envelopes fail validation."""
+    raw = '{"jsonrpc":"2.0","id":1}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        with pytest.raises(ValidationError):
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(), _TestRpcResult
+            )
+
+
+async def test_send_rpc_request_http_exception(unit_test_http_client_async):
+    """Test send_rpc_request raises native Solana-py transport exceptions."""
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.side_effect = ReadTimeout("placeholder")
+        with pytest.raises(SolanaRpcException) as exc_info:
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(), _TestRpcResult
+            )
+    assert (
+        exc_info.value.error_msg
+        == "<class 'httpx2.ReadTimeout'> raised in \"_TestRpcRequest\" endpoint request"
+    )
 
 
 def test_client_address_sig_args_no_commitment(unit_test_http_client_async):
@@ -83,7 +222,10 @@ def test_get_account_info_body(unit_test_http_client_async):
         ),
     )
     actual = unit_test_http_client_async._get_account_info_body(
-        pubkey=pubkey, commitment=None, encoding="base64", data_slice=DataSliceOpts(offset=1, length=2)
+        pubkey=pubkey,
+        commitment=None,
+        encoding="base64",
+        data_slice=DataSliceOpts(offset=1, length=2),
     )
     assert expected == actual
 
@@ -100,7 +242,10 @@ def test_get_multiple_accounts_body(unit_test_http_client_async):
         ),
     )
     actual = unit_test_http_client_async._get_multiple_accounts_body(
-        pubkeys=pubkeys, commitment=None, encoding="base64", data_slice=DataSliceOpts(offset=1, length=2)
+        pubkeys=pubkeys,
+        commitment=None,
+        encoding="base64",
+        data_slice=DataSliceOpts(offset=1, length=2),
     )
     assert expected == actual
 
