@@ -4,7 +4,7 @@ import json
 from inspect import signature
 from unittest.mock import patch
 
-from httpx2 import ReadTimeout
+from httpx2 import ReadError, ReadTimeout
 import httpx2
 import pytest
 from pydantic import BaseModel, RootModel, ValidationError
@@ -66,7 +66,9 @@ class _ScalarRpcResult(RootModel[int]):
 class _CustomRpcError(Exception):
     """Test custom JSON-RPC error."""
 
-    def __init__(self, code: int, message: str, request_id: int | str | None, method: str | None) -> None:
+    def __init__(
+        self, code: int, message: str, request_id: int | str | None, method: str | None
+    ) -> None:
         """Initialize test custom JSON-RPC error."""
         self.code = code
         self.message = message
@@ -76,7 +78,9 @@ class _CustomRpcError(Exception):
 
 
 def _mock_response(text: str) -> httpx2.Response:
-    return httpx2.Response(200, text=text, request=httpx2.Request("POST", "http://localhost:8899"))
+    return httpx2.Response(
+        200, text=text, request=httpx2.Request("POST", "http://localhost:8899")
+    )
 
 
 def test_jsonrpc_request_to_json_forwards_model_dump_json_kwargs():
@@ -133,6 +137,7 @@ def test_async_client_passes_explicit_http_options():
             max_keepalive_connections=4,
             keepalive_expiry=2.0,
             http2=False,
+            max_transport_retries=2,
         )
     provider_mock.assert_called_once_with(
         None,
@@ -144,6 +149,7 @@ def test_async_client_passes_explicit_http_options():
         max_keepalive_connections=4,
         keepalive_expiry=2.0,
         http2=False,
+        max_transport_retries=2,
     )
 
 
@@ -154,7 +160,59 @@ async def test_async_client_http_exception(unit_test_http_client_async):
         with pytest.raises(SolanaRpcException) as exc_info:
             await unit_test_http_client_async.get_epoch_info()
         assert exc_info.type == SolanaRpcException
-        assert exc_info.value.error_msg == "<class 'httpx2.ReadTimeout'> raised in \"GetEpochInfo\" endpoint request"
+        assert (
+            exc_info.value.error_msg
+            == "<class 'httpx2.ReadTimeout'> raised in \"GetEpochInfo\" endpoint request"
+        )
+
+
+async def test_async_http_provider_retries_transport_error_once(
+    unit_test_http_client_async,
+):
+    """Test AsyncHTTPProvider retries transient transport errors once."""
+    raw = '{"jsonrpc":"2.0","id":1,"result":{"value":42}}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.side_effect = [ReadError("placeholder"), _mock_response(raw)]
+        result = await unit_test_http_client_async.send_rpc_request(
+            _TestRpcRequest(), _TestRpcResult
+        )
+    assert result == _TestRpcResult(value=42)
+    assert post_mock.call_count == 2
+
+
+async def test_async_http_provider_does_not_retry_http_status_error(
+    unit_test_http_client_async,
+):
+    """Test AsyncHTTPProvider only retries transport errors."""
+    response = httpx2.Response(
+        500,
+        text="server error",
+        request=httpx2.Request("POST", "http://localhost:8899"),
+    )
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = response
+        with pytest.raises(SolanaRpcException) as exc_info:
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(), _TestRpcResult
+            )
+    assert post_mock.call_count == 1
+    assert (
+        exc_info.value.error_msg
+        == "<class 'httpx2.HTTPStatusError'> raised in \"_TestRpcRequest\" endpoint request"
+    )
+
+
+async def test_async_http_provider_can_disable_transport_retries():
+    """Test max_transport_retries=0 disables transport retries."""
+    provider = AsyncHTTPProvider(max_transport_retries=0)
+    try:
+        with patch("httpx2.AsyncClient.post") as post_mock:
+            post_mock.side_effect = ReadError("placeholder")
+            with pytest.raises(SolanaRpcException):
+                await provider.make_request_unparsed(_TestRpcRequest())
+        assert post_mock.call_count == 1
+    finally:
+        await provider.close()
 
 
 async def test_send_rpc_request_success(unit_test_http_client_async):
@@ -162,14 +220,21 @@ async def test_send_rpc_request_success(unit_test_http_client_async):
     raw = '{"jsonrpc":"2.0","id":1,"result":{"value":42}}'
     with patch("httpx2.AsyncClient.post") as post_mock:
         post_mock.return_value = _mock_response(raw)
-        result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
+        result = await unit_test_http_client_async.send_rpc_request(
+            _TestRpcRequest(), _TestRpcResult
+        )
     assert result == _TestRpcResult(value=42)
-    assert post_mock.call_args.kwargs["content"] == '{"jsonrpc":"2.0","id":1,"method":"testMethod"}'
+    assert (
+        post_mock.call_args.kwargs["content"]
+        == '{"jsonrpc":"2.0","id":1,"method":"testMethod"}'
+    )
 
 
 async def test_send_rpc_request_requires_jsonrpc_request(unit_test_http_client_async):
     """Test send_rpc_request rejects loose serializers."""
-    with pytest.raises(TypeError, match="request must be an instance of JsonRpcRequest"):
+    with pytest.raises(
+        TypeError, match="request must be an instance of JsonRpcRequest"
+    ):
         await unit_test_http_client_async.send_rpc_request(_LooseRpcRequest(), _TestRpcResult)  # type: ignore[arg-type]
 
 
@@ -178,17 +243,23 @@ async def test_send_rpc_request_scalar_result(unit_test_http_client_async):
     raw = '{"jsonrpc":"2.0","id":1,"result":42}'
     with patch("httpx2.AsyncClient.post") as post_mock:
         post_mock.return_value = _mock_response(raw)
-        result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _ScalarRpcResult)
+        result = await unit_test_http_client_async.send_rpc_request(
+            _TestRpcRequest(), _ScalarRpcResult
+        )
     assert result.root == 42
 
 
 async def test_send_rpc_request_jsonrpc_error(unit_test_http_client_async):
     """Test JSON-RPC error responses are raised before result parsing."""
-    raw = '{"jsonrpc":"2.0","id":null,"error":{"code":-32602,"message":"Invalid params"}}'
+    raw = (
+        '{"jsonrpc":"2.0","id":null,"error":{"code":-32602,"message":"Invalid params"}}'
+    )
     with patch("httpx2.AsyncClient.post") as post_mock:
         post_mock.return_value = _mock_response(raw)
         with pytest.raises(SolanaJsonRpcError) as exc_info:
-            await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(), _TestRpcResult
+            )
     assert exc_info.value.code == -32602
     assert exc_info.value.message == "Invalid params"
     assert exc_info.value.data is None
@@ -229,7 +300,9 @@ async def test_send_rpc_request_malformed_envelope(unit_test_http_client_async):
     with patch("httpx2.AsyncClient.post") as post_mock:
         post_mock.return_value = _mock_response(raw)
         with pytest.raises(ValidationError):
-            await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(), _TestRpcResult
+            )
 
 
 async def test_send_rpc_request_http_exception(unit_test_http_client_async):
@@ -237,8 +310,13 @@ async def test_send_rpc_request_http_exception(unit_test_http_client_async):
     with patch("httpx2.AsyncClient.post") as post_mock:
         post_mock.side_effect = ReadTimeout("placeholder")
         with pytest.raises(SolanaRpcException) as exc_info:
-            await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
-    assert exc_info.value.error_msg == "<class 'httpx2.ReadTimeout'> raised in \"_TestRpcRequest\" endpoint request"
+            await unit_test_http_client_async.send_rpc_request(
+                _TestRpcRequest(), _TestRpcResult
+            )
+    assert (
+        exc_info.value.error_msg
+        == "<class 'httpx2.ReadTimeout'> raised in \"_TestRpcRequest\" endpoint request"
+    )
 
 
 def test_client_address_sig_args_no_commitment(unit_test_http_client_async):
