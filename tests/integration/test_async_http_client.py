@@ -4,6 +4,7 @@ import asyncio
 from time import monotonic
 
 import pytest
+from pydantic import BaseModel, Field
 import solders.system_program as sp
 from solders.keypair import Keypair
 from solders.message import MessageV0
@@ -652,6 +653,32 @@ async def test_get_version(test_http_client_async: AsyncClient):
     """Test get version."""
     resp = await test_http_client_async.get_version()
     assert_valid_response(resp)
+
+
+@pytest.mark.integration
+async def test_send_rpc_request_get_version(test_http_client_async: AsyncClient):
+    """Test a custom JSON-RPC serializer and Pydantic parser against local validator."""
+
+    class GetVersionRequest(BaseModel):
+        """Custom getVersion JSON-RPC request serializer."""
+
+        jsonrpc: str = "2.0"
+        id: str = "0"
+        method: str = "getVersion"
+
+        def to_json(self) -> str:
+            """Serialize the JSON-RPC request body."""
+            return self.model_dump_json(exclude_none=True)
+
+    class GetVersionResult(BaseModel):
+        """Custom getVersion JSON-RPC result parser."""
+
+        feature_set: int = Field(alias="feature-set")
+        solana_core: str = Field(alias="solana-core")
+
+    resp = await test_http_client_async.send_rpc_request(GetVersionRequest(), GetVersionResult)
+    assert resp.feature_set >= 0
+    assert resp.solana_core
 
 
 @pytest.mark.integration
