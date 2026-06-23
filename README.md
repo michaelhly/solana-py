@@ -53,13 +53,6 @@ pip install solana
 - [Python Cookbook](https://michaelhly.com/solana-py/cookbook/)
 - [Solana Cookbook](https://solanacookbook.com/)
 
-### API Client
-
-```py
-from solana.rpc.api import Client
-
-http_client = Client("https://api.devnet.solana.com")
-```
 
 ### Async API Client
 

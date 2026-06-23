@@ -23,7 +23,8 @@ async def test_get_recent_performance_samples_async(test_http_client_async: Asyn
 
 
 @mark.integration
-def test_get_recent_performance_samples(test_http_client, _wait_until_ready):
-    """Test get recent performance samples (synchronous)."""
-    resp = test_http_client.get_recent_performance_samples(4)
+@mark.asyncio
+async def test_get_recent_performance_samples(test_http_client_async: AsyncClient, _wait_until_ready):
+    """Test get recent performance samples (async)."""
+    resp = await test_http_client_async.get_recent_performance_samples(4)
     assert_valid_response(resp)
