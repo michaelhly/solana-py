@@ -1,11 +1,13 @@
 """Test async client."""
 
+import json
+from inspect import signature
 from unittest.mock import patch
 
+from httpx2 import ReadTimeout
 import httpx2
 import pytest
-from pydantic import RootModel, ValidationError
-from httpx2 import ReadTimeout
+from pydantic import BaseModel, RootModel, ValidationError
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
@@ -41,6 +43,16 @@ class _TestRpcRequest(JsonRpcRequest):
     method: str = "testMethod"
 
 
+class _LooseRpcRequest(BaseModel):
+    """Test request that does not inherit the JSON-RPC request base."""
+
+    method: str = "testMethod"
+
+    def to_json(self) -> str:
+        """Serialize the request to JSON."""
+        return self.model_dump_json(exclude_none=True)
+
+
 class _TestRpcResult(PydanticModel):
     """Test JSON-RPC result."""
 
@@ -65,6 +77,21 @@ class _CustomRpcError(Exception):
 
 def _mock_response(text: str) -> httpx2.Response:
     return httpx2.Response(200, text=text, request=httpx2.Request("POST", "http://localhost:8899"))
+
+
+def test_jsonrpc_request_to_json_forwards_model_dump_json_kwargs():
+    model_dump_json_parameters = list(signature(BaseModel.model_dump_json).parameters)
+    to_json_parameters = list(signature(JsonRpcRequest.to_json).parameters)
+    assert to_json_parameters == model_dump_json_parameters
+
+    dumped = _TestRpcRequest(id=None).to_json(exclude_none=False, indent=2)
+    assert "\n" in dumped
+    assert json.loads(dumped) == {
+        "jsonrpc": "2.0",
+        "id": None,
+        "method": "testMethod",
+        "params": None,
+    }
 
 
 def test_async_http_provider_uses_httpx2_defaults():
@@ -138,6 +165,12 @@ async def test_send_rpc_request_success(unit_test_http_client_async):
         result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
     assert result == _TestRpcResult(value=42)
     assert post_mock.call_args.kwargs["content"] == '{"jsonrpc":"2.0","id":1,"method":"testMethod"}'
+
+
+async def test_send_rpc_request_requires_jsonrpc_request(unit_test_http_client_async):
+    """Test send_rpc_request rejects loose serializers."""
+    with pytest.raises(TypeError, match="request must be an instance of JsonRpcRequest"):
+        await unit_test_http_client_async.send_rpc_request(_LooseRpcRequest(), _TestRpcResult)  # type: ignore[arg-type]
 
 
 async def test_send_rpc_request_scalar_result(unit_test_http_client_async):

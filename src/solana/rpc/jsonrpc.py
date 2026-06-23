@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import IntEnum
 from typing import Any, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel, model_validator
+from pydantic.main import IncEx
 
 from solana._pydantic import PydanticModel
 
@@ -29,9 +31,43 @@ class JsonRpcRequest(PydanticModel):
     method: str
     params: JsonRpcParams = None
 
-    def to_json(self) -> str:
+    def to_json(
+        self,
+        *,
+        indent: int | None = None,
+        ensure_ascii: bool = False,
+        include: IncEx | None = None,
+        exclude: IncEx | None = None,
+        context: Any | None = None,
+        by_alias: bool | None = None,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = True,
+        exclude_computed_fields: bool = False,
+        round_trip: bool = False,
+        warnings: bool | Literal["none", "warn", "error"] = True,
+        fallback: Callable[[Any], Any] | None = None,
+        serialize_as_any: bool = False,
+        polymorphic_serialization: bool | None = None,
+    ) -> str:
         """Serialize the request to JSON."""
-        return self.model_dump_json(exclude_none=True)
+        return self.model_dump_json(
+            indent=indent,
+            ensure_ascii=ensure_ascii,
+            include=include,
+            exclude=exclude,
+            context=context,
+            by_alias=by_alias,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+            exclude_computed_fields=exclude_computed_fields,
+            round_trip=round_trip,
+            warnings=warnings,
+            fallback=fallback,
+            serialize_as_any=serialize_as_any,
+            polymorphic_serialization=polymorphic_serialization,
+        )
 
 
 class JsonRpcErrorCode(IntEnum):

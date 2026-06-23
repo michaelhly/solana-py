@@ -17,6 +17,7 @@ from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
+from solana.rpc.jsonrpc import JsonRpcId, JsonRpcRequest
 from solana.rpc.models import DataSliceOpts, TxOpts
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
@@ -657,18 +658,13 @@ async def test_get_version(test_http_client_async: AsyncClient):
 
 @pytest.mark.integration
 async def test_send_rpc_request_get_version(test_http_client_async: AsyncClient):
-    """Test a custom JSON-RPC serializer and Pydantic parser against local validator."""
+    """Test a custom JSON-RPC request and Pydantic parser against local validator."""
 
-    class GetVersionRequest(BaseModel):
-        """Custom getVersion JSON-RPC request serializer."""
+    class GetVersionRequest(JsonRpcRequest):
+        """Custom getVersion JSON-RPC request."""
 
-        jsonrpc: str = "2.0"
-        id: str = "0"
+        id: JsonRpcId = "0"
         method: str = "getVersion"
-
-        def to_json(self) -> str:
-            """Serialize the JSON-RPC request body."""
-            return self.model_dump_json(exclude_none=True)
 
     class GetVersionResult(BaseModel):
         """Custom getVersion JSON-RPC result parser."""

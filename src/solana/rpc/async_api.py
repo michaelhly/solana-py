@@ -81,7 +81,7 @@ from .core import (
 )
 from .jsonrpc import (
     JsonRpcErrorParser,
-    JsonRpcRequestSerializer,
+    JsonRpcRequest,
     JsonRpcResponseEnvelope,
     TResult,
 )
@@ -147,12 +147,14 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
     async def send_rpc_request(
         self,
-        request: JsonRpcRequestSerializer,
+        request: JsonRpcRequest,
         result_model: type[TResult],
         *,
         error_parser: JsonRpcErrorParser | None = None,
     ) -> TResult:
         """Send a raw JSON-RPC request and parse the result with a Pydantic model."""
+        if not isinstance(request, JsonRpcRequest):
+            raise TypeError("request must be an instance of JsonRpcRequest")
         raw = await self._provider.make_request_unparsed(request)
         envelope = JsonRpcResponseEnvelope.model_validate_json(raw)
         result = envelope.unwrap_result(error_parser, method=getattr(request, "method", None))
