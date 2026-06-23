@@ -86,9 +86,7 @@ class AsyncHTTPProvider:
                 keepalive_expiry=keepalive_expiry,
             )
         self.session = httpx2.AsyncClient(**client_kwargs)
-        self._limiter: AsyncLimiter | None = (
-            AsyncLimiter(rate_limit, time_period=1) if rate_limit > 0 else None
-        )
+        self._limiter: AsyncLimiter | None = AsyncLimiter(rate_limit, time_period=1) if rate_limit > 0 else None
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
@@ -109,9 +107,7 @@ class AsyncHTTPProvider:
         raw_response = await self._post_request(body.to_json(), headers)
         return _after_request_unparsed(raw_response)
 
-    async def _post_request(
-        self, content: str, headers: dict[str, str]
-    ) -> httpx2.Response:
+    async def _post_request(self, content: str, headers: dict[str, str]) -> httpx2.Response:
         retries_left = self._max_transport_retries
         while True:
             try:
@@ -126,17 +122,11 @@ class AsyncHTTPProvider:
                     exc,
                 )
 
-    async def _post_request_once(
-        self, content: str, headers: dict[str, str]
-    ) -> httpx2.Response:
+    async def _post_request_once(self, content: str, headers: dict[str, str]) -> httpx2.Response:
         if self._limiter is not None:
             async with self._limiter:
-                return await self.session.post(
-                    self.endpoint_uri, content=content, headers=headers
-                )
-        return await self.session.post(
-            self.endpoint_uri, content=content, headers=headers
-        )
+                return await self.session.post(self.endpoint_uri, content=content, headers=headers)
+        return await self.session.post(self.endpoint_uri, content=content, headers=headers)
 
     async def __aenter__(self) -> AsyncHTTPProvider:
         """Use as a context manager."""
