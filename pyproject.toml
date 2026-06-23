@@ -1,10 +1,9 @@
 [project]
 name = "solana"
 version = "0.38.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -64,8 +63,8 @@ testpaths = ["src", "tests"]
 
 [tool.ruff]
 line-length = 120
-# Assume Python 3.10 (lower bound of supported python versions)
-target-version = "py310"
+# Assume Python 3.11 (lower bound of supported python versions)
+target-version = "py311"
 
 [tool.ruff.lint]
 # Enable Pyflakes `E` and `F` codes by default.

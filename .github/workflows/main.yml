@@ -25,7 +25,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           enable-cache: true
 
       - name: Install dependencies
@@ -44,7 +44,7 @@ jobs:
         # first list entry: lower bound, second list entry: upper bound
         # of the supported python versions, versions in between are assumed
         # to be supported as well without further testing
-        python-version: ["3.10", "3.14"]
+        python-version: ["3.11", "3.14"]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     defaults:
