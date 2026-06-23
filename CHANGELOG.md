@@ -15,7 +15,7 @@
 
 ### Removed
 
-- Add deprecated mark to `batch request`
+- **BREAKING**: Remove `make_batch_request`, `make_batch_request_unparsed`, and all batch-related type aliases from `solana.rpc.providers`. Use individual requests with `asyncio.gather` (async) or sequential calls (sync) instead.
 - Add deprecated marks to `Client`, `Token`, and `AsyncToken`
 
 ## [0.38.0] - 2026-06-21

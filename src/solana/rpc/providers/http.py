@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import warnings
-from typing import Dict, Optional, Tuple, Type, overload
+from typing import Dict, Optional, Type
 
 import httpx2
 from solders.rpc.requests import Body
-from solders.rpc.responses import RPCResult
 
 from ...exceptions import SolanaRpcException, handle_exceptions
 from .base import BaseProvider
@@ -16,28 +14,8 @@ from .core import (
     DEFAULT_TIMEOUT,
     T,
     _after_request_unparsed,
-    _BodiesTup,
-    _BodiesTup1,
-    _BodiesTup2,
-    _BodiesTup3,
-    _BodiesTup4,
-    _BodiesTup5,
     _HTTPProviderCore,
     _parse_raw,
-    _parse_raw_batch,
-    _RespTup,
-    _RespTup1,
-    _RespTup2,
-    _RespTup3,
-    _RespTup4,
-    _RespTup5,
-    _Tup,
-    _Tup1,
-    _Tup2,
-    _Tup3,
-    _Tup4,
-    _Tup5,
-    _Tuples,
 )
 
 
@@ -82,84 +60,3 @@ class HTTPProvider(BaseProvider, _HTTPProviderCore):
             # closes the connection mid-response under load.
             raw_response = self.session.post(**request_kwargs)
         return _after_request_unparsed(raw_response)
-
-    def _make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
-        """Make an HTTP batch request to an http rpc endpoint."""
-        request_kwargs = self._before_batch_request(reqs)
-        try:
-            raw_response = self.session.post(**request_kwargs)
-        except (httpx2.RemoteProtocolError, httpx2.ReadError):
-            raw_response = self.session.post(**request_kwargs)
-        return _after_request_unparsed(raw_response)
-
-    def make_batch_request_unparsed(self, reqs: Tuple[Body, ...]) -> str:
-        """Make an HTTP batch request to an http rpc endpoint.
-
-        .. deprecated::
-            ``make_batch_request_unparsed`` is deprecated and will be removed in a future release.
-            Use individual requests instead.
-            See https://github.com/michaelhly/solana-py/issues/645 for details.
-        """
-        warnings.warn(
-            "make_batch_request_unparsed is deprecated and will be removed in a future release. "
-            "Use individual requests instead. "
-            "See https://github.com/michaelhly/solana-py/issues/645 for details.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._make_batch_request_unparsed(reqs)
-
-    @overload
-    def make_batch_request(self, reqs: _BodiesTup, parsers: _Tup) -> _RespTup: ...
-
-    @overload
-    def make_batch_request(self, reqs: _BodiesTup1, parsers: _Tup1) -> _RespTup1: ...
-
-    @overload
-    def make_batch_request(self, reqs: _BodiesTup2, parsers: _Tup2) -> _RespTup2: ...
-
-    @overload
-    def make_batch_request(self, reqs: _BodiesTup3, parsers: _Tup3) -> _RespTup3: ...
-
-    @overload
-    def make_batch_request(self, reqs: _BodiesTup4, parsers: _Tup4) -> _RespTup4: ...
-
-    @overload
-    def make_batch_request(self, reqs: _BodiesTup5, parsers: _Tup5) -> _RespTup5: ...
-
-    def make_batch_request(self, reqs: Tuple[Body, ...], parsers: _Tuples) -> Tuple[RPCResult, ...]:
-        """Make a HTTP batch request to an http rpc endpoint.
-
-        .. deprecated::
-            ``make_batch_request`` is deprecated and will be removed in a future release.
-            Use individual requests with ``asyncio.gather`` (async) or sequential calls (sync) instead.
-            See https://github.com/michaelhly/solana-py/issues/645 for details.
-
-        Args:
-            reqs: A tuple of request objects from ``solders.rpc.requests``.
-            parsers: A tuple of response classes from ``solders.rpc.responses``.
-                Note: ``parsers`` should line up with ``reqs``.
-
-        Example:
-            >>> from solana.rpc.providers.http import HTTPProvider
-            >>> from solders.rpc.requests import GetBlockHeight, GetFirstAvailableBlock
-            >>> from solders.rpc.responses import GetBlockHeightResp, GetFirstAvailableBlockResp
-            >>> provider = HTTPProvider("https://api.devnet.solana.com")
-            >>> reqs = (GetBlockHeight(), GetFirstAvailableBlock())
-            >>> parsers = (GetBlockHeightResp, GetFirstAvailableBlockResp)
-            >>> provider.make_batch_request(reqs, parsers) # doctest: +SKIP
-            (GetBlockHeightResp(
-                158613909,
-            ), GetFirstAvailableBlockResp(
-                86753592,
-            ))
-        """
-        warnings.warn(
-            "make_batch_request is deprecated and will be removed in a future release. "
-            "Use individual requests instead. "
-            "See https://github.com/michaelhly/solana-py/issues/645 for details.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        raw = self._make_batch_request_unparsed(reqs)
-        return _parse_raw_batch(raw, parsers)
