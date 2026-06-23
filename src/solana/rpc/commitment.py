@@ -79,8 +79,8 @@ def commitment_comparator(a: Commitment, b: Commitment) -> Literal[-1, 0, 1]:
 
     Returns:
         -1 if ``a`` is less finalized than ``b``,
-         0 if they are equal,
-         1 if ``a`` is more finalized than ``b``.
+            0 if they are equal,
+            1 if ``a`` is more finalized than ``b``.
 
     Example:
         >>> commitment_comparator(Commitment.FINALIZED, Commitment.PROCESSED)

@@ -1,3 +1,3 @@
 # RPC Providers
 
-:::solana.rpc.providers
+:::solana.rpc.async_http_provider

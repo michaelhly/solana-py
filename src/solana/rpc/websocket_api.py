@@ -254,8 +254,8 @@ class SolanaWsClientProtocol(ClientConnection):
             program_id: The program ID.
             commitment: Commitment level to use.
             encoding: Encoding to use.
-            data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
-            `   length`: <usize> fields; only available for "base58" or "base64" encoding.
+            data_slice: (optional) Limit the returned account data using the provided ``offset``: <usize> and
+                ``length``: <usize> fields; only available for "base58" or "base64" encoding.
             filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
                 Note: an int entry is converted to a `dataSize` filter.
         """  # noqa: E501 # pylint: disable=line-too-long
