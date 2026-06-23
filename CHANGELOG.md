@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING**: Refactor `Commitment` from `NewType("Commitment", str)` to `StrEnum`. The valid values are now `Commitment.PROCESSED`, `Commitment.CONFIRMED`, and `Commitment.FINALIZED`. Module-level aliases (`Processed`, `Confirmed`, `Finalized`) are preserved for backward compatibility.
+- **BREAKING**: Remove deprecated commitment constants `Max`, `Root`, `Single`, and `Recent`. These values were never valid on the current Solana wire protocol and have emitted deprecation warnings since earlier versions.
+- **BREAKING**: Drop Python 3.10 support — the minimum required Python version is now 3.11.
+
+### Added
+
+- Add `get_commitment_score(commitment)` helper to rank commitment levels (0–2).
+- Add `commitment_comparator(a, b)` helper to compare two commitment levels.
+
+### Removed
+
 - Add deprecated mark to `batch request`
 - Add deprecated marks to `Client`, `Token`, and `AsyncToken`
 
