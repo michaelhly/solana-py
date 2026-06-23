@@ -15,11 +15,11 @@ from solana.rpc.types import TokenAccountOpts as DeprecatedTokenAccountOpts
 from solana.rpc.types import TxOpts as DeprecatedTxOpts
 from solana.utils.cluster import ClusterUrls as DeprecatedClusterUrls
 from solana.utils.cluster import Endpoint as DeprecatedEndpoint
-from solana.vote_program import WithdrawFromVoteAccountParams as DeprecatedWithdrawFromVoteAccountParams
+from solana.vote_program import (
+    WithdrawFromVoteAccountParams as DeprecatedWithdrawFromVoteAccountParams,
+)
 from spl.memo.instructions import MemoParams as DeprecatedMemoParams
 from spl.token import instructions as token_instructions
-from spl.token.core import AccountInfo as DeprecatedAccountInfo
-from spl.token.core import MintInfo as DeprecatedMintInfo
 
 # (deprecated NamedTuple, new Pydantic model) pairs that should be field-compatible.
 _PARITY_PAIRS = [
@@ -27,11 +27,12 @@ _PARITY_PAIRS = [
     (DeprecatedMemcmpOpts, rpc_models.MemcmpOpts),
     (DeprecatedTokenAccountOpts, rpc_models.TokenAccountOpts),
     (DeprecatedTxOpts, rpc_models.TxOpts),
-    (DeprecatedAccountInfo, token_models.AccountInfo),
-    (DeprecatedMintInfo, token_models.MintInfo),
     (DeprecatedClusterUrls, rpc_models.ClusterUrls),
     (DeprecatedEndpoint, rpc_models.Endpoint),
-    (DeprecatedWithdrawFromVoteAccountParams, solana_models.WithdrawFromVoteAccountParams),
+    (
+        DeprecatedWithdrawFromVoteAccountParams,
+        solana_models.WithdrawFromVoteAccountParams,
+    ),
     (DeprecatedMemoParams, memo_models.MemoParams),
 ]
 

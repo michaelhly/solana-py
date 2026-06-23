@@ -2,23 +2,17 @@
 
 import os
 import shutil
-import time
-from contextlib import suppress
-from pathlib import Path
 from typing import AsyncGenerator, Generator
 
 import pytest
 from solders.keypair import Keypair
 
-from solana.rpc.api import Client
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
 from tests.validator_runtime import (
     ValidatorConfig,
     acquire_shared_validator,
-    env_int,
     release_shared_validator,
-    tail_file,
     validator_is_healthy,
 )
 from tests.utils import AIRDROP_AMOUNT, assert_valid_response
@@ -74,51 +68,10 @@ def validator_ws_url(solana_test_validator: ValidatorConfig) -> str:
 
 
 @pytest.fixture(scope="session")
-def unit_test_http_client() -> Client:
-    """Client to be used in unit tests."""
-    client = Client(commitment=Processed)
-    return client
-
-
-@pytest.fixture(scope="session")
 def unit_test_http_client_async() -> AsyncClient:
     """Async client to be used in unit tests."""
     client = AsyncClient(commitment=Processed)
     return client
-
-
-@pytest.fixture(scope="session")
-def test_http_client(
-    solana_test_validator: ValidatorConfig,
-    validator_rpc_url: str,
-) -> Client:
-    """Sync HTTP client pointed at the local test validator."""
-    client = Client(endpoint=validator_rpc_url, commitment=Processed)
-    # Wait until slot 5 is finalized so early-slot tests (e.g. get_block) pass
-    timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 120)
-    deadline = time.time() + timeout_secs
-    last_error: Exception | None = None
-    while time.time() < deadline:
-        try:
-            client.get_block(5)
-            return client
-        except Exception as exc:  # noqa: BLE001
-            last_error = exc
-            time.sleep(1)
-    slot_debug = "unknown"
-    block_height_debug = "unknown"
-    with suppress(Exception):
-        slot_debug = str(client.get_slot().value)
-    with suppress(Exception):
-        block_height_debug = str(client.get_block_height().value)
-    log_tail = tail_file(Path(solana_test_validator.ledger_dir) / "validator.log")
-    raise RuntimeError(
-        "Validator did not finalize slot 5 within "
-        f"{timeout_secs} s at {validator_rpc_url} "
-        f"(worker={solana_test_validator.worker_id}, slot={slot_debug}, block_height={block_height_debug}).\n"
-        f"last_error={last_error!r}\n"
-        f"validator_log_tail:\n{log_tail}"
-    )
 
 
 @pytest.fixture(scope="module")
@@ -128,25 +81,17 @@ async def test_http_client_async(
 ) -> AsyncGenerator[AsyncClient, None]:
     """Async HTTP client pointed at the local test validator."""
     http_client = AsyncClient(endpoint=validator_rpc_url, commitment=Processed)
-    # Use a sync client for the readiness check so the async client's connection
-    # pool is not seeded with connections tied to the setup event loop.
-    sync_client = Client(endpoint=validator_rpc_url, commitment=Processed)
-    deadline = time.time() + 15
-    while time.time() < deadline:
-        if sync_client.is_connected():
-            break
-        time.sleep(1)
     yield http_client
     await http_client.close()
 
 
 @pytest.fixture(scope="function")
-def random_funded_keypair(test_http_client: Client) -> Keypair:
+async def random_funded_keypair(test_http_client_async: AsyncClient) -> Keypair:
     """A new keypair with some lamports."""
     kp = Keypair()
-    resp = test_http_client.request_airdrop(kp.pubkey(), AIRDROP_AMOUNT)
+    resp = await test_http_client_async.request_airdrop(kp.pubkey(), AIRDROP_AMOUNT)
     assert_valid_response(resp)
-    test_http_client.confirm_transaction(resp.value)
-    balance = test_http_client.get_balance(kp.pubkey())
+    await test_http_client_async.confirm_transaction(resp.value)
+    balance = await test_http_client_async.get_balance(kp.pubkey())
     assert balance.value == AIRDROP_AMOUNT
     return kp

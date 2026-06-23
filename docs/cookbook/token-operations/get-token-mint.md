@@ -14,7 +14,7 @@ import asyncio
 from solana.rpc.async_api import AsyncClient
 from solders.pubkey import Pubkey
 from spl.token._layouts import MINT_LAYOUT
-from spl.token.core import MintInfo
+from spl.token.models import MintInfo
 
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")

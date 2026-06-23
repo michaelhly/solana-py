@@ -44,7 +44,6 @@ plugins:
 nav:
   - index.md
   - RPC API:
-      - rpc/api.md
       - rpc/async_api.md
       - rpc/websocket.md
       - rpc/commitment.md
@@ -56,11 +55,8 @@ nav:
   - Solana Program Library (SPL):
       - spl/intro.md
       - Token:
-          - spl/token/client.md
-          - spl/token/async_client.md
           - spl/token/constants.md
           - spl/token/instructions.md
-          - spl/token/core.md
           - spl/token/models.md
       - Memo Program:
           - spl/memo/intro.md
