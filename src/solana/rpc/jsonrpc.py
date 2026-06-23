@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable
 from enum import IntEnum
-from typing import Any, Literal, Protocol, TypeVar
+from typing import Any, Generic, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel, model_validator
 from pydantic.main import IncEx
 
 from solana._pydantic import PydanticModel
 
-JsonRpcId = int | str | None
-JsonRpcParams = list[Any] | dict[str, Any] | None
+JsonRpcParamT = TypeVar("JsonRpcParamT", bound=BaseModel)
 
 
 class JsonRpcRequestSerializer(Protocol):
@@ -23,13 +23,13 @@ class JsonRpcRequestSerializer(Protocol):
         ...
 
 
-class JsonRpcRequest(PydanticModel):
+class JsonRpcRequest(PydanticModel, Generic[JsonRpcParamT]):
     """Base Pydantic JSON-RPC request model."""
 
     jsonrpc: Literal["2.0"] = "2.0"
-    id: JsonRpcId = 1
+    id: str | int = "1"
     method: str
-    params: JsonRpcParams = None
+    params: list[JsonRpcParamT] | None = None
 
     def to_json(
         self,
@@ -118,7 +118,7 @@ class SolanaJsonRpcError(Exception):
         message: str,
         data: Any | None = None,
         *,
-        request_id: JsonRpcId = None,
+        request_id: str | int,
         method: str | None = None,
         name: str | None = None,
     ) -> None:
@@ -131,12 +131,32 @@ class SolanaJsonRpcError(Exception):
         self.name = name
         super().__init__(message)
 
+    def to_json(
+        self,
+        *,
+        indent: int | None = None,
+        ensure_ascii: bool = False,
+        exclude_none: bool = False,
+    ) -> str:
+        """Serialize the JSON-RPC error to JSON."""
+        data = {
+            "code": self.code,
+            "message": self.message,
+            "data": self.data,
+            "request_id": self.request_id,
+            "method": self.method,
+            "name": self.name,
+        }
+        if exclude_none:
+            data = {key: value for key, value in data.items() if value is not None}
+        return json.dumps(data, indent=indent, ensure_ascii=ensure_ascii, default=str)
+
     @classmethod
     def from_error_object(
         cls,
         error: JsonRpcErrorObject,
         *,
-        request_id: JsonRpcId = None,
+        request_id: str | int,
         method: str | None = None,
     ) -> "SolanaJsonRpcError":
         """Create an exception from a JSON-RPC error object."""
@@ -158,7 +178,7 @@ class JsonRpcErrorParser(Protocol):
         self,
         error: JsonRpcErrorObject,
         *,
-        request_id: JsonRpcId = None,
+        request_id: str | int,
         method: str | None = None,
     ) -> Exception:
         """Parse a JSON-RPC error object into an exception."""
@@ -168,7 +188,7 @@ class JsonRpcErrorParser(Protocol):
 def default_jsonrpc_error_parser(
     error: JsonRpcErrorObject,
     *,
-    request_id: JsonRpcId = None,
+    request_id: str | int,
     method: str | None = None,
 ) -> SolanaJsonRpcError:
     """Default JSON-RPC error parser."""
@@ -179,7 +199,7 @@ class JsonRpcResponseEnvelope(PydanticModel):
     """JSON-RPC response envelope."""
 
     jsonrpc: Literal["2.0"]
-    id: JsonRpcId = None
+    id: str | int
     result: Any | None = None
     error: JsonRpcErrorObject | None = None
 

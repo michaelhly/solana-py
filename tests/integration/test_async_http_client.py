@@ -17,7 +17,7 @@ from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
-from solana.rpc.jsonrpc import JsonRpcId, JsonRpcRequest
+from solana.rpc.jsonrpc import JsonRpcRequest
 from solana.rpc.models import DataSliceOpts, TxOpts
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
@@ -663,7 +663,7 @@ async def test_send_rpc_request_get_version(test_http_client_async: AsyncClient)
     class GetVersionRequest(JsonRpcRequest):
         """Custom getVersion JSON-RPC request."""
 
-        id: JsonRpcId = "0"
+        id: str | int = "0"
         method: str = "getVersion"
 
     class GetVersionResult(BaseModel):

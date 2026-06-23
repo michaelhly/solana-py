@@ -43,6 +43,18 @@ class _TestRpcRequest(JsonRpcRequest):
     method: str = "testMethod"
 
 
+class _TypedRpcParams(PydanticModel):
+    """Test typed JSON-RPC params."""
+
+    value: int
+
+
+class _TypedRpcRequest(JsonRpcRequest[_TypedRpcParams]):
+    """Test JSON-RPC request with typed params."""
+
+    method: str = "typedMethod"
+
+
 class _LooseRpcRequest(BaseModel):
     """Test request that does not inherit the JSON-RPC request base."""
 
@@ -63,16 +75,12 @@ class _ScalarRpcResult(RootModel[int]):
     """Test scalar JSON-RPC result."""
 
 
-class _CustomRpcError(Exception):
+class _CustomRpcError(SolanaJsonRpcError):
     """Test custom JSON-RPC error."""
 
-    def __init__(self, code: int, message: str, request_id: int | str | None, method: str | None) -> None:
+    def __init__(self, code: int, message: str, request_id: str | int, method: str | None) -> None:
         """Initialize test custom JSON-RPC error."""
-        self.code = code
-        self.message = message
-        self.request_id = request_id
-        self.method = method
-        super().__init__(message)
+        super().__init__(code, message, request_id=request_id, method=method)
 
 
 def _mock_response(text: str) -> httpx2.Response:
@@ -84,13 +92,54 @@ def test_jsonrpc_request_to_json_forwards_model_dump_json_kwargs():
     to_json_parameters = list(signature(JsonRpcRequest.to_json).parameters)
     assert to_json_parameters == model_dump_json_parameters
 
-    dumped = _TestRpcRequest(id=None).to_json(exclude_none=False, indent=2)
+    dumped = _TestRpcRequest().to_json(exclude_none=False, indent=2)
     assert "\n" in dumped
     assert json.loads(dumped) == {
         "jsonrpc": "2.0",
-        "id": None,
+        "id": "1",
         "method": "testMethod",
         "params": None,
+    }
+
+
+def test_jsonrpc_request_supports_typed_params():
+    request = JsonRpcRequest[_TypedRpcParams].model_validate({"method": "typedMethod", "params": [{"value": 2}]})
+
+    assert request.params == [_TypedRpcParams(value=2)]
+    assert json.loads(request.to_json()) == {
+        "jsonrpc": "2.0",
+        "id": "1",
+        "method": "typedMethod",
+        "params": [{"value": 2}],
+    }
+
+
+def test_jsonrpc_request_typed_params_must_be_list():
+    with pytest.raises(ValidationError):
+        JsonRpcRequest[_TypedRpcParams].model_validate({"method": "typedMethod", "params": {"value": 2}})
+
+
+def test_solana_jsonrpc_error_to_json():
+    error = SolanaJsonRpcError.from_error_object(
+        JsonRpcErrorObject(code=-32602, message="Invalid params"),
+        request_id="1",
+        method="testMethod",
+    )
+
+    assert json.loads(error.to_json()) == {
+        "code": -32602,
+        "message": "Invalid params",
+        "data": None,
+        "request_id": "1",
+        "method": "testMethod",
+        "name": "INVALID_PARAMS",
+    }
+    assert json.loads(error.to_json(exclude_none=True)) == {
+        "code": -32602,
+        "message": "Invalid params",
+        "request_id": "1",
+        "method": "testMethod",
+        "name": "INVALID_PARAMS",
     }
 
 
@@ -208,7 +257,7 @@ async def test_send_rpc_request_success(unit_test_http_client_async):
         post_mock.return_value = _mock_response(raw)
         result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
     assert result == _TestRpcResult(value=42)
-    assert post_mock.call_args.kwargs["content"] == '{"jsonrpc":"2.0","id":1,"method":"testMethod"}'
+    assert post_mock.call_args.kwargs["content"] == '{"jsonrpc":"2.0","id":"1","method":"testMethod"}'
 
 
 async def test_send_rpc_request_requires_jsonrpc_request(unit_test_http_client_async):
@@ -228,7 +277,7 @@ async def test_send_rpc_request_scalar_result(unit_test_http_client_async):
 
 async def test_send_rpc_request_jsonrpc_error(unit_test_http_client_async):
     """Test JSON-RPC error responses are raised before result parsing."""
-    raw = '{"jsonrpc":"2.0","id":null,"error":{"code":-32602,"message":"Invalid params"}}'
+    raw = '{"jsonrpc":"2.0","id":"1","error":{"code":-32602,"message":"Invalid params"}}'
     with patch("httpx2.AsyncClient.post") as post_mock:
         post_mock.return_value = _mock_response(raw)
         with pytest.raises(SolanaJsonRpcError) as exc_info:
@@ -236,7 +285,7 @@ async def test_send_rpc_request_jsonrpc_error(unit_test_http_client_async):
     assert exc_info.value.code == -32602
     assert exc_info.value.message == "Invalid params"
     assert exc_info.value.data is None
-    assert exc_info.value.request_id is None
+    assert exc_info.value.request_id == "1"
     assert exc_info.value.method == "testMethod"
     assert exc_info.value.name == "INVALID_PARAMS"
 
@@ -247,7 +296,7 @@ async def test_send_rpc_request_custom_error_parser(unit_test_http_client_async)
     def parse_error(
         error: JsonRpcErrorObject,
         *,
-        request_id: int | str | None = None,
+        request_id: str | int,
         method: str | None = None,
     ) -> Exception:
         return _CustomRpcError(error.code, error.message, request_id, method)
@@ -265,6 +314,12 @@ async def test_send_rpc_request_custom_error_parser(unit_test_http_client_async)
     assert exc_info.value.message == "Provider-specific failure"
     assert exc_info.value.request_id == 7
     assert exc_info.value.method == "testMethod"
+    assert json.loads(exc_info.value.to_json(exclude_none=True)) == {
+        "code": -32603,
+        "message": "Provider-specific failure",
+        "request_id": 7,
+        "method": "testMethod",
+    }
 
 
 async def test_send_rpc_request_malformed_envelope(unit_test_http_client_async):
