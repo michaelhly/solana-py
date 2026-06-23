@@ -8,14 +8,14 @@
 - **BREAKING**: Remove deprecated `Token` (sync SPL Token client) and `AsyncToken` (async SPL Token client) — use `AsyncClient` with `spl.token.instructions` directly instead.
 - **BREAKING**: Remove deprecated `_TokenCore`, `AccountInfo`, and `MintInfo` from `spl.token.core` — use `spl.token.models` instead.
 - **BREAKING**: Remove sync HTTP provider (`solana.rpc.providers.http.HTTPProvider`) and sync base provider (`solana.rpc.providers.base.BaseProvider`) — use `solana.rpc.providers.async_http.AsyncHTTPProvider` instead.
-- Remove integration tests `test_http_client.py` and `test_async_token_client.py`, and unit test `test_client.py`.
+- Remove integration test `test_http_client.py` and unit test `test_client.py`.
 - Remove obsolete documentation pages (`docs/rpc/api.md`, `docs/spl/token/client.md`, `docs/spl/token/async_client.md`, `docs/spl/token/core.md`).
 - Update `random_funded_keypair` fixture to be async.
 
 ### Changed
 
-- Rewrite `test_token_client.py` to use `AsyncClient` with `spl.token.instructions` directly instead of the removed `Token`/`AsyncToken` classes.
-- Rewrite `test_memo.py` to use `AsyncClient` with `spl.memo.instructions` directly instead of the removed `Client` class.
+- Rewrite `test_spl_token.py` to use `AsyncClient` with `spl.token.instructions` directly instead of the removed `Token`/`AsyncToken` classes.
+- Rewrite `test_spl_memo.py` to use `AsyncClient` with `spl.memo.instructions` directly instead of the removed `Client` class.
 - Update `README.md` code examples to use `AsyncClient`.
 - Update `mkdocs.yml` navigation to remove deleted doc pages.
 - Update `docs/cookbook/token-operations/get-token-mint.md` to import from `spl.token.models` instead of `spl.token.core`.
