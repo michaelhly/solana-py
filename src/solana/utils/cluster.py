@@ -2,36 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Literal, NamedTuple
-from typing_extensions import deprecated
+from typing import Literal
 
-from solana.rpc.models import ClusterUrls as ClusterUrlsModel, Endpoint as EndpointModel
+from solana.rpc.models import ClusterUrls, Endpoint
 
-
-@deprecated("ClusterUrls is deprecated; use solana.rpc.models instead.")
-class ClusterUrls(NamedTuple):
-    """A collection of urls for each cluster."""
-
-    devnet: str
-    testnet: str
-    mainnet_beta: str
-
-
-@deprecated("Endpoint is deprecated; use solana.rpc.models instead.")
-class Endpoint(NamedTuple):
-    """Container for http and https cluster urls."""
-
-    http: ClusterUrls
-    https: ClusterUrls
-
-
-ENDPOINT = EndpointModel(
-    http=ClusterUrlsModel(
+ENDPOINT = Endpoint(
+    http=ClusterUrls(
         devnet="http://api.devnet.solana.com",
         testnet="http://api.testnet.solana.com",
         mainnet_beta="http://api.mainnet-beta.solana.com/",
     ),
-    https=ClusterUrlsModel(
+    https=ClusterUrls(
         devnet="https://api.devnet.solana.com",
         testnet="https://api.testnet.solana.com",
         mainnet_beta="https://api.mainnet-beta.solana.com/",

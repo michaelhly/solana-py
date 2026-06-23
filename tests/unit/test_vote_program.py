@@ -2,7 +2,6 @@
 
 import base64
 
-import pytest
 from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.message import MessageV0
@@ -11,11 +10,7 @@ import solana.vote_program as vp
 from solana import models
 
 
-@pytest.mark.parametrize(
-    "params_cls",
-    [vp.WithdrawFromVoteAccountParams, models.WithdrawFromVoteAccountParams],
-)
-def test_withdraw_from_vote_account(params_cls):
+def test_withdraw_from_vote_account():
     withdrawer_keypair = Keypair.from_bytes(
         [
             134,
@@ -87,21 +82,12 @@ def test_withdraw_from_vote_account(params_cls):
     vote_account_pubkey = Pubkey.from_string("CWqJy1JpmBcx7awpeANfrPk6AsQKkmego8ujjaYPGFEk")
     receiver_account_pubkey = Pubkey.from_string("A1V5gsis39WY42djdTKUFsgE5oamk4nrtg16WnKTuzZK")
     recent_blockhash = Hash.from_string("Add1tV7kJgNHhTtx3Dgs6dhC7kyXrGJQZ2tJGW15tLDH")
-    if params_cls is vp.WithdrawFromVoteAccountParams:
-        with pytest.deprecated_call():
-            params = params_cls(
-                vote_account_from_pubkey=vote_account_pubkey,
-                to_pubkey=receiver_account_pubkey,
-                withdrawer=withdrawer_keypair.pubkey(),
-                lamports=2_000_000_000,
-            )
-    else:
-        params = params_cls(
-            vote_account_from_pubkey=vote_account_pubkey,
-            to_pubkey=receiver_account_pubkey,
-            withdrawer=withdrawer_keypair.pubkey(),
-            lamports=2_000_000_000,
-        )
+    params = models.WithdrawFromVoteAccountParams(
+        vote_account_from_pubkey=vote_account_pubkey,
+        to_pubkey=receiver_account_pubkey,
+        withdrawer=withdrawer_keypair.pubkey(),
+        lamports=2_000_000_000,
+    )
 
     msg = MessageV0.try_compile(
         payer=withdrawer_keypair.pubkey(),

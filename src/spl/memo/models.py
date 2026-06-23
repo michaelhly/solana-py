@@ -1,8 +1,4 @@
-"""Pydantic models for memo program instructions.
-
-These are the Pydantic successors to the deprecated ``NamedTuple`` types in
-:mod:`spl.memo.instructions`.
-"""
+"""Pydantic models for memo program instructions."""
 
 from __future__ import annotations
 

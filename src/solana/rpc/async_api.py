@@ -65,7 +65,6 @@ from solders.rpc.responses import (
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
-from solana.rpc import types
 from solana.rpc.models import (
     DataSliceOpts as DataSliceOptsModel,
     MemcmpOpts as MemcmpOptsModel,
@@ -162,7 +161,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
-        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
+        data_slice: Optional[DataSliceOptsModel] = None,
     ) -> GetAccountInfoResp:
         """Returns all the account info for the specified public key.
 
@@ -620,7 +619,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         pubkeys: List[Pubkey],
         commitment: Optional[Commitment] = None,
         encoding: str = "base64",
-        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
+        data_slice: Optional[DataSliceOptsModel] = None,
     ) -> GetMultipleAccountsResp:
         """Returns all the account info for a list of public keys.
 
@@ -681,8 +680,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
         encoding: Optional[str] = None,
-        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOptsModel]] = None,
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOptsModel]]] = None,
+        data_slice: Optional[DataSliceOptsModel] = None,
+        filters: Optional[Sequence[Union[int, MemcmpOptsModel]]] = None,
     ) -> GetProgramAccountsResp:
         """Returns all accounts owned by the provided program Pubkey.
 
@@ -719,7 +718,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         self,
         pubkey: Pubkey,
         commitment: Optional[Commitment] = None,
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOptsModel]]] = None,
+        filters: Optional[Sequence[Union[int, MemcmpOptsModel]]] = None,
     ) -> GetProgramAccountsMaybeJsonParsedResp:
         """Returns all accounts owned by the provided program Pubkey.
 
@@ -873,7 +872,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_delegate(
         self,
         delegate: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
+        opts: TokenAccountOptsModel,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateResp:
         """Returns all SPL Token accounts by approved Delegate (UNSTABLE).
@@ -889,7 +888,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_delegate_json_parsed(
         self,
         delegate: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
+        opts: TokenAccountOptsModel,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByDelegateJsonParsedResp:
         """Returns all SPL Token accounts by approved delegate in JSON format (UNSTABLE).
@@ -905,7 +904,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_owner_json_parsed(
         self,
         owner: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
+        opts: TokenAccountOptsModel,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerJsonParsedResp:
         """Returns all SPL Token accounts by token owner in JSON format (UNSTABLE).
@@ -921,7 +920,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def get_token_accounts_by_owner(
         self,
         owner: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOptsModel],
+        opts: TokenAccountOptsModel,
         commitment: Optional[Commitment] = None,
     ) -> GetTokenAccountsByOwnerResp:
         """Returns all SPL Token accounts by token owner (UNSTABLE).
@@ -1029,9 +1028,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._request_airdrop_body(pubkey, lamports, commitment)
         return await self._provider.make_request(body, RequestAirdropResp)
 
-    async def send_raw_transaction(
-        self, txn: bytes, opts: Optional[Union[types.TxOpts, TxOptsModel]] = None
-    ) -> SendTransactionResp:
+    async def send_raw_transaction(self, txn: bytes, opts: Optional[TxOptsModel] = None) -> SendTransactionResp:
         """Send a transaction that has already been signed and serialized into the wire format.
 
         Args:
@@ -1072,7 +1069,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
     async def send_transaction(
         self,
         txn: VersionedTransaction,
-        opts: Optional[Union[types.TxOpts, TxOptsModel]] = None,
+        opts: Optional[TxOptsModel] = None,
     ) -> SendTransactionResp:
         """Send a transaction.
 

@@ -86,7 +86,6 @@ from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 from solders.transaction_status import UiTransactionEncoding
 
-from solana.rpc import types
 from solana.rpc.models import (
     DataSliceOpts,
     MemcmpOpts,
@@ -180,7 +179,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment],
         encoding: str,
-        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOpts]],
+        data_slice: Optional[DataSliceOpts],
     ) -> GetAccountInfo:
         data_slice_to_use = (
             None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
@@ -296,7 +295,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkeys: List[Pubkey],
         commitment: Optional[Commitment],
         encoding: str,
-        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOpts]],
+        data_slice: Optional[DataSliceOpts],
     ) -> GetMultipleAccounts:
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -315,8 +314,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         pubkey: Pubkey,
         commitment: Optional[Commitment],
         encoding: Optional[str],
-        data_slice: Optional[Union[types.DataSliceOpts, DataSliceOpts]],
-        filters: Optional[Sequence[Union[int, types.MemcmpOpts, MemcmpOpts]]] = None,
+        data_slice: Optional[DataSliceOpts],
+        filters: Optional[Sequence[Union[int, MemcmpOpts]]] = None,
     ) -> GetProgramAccounts:  # pylint: disable=too-many-arguments
         encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -401,7 +400,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_convert(
         self,
         pubkey: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
+        opts: TokenAccountOpts,
         commitment: Optional[Commitment],
     ) -> Tuple[
         Pubkey,
@@ -435,7 +434,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_delegate_body(
         self,
         delegate: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
+        opts: TokenAccountOpts,
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByDelegate:
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts, commitment)
@@ -444,7 +443,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_owner_body(
         self,
         owner: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
+        opts: TokenAccountOpts,
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByOwner:
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts, commitment)
@@ -453,14 +452,14 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_delegate_json_parsed_body(
         self,
         delegate: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
+        opts: TokenAccountOpts,
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByDelegate:
         opts_to_use = TokenAccountOpts(
             mint=opts.mint,
             program_id=opts.program_id,
             encoding="jsonParsed",
-            data_slice=(None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice)),
+            data_slice=opts.data_slice,
         )
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts_to_use, commitment)
         return GetTokenAccountsByDelegate(pubkey, filter_, config)
@@ -468,14 +467,14 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_token_accounts_by_owner_json_parsed_body(
         self,
         owner: Pubkey,
-        opts: Union[types.TokenAccountOpts, TokenAccountOpts],
+        opts: TokenAccountOpts,
         commitment: Optional[Commitment],
     ) -> GetTokenAccountsByOwner:
         opts_to_use = TokenAccountOpts(
             mint=opts.mint,
             program_id=opts.program_id,
             encoding="jsonParsed",
-            data_slice=(None if opts.data_slice is None else DataSliceOpts.from_namedtuple(opts.data_slice)),
+            data_slice=opts.data_slice,
         )
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts_to_use, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
@@ -514,7 +513,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return RequestAirdrop(pubkey, lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
 
-    def _send_raw_transaction_body(self, txn: bytes, opts: Union[types.TxOpts, TxOptsModel]) -> SendRawTransaction:
+    def _send_raw_transaction_body(self, txn: bytes, opts: TxOptsModel) -> SendRawTransaction:
         preflight_commitment_to_use = _COMMITMENT_TO_SOLDERS[opts.preflight_commitment or self._commitment]
         config = RpcSendTransactionConfig(
             skip_preflight=opts.skip_preflight,
@@ -528,7 +527,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _send_raw_transaction_post_send_args(
-        resp: SendTransactionResp, opts: Union[types.TxOpts, TxOptsModel]
+        resp: SendTransactionResp, opts: TxOptsModel
     ) -> Tuple[SendTransactionResp, Commitment, Optional[int]]:
         return resp, opts.preflight_commitment, opts.last_valid_block_height
 

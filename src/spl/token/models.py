@@ -1,10 +1,4 @@
-"""Pydantic models for SPL token types.
-
-These are the Pydantic successors to the deprecated ``NamedTuple`` types in
-:mod:`spl.token.core` (account/mint info) and :mod:`spl.token.instructions` (instruction
-params). They carry the same field names and defaults, so migrating is a matter of
-changing the import path.
-"""
+"""Pydantic models for SPL token types."""
 
 from __future__ import annotations
 

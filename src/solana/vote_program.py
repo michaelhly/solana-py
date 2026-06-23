@@ -2,34 +2,15 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple, Union
-from typing_extensions import deprecated
-
 from solders.instruction import AccountMeta, Instruction
-from solders.pubkey import Pubkey
 
 from solana import models
 from solana.constants import VOTE_PROGRAM_ID
 from solana._layouts.vote_instructions import VOTE_INSTRUCTIONS_LAYOUT, InstructionType
 
 
-# Instruction Params
-@deprecated("WithdrawFromVoteAccountParams is deprecated; use solana.models instead.")
-class WithdrawFromVoteAccountParams(NamedTuple):
-    """Transfer SOL from vote account to identity."""
-
-    vote_account_from_pubkey: Pubkey
-    """"""
-    to_pubkey: Pubkey
-    """"""
-    lamports: int
-    """"""
-    withdrawer: Pubkey
-    """"""
-
-
 def withdraw_from_vote_account(
-    params: Union[WithdrawFromVoteAccountParams, models.WithdrawFromVoteAccountParams],
+    params: models.WithdrawFromVoteAccountParams,
 ) -> Instruction:
     """Generate an instruction that transfers lamports from a vote account to any other.
 
@@ -53,7 +34,6 @@ def withdraw_from_vote_account(
     Returns:
         The generated instruction.
     """
-    params = models.WithdrawFromVoteAccountParams.from_namedtuple(params)
     data = VOTE_INSTRUCTIONS_LAYOUT.build(
         {
             "instruction_type": InstructionType.WITHDRAW_FROM_VOTE_ACCOUNT,
