@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Sequence
 from time import time
-from typing import Any
 
 from solders.message import MessageV0
 from solders.pubkey import Pubkey
@@ -151,7 +150,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
 
     async def send_rpc_request(
         self,
-        request: JsonRpcRequest[Any],
+        request: JsonRpcRequest,
         result_model: type[TResult],
         *,
         error_parser: JsonRpcErrorParser | None = None,

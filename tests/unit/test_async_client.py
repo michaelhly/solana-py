@@ -53,6 +53,7 @@ class _TypedRpcRequest(JsonRpcRequest[_TypedRpcParams]):
     """Test JSON-RPC request with typed params."""
 
     method: str = "typedMethod"
+    params: list[_TypedRpcParams] | None = None
 
 
 class _LooseRpcRequest(BaseModel):
@@ -102,8 +103,20 @@ def test_jsonrpc_request_to_json_forwards_model_dump_json_kwargs():
     }
 
 
-def test_jsonrpc_request_supports_typed_params():
-    request = JsonRpcRequest[_TypedRpcParams].model_validate({"method": "typedMethod", "params": [{"value": 2}]})
+def test_jsonrpc_request_params_are_untyped_by_default():
+    request = JsonRpcRequest.model_validate({"method": "testMethod", "params": {"value": 2}})
+
+    assert request.params == {"value": 2}
+    assert json.loads(request.to_json()) == {
+        "jsonrpc": "2.0",
+        "id": "1",
+        "method": "testMethod",
+        "params": {"value": 2},
+    }
+
+
+def test_jsonrpc_request_subclasses_can_override_params():
+    request = _TypedRpcRequest.model_validate({"params": [{"value": 2}]})
 
     assert request.params == [_TypedRpcParams(value=2)]
     assert json.loads(request.to_json()) == {
@@ -116,7 +129,7 @@ def test_jsonrpc_request_supports_typed_params():
 
 def test_jsonrpc_request_typed_params_must_be_list():
     with pytest.raises(ValidationError):
-        JsonRpcRequest[_TypedRpcParams].model_validate({"method": "typedMethod", "params": {"value": 2}})
+        _TypedRpcRequest.model_validate({"params": {"value": 2}})
 
 
 def test_solana_jsonrpc_error_to_json():
