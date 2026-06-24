@@ -7,7 +7,7 @@ from collections.abc import Callable
 from enum import IntEnum
 from typing import Any, Literal, Protocol, TypeVar
 
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 from pydantic.main import IncEx
 
 from solana._pydantic import PydanticModel
@@ -225,7 +225,7 @@ class JsonRpcResponseEnvelope(PydanticModel):
         return self.result
 
 
-TResult = TypeVar("TResult", bound=BaseModel)
+TResult = TypeVar("TResult")
 
 
 def _get_error_name(code: int) -> str | None:

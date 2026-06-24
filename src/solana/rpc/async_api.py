@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Sequence
 from time import time
+from typing import Any, overload
 
+from pydantic import TypeAdapter
 from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.rpc.requests import GetRecentPrioritizationFees
@@ -148,20 +150,38 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Use this when you are done with the client."""
         await self._provider.close()
 
+    @overload
     async def send_rpc_request(
         self,
         request: JsonRpcRequest,
-        result_model: type[TResult],
+        result_type: type[TResult],
         *,
         error_parser: JsonRpcErrorParser | None = None,
-    ) -> TResult:
-        """Send a raw JSON-RPC request and parse the result with a Pydantic model."""
+    ) -> TResult: ...
+
+    @overload
+    async def send_rpc_request(
+        self,
+        request: JsonRpcRequest,
+        result_type: Any,
+        *,
+        error_parser: JsonRpcErrorParser | None = None,
+    ) -> Any: ...
+
+    async def send_rpc_request(
+        self,
+        request: JsonRpcRequest,
+        result_type: Any,
+        *,
+        error_parser: JsonRpcErrorParser | None = None,
+    ) -> Any:
+        """Send a raw JSON-RPC request and parse the result with the provided type."""
         if not isinstance(request, JsonRpcRequest):
             raise TypeError("request must be an instance of JsonRpcRequest")
         raw = await self._provider.make_request_unparsed(request)
         envelope = JsonRpcResponseEnvelope.model_validate_json(raw)
         result = envelope.unwrap_result(error_parser, method=getattr(request, "method", None))
-        return result_model.model_validate(result)
+        return TypeAdapter(result_type).validate_python(result)
 
     async def is_connected(self) -> bool:
         """Health check.
