@@ -1,3 +1,6 @@
+PYTHONPATH := src
+export PYTHONPATH
+
 clean:
 	rm -rf dist build __pycache__ *.egg-info
 
@@ -39,6 +42,6 @@ stop-localnet:
 	./bin/localnet.sh down
 
 serve:
-	mkdocs serve
+	uv run mkdocs serve
 
 .PHONY: $(MAKECMDGOALS)

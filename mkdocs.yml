@@ -44,6 +44,7 @@ plugins:
 nav:
   - index.md
   - RPC API:
+      - rpc/api.md
       - rpc/async_api.md
       - rpc/websocket.md
       - rpc/commitment.md
