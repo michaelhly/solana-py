@@ -19,8 +19,4 @@ class PydanticModel(BaseModel):
         - read field descriptions from attribute docstrings.
     """
 
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        frozen=True,
-        use_attribute_docstrings=True,
-    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True, use_attribute_docstrings=True)

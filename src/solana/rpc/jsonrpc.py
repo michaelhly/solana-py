@@ -5,14 +5,12 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from enum import IntEnum
-from typing import Any, Generic, Literal, Protocol, TypeVar
+from typing import Any, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel, model_validator
 from pydantic.main import IncEx
 
 from solana._pydantic import PydanticModel
-
-JsonRpcParamT = TypeVar("JsonRpcParamT", bound=BaseModel)
 
 
 class JsonRpcRequestSerializer(Protocol):
@@ -23,13 +21,13 @@ class JsonRpcRequestSerializer(Protocol):
         ...
 
 
-class JsonRpcRequest(PydanticModel, Generic[JsonRpcParamT]):
+class JsonRpcRequest(PydanticModel):
     """Base Pydantic JSON-RPC request model."""
 
     jsonrpc: Literal["2.0"] = "2.0"
     id: str | int = "1"
     method: str
-    params: list[JsonRpcParamT] | None = None
+    params: Any | None = None
 
     def to_json(
         self,
