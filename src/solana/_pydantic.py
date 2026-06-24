@@ -20,7 +20,5 @@ class PydanticModel(BaseModel):
     """
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        frozen=True,
-        use_attribute_docstrings=True,
+        arbitrary_types_allowed=True, frozen=True, use_attribute_docstrings=True
     )
