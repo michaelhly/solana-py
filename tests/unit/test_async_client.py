@@ -7,7 +7,7 @@ from unittest.mock import patch
 from httpx2 import ReadError, ReadTimeout
 import httpx2
 import pytest
-from pydantic import BaseModel, RootModel, ValidationError
+from pydantic import BaseModel, ValidationError
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
@@ -70,10 +70,6 @@ class _TestRpcResult(PydanticModel):
     """Test JSON-RPC result."""
 
     value: int
-
-
-class _ScalarRpcResult(RootModel[int]):
-    """Test scalar JSON-RPC result."""
 
 
 class _CustomRpcError(SolanaJsonRpcError):
@@ -280,12 +276,30 @@ async def test_send_rpc_request_requires_jsonrpc_request(unit_test_http_client_a
 
 
 async def test_send_rpc_request_scalar_result(unit_test_http_client_async):
-    """Test sending a JSON-RPC request with a scalar result model."""
+    """Test sending a JSON-RPC request with a scalar result type."""
     raw = '{"jsonrpc":"2.0","id":1,"result":42}'
     with patch("httpx2.AsyncClient.post") as post_mock:
         post_mock.return_value = _mock_response(raw)
-        result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _ScalarRpcResult)
-    assert result.root == 42
+        result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), int)
+    assert result == 42
+
+
+async def test_send_rpc_request_string_result(unit_test_http_client_async):
+    """Test sending a JSON-RPC request with a string result type."""
+    raw = '{"jsonrpc":"2.0","id":1,"result":"testLeader"}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), str)
+    assert result == "testLeader"
+
+
+async def test_send_rpc_request_object_result(unit_test_http_client_async):
+    """Test sending a JSON-RPC request with an object result type."""
+    raw = '{"jsonrpc":"2.0","id":1,"result":{"value":42}}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), dict[str, int])
+    assert result == {"value": 42}
 
 
 async def test_send_rpc_request_jsonrpc_error(unit_test_http_client_async):
