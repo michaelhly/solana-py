@@ -906,18 +906,23 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         body = self._get_slot_leaders_body(start, limit)
         return await self._provider.make_request(body, GetSlotLeadersResp)
 
-    async def get_supply(self, commitment: Commitment | None = None) -> GetSupplyResp:
+    async def get_supply(
+        self,
+        commitment: Commitment | None = None,
+        exclude_non_circulating_accounts_list: bool = False,
+    ) -> GetSupplyResp:
         """Returns information about the current supply.
 
         Args:
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
+            exclude_non_circulating_accounts_list: If True, exclude non-circulating accounts from supply.
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> (await solana_client.get_supply()).value.circulating # doctest: +SKIP
             683635192454157660
         """
-        body = self._get_supply_body(commitment)
+        body = self._get_supply_body(commitment, exclude_non_circulating_accounts_list)
         return await self._provider.make_request(body, GetSupplyResp)
 
     async def get_token_account_balance(

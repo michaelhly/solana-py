@@ -393,12 +393,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetInflationReward(pubkeys, RpcEpochConfig(epoch, commitment_to_use))
 
-    def _get_supply_body(self, commitment: Optional[Commitment]) -> GetSupply:
+    def _get_supply_body(
+        self,
+        commitment: Optional[Commitment],
+        exclude_non_circulating_accounts_list: bool = False,
+    ) -> GetSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetSupply(
             RpcSupplyConfig(
                 commitment=commitment_to_use,
-                exclude_non_circulating_accounts_list=False,
+                exclude_non_circulating_accounts_list=exclude_non_circulating_accounts_list,
             )
         )
 
