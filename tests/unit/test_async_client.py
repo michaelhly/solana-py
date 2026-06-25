@@ -13,6 +13,7 @@ from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
 from solders.rpc.config import (
     RpcAccountInfoConfig,
+    RpcBlockConfig,
     RpcProgramAccountsConfig,
     RpcSignaturesForAddressConfig,
     RpcTokenAccountsFilterProgramId,
@@ -20,12 +21,14 @@ from solders.rpc.config import (
 from solders.rpc.filter import Memcmp
 from solders.rpc.requests import (
     GetAccountInfo,
+    GetBlock,
     GetMultipleAccounts,
     GetProgramAccounts,
     GetSignaturesForAddress,
     GetTokenAccountsByOwner,
 )
 from solders.signature import Signature
+from solders.transaction_status import TransactionDetails, UiTransactionEncoding
 
 from solana.constants import SYSTEM_PROGRAM_ID
 from solana._pydantic import PydanticModel
@@ -415,6 +418,29 @@ def test_get_account_info_body(unit_test_http_client_async):
         commitment=None,
         encoding="base64",
         data_slice=DataSliceOpts(offset=1, length=2),
+    )
+    assert expected == actual
+
+
+def test_get_block_body(unit_test_http_client_async):
+    """Test generating getBlock body with full block config."""
+    expected = GetBlock(
+        2,
+        RpcBlockConfig(
+            encoding=UiTransactionEncoding.Json,
+            transaction_details=TransactionDetails.Signatures,
+            rewards=False,
+            commitment=CommitmentLevel.Finalized,
+            max_supported_transaction_version=0,
+        ),
+    )
+    actual = unit_test_http_client_async._get_block_body(
+        slot=2,
+        encoding="json",
+        max_supported_transaction_version=0,
+        transaction_details=TransactionDetails.Signatures,
+        rewards=False,
+        commitment=Finalized,
     )
     assert expected == actual
 

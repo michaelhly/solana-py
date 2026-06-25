@@ -66,6 +66,7 @@ from solders.rpc.responses import (
 )
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
+from solders.transaction_status import TransactionDetails
 
 from solana.rpc.models import (
     DataSliceOpts as DataSliceOptsModel,
@@ -326,6 +327,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         slot: int,
         encoding: str = "json",
         max_supported_transaction_version: int | None = None,
+        transaction_details: TransactionDetails | None = None,
+        rewards: bool | None = None,
+        commitment: Commitment | None = None,
     ) -> GetBlockResp:
         """Returns identity and transaction information about a confirmed block in the ledger.
 
@@ -335,6 +339,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                     "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
             max_supported_transaction_version: (optional) The max transaction version to return in
                 responses. If the requested transaction is a higher version, an error will be returned
+            transaction_details: (optional) Level of transaction detail to return.
+            rewards: (optional) Whether to populate the rewards array.
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
             >>> solana_client = AsyncClient("http://localhost:8899")
@@ -343,7 +350,14 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                 EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG,
             )
         """
-        body = self._get_block_body(slot, encoding, max_supported_transaction_version)
+        body = self._get_block_body(
+            slot,
+            encoding,
+            max_supported_transaction_version,
+            transaction_details,
+            rewards,
+            commitment,
+        )
         return await self._provider.make_request(body, GetBlockResp)
 
     async def get_recent_performance_samples(self, limit: int | None = None) -> GetRecentPerformanceSamplesResp:
