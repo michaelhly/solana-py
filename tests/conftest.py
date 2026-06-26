@@ -11,7 +11,7 @@ import pytest
 from solders.keypair import Keypair
 
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Processed
+from solana.rpc.commitment import Commitment
 from tests.validator_runtime import (
     ValidatorConfig,
     acquire_shared_validator,
@@ -75,7 +75,7 @@ def validator_ws_url(solana_test_validator: ValidatorConfig) -> str:
 @pytest.fixture(scope="session")
 def unit_test_http_client_async() -> AsyncClient:
     """Async client to be used in unit tests."""
-    client = AsyncClient(commitment=Processed)
+    client = AsyncClient(commitment=Commitment.PROCESSED)
     return client
 
 
@@ -85,13 +85,13 @@ async def test_http_client_async(
     validator_rpc_url: str,
 ) -> AsyncGenerator[AsyncClient, None]:
     """Async HTTP client pointed at the local test validator."""
-    http_client = AsyncClient(endpoint=validator_rpc_url, commitment=Processed)
+    http_client = AsyncClient(endpoint=validator_rpc_url, commitment=Commitment.PROCESSED)
     timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 120)
     deadline = time.time() + timeout_secs
     last_error: Exception | None = None
     while time.time() < deadline:
         try:
-            await http_client.get_block(5)
+            await http_client.get_block(5, commitment=Commitment.CONFIRMED)
             break
         except Exception as exc:  # noqa: BLE001
             last_error = exc

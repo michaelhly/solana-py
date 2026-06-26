@@ -84,7 +84,7 @@ from solders.rpc.requests import (
 from solders.rpc.responses import GetLatestBlockhashResp, SendTransactionResp
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
-from solders.transaction_status import UiTransactionEncoding
+from solders.transaction_status import TransactionDetails, UiTransactionEncoding
 
 from solana.rpc.models import (
     DataSliceOpts,
@@ -201,11 +201,22 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_block_time_body(slot: int) -> GetBlockTime:
         return GetBlockTime(slot)
 
-    @staticmethod
-    def _get_block_body(slot: int, encoding: str, max_supported_transaction_version: Optional[int]) -> GetBlock:
+    def _get_block_body(
+        self,
+        slot: int,
+        encoding: str,
+        max_supported_transaction_version: Optional[int],
+        transaction_details: Optional[TransactionDetails],
+        rewards: Optional[bool],
+        commitment: Optional[Commitment],
+    ) -> GetBlock:
         encoding_to_use = _TX_ENCODING_TO_SOLDERS[encoding]
+        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcBlockConfig(
             encoding=encoding_to_use,
+            transaction_details=transaction_details,
+            rewards=rewards,
+            commitment=commitment_to_use,
             max_supported_transaction_version=max_supported_transaction_version,
         )
         return GetBlock(slot=slot, config=config)
@@ -382,12 +393,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetInflationReward(pubkeys, RpcEpochConfig(epoch, commitment_to_use))
 
-    def _get_supply_body(self, commitment: Optional[Commitment]) -> GetSupply:
+    def _get_supply_body(
+        self,
+        commitment: Optional[Commitment],
+        exclude_non_circulating_accounts_list: bool = False,
+    ) -> GetSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetSupply(
             RpcSupplyConfig(
                 commitment=commitment_to_use,
-                exclude_non_circulating_accounts_list=False,
+                exclude_non_circulating_accounts_list=exclude_non_circulating_accounts_list,
             )
         )
 

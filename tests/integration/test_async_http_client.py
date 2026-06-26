@@ -15,7 +15,7 @@ from spl.token.constants import WRAPPED_SOL_MINT
 
 from solana.constants import VOTE_PROGRAM_ID
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Confirmed, Finalized, Processed
+from solana.rpc.commitment import Commitment, Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException, TransactionExpiredBlockheightExceededError
 from solana.rpc.jsonrpc import JsonRpcRequest
 from solana.rpc.models import DataSliceOpts, TxOpts
@@ -492,7 +492,7 @@ async def test_get_cluster_nodes(test_http_client_async: AsyncClient):
 @pytest.mark.integration
 async def test_get_block(test_http_client_async: AsyncClient):
     """Test get confirmed block."""
-    resp = await test_http_client_async.get_block(2)
+    resp = await test_http_client_async.get_block(2, commitment=Commitment.CONFIRMED)
     assert_valid_response(resp)
 
 
