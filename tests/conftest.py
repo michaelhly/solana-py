@@ -11,7 +11,7 @@ import pytest
 from solders.keypair import Keypair
 
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Processed
+from solana.rpc.commitment import Commitment
 from tests.validator_runtime import (
     ValidatorConfig,
     acquire_shared_validator,
@@ -37,10 +37,16 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
     validator as-is.
     """
     if os.environ.get("SOLANA_VALIDATOR_EXTERNAL") == "1":
-        rpc_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899")
-        ws_url = os.environ.get("SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900")
+        rpc_url = os.environ.get(
+            "SOLANA_VALIDATOR_EXTERNAL_RPC_URL", "http://127.0.0.1:8899"
+        )
+        ws_url = os.environ.get(
+            "SOLANA_VALIDATOR_EXTERNAL_WS_URL", "ws://127.0.0.1:8900"
+        )
         if not validator_is_healthy(rpc_url):
-            pytest.skip(f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}")
+            pytest.skip(
+                f"SOLANA_VALIDATOR_EXTERNAL=1 but no validator is reachable on {rpc_url}"
+            )
         yield ValidatorConfig(
             rpc_url=rpc_url,
             ws_url=ws_url,
@@ -51,7 +57,9 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
         return
 
     if not shutil.which("solana-test-validator"):
-        pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
+        pytest.skip(
+            "solana-test-validator not found in PATH; skipping integration tests"
+        )
         return
     config = acquire_shared_validator(worker_id)
     try:
@@ -75,7 +83,7 @@ def validator_ws_url(solana_test_validator: ValidatorConfig) -> str:
 @pytest.fixture(scope="session")
 def unit_test_http_client_async() -> AsyncClient:
     """Async client to be used in unit tests."""
-    client = AsyncClient(commitment=Processed)
+    client = AsyncClient(commitment=Commitment.PROCESSED)
     return client
 
 
@@ -85,13 +93,15 @@ async def test_http_client_async(
     validator_rpc_url: str,
 ) -> AsyncGenerator[AsyncClient, None]:
     """Async HTTP client pointed at the local test validator."""
-    http_client = AsyncClient(endpoint=validator_rpc_url, commitment=Processed)
+    http_client = AsyncClient(
+        endpoint=validator_rpc_url, commitment=Commitment.PROCESSED
+    )
     timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 120)
     deadline = time.time() + timeout_secs
     last_error: Exception | None = None
     while time.time() < deadline:
         try:
-            await http_client.get_block(5)
+            await http_client.get_block(5, commitment=Commitment.CONFIRMED)
             break
         except Exception as exc:  # noqa: BLE001
             last_error = exc
