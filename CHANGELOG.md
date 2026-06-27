@@ -5,6 +5,8 @@
 ### Added
 
 - Add `AsyncClient.send_rpc_request(...)` for custom JSON-RPC methods backed by Pydantic request serializers, result models, and an optional custom JSON-RPC error parser hook.
+- Add `transaction_details`, `rewards`, and `commitment` parameters to `AsyncClient.get_block` [(#684)](https://github.com/michaelhly/solana-py/pull/684).
+- Add an `exclude_non_circulating_accounts_list` parameter to `AsyncClient.get_supply` [(#684)](https://github.com/michaelhly/solana-py/pull/684).
 
 ### Removed
 
@@ -28,6 +30,10 @@
 - Update `README.md` code examples to use `AsyncClient`.
 - Update `mkdocs.yml` navigation to remove deleted doc pages.
 - Update `docs/cookbook/token-operations/get-token-mint.md` to import from `spl.token.models` instead of `spl.token.core`.
+
+### Docs
+
+- Add a `Client` to `AsyncClient` migration guide and fix local docs serving [(#683)](https://github.com/michaelhly/solana-py/pull/683).
 
 ## [0.39.0] - 2026-06-22
 
