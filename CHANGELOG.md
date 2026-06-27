@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-06-27
+
 ### Added
 
 - Add `AsyncClient.send_rpc_request(...)` for custom JSON-RPC methods backed by Pydantic request serializers, result models, and an optional custom JSON-RPC error parser hook.
