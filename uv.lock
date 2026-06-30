@@ -1233,7 +1233,6 @@ dependencies = [
     { name = "httpx2", extra = ["http2"] },
     { name = "pydantic" },
     { name = "solders" },
-    { name = "typing-extensions" },
     { name = "websockets" },
 ]
 
@@ -1261,7 +1260,6 @@ requires-dist = [
     { name = "httpx2", extras = ["http2"], specifier = ">=2.4.0" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "solders", specifier = ">=0.23,<0.28" },
-    { name = "typing-extensions", specifier = ">=4.5.0" },
     { name = "websockets", specifier = ">=14.0" },
 ]
 
