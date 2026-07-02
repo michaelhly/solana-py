@@ -64,7 +64,6 @@ from solders.rpc.requests import (
     GetSlot,
     GetSlotLeader,
     GetSlotLeaders,
-    GetStakeActivation,
     GetSupply,
     GetTokenAccountBalance,
     GetTokenAccountsByDelegate,
@@ -374,15 +373,6 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             start,
             limit,
         )
-
-    def _get_stake_activation_body(
-        self,
-        pubkey: Pubkey,
-        epoch: Optional[int],
-        commitment: Optional[Commitment],
-    ) -> GetStakeActivation:
-        commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
-        return GetStakeActivation(pubkey, RpcEpochConfig(epoch, commitment_to_use))
 
     def _get_inflation_reward_body(
         self,
