@@ -139,3 +139,18 @@ make unit-tests
 # Integration tests only
 make int-tests
 ```
+
+
+### Documentation
+
+To build documentation from source files run:
+
+```sh
+make build-docs
+```
+
+To serve documentation locally run:
+
+```sh
+make serve
+```
