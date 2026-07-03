@@ -103,5 +103,9 @@ nav:
           - cookbook/wallet-management/verify-keypair.md
           - cookbook/wallet-management/validate-public-key.md
           - cookbook/wallet-management/sign-verify-message.md
+  - Third-Party Packages:
+      - third-party-packages/index.md
+      - Django Solana Payments:
+          - third-party-packages/django-solana-payments.md
 extra_css:
   - css/mkdocstrings.css
