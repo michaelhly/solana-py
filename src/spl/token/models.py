@@ -391,7 +391,7 @@ class BurnCheckedParams(PydanticModel):
 
 
 class SyncNativeParams(PydanticModel):
-    """BurnChecked token transaction params."""
+    """SyncNative token transaction params."""
 
     program_id: Pubkey
     """SPL Token program account."""

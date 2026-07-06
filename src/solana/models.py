@@ -11,10 +11,10 @@ class WithdrawFromVoteAccountParams(PydanticModel):
     """Transfer SOL from vote account to identity."""
 
     vote_account_from_pubkey: Pubkey
-    """"""
+    """Vote account to withdraw from."""
     to_pubkey: Pubkey
-    """"""
+    """Recipient of the withdrawn SOL."""
     lamports: int
-    """"""
+    """Amount of lamports to withdraw."""
     withdrawer: Pubkey
-    """"""
+    """Withdrawer authority."""
