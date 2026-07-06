@@ -101,6 +101,13 @@ async def main():
         result = await rpc.send_transaction(wrap_transaction)
         print(f"Wrap transaction signature: {result.value}")
 
+        # Wait for the wrap transaction before submitting a dependent unwrap transaction
+        await rpc.confirm_transaction(
+            result.value,
+            commitment="confirmed",
+            last_valid_block_height=recent_blockhash.value.last_valid_block_height,
+        )
+
         # Unwrap SOL by closing the account
         print("\nUnwrapping SOL...")
 
@@ -143,7 +150,8 @@ This example demonstrates how to use Wrapped SOL:
 1. **Create a wSOL account**: Create an associated token account for native SOL
 2. **Transfer SOL**: Transfer SOL into the wSOL account
 3. **Sync balance**: Use `sync_native()` to sync the wSOL account balance
-4. **Unwrap SOL**: Convert wSOL back to native SOL by closing the account
+4. **Confirm wrap**: Wait for the wrap transaction before submitting dependent operations
+5. **Unwrap SOL**: Convert wSOL back to native SOL by closing the account
 
 ## Key Concepts
 

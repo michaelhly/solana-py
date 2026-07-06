@@ -21,6 +21,9 @@ async def main():
         # Request airdrop (1 SOL = 1_000_000_000 lamports)
         res = await client.request_airdrop(keypair.pubkey(), 1_000_000_000)
         print(f"Airdrop signature: {res.value}")
+
+        # Wait for the airdrop before checking the balance
+        await client.confirm_transaction(res.value, commitment="confirmed")
         
         # Check balance
         balance = await client.get_balance(keypair.pubkey())
@@ -34,7 +37,8 @@ if __name__ == "__main__":
 
 1. **Create a keypair**: Generate a new keypair for testing
 2. **Request airdrop**: Use `request_airdrop()` to get 1 SOL from the devnet faucet
-3. **Check balance**: Verify the airdrop was successful by checking the account balance
+3. **Confirm airdrop**: Wait for the airdrop transaction before reading the account state
+4. **Check balance**: Verify the airdrop was successful by checking the account balance
 
 ## Key Points
 

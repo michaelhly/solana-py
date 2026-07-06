@@ -115,6 +115,13 @@ async def setup(rpc, mint_authority):
     # Send transaction
     result = await rpc.send_transaction(transaction)
     print(f"Setup transaction signature: {result.value}")
+
+    # Wait for setup before returning accounts used by the delegation transaction
+    await rpc.confirm_transaction(
+        result.value,
+        commitment="confirmed",
+        last_valid_block_height=recent_blockhash.value.last_valid_block_height,
+    )
     
     return mint.pubkey(), authority_ata
 
@@ -177,9 +184,10 @@ if __name__ == "__main__":
 This example shows how to delegate a token account:
 
 1. **Setup Phase**: Create token mint, associated token account, and mint tokens
-2. **Delegation Operation**: Use `approve_checked()` to delegate permissions to a specified account
-3. **Permission Scope**: Delegate token operation permissions for a specified amount
-4. **Send Transaction**: Send the delegation instruction to the network for execution
+2. **Confirm Setup**: Wait for setup to confirm before using the new token account
+3. **Delegation Operation**: Use `approve_checked()` to delegate permissions to a specified account
+4. **Permission Scope**: Delegate token operation permissions for a specified amount
+5. **Send Transaction**: Send the delegation instruction to the network for execution
 
 ## Key Concepts
 

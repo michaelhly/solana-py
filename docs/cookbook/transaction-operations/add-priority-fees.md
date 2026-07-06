@@ -13,12 +13,17 @@ total_fee = base_fee + prioritization_fee
 - **Base fee**: 5,000 lamports per signature (50% burned, 50% to validator)
 - **Prioritization fee**: optional, 100% to validator (none burned)
 
-The prioritization fee is controlled by two Compute Budget instructions:
+The prioritization fee is controlled by two Compute Budget Program instructions:
 
 | Parameter              | Instruction              | Unit                | Description                                                                                                   |
-| ---------------------- | ------------------------ | ------------------- |
+| ---------------------- | ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------- |
 | **Compute Unit Limit** | `set_compute_unit_limit` | CU                  | Maximum CUs the transaction may consume; the priority fee is charged against this **limit**, not actual usage |
 | **Compute Unit Price** | `set_compute_unit_price` | micro-lamports / CU | Bid per CU; a **higher price means higher scheduling priority**                                               |
+
+In short:
+
+- **CU Limit** = the maximum compute units the transaction can use; keep it close to expected usage to avoid overpaying
+- **CU Price** = how much you bid per CU; higher bids improve priority during congestion
 
 ### Prioritization Fee Formula
 
@@ -75,7 +80,7 @@ async def main():
             )
         )
 
-        # Compute Budget instructions go before business instructions
+        # Compute Budget instructions must come before business instructions
         message = MessageV0.try_compile(
             payer=sender.pubkey(),
             instructions=[
@@ -90,8 +95,8 @@ async def main():
         # Create transaction
         transaction = VersionedTransaction(message, [sender])
 
-        # Calculate estimated prioritization fee
-        prioritization_fee_lamports = (cu_price * cu_limit) // 1_000_000
+        # Calculate estimated prioritization fee in lamports
+        prioritization_fee_lamports = (cu_price * cu_limit + 999_999) // 1_000_000
 
         print(f"Sender:             {sender.pubkey()}")
         print(f"Recipient:          {recipient.pubkey()}")
@@ -158,4 +163,4 @@ For real-time CU price estimates, use priority fee APIs from providers like Heli
 - **MEV Protection**: Can help protect against MEV (Maximal Extractable Value) attacks
 - **Predictable Costs**: Set known additional cost for transaction priority
 
-Note: Priority fees are burned (destroyed) rather than going to validators, making them a deflationary mechanism.
+Note: Priority fees are paid to validators. They are not burned.

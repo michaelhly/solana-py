@@ -33,7 +33,7 @@ from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
 # Constants
 DECIMALS = 9
 
-async def setup(rpc, mint_authority, latest_blockhash):
+async def setup(rpc, mint_authority):
     """
     The setup function initializes the mint and associated token accounts,
     and mints tokens to said associated token account
@@ -92,6 +92,9 @@ async def setup(rpc, mint_authority, latest_blockhash):
             decimals=DECIMALS
         )
     )
+
+    # Get latest blockhash
+    recent_blockhash = await rpc.get_latest_blockhash()
     
     # Create message
     message = MessageV0.try_compile(
@@ -103,7 +106,7 @@ async def setup(rpc, mint_authority, latest_blockhash):
             mint_to_instruction
         ],
         address_lookup_table_accounts=[],
-        recent_blockhash=latest_blockhash
+        recent_blockhash=recent_blockhash.value.blockhash
     )
     
     # Create transaction
@@ -112,6 +115,13 @@ async def setup(rpc, mint_authority, latest_blockhash):
     # Send transaction
     result = await rpc.send_transaction(transaction)
     print(f"Setup transaction signature: {result.value}")
+
+    # Wait for setup before returning accounts used by the revoke transaction
+    await rpc.confirm_transaction(
+        result.value,
+        commitment="confirmed",
+        last_valid_block_height=recent_blockhash.value.last_valid_block_height,
+    )
     
     return mint.pubkey(), authority_ata
 
@@ -123,11 +133,8 @@ async def main():
     mint_authority = Keypair()
     
     async with rpc:
-        # Get latest blockhash
-        recent_blockhash = await rpc.get_latest_blockhash()
-        
         # Setup mint and token account
-        mint_pubkey, token_account = await setup(rpc, mint_authority, recent_blockhash.value.blockhash)
+        mint_pubkey, token_account = await setup(rpc, mint_authority)
         
         # Create revoke instruction
         revoke_instruction = revoke(
@@ -168,9 +175,10 @@ if __name__ == "__main__":
 This example shows how to revoke the delegation permissions of a token account:
 
 1. **Setup Phase**: Create token mint, associated token account, and mint tokens
-2. **Revoke Operation**: Use the `revoke()` function to revoke previously granted delegation permissions
-3. **Clear Delegation**: Clear the delegation information from the token account
-4. **Send Transaction**: Send the revoke instruction to the network for execution
+2. **Confirm Setup**: Wait for setup to confirm before using the new token account
+3. **Revoke Operation**: Use the `revoke()` function to revoke previously granted delegation permissions
+4. **Clear Delegation**: Clear the delegation information from the token account
+5. **Send Transaction**: Send the revoke instruction to the network for execution
 
 ## Key Concepts
 
