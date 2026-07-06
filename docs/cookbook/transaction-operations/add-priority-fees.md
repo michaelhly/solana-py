@@ -2,20 +2,31 @@
 
 Learn how to add priority fees to Solana transactions to increase the likelihood of faster processing during network congestion.
 
-## Two Key Parameters
+## Fee Structure Overview
 
-Solana uses two parameters from the **Compute Budget Program** to control transaction priority:
+A Solana transaction fee consists of two parts:
 
-| Parameter              | Instruction              | Unit                | Description                                                                              |
-| ---------------------- | ------------------------ | ------------------- | ---------------------------------------------------------------------------------------- |
-| **Compute Unit Limit** | `set_compute_unit_limit` | CU (Compute Units)  | Caps the **maximum** compute units the transaction can consume, preventing runaway costs |
-| **Compute Unit Price** | `set_compute_unit_price` | micro-lamports / CU | The additional fee paid per compute unit; a **higher price means higher priority**       |
+```text
+total_fee = base_fee + prioritization_fee
+```
 
-In short:
-- **CU Limit** = sets a ceiling on how much compute you can use → prevents "budget blowout"
-- **CU Price** = how much you bid per CU → higher bids get picked up by validators first
+- **Base fee**: 5,000 lamports per signature (50% burned, 50% to validator)
+- **Prioritization fee**: optional, 100% to validator (none burned)
 
-> By default, each transaction can use up to **200,000 CU**. For simple transactions (e.g., a basic SOL transfer uses ~1,500 CU), setting a higher CU Limit does **not** cost more — you only pay for what's actually consumed. However, setting the CU Limit too low will cause the transaction to fail.
+The prioritization fee is controlled by two Compute Budget instructions:
+
+| Parameter              | Instruction              | Unit                | Description                                                                                                   |
+| ---------------------- | ------------------------ | ------------------- |
+| **Compute Unit Limit** | `set_compute_unit_limit` | CU                  | Maximum CUs the transaction may consume; the priority fee is charged against this **limit**, not actual usage |
+| **Compute Unit Price** | `set_compute_unit_price` | micro-lamports / CU | Bid per CU; a **higher price means higher scheduling priority**                                               |
+
+### Prioritization Fee Formula
+
+```text
+prioritization_fee = ceil(compute_unit_price × compute_unit_limit / 1,000,000)
+```
+
+> **Warning**: The prioritization fee is based on the **requested** CU limit, not the actual CU consumed. Setting a CU limit higher than needed means paying for unused compute units. Set the CU limit as close to the expected usage as possible.
 
 ## Code Example
 
@@ -42,17 +53,17 @@ async def main():
     amount = 1_000_000_000  # 1 SOL
 
     # ---- Priority fee parameters ----
-    cu_limit = 10_000  # Cap compute units at 10,000
-    cu_price = 5_000  # Bid 5,000 micro-lamports per CU
+    cu_limit = 10_000  # Max CUs (simple transfer needs ~1,500)
+    cu_price = 5_000  # 5,000 micro-lamports per CU
 
     async with rpc:
         # Get latest blockhash
         latest_blockhash = await rpc.get_latest_blockhash()
 
-        # (1) Set CU limit: cap the max compute units this transaction can use
+        # Set CU limit: caps max compute units; fee is charged against this limit
         cu_limit_instruction = set_compute_unit_limit(cu_limit)
 
-        # (2) Set CU price: the tip per CU; higher = higher priority
+        # Set CU price: micro-lamports per CU; higher = higher scheduler priority
         cu_price_instruction = set_compute_unit_price(cu_price)
 
         # Create transfer instruction
@@ -64,13 +75,13 @@ async def main():
             )
         )
 
-        # Compute Budget instructions must come first
+        # Compute Budget instructions go before business instructions
         message = MessageV0.try_compile(
             payer=sender.pubkey(),
             instructions=[
-                cu_limit_instruction,   # CU limit first
-                cu_price_instruction,   # CU price second
-                transfer_instruction,   # business instruction last
+                cu_limit_instruction,
+                cu_price_instruction,
+                transfer_instruction,
             ],
             address_lookup_table_accounts=[],
             recent_blockhash=latest_blockhash.value.blockhash,
@@ -79,12 +90,15 @@ async def main():
         # Create transaction
         transaction = VersionedTransaction(message, [sender])
 
-        print(f"Sender:       {sender.pubkey()}")
-        print(f"Recipient:    {recipient.pubkey()}")
-        print(f"Transfer:     {amount / 1_000_000_000} SOL")
-        print(f"CU Limit:     {cu_limit}")
-        print(f"CU Price:     {cu_price} micro-lamports/CU")
-        print(f"Max Fee:      ~{cu_limit * cu_price / 1_000_000:.2f} SOL (limit × price)")
+        # Calculate estimated prioritization fee
+        prioritization_fee_lamports = (cu_price * cu_limit) // 1_000_000
+
+        print(f"Sender:             {sender.pubkey()}")
+        print(f"Recipient:          {recipient.pubkey()}")
+        print(f"Transfer:           {amount / 1_000_000_000} SOL")
+        print(f"CU Limit:           {cu_limit}")
+        print(f"CU Price:           {cu_price} micro-lamports/CU")
+        print(f"Prioritization fee: {prioritization_fee_lamports} lamports")
         print("Transaction with priority fee created successfully")
 
 if __name__ == "__main__":
@@ -93,18 +107,19 @@ if __name__ == "__main__":
 
 ## Explanation
 
-1. **`set_compute_unit_limit(units)`** — Caps how many compute units this transaction can consume, preventing extreme fees if execution behaves unexpectedly
-2. **`set_compute_unit_price(price)`** — Sets the priority fee bid per CU (in micro-lamports); higher bids make validators more likely to include your transaction first
-3. **Instruction ordering** — Compute Budget instructions must be placed **before** your business instructions
-4. **Actual cost** — The final priority fee = actual CU consumed × CU Price (not CU Limit × CU Price); setting a high CU Limit does **not** increase your cost
+1. **`set_compute_unit_limit(units)`** — Sets the maximum CUs the transaction may consume. The prioritization fee is calculated against this limit, so keep it as close to expected usage as possible. A simple SOL transfer needs ~1,500 CU.
+2. **`set_compute_unit_price(price)`** — Sets the bid per CU in micro-lamports. This directly determines scheduling priority; higher values make validators more likely to include your transaction first. Default is 0.
+3. **Instruction ordering** — Compute Budget instructions must be placed **before** your business instructions.
+4. **Fee calculation** — `prioritization_fee = ceil(CU price × CU limit / 1,000,000)`. Charged upfront whether the transaction succeeds or fails.
 
 ## Key Concepts
 
-- **Compute Units (CU)**: Measure of on-chain computational resource consumption; a simple SOL transfer consumes ~1,500 CU
-- **CU Limit**: The maximum CU this transaction is allowed to consume; prevents runaway costs from unexpected execution paths
-- **CU Price**: The "tip" per CU, denominated in micro-lamports; higher values improve transaction landing during congestion
-- **Actual billing**: You pay actual CU consumed × CU Price, not Limit × Price
-- **Default limit**: Without explicit setting, the default cap is 200,000 CU per transaction; simple transfers typically use far less
+- **Compute Units (CU)**: Measure of on-chain computational resource consumption; a simple SOL transfer uses ~1,500 CU
+- **CU Limit**: The maximum CU the transaction may consume; the prioritization fee is charged against this limit — setting it too high means paying for unused compute
+- **CU Price**: Bid per CU in micro-lamports; higher values improve scheduling priority during congestion
+- **Base fee**: 5,000 lamports per signature, 50% burned and 50% to the validator
+- **Prioritization fee**: 100% goes to the validator (none burned)
+- **Charged on failure**: Both base fee and prioritization fee are deducted even if the transaction fails
 - **Instruction ordering**: Compute Budget instructions must always appear before business instructions
 
 ## Usage
@@ -121,13 +136,20 @@ To run this example:
    python add_priority_fees.py
    ```
 
+## Estimating the Right CU Limit
+
+To avoid overpaying, set the CU limit close to what your transaction actually needs:
+
+- Use `simulate_transaction()` to get the actual CU consumed, then set the limit slightly above that value
+- See the [Optimize Compute Requested](./optimize-compute-requested.md) guide for a full simulation-based approach
+
 ## Priority Fee Strategies
 
-Different scenarios for priority fees:
+- **Low priority**: CU price of 1–1,000 micro-lamports for non-urgent transactions
+- **Medium priority**: CU price of 1,000–10,000 micro-lamports for time-sensitive transactions
+- **High priority**: CU price of 10,000+ micro-lamports during network congestion
 
-- **Low Priority**: 0-1000 lamports for standard transactions
-- **Medium Priority**: 1000-5000 lamports for time-sensitive transactions
-- **High Priority**: 5000+ lamports for urgent transactions during congestion
+For real-time CU price estimates, use priority fee APIs from providers like Helius, QuickNode, or Triton.
 
 ## Benefits
 

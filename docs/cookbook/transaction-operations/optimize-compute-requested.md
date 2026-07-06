@@ -2,6 +2,16 @@
 
 Learn how to optimize compute unit requests for Solana transactions to reduce costs and improve efficiency.
 
+## Why Optimize?
+
+The prioritization fee is calculated against the **requested** CU limit, not actual CU usage:
+
+```text
+prioritization_fee = ceil(compute_unit_price × compute_unit_limit / 1,000,000)
+```
+
+Setting a CU limit higher than needed means **paying for unused compute units**. By simulating first and setting the limit precisely, you avoid overpaying.
+
 ## Code Example
 
 ```python
@@ -139,15 +149,16 @@ To run this example:
 
 ## Benefits
 
-- **Cost Reduction**: Pay only for actual compute units used
+- **Cost Reduction**: Set the CU limit close to actual usage to avoid paying for unused compute units
 - **Efficiency**: Avoid over-allocating compute resources
-- **Faster Processing**: Optimal compute budgets can improve transaction processing
+- **Faster Processing**: Smaller, well-estimated transactions may process more efficiently
 - **Network Health**: Better resource utilization for the network
 
 ## Best Practices
 
-1. **Always Simulate**: Use transaction simulation before submission
-2. **Add Buffer**: Add small buffer (10-20%) to simulation results
+1. **Always Simulate**: Use transaction simulation before submission to determine actual CU needs
+2. **Add Buffer**: Add a small buffer (10–20%) to simulation results to handle slight variance
+3. **Monitor Usage**: Track compute unit consumption patterns over time
 3. **Monitor Usage**: Track compute unit consumption patterns
 4. **Update Regularly**: Recheck compute requirements as programs change
 
