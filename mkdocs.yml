@@ -96,7 +96,6 @@ nav:
           - cookbook/transaction-operations/add-memo-to-transaction.md
           - cookbook/transaction-operations/add-priority-fees.md
           - cookbook/transaction-operations/optimize-compute-requested.md
-          - cookbook/transaction-operations/offline-transactions.md
       - Wallet Management:
           - cookbook/wallet-management/create-keypair.md
           - cookbook/wallet-management/restore-keypair.md
