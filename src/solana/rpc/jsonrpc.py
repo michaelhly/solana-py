@@ -37,7 +37,7 @@ class JsonRpcRequest(PydanticModel):
         include: IncEx | None = None,
         exclude: IncEx | None = None,
         context: Any | None = None,
-        by_alias: bool | None = None,
+        by_alias: bool | None = True,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
         exclude_none: bool = True,
