@@ -7,7 +7,7 @@ from unittest.mock import patch
 from httpx2 import ReadError, ReadTimeout
 import httpx2
 import pytest
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
 from solders.pubkey import Pubkey
@@ -50,6 +50,19 @@ class _TypedRpcParams(PydanticModel):
     """Test typed JSON-RPC params."""
 
     value: int
+
+
+class _AliasedRpcParams(PydanticModel):
+    """Test typed JSON-RPC params with a serialization alias."""
+
+    model_alias: int = Field(serialization_alias="modelAlias")
+
+
+class _AliasedRpcRequest(JsonRpcRequest):
+    """Test JSON-RPC request with aliased typed params."""
+
+    method: str = "aliasedMethod"
+    params: list[_AliasedRpcParams] | None = None
 
 
 class _TypedRpcRequest(JsonRpcRequest):
@@ -112,6 +125,21 @@ def test_jsonrpc_request_params_are_untyped_by_default():
         "method": "testMethod",
         "params": {"value": 2},
     }
+
+
+def test_jsonrpc_request_to_json_uses_aliases_by_default():
+    request = JsonRpcRequest(
+        method="testMethod",
+        params=[_AliasedRpcParams(model_alias=2)],
+    )
+
+    assert json.loads(request.to_json()) == {
+        "jsonrpc": "2.0",
+        "id": "1",
+        "method": "testMethod",
+        "params": [{"modelAlias": 2}],
+    }
+    assert json.loads(request.to_json(by_alias=False))["params"] == [{"model_alias": 2}]
 
 
 def test_jsonrpc_request_subclasses_can_override_params():
@@ -270,6 +298,21 @@ async def test_send_rpc_request_success(unit_test_http_client_async):
         result = await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
     assert result == _TestRpcResult(value=42)
     assert post_mock.call_args.kwargs["content"] == '{"jsonrpc":"2.0","id":"1","method":"testMethod"}'
+
+
+async def test_send_rpc_request_serializes_params_with_aliases(
+    unit_test_http_client_async,
+):
+    """Test custom JSON-RPC requests use aliases through the provider path."""
+    raw = '{"jsonrpc":"2.0","id":1,"result":{"value":42}}'
+    request = _AliasedRpcRequest(params=[_AliasedRpcParams(model_alias=2)])
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        result = await unit_test_http_client_async.send_rpc_request(request, _TestRpcResult)
+    assert result == _TestRpcResult(value=42)
+    assert post_mock.call_args.kwargs["content"] == (
+        '{"jsonrpc":"2.0","id":"1","method":"aliasedMethod","params":[{"modelAlias":2}]}'
+    )
 
 
 async def test_send_rpc_request_requires_jsonrpc_request(unit_test_http_client_async):
