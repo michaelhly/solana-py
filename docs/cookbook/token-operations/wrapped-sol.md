@@ -20,7 +20,7 @@ from spl.token.instructions import (
     create_associated_token_account,
     sync_native,
     close_account,
-    get_associated_token_address
+    get_associated_token_address,
 )
 from spl.token.models import (
     SyncNativeParams,
@@ -31,6 +31,7 @@ from solders.pubkey import Pubkey
 
 # Native mint address for wrapped SOL
 NATIVE_MINT = Pubkey.from_string("So11111111111111111111111111111111111111112")
+
 
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
@@ -45,9 +46,7 @@ async def main():
     async with rpc:
         # Get associated token address for wrapped SOL
         wrapped_sol_account = get_associated_token_address(
-            owner=owner.pubkey(),
-            mint=NATIVE_MINT,
-            token_program_id=TOKEN_PROGRAM_ID
+            owner=owner.pubkey(), mint=NATIVE_MINT, token_program_id=TOKEN_PROGRAM_ID
         )
 
         # Create associated token account for wrapped SOL
@@ -56,24 +55,17 @@ async def main():
             owner=owner.pubkey(),
             mint=NATIVE_MINT,
             token_program_id=TOKEN_PROGRAM_ID,
-            associated_token_program_id=ASSOCIATED_TOKEN_PROGRAM_ID
+            associated_token_program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
         )
 
         # Transfer SOL to the wrapped SOL account
         transfer_instruction = transfer(
-            TransferParams(
-                from_pubkey=payer.pubkey(),
-                to_pubkey=wrapped_sol_account,
-                lamports=amount_to_wrap
-            )
+            TransferParams(from_pubkey=payer.pubkey(), to_pubkey=wrapped_sol_account, lamports=amount_to_wrap)
         )
 
         # Sync native instruction to update the wrapped SOL balance
         sync_native_instruction = sync_native(
-            SyncNativeParams(
-                program_id=TOKEN_PROGRAM_ID,
-                account=wrapped_sol_account
-            )
+            SyncNativeParams(program_id=TOKEN_PROGRAM_ID, account=wrapped_sol_account)
         )
 
         # Get latest blockhash
@@ -82,13 +74,9 @@ async def main():
         # Create message for wrapping SOL
         wrap_message = MessageV0.try_compile(
             payer=payer.pubkey(),
-            instructions=[
-                create_ata_instruction,
-                transfer_instruction,
-                sync_native_instruction
-            ],
+            instructions=[create_ata_instruction, transfer_instruction, sync_native_instruction],
             address_lookup_table_accounts=[],
-            recent_blockhash=recent_blockhash.value.blockhash
+            recent_blockhash=recent_blockhash.value.blockhash,
         )
 
         # Create transaction
@@ -114,10 +102,7 @@ async def main():
         # Close account instruction to unwrap SOL
         close_instruction = close_account(
             CloseAccountParams(
-                program_id=TOKEN_PROGRAM_ID,
-                account=wrapped_sol_account,
-                dest=owner.pubkey(),
-                owner=owner.pubkey()
+                program_id=TOKEN_PROGRAM_ID, account=wrapped_sol_account, dest=owner.pubkey(), owner=owner.pubkey()
             )
         )
 
@@ -129,7 +114,7 @@ async def main():
             payer=payer.pubkey(),
             instructions=[close_instruction],
             address_lookup_table_accounts=[],
-            recent_blockhash=recent_blockhash.value.blockhash
+            recent_blockhash=recent_blockhash.value.blockhash,
         )
 
         # Create transaction
@@ -138,6 +123,7 @@ async def main():
         # Send unwrapping transaction
         result = await rpc.send_transaction(unwrap_transaction)
         print(f"Unwrap transaction signature: {result.value}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

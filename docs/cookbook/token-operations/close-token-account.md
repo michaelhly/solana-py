@@ -20,49 +20,48 @@ from spl.token.instructions import close_account
 from spl.token.models import CloseAccountParams
 from spl.token.constants import TOKEN_PROGRAM_ID
 
+
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
-    
+
     # Example keypairs and addresses
     payer = Keypair()
     owner = Keypair()
     token_account = Pubkey.from_string("GfVPzUxMDvhFJ1Xs6C9i47XQRSapTd8LHw5grGuTquyQ")
-    
+
     # Account to receive the remaining lamports (usually the owner)
     destination = owner.pubkey()
-    
+
     async with rpc:
         # Create close account instruction
         close_instruction = close_account(
             CloseAccountParams(
-                program_id=TOKEN_PROGRAM_ID,
-                account=token_account,
-                dest=destination,
-                owner=owner.pubkey()
+                program_id=TOKEN_PROGRAM_ID, account=token_account, dest=destination, owner=owner.pubkey()
             )
         )
-        
+
         # Get latest blockhash
         recent_blockhash = await rpc.get_latest_blockhash()
-        
+
         # Create message
         message = MessageV0.try_compile(
             payer=payer.pubkey(),
             instructions=[close_instruction],
             address_lookup_table_accounts=[],
-            recent_blockhash=recent_blockhash.value.blockhash
+            recent_blockhash=recent_blockhash.value.blockhash,
         )
-        
+
         # Create transaction
         transaction = VersionedTransaction(message, [payer, owner])
-        
+
         print(f"Token Account: {token_account}")
         print(f"Owner: {owner.pubkey()}")
         print(f"Destination: {destination}")
-        
+
         # Send transaction
         result = await rpc.send_transaction(transaction)
         print(f"Transaction signature: {result.value}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

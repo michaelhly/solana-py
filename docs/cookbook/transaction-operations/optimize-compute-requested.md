@@ -28,88 +28,81 @@ from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
 from solders.compute_budget import set_compute_unit_limit, set_compute_unit_price
 
+
 async def get_simulation_compute_units(rpc, instructions, payer_pubkey, lookup_tables=[]):
     """Simulate transaction to get actual compute units needed"""
     try:
         recent_blockhash = await rpc.get_latest_blockhash()
-        
+
         message = MessageV0.try_compile(
             payer=payer_pubkey,
             instructions=instructions,
             address_lookup_table_accounts=lookup_tables,
-            recent_blockhash=recent_blockhash.value.blockhash
+            recent_blockhash=recent_blockhash.value.blockhash,
         )
-        
+
         transaction = VersionedTransaction(message, [])
-        
+
         simulation_result = await rpc.simulate_transaction(transaction)
-        
+
         if simulation_result.value.err:
             print(f"Simulation error: {simulation_result.value.err}")
             return 200000  # Fallback value
-        
+
         units_consumed = simulation_result.value.units_consumed
         if units_consumed:
             return units_consumed
         else:
             return 200000  # Fallback value
-            
+
     except Exception as e:
         print(f"Error during simulation: {e}")
         return 200000  # Fallback value
+
 
 async def build_optimal_transaction(rpc, instructions, signer, lookup_tables=[]):
     """Build optimal transaction with precise compute unit limits"""
     micro_lamports = 100  # Priority fee per compute unit
     units = await get_simulation_compute_units(rpc, instructions, signer.pubkey(), lookup_tables)
     recent_blockhash = await rpc.get_latest_blockhash()
-    
+
     # Add compute budget instructions
-    compute_budget_instructions = [
-        set_compute_unit_limit(units),
-        set_compute_unit_price(micro_lamports)
-    ]
-    
+    compute_budget_instructions = [set_compute_unit_limit(units), set_compute_unit_price(micro_lamports)]
+
     all_instructions = compute_budget_instructions + instructions
-    
+
     message = MessageV0.try_compile(
         payer=signer.pubkey(),
         instructions=all_instructions,
         address_lookup_table_accounts=lookup_tables,
-        recent_blockhash=recent_blockhash.value.blockhash
+        recent_blockhash=recent_blockhash.value.blockhash,
     )
-    
+
     return VersionedTransaction(message, [signer])
+
 
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
-    
+
     sender = Keypair()
     recipient = Keypair()
-    
+
     amount = 1_000_000_000  # 1 SOL
-    
+
     async with rpc:
         # Create transfer instruction
         transfer_instruction = transfer(
-            TransferParams(
-                from_pubkey=sender.pubkey(),
-                to_pubkey=recipient.pubkey(),
-                lamports=amount
-            )
+            TransferParams(from_pubkey=sender.pubkey(), to_pubkey=recipient.pubkey(), lamports=amount)
         )
-        
+
         # Build optimized transaction
-        optimized_transaction = await build_optimal_transaction(
-            rpc, 
-            [transfer_instruction], 
-            sender
-        )
-        
+        optimized_transaction = await build_optimal_transaction(rpc, [transfer_instruction], sender)
+
         print(f"Sender: {sender.pubkey()}")
         print(f"Recipient: {recipient.pubkey()}")
         print(f"Transfer Amount: {amount / 1_000_000_000} SOL")
         print(f"Optimized transaction created successfully")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "construct-typing>=0.6.2,<0.8.0",
+    "construct-typing>=0.6.2,<0.9.0",
     "websockets>=14.0",
     "solders>=0.23,<0.29",
     "httpx2[http2]>=2.4.0",
@@ -97,7 +97,7 @@ select = [
     "PLW",
     "RUF",
 ]
-ignore = ["D203", "I001"]
+ignore = ["D203", "I001", "PLR0917"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

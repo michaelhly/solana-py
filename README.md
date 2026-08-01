@@ -60,6 +60,7 @@ pip install solana
 import asyncio
 from solana.rpc.async_api import AsyncClient
 
+
 async def main():
     async with AsyncClient("https://api.devnet.solana.com") as client:
         res = await client.is_connected()
@@ -71,6 +72,7 @@ async def main():
     print(res)  # True
     await client.close()
 
+
 asyncio.run(main())
 ```
 
@@ -80,6 +82,7 @@ asyncio.run(main())
 import asyncio
 from asyncstdlib import enumerate
 from solana.rpc.websocket_api import connect
+
 
 async def main():
     async with connect("wss://api.devnet.solana.com") as websocket:
@@ -100,6 +103,7 @@ async def main():
                 break
             print(msg)
         await websocket.logs_unsubscribe(subscription_id)
+
 
 asyncio.run(main())
 ```
