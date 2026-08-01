@@ -58,6 +58,7 @@ For production custody workflows, prefer hardware wallets or multisig signing fl
 | [Add Memo to Transaction](transaction-operations/add-memo-to-transaction.md)       | Python | Add memo instruction to transactions    |
 | [Add Priority Fees](transaction-operations/add-priority-fees.md)                   | Python | Add priority fees to transactions       |
 | [Optimize Compute Requested](transaction-operations/optimize-compute-requested.md) | Python | Optimize compute units for transactions |
+| [Get Priority Fee Estimate](transaction-operations/get-priority-fee-estimate.md)   | Python | Estimate priority fees via Helius RPC   |
 
 ## Wallet Management
 
