@@ -20,18 +20,19 @@ from spl.token.instructions import burn
 from spl.token.models import BurnParams
 from spl.token.constants import TOKEN_PROGRAM_ID
 
+
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
-    
+
     # Example keypairs and addresses
     payer = Keypair()
     owner = Keypair()
     mint_address = Pubkey.from_string("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU")
     token_account = Pubkey.from_string("GfVPzUxMDvhFJ1Xs6C9i47XQRSapTd8LHw5grGuTquyQ")
-    
+
     # Amount to burn (in smallest unit)
     amount_to_burn = 500000000  # 0.5 tokens with 9 decimals
-    
+
     async with rpc:
         # Create burn instruction
         burn_instruction = burn(
@@ -40,13 +41,13 @@ async def main():
                 account=token_account,
                 mint=mint_address,
                 owner=owner.pubkey(),
-                amount=amount_to_burn
+                amount=amount_to_burn,
             )
         )
-        
+
         # Get latest blockhash
         recent_blockhash = await rpc.get_latest_blockhash()
-        
+
         # Create message
         message = MessageV0.try_compile(
             payer=payer.pubkey(),
@@ -54,13 +55,14 @@ async def main():
             address_lookup_table_accounts=[],
             recent_blockhash=recent_blockhash.value.blockhash,
         )
-        
+
         # Create and sign transaction
         transaction = VersionedTransaction(message, [payer, owner])
-        
+
         # Send transaction
         result = await rpc.send_transaction(transaction)
         print(f"Transaction signature: {result.value}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

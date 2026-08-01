@@ -12,16 +12,80 @@ Solana Cookbook - How to Restore a Keypair
 
 from solders.keypair import Keypair
 
+
 def main():
-    keypair_bytes = bytes([
-        174, 47, 154, 16, 202, 193, 206, 113, 199, 190, 53, 133, 169, 175, 31, 56,
-        222, 53, 138, 189, 224, 216, 117, 173, 10, 149, 53, 45, 73, 251, 237, 246, 15,
-        185, 186, 82, 177, 240, 148, 69, 241, 227, 167, 80, 141, 89, 240, 121, 121,
-        35, 172, 247, 68, 251, 226, 218, 48, 63, 176, 109, 168, 89, 238, 135
-    ])
-    
+    keypair_bytes = bytes(
+        [
+            174,
+            47,
+            154,
+            16,
+            202,
+            193,
+            206,
+            113,
+            199,
+            190,
+            53,
+            133,
+            169,
+            175,
+            31,
+            56,
+            222,
+            53,
+            138,
+            189,
+            224,
+            216,
+            117,
+            173,
+            10,
+            149,
+            53,
+            45,
+            73,
+            251,
+            237,
+            246,
+            15,
+            185,
+            186,
+            82,
+            177,
+            240,
+            148,
+            69,
+            241,
+            227,
+            167,
+            80,
+            141,
+            89,
+            240,
+            121,
+            121,
+            35,
+            172,
+            247,
+            68,
+            251,
+            226,
+            218,
+            48,
+            63,
+            176,
+            109,
+            168,
+            89,
+            238,
+            135,
+        ]
+    )
+
     signer = Keypair.from_bytes(keypair_bytes)
     print(signer.pubkey())
+
 
 if __name__ == "__main__":
     main()
@@ -64,9 +128,9 @@ The output will show the public key address corresponding to the restored keypai
 ### From File Storage
 ```python
 # Read private key from file
-with open('private_key.txt', 'rb') as f:
+with open("private_key.txt", "rb") as f:
     private_key_bytes = f.read()
-    
+
 keypair = Keypair.from_bytes(private_key_bytes)
 ```
 
@@ -86,7 +150,7 @@ import os
 import base58
 
 # Load from environment variable
-private_key_env = os.getenv('SOLANA_PRIVATE_KEY')
+private_key_env = os.getenv("SOLANA_PRIVATE_KEY")
 if private_key_env:
     private_key_bytes = base58.b58decode(private_key_env)
     keypair = Keypair.from_bytes(private_key_bytes)

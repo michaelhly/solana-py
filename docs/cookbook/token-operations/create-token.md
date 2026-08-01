@@ -20,19 +20,20 @@ from spl.token.models import InitializeMintParams
 from spl.token.constants import TOKEN_PROGRAM_ID
 from solders.system_program import create_account, CreateAccountParams
 
+
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
-    
+
     fee_payer = Keypair()
     mint = Keypair()
-    
+
     space = 82  # getMintSize() equivalent
     decimals = 9
-    
+
     async with rpc:
         # Get minimum balance for rent exemption
         rent = await rpc.get_minimum_balance_for_rent_exemption(space)
-        
+
         # Create account instruction
         create_account_instruction = create_account(
             CreateAccountParams(
@@ -40,10 +41,10 @@ async def main():
                 to_pubkey=mint.pubkey(),
                 lamports=rent.value,
                 space=space,
-                owner=TOKEN_PROGRAM_ID
+                owner=TOKEN_PROGRAM_ID,
             )
         )
-        
+
         # Initialize mint instruction
         initialize_mint_instruction = initialize_mint(
             InitializeMintParams(
@@ -51,15 +52,15 @@ async def main():
                 mint=mint.pubkey(),
                 decimals=decimals,
                 mint_authority=fee_payer.pubkey(),
-                freeze_authority=None  # No freeze authority
+                freeze_authority=None,  # No freeze authority
             )
         )
-        
+
         instructions = [create_account_instruction, initialize_mint_instruction]
-        
+
         # Get latest blockhash
         latest_blockhash = await rpc.get_latest_blockhash()
-        
+
         # Create message
         transaction_message = MessageV0.try_compile(
             payer=fee_payer.pubkey(),
@@ -67,11 +68,12 @@ async def main():
             address_lookup_table_accounts=[],
             recent_blockhash=latest_blockhash.value.blockhash,
         )
-        
+
         # Create versioned transaction
         transaction = VersionedTransaction(transaction_message, [fee_payer, mint])
-        
+
         print(f"Mint address: {mint.pubkey()}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

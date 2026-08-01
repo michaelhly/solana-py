@@ -49,6 +49,7 @@ from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
 from solders.compute_budget import set_compute_unit_limit, set_compute_unit_price
 
+
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
 
@@ -105,6 +106,7 @@ async def main():
         print(f"CU Price:           {cu_price} micro-lamports/CU")
         print(f"Prioritization fee: {prioritization_fee_lamports} lamports")
         print("Transaction with priority fee created successfully")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

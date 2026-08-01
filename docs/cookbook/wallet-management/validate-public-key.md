@@ -12,13 +12,15 @@ Solana Cookbook - How to Validate a Public Key
 
 from solders.pubkey import Pubkey
 
+
 def main():
     # on curve address
     key = Pubkey.from_string("5oNDL3swdJJF1g9DzJiZ4ynHXgszjAEpUkxVYejchzrY")
     print(key.is_on_curve())
-    
+
     off_curve_address = Pubkey.from_string("4BJXYkfvg37zEmBbsacZjeQDpTNx91KppxFJxRqrz48e")
     print(off_curve_address.is_on_curve())
+
 
 if __name__ == "__main__":
     main()
@@ -63,34 +65,30 @@ The output will show:
 ```python
 def validate_public_key_comprehensive(address: str) -> dict:
     """Comprehensive public key validation with detailed results"""
-    result = {
-        "address": address,
-        "is_valid_format": False,
-        "is_on_curve": False,
-        "validation_error": None
-    }
-    
+    result = {"address": address, "is_valid_format": False, "is_on_curve": False, "validation_error": None}
+
     try:
         # Check if the address can be parsed as a public key
         pubkey = Pubkey.from_string(address)
         result["is_valid_format"] = True
-        
+
         # Check if it's on the Ed25519 curve
         result["is_on_curve"] = pubkey.is_on_curve()
-        
+
     except ValueError as e:
         result["validation_error"] = f"Invalid format: {e}"
     except Exception as e:
         result["validation_error"] = f"Validation error: {e}"
-    
+
     return result
+
 
 # Usage example
 addresses_to_test = [
     "5oNDL3swdJJF1g9DzJiZ4ynHXgszjAEpUkxVYejchzrY",  # Valid on-curve
     "4BJXYkfvg37zEmBbsacZjeQDpTNx91KppxFJxRqrz48e",  # Valid format, off-curve
     "invalid_address",  # Invalid format
-    "11111111111111111111111111111111"  # System program (on-curve)
+    "11111111111111111111111111111111",  # System program (on-curve)
 ]
 
 for address in addresses_to_test:
@@ -98,7 +96,7 @@ for address in addresses_to_test:
     print(f"Address: {address[:20]}...")
     print(f"  Valid format: {result['is_valid_format']}")
     print(f"  On curve: {result['is_on_curve']}")
-    if result['validation_error']:
+    if result["validation_error"]:
         print(f"  Error: {result['validation_error']}")
     print()
 ```
@@ -132,20 +130,14 @@ def validate_pda(address: str) -> bool:
 def validate_multiple_addresses(addresses: list) -> dict:
     """Validate multiple addresses at once"""
     results = {}
-    
+
     for address in addresses:
         try:
             pubkey = Pubkey.from_string(address)
-            results[address] = {
-                "valid": True,
-                "on_curve": pubkey.is_on_curve()
-            }
+            results[address] = {"valid": True, "on_curve": pubkey.is_on_curve()}
         except Exception as e:
-            results[address] = {
-                "valid": False,
-                "error": str(e)
-            }
-    
+            results[address] = {"valid": False, "error": str(e)}
+
     return results
 ```
 

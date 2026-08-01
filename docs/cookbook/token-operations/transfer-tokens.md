@@ -21,35 +21,32 @@ from spl.token.instructions import get_associated_token_address
 from spl.token.models import TransferCheckedParams
 from spl.token.constants import TOKEN_PROGRAM_ID
 
+
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
-    
+
     # Example keypairs and addresses
     payer = Keypair()
     owner = Keypair()
     receiver = Keypair()
     mint_address = Pubkey.from_string("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU")
-    
+
     # Token decimals (usually 9 for most tokens)
     decimals = 9
-    
+
     # Amount to transfer (in smallest unit)
     amount_to_transfer = 10_000_000_000  # 10 tokens with 9 decimals
-    
+
     async with rpc:
         # Get associated token addresses
         source_token_account = get_associated_token_address(
-            owner=owner.pubkey(),
-            mint=mint_address,
-            token_program_id=TOKEN_PROGRAM_ID
+            owner=owner.pubkey(), mint=mint_address, token_program_id=TOKEN_PROGRAM_ID
         )
-        
+
         destination_token_account = get_associated_token_address(
-            owner=receiver.pubkey(),
-            mint=mint_address,
-            token_program_id=TOKEN_PROGRAM_ID
+            owner=receiver.pubkey(), mint=mint_address, token_program_id=TOKEN_PROGRAM_ID
         )
-        
+
         # Create transfer checked instruction
         transfer_instruction = transfer_checked(
             TransferCheckedParams(
@@ -59,13 +56,13 @@ async def main():
                 dest=destination_token_account,
                 owner=owner.pubkey(),
                 amount=amount_to_transfer,
-                decimals=decimals
+                decimals=decimals,
             )
         )
-        
+
         # Get latest blockhash
         recent_blockhash = await rpc.get_latest_blockhash()
-        
+
         # Create message
         message = MessageV0.try_compile(
             payer=payer.pubkey(),
@@ -73,13 +70,14 @@ async def main():
             address_lookup_table_accounts=[],
             recent_blockhash=recent_blockhash.value.blockhash,
         )
-        
+
         # Create and sign transaction
         transaction = VersionedTransaction(message, [payer, owner])
-        
+
         # Send transaction
         result = await rpc.send_transaction(transaction)
         print(f"Transaction signature: {result.value}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

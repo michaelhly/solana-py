@@ -15,18 +15,19 @@ from solders.pubkey import Pubkey
 import nacl.signing
 import nacl.encoding
 
+
 def main():
     # Create a keypair
     keypair = Keypair()
     message = b"Hello, Solana!"
-    
+
     # Sign the message
     signature = keypair.sign_message(message)
-    
+
     print(f"Message: {message}")
     print(f"Signature: {signature}")
     print(f"Public Key: {keypair.pubkey()}")
-    
+
     # Verify the signature
     try:
         # Use nacl to verify the signature
@@ -35,6 +36,7 @@ def main():
         print("Signature is valid: True")
     except Exception as e:
         print(f"Signature is valid: False - {e}")
+
 
 if __name__ == "__main__":
     main()
@@ -116,6 +118,7 @@ def authenticate_message(message: bytes, signature: bytes, public_key: Pubkey) -
     except Exception:
         return False
 
+
 # Usage
 keypair = Keypair()
 message = b"Authenticate this message"
@@ -161,23 +164,24 @@ def authenticate_user(user_address: str, challenge: bytes, signature: bytes) -> 
 ```python
 def create_signed_message(keypair: Keypair, message: str) -> dict:
     """Create a signed message with metadata"""
-    message_bytes = message.encode('utf-8')
+    message_bytes = message.encode("utf-8")
     signature = keypair.sign_message(message_bytes)
-    
+
     return {
         "message": message,
         "signature": signature.__bytes__().hex(),
         "public_key": str(keypair.pubkey()),
-        "timestamp": int(time.time())
+        "timestamp": int(time.time()),
     }
+
 
 def verify_signed_message(signed_message: dict) -> bool:
     """Verify a signed message with metadata"""
     try:
-        message_bytes = signed_message["message"].encode('utf-8')
+        message_bytes = signed_message["message"].encode("utf-8")
         signature = bytes.fromhex(signed_message["signature"])
         public_key = Pubkey.from_string(signed_message["public_key"])
-        
+
         verify_key = nacl.signing.VerifyKey(public_key.__bytes__())
         verify_key.verify(message_bytes, signature)
         return True

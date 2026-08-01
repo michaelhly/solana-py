@@ -21,7 +21,7 @@ from spl.token.instructions import (
     create_associated_token_account,
     mint_to_checked,
     approve_checked,
-    get_associated_token_address
+    get_associated_token_address,
 )
 from spl.token.models import (
     InitializeMintParams,
@@ -33,18 +33,19 @@ from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
 # Constants
 DECIMALS = 9
 
+
 async def setup(rpc, mint_authority):
     """
     The setup function initializes the mint and associated token accounts,
     and mints tokens to said associated token account
     """
     mint = Keypair()
-    
+
     space = 82  # getMintSize() equivalent for SPL Token
-    
+
     # Get minimum balance for rent exemption
     rent = await rpc.get_minimum_balance_for_rent_exemption(space)
-    
+
     # Create & initialize mint account
     create_account_instruction = create_account(
         CreateAccountParams(
@@ -52,35 +53,33 @@ async def setup(rpc, mint_authority):
             to_pubkey=mint.pubkey(),
             lamports=rent.value,
             space=space,
-            owner=TOKEN_PROGRAM_ID
+            owner=TOKEN_PROGRAM_ID,
         )
     )
-    
+
     initialize_mint_instruction = initialize_mint(
         InitializeMintParams(
             program_id=TOKEN_PROGRAM_ID,
             mint=mint.pubkey(),
             decimals=DECIMALS,
             mint_authority=mint_authority.pubkey(),
-            freeze_authority=None
+            freeze_authority=None,
         )
     )
-    
+
     # Create associated token account
     authority_ata = get_associated_token_address(
-        owner=mint_authority.pubkey(),
-        mint=mint.pubkey(),
-        token_program_id=TOKEN_PROGRAM_ID
+        owner=mint_authority.pubkey(), mint=mint.pubkey(), token_program_id=TOKEN_PROGRAM_ID
     )
-    
+
     create_ata_instruction = create_associated_token_account(
         payer=mint_authority.pubkey(),
         owner=mint_authority.pubkey(),
         mint=mint.pubkey(),
         token_program_id=TOKEN_PROGRAM_ID,
-        associated_token_program_id=ASSOCIATED_TOKEN_PROGRAM_ID
+        associated_token_program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
     )
-    
+
     # Mint tokens to ATA
     mint_to_instruction = mint_to_checked(
         MintToCheckedParams(
@@ -88,14 +87,14 @@ async def setup(rpc, mint_authority):
             mint=mint.pubkey(),
             dest=authority_ata,
             mint_authority=mint_authority.pubkey(),
-            amount=100 * (10 ** DECIMALS),  # 100 tokens
-            decimals=DECIMALS
+            amount=100 * (10**DECIMALS),  # 100 tokens
+            decimals=DECIMALS,
         )
     )
-    
+
     # Get latest blockhash
     recent_blockhash = await rpc.get_latest_blockhash()
-    
+
     # Create message
     message = MessageV0.try_compile(
         payer=mint_authority.pubkey(),
@@ -103,15 +102,15 @@ async def setup(rpc, mint_authority):
             create_account_instruction,
             initialize_mint_instruction,
             create_ata_instruction,
-            mint_to_instruction
+            mint_to_instruction,
         ],
         address_lookup_table_accounts=[],
-        recent_blockhash=recent_blockhash.value.blockhash
+        recent_blockhash=recent_blockhash.value.blockhash,
     )
-    
+
     # Create transaction
     transaction = VersionedTransaction(message, [mint_authority, mint])
-    
+
     # Send transaction
     result = await rpc.send_transaction(transaction)
     print(f"Setup transaction signature: {result.value}")
@@ -122,24 +121,25 @@ async def setup(rpc, mint_authority):
         commitment="confirmed",
         last_valid_block_height=recent_blockhash.value.last_valid_block_height,
     )
-    
+
     return mint.pubkey(), authority_ata
+
 
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
-    
+
     # Create keypairs
     payer = Keypair()
     mint_authority = Keypair()
     delegate = Keypair()
-    
+
     async with rpc:
         # Setup mint and token account
         mint_pubkey, token_account = await setup(rpc, mint_authority)
-        
+
         # Delegate amount (50 tokens)
-        delegate_amount = 50 * (10 ** DECIMALS)
-        
+        delegate_amount = 50 * (10**DECIMALS)
+
         # Create approval instruction
         approve_instruction = approve_checked(
             ApproveCheckedParams(
@@ -149,31 +149,32 @@ async def main():
                 delegate=delegate.pubkey(),
                 owner=mint_authority.pubkey(),
                 amount=delegate_amount,
-                decimals=DECIMALS
+                decimals=DECIMALS,
             )
         )
-        
+
         # Get latest blockhash
         recent_blockhash = await rpc.get_latest_blockhash()
-        
+
         # Create message
         message = MessageV0.try_compile(
             payer=payer.pubkey(),
             instructions=[approve_instruction],
             address_lookup_table_accounts=[],
-            recent_blockhash=recent_blockhash.value.blockhash
+            recent_blockhash=recent_blockhash.value.blockhash,
         )
-        
+
         # Create transaction
         transaction = VersionedTransaction(message, [payer, mint_authority])
-        
+
         print(f"Token Account: {token_account}")
         print(f"Delegate: {delegate.pubkey()}")
-        print(f"Delegated Amount: {delegate_amount / (10 ** DECIMALS)} tokens")
-        
+        print(f"Delegated Amount: {delegate_amount / (10**DECIMALS)} tokens")
+
         # Send transaction
         result = await rpc.send_transaction(transaction)
         print(f"Delegate transaction signature: {result.value}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

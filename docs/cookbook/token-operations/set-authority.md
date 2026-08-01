@@ -20,15 +20,16 @@ from spl.token.instructions import set_authority
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.models import SetAuthorityParams, AuthorityType
 
+
 async def main():
     rpc = AsyncClient("https://api.devnet.solana.com")
-    
+
     # Example keypairs and addresses
     payer = Keypair()
     current_authority = Keypair()
     new_authority = Keypair()
     mint_or_account = Pubkey.from_string("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU")
-    
+
     async with rpc:
         # Set new mint authority
         set_mint_authority_instruction = set_authority(
@@ -37,32 +38,33 @@ async def main():
                 account=mint_or_account,
                 authority=AuthorityType.MINT_TOKENS,
                 current_authority=current_authority.pubkey(),
-                new_authority=new_authority.pubkey()
+                new_authority=new_authority.pubkey(),
             )
         )
-        
+
         # Get latest blockhash
         recent_blockhash = await rpc.get_latest_blockhash()
-        
+
         # Create message
         message = MessageV0.try_compile(
             payer=payer.pubkey(),
             instructions=[set_mint_authority_instruction],
             address_lookup_table_accounts=[],
-            recent_blockhash=recent_blockhash.value.blockhash
+            recent_blockhash=recent_blockhash.value.blockhash,
         )
-        
+
         # Create transaction
         transaction = VersionedTransaction(message, [payer, current_authority])
-        
+
         print(f"Account/Mint: {mint_or_account}")
         print(f"Current Authority: {current_authority.pubkey()}")
         print(f"New Authority: {new_authority.pubkey()}")
         print(f"Authority Type: {AuthorityType.MINT_TOKENS}")
-        
+
         # Send transaction
         result = await rpc.send_transaction(transaction)
         print(f"Transaction signature: {result.value}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
