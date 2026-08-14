@@ -67,4 +67,4 @@ The script will run continuously, printing events as they occur.
 
 - **Devnet**: wss://api.devnet.solana.com
 - **Testnet**: wss://api.testnet.solana.com  
-- **Mainnet**: wss://api.mainnet-beta.solana.com
+- **Mainnet**: wss://api.mainnet.solana.com

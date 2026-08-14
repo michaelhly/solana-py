@@ -10,17 +10,17 @@ ENDPOINT = Endpoint(
     http=ClusterUrls(
         devnet="http://api.devnet.solana.com",
         testnet="http://api.testnet.solana.com",
-        mainnet_beta="http://api.mainnet-beta.solana.com/",
+        mainnet_beta="http://api.mainnet.solana.com/",
     ),
     https=ClusterUrls(
         devnet="https://api.devnet.solana.com",
         testnet="https://api.testnet.solana.com",
-        mainnet_beta="https://api.mainnet-beta.solana.com/",
+        mainnet_beta="https://api.mainnet.solana.com/",
     ),
 )
 
 
-Cluster = Literal["devnet", "testnet", "mainnet-beta"]
+Cluster = Literal["devnet", "testnet", "mainnet"]
 
 
 def cluster_api_url(cluster: Cluster | None = None, tls: bool = True) -> str:

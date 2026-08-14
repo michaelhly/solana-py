@@ -16,7 +16,7 @@ from solders.pubkey import Pubkey
 
 
 async def main():
-    rpc = AsyncClient("https://api.mainnet-beta.solana.com")
+    rpc = AsyncClient("https://api.mainnet.solana.com")
 
     # Use a real token account address from mainnet
     token_account_address = Pubkey.from_string("GfVPzUxMDvhFJ1Xs6C9i47XQRSapTd8LHw5grGuTquyQ")
