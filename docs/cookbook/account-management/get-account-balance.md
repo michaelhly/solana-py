@@ -83,4 +83,4 @@ async def main():
 
 - **Devnet**: https://api.devnet.solana.com
 - **Testnet**: https://api.testnet.solana.com
-- **Mainnet**: https://api.mainnet-beta.solana.com
+- **Mainnet**: https://api.mainnet.solana.com

@@ -38,7 +38,7 @@ import asyncio
 from solana.rpc.async_api import AsyncClient
 from solders.pubkey import Pubkey
 
-RPC_URL = "https://api.mainnet-beta.solana.com"
+RPC_URL = "https://api.mainnet.solana.com"
 
 
 async def get_balance(pubkey: Pubkey) -> int:
@@ -66,7 +66,7 @@ from django.http import JsonResponse
 from solana.rpc.async_api import AsyncClient
 from solders.pubkey import Pubkey
 
-RPC_URL = "https://api.mainnet-beta.solana.com"
+RPC_URL = "https://api.mainnet.solana.com"
 
 
 class SolanaService:
@@ -100,7 +100,7 @@ from solana.rpc.async_api import AsyncClient
 from solders.pubkey import Pubkey
 
 app = Flask(__name__)
-RPC_URL = "https://api.mainnet-beta.solana.com"
+RPC_URL = "https://api.mainnet.solana.com"
 
 
 class SolanaService:
