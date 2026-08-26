@@ -108,6 +108,9 @@ async def main():
 asyncio.run(main())
 ```
 
+`*_unsubscribe()` accepts either the server-assigned ID (`first_resp[0].result`, as above)
+or the request ID returned by the matching `*_subscribe()` helper.
+
 ## 🔨 Development
 
 ### Setup
