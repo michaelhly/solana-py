@@ -82,6 +82,54 @@ async def test_program_subscribe_with_config(monkeypatch):
     assert sent_messages[0].config == expected_config
 
 
+async def test_unsubscribe_sends_server_assigned_subscription_id(monkeypatch):
+    """Unsubscribe helpers should translate a subscribe() request ID into the server-assigned subscription ID."""
+    protocol = SolanaWsClientProtocol.__new__(SolanaWsClientProtocol)
+    protocol.subscriptions = {}
+    protocol.sent_subscriptions = {}
+    protocol.failed_subscriptions = {}
+    protocol.request_ids_to_subscriptions = {}
+    protocol.request_counter = itertools.count()
+    sent_messages = []
+
+    async def fake_send_request(self, message):
+        sent_messages.append(message)
+
+    monkeypatch.setattr(SolanaWsClientProtocol, "send_request", fake_send_request)
+
+    request_id = await protocol.slot_subscribe()
+    protocol.sent_subscriptions[request_id] = sent_messages[0]
+    server_subscription = 9710270
+    confirmation = f'{{"jsonrpc":"2.0","result":{server_subscription},"id":{request_id}}}'
+    protocol._process_rpc_response(confirmation)
+
+    await protocol.slot_unsubscribe(request_id)
+
+    assert f'"params":[{server_subscription}]' in sent_messages[1].to_json()
+    assert server_subscription not in protocol.subscriptions
+    assert request_id not in protocol.request_ids_to_subscriptions
+
+
+async def test_unsubscribe_before_confirmation_sends_given_id(monkeypatch):
+    """Unsubscribing an unconfirmed subscription should pass the given ID through instead of raising."""
+    protocol = SolanaWsClientProtocol.__new__(SolanaWsClientProtocol)
+    protocol.subscriptions = {}
+    protocol.sent_subscriptions = {}
+    protocol.failed_subscriptions = {}
+    protocol.request_ids_to_subscriptions = {}
+    protocol.request_counter = itertools.count()
+    sent_messages = []
+
+    async def fake_send_request(self, message):
+        sent_messages.append(message)
+
+    monkeypatch.setattr(SolanaWsClientProtocol, "send_request", fake_send_request)
+
+    await protocol.logs_unsubscribe(7)
+
+    assert '"params":[7]' in sent_messages[0].to_json()
+
+
 async def test_connect_preserves_async_with_and_custom_connection(monkeypatch):
     """The connect helper should stay usable as an async context manager."""
     captured = {}

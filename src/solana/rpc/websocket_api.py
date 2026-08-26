@@ -89,6 +89,7 @@ class SolanaWsClientProtocol(ClientConnection):
         self.subscriptions: Dict[int, Body] = {}
         self.sent_subscriptions: Dict[int, Body] = {}
         self.failed_subscriptions = {}
+        self.request_ids_to_subscriptions: Dict[int, int] = {}
         self.request_counter = itertools.count()
 
     def increment_counter_and_get_id(self) -> int:
@@ -154,12 +155,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from account notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = AccountUnsubscribe(subscription, req_id)
+        req = AccountUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def logs_subscribe(
         self,
@@ -186,12 +186,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from transaction logging.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = LogsUnsubscribe(subscription, req_id)
+        req = LogsUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def block_subscribe(
         self,
@@ -233,12 +232,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from blocks.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = BlockUnsubscribe(subscription, req_id)
+        req = BlockUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def program_subscribe(  # pylint: disable=too-many-arguments
         self,
@@ -290,12 +288,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from program account notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = ProgramUnsubscribe(subscription, req_id)
+        req = ProgramUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def signature_subscribe(
         self,
@@ -322,12 +319,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from signature notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = SignatureUnsubscribe(subscription, req_id)
+        req = SignatureUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def slot_subscribe(self) -> int:
         """Subscribe to receive notification anytime a slot is processed by the validator."""
@@ -343,12 +339,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from slot notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = SlotUnsubscribe(subscription, req_id)
+        req = SlotUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def slots_updates_subscribe(self) -> int:
         """Subscribe to receive a notification from the validator on a variety of updates on every slot."""
@@ -364,12 +359,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from slot update notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = SlotsUpdatesUnsubscribe(subscription, req_id)
+        req = SlotsUpdatesUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def root_subscribe(self) -> int:
         """Subscribe to receive notification anytime a new root is set by the validator."""
@@ -385,12 +379,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from root notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = RootUnsubscribe(subscription, req_id)
+        req = RootUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     async def vote_subscribe(self) -> int:
         """Subscribe to receive notification anytime a new vote is observed in gossip."""
@@ -406,12 +399,11 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from vote notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: The request ID returned by the corresponding ``subscribe`` method.
         """
         req_id = self.increment_counter_and_get_id()
-        req = VoteUnsubscribe(subscription, req_id)
+        req = VoteUnsubscribe(self._pop_server_subscription(subscription), req_id)
         await self.send_request(req)
-        del self.subscriptions[subscription]
 
     def _process_rpc_response(self, raw: str) -> List[Union[Notification, SubscriptionResult]]:
         parsed = parse_websocket_message(raw)
@@ -422,7 +414,24 @@ class SolanaWsClientProtocol(ClientConnection):
                 raise SubscriptionError(item, subscription)
             if isinstance(item, SubscriptionResult):
                 self.subscriptions[item.result] = self.sent_subscriptions[item.id]
+                self.request_ids_to_subscriptions[item.id] = item.result
         return cast(List[Union[Notification, SubscriptionResult]], parsed)
+
+    def _pop_server_subscription(self, subscription: int) -> int:
+        """Translate a subscribe request ID into its server-assigned subscription ID.
+
+        The RPC server assigns subscription IDs independently of the request IDs returned by the
+        ``subscribe`` helpers, so an unconfirmed request ID is sent as-is.
+
+        Args:
+            subscription: The value returned by a ``subscribe`` helper, or a server-assigned ID.
+
+        Returns:
+            The server-assigned subscription ID, if known, else the input unchanged.
+        """
+        server_subscription = self.request_ids_to_subscriptions.pop(subscription, subscription)
+        self.subscriptions.pop(server_subscription, None)
+        return server_subscription
 
 
 @asynccontextmanager
