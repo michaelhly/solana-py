@@ -1,6 +1,7 @@
 # pylint: disable=unused-argument,redefined-outer-name
 """Tests for the Websocket Client."""
 
+from contextlib import suppress
 from typing import AsyncGenerator, List, Tuple
 
 import asyncstdlib
@@ -34,6 +35,7 @@ from solders.rpc.responses import (
 )
 from solders.system_program import ID as SYS_PROGRAM_ID
 from websockets.asyncio.client import ClientConnection
+from websockets.exceptions import ConnectionClosed
 
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
@@ -48,8 +50,16 @@ async def websocket(
     test_http_client_async: AsyncClient,
     validator_ws_url: str,
 ) -> AsyncGenerator[ClientConnection, None]:
-    """Websocket connection to the local test validator."""
-    async with connect(uri=validator_ws_url) as client:
+    """Websocket connection to the local test validator.
+
+    Keepalive pings are disabled (``ping_interval=None``). Under pytest-xdist
+    the workers share a single test validator, and the event loop / validator
+    pubsub can stall long enough for the default keepalive (ping every 20s,
+    pong expected within 20s) to time out and abort the socket with
+    ``ConnectionClosedError: no close frame received or sent``. These test
+    connections are short-lived, so keepalive buys us nothing but flakiness.
+    """
+    async with connect(uri=validator_ws_url, ping_interval=None) as client:
         yield client
 
 
@@ -80,7 +90,10 @@ async def multiple_subscriptions(
         LogsUnsubscribe(logs_subscription_id, websocket.increment_counter_and_get_id()),
         AccountUnsubscribe(account_subscription_id, websocket.increment_counter_and_get_id()),
     ]
-    await websocket.send_request(unsubscribe_reqs)
+    # Best-effort cleanup: if the connection is already gone, don't raise a
+    # teardown error that would mask the test's own outcome.
+    with suppress(ConnectionClosed):
+        await websocket.send_request(unsubscribe_reqs)
 
 
 @pytest.fixture
