@@ -108,8 +108,10 @@ async def main():
 asyncio.run(main())
 ```
 
-`*_unsubscribe()` accepts either the server-assigned ID (`first_resp[0].result`, as above)
-or the request ID returned by the matching `*_subscribe()` helper.
+`*_unsubscribe()` takes the server-assigned subscription ID (`first_resp[0].result`, as above).
+As a convenience it also accepts the request ID returned by the matching `*_subscribe()` helper,
+which is translated once the subscription confirmation has been received. Server-assigned IDs are
+resolved first, so prefer that form when you have it.
 
 ## 🔨 Development
 
