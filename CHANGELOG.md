@@ -2,6 +2,50 @@
 
 ## [Unreleased]
 
+## [0.40.3] - 2026-08-26
+
+### Changed
+
+- Websocket `*_unsubscribe()` helpers now also accept the request ID returned by the matching `*_subscribe()` helper, translating it to the server-assigned subscription ID once the subscription confirmation has been received. Server-assigned IDs are still resolved first, so passing `recv()[0].result` keeps working unchanged [(#701)](https://github.com/michaelhly/solana-py/pull/701).
+
+## [0.40.2] - 2026-08-16
+
+### Changed
+
+- **BREAKING**: Rename the `mainnet-beta` cluster to `mainnet`. `Cluster` is now `Literal["devnet", "testnet", "mainnet"]` and `cluster_api_url` returns `https://api.mainnet.solana.com/`, so `cluster_api_url("mainnet-beta")` no longer type-checks — use `cluster_api_url("mainnet")` instead [(#699)](https://github.com/michaelhly/solana-py/pull/699).
+
+### Docs
+
+- Add a `get_priority_fee_estimate` cookbook page [(#697)](https://github.com/michaelhly/solana-py/pull/697).
+- Update cookbook examples for the new dependency versions [(#696)](https://github.com/michaelhly/solana-py/pull/696).
+
+### Dependencies
+
+- Bump minimum versions of `solders` (>=0.28,<0.30), `websockets` (>=16.0), `httpx2` (>=2.10.0), `construct-typing` (>=0.8.1,<0.9.0), and `aiolimiter` (>=1.2.1) [(#696)](https://github.com/michaelhly/solana-py/pull/696), [(#699)](https://github.com/michaelhly/solana-py/pull/699).
+
+## [0.40.1] - 2026-07-16
+
+### Fixed
+
+- Serialize JSON-RPC requests with `by_alias=True` by default, so field aliases are used on the wire even when `model_dump_json` is called without arguments [(#693)](https://github.com/michaelhly/solana-py/pull/693).
+
+### Removed
+
+- Remove dead `GetStakeActivation` handling from `solana.rpc.core` — the API was removed in `solders` 0.28.0 [(#688)](https://github.com/michaelhly/solana-py/pull/688).
+
+### Docs
+
+- Add a third-party packages section with `django-solana-payments` [(#689)](https://github.com/michaelhly/solana-py/pull/689).
+- Add compute budget and priority fee guides, and remove the misleading offline transactions page [(#691)](https://github.com/michaelhly/solana-py/pull/691).
+- Fix missing docstrings in `solana.models` and `spl.token.models` [(#690)](https://github.com/michaelhly/solana-py/pull/690).
+- Clean up cookbook examples for getting test SOL, delegating/revoking token accounts, wrapped SOL, and priority fees [(#692)](https://github.com/michaelhly/solana-py/pull/692).
+
+### Dependencies
+
+- Relax `solders` to >=0.23,<0.29 [(#688)](https://github.com/michaelhly/solana-py/pull/688).
+- Remove the `typing-extensions` dependency [(#686)](https://github.com/michaelhly/solana-py/pull/686).
+- Bump `actions/checkout` from 6 to 7 [(#687)](https://github.com/michaelhly/solana-py/pull/687).
+
 ## [0.40.0] - 2026-06-27
 
 ### Added
