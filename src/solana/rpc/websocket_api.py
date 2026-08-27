@@ -107,8 +107,12 @@ class SolanaWsClientProtocol(ClientConnection):
         Args:
             message: The request(s) to send.
         """
-        reqs = message if isinstance(message, list) else [message]
-        to_send = batch_to_json(reqs) if isinstance(message, list) else message.to_json()
+        if isinstance(message, list):
+            reqs: List[Body] = message
+            to_send = batch_to_json(message)
+        else:
+            reqs = [message]
+            to_send = message.to_json()
         for req in reqs:
             self.sent_subscriptions[req.id] = req
         await self.send(to_send)
