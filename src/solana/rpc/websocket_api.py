@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import itertools
+import logging
+from collections.abc import Callable, Sequence
 from contextlib import asynccontextmanager
-from collections.abc import Sequence
 from typing import Any, AsyncIterator, Dict, List, Optional, Union, cast
 
 from solders.account_decoder import UiDataSliceConfig
@@ -43,7 +44,7 @@ from solders.rpc.requests import (
     VoteUnsubscribe,
     batch_to_json,
 )
-from solders.rpc.responses import Notification
+from solders.rpc.responses import Notification, SignatureNotification
 from solders.rpc.responses import SubscriptionError as SoldersSubscriptionError
 from solders.rpc.responses import SubscriptionResult, parse_websocket_message
 from solders.signature import Signature
@@ -61,6 +62,8 @@ from solana.rpc.core import (
     _COMMITMENT_TO_SOLDERS,
     _TX_ENCODING_TO_SOLDERS,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SubscriptionError(Exception):
@@ -89,6 +92,7 @@ class SolanaWsClientProtocol(ClientConnection):
         self.subscriptions: Dict[int, Body] = {}
         self.sent_subscriptions: Dict[int, Body] = {}
         self.failed_subscriptions = {}
+        self.request_ids_to_subscriptions: Dict[int, int] = {}
         self.request_counter = itertools.count()
 
     def increment_counter_and_get_id(self) -> int:
@@ -104,13 +108,17 @@ class SolanaWsClientProtocol(ClientConnection):
             message: The request(s) to send.
         """
         if isinstance(message, list):
+            reqs: List[Body] = message
             to_send = batch_to_json(message)
-            for req in message:
-                self.sent_subscriptions[req.id] = req
         else:
+            reqs = [message]
             to_send = message.to_json()
-            self.sent_subscriptions[message.id] = message
+        for req in reqs:
+            self.sent_subscriptions[req.id] = req
         await self.send(to_send)
+        for req in reqs:
+            if hasattr(req, "subscription_id"):
+                self._forget_subscription(req.subscription_id)
 
     async def recv(  # type: ignore
         self,
@@ -154,12 +162,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from account notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = AccountUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(AccountUnsubscribe, subscription)
 
     async def logs_subscribe(
         self,
@@ -186,12 +192,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from transaction logging.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = LogsUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(LogsUnsubscribe, subscription)
 
     async def block_subscribe(
         self,
@@ -233,12 +237,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from blocks.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = BlockUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(BlockUnsubscribe, subscription)
 
     async def program_subscribe(  # pylint: disable=too-many-arguments
         self,
@@ -290,12 +292,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from program account notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = ProgramUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(ProgramUnsubscribe, subscription)
 
     async def signature_subscribe(
         self,
@@ -322,12 +322,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from signature notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = SignatureUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(SignatureUnsubscribe, subscription)
 
     async def slot_subscribe(self) -> int:
         """Subscribe to receive notification anytime a slot is processed by the validator."""
@@ -343,12 +341,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from slot notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = SlotUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(SlotUnsubscribe, subscription)
 
     async def slots_updates_subscribe(self) -> int:
         """Subscribe to receive a notification from the validator on a variety of updates on every slot."""
@@ -364,12 +360,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from slot update notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = SlotsUpdatesUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(SlotsUpdatesUnsubscribe, subscription)
 
     async def root_subscribe(self) -> int:
         """Subscribe to receive notification anytime a new root is set by the validator."""
@@ -385,12 +379,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from root notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = RootUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(RootUnsubscribe, subscription)
 
     async def vote_subscribe(self) -> int:
         """Subscribe to receive notification anytime a new vote is observed in gossip."""
@@ -406,12 +398,10 @@ class SolanaWsClientProtocol(ClientConnection):
         """Unsubscribe from vote notifications.
 
         Args:
-            subscription: ID of subscription to cancel.
+            subscription: Request ID from the matching ``subscribe`` helper, or the
+                server-assigned ID from the confirmation (``recv()[0].result``).
         """
-        req_id = self.increment_counter_and_get_id()
-        req = VoteUnsubscribe(subscription, req_id)
-        await self.send_request(req)
-        del self.subscriptions[subscription]
+        await self._unsubscribe(VoteUnsubscribe, subscription)
 
     def _process_rpc_response(self, raw: str) -> List[Union[Notification, SubscriptionResult]]:
         parsed = parse_websocket_message(raw)
@@ -422,7 +412,46 @@ class SolanaWsClientProtocol(ClientConnection):
                 raise SubscriptionError(item, subscription)
             if isinstance(item, SubscriptionResult):
                 self.subscriptions[item.result] = self.sent_subscriptions[item.id]
+                self.request_ids_to_subscriptions[item.id] = item.result
+            elif isinstance(item, SignatureNotification):
+                # Signature subscriptions expire server-side after the notification.
+                self._forget_subscription(item.subscription)
         return cast(List[Union[Notification, SubscriptionResult]], parsed)
+
+    async def _unsubscribe(self, constructor: Callable[[int, int], Body], subscription: int) -> None:
+        """Send an unsubscribe request after resolving the server-assigned subscription ID."""
+        server_subscription = self._resolve_server_subscription(subscription)
+        req_id = self.increment_counter_and_get_id()
+        req = constructor(server_subscription, req_id)
+        await self.send_request(req)
+        self._forget_subscription(server_subscription)
+
+    def _resolve_server_subscription(self, subscription: int) -> int:
+        """Translate a subscribe request ID into its server-assigned subscription ID.
+
+        Server-assigned IDs already recorded in ``self.subscriptions`` win, so the README
+        form (``recv()[0].result``) is never rewritten through the request-ID map. An
+        unconfirmed request ID is sent as-is.
+        """
+        if subscription in self.subscriptions:
+            return subscription
+        mapped = self.request_ids_to_subscriptions.get(subscription)
+        if mapped is not None:
+            return mapped
+        logger.warning(
+            "Unsubscribe target %s is not a known server subscription ID or confirmed request ID",
+            subscription,
+        )
+        return subscription
+
+    def _forget_subscription(self, server_subscription: int) -> None:
+        """Drop local bookkeeping for a server-assigned subscription ID."""
+        self.subscriptions.pop(server_subscription, None)
+        self.request_ids_to_subscriptions = {
+            req_id: sub_id
+            for req_id, sub_id in self.request_ids_to_subscriptions.items()
+            if sub_id != server_subscription
+        }
 
 
 @asynccontextmanager
