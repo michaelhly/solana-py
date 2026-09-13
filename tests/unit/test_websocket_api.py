@@ -7,7 +7,7 @@ from typing import cast
 
 import pytest
 from solders.pubkey import Pubkey
-from solders.rpc.config import RpcTransactionLogsFilterMentions
+from solders.rpc.config import RpcBlockSubscribeFilterMentions, RpcTransactionLogsFilterMentions
 from solders.rpc.requests import LogsUnsubscribe
 from solders.rpc.responses import (
     Notification,
@@ -254,6 +254,25 @@ async def test_program_subscribe_builds_configured_request(monkeypatch):
     assert captured[0][0] is SubscriptionKind.PROGRAM
     assert captured[0][1].id == 1
     assert '"params"' in captured[0][1].to_json()
+
+
+async def test_block_subscribe_accepts_both_filter_variants(monkeypatch):
+    """``blockSubscribe`` takes ``all`` or a mentions filter, like ``logsSubscribe``."""
+    client = SolanaWsClient.__new__(SolanaWsClient)
+    client._request_counter = itertools.count(1)
+    captured = []
+
+    async def fake_subscribe(kind, request):
+        captured.append((kind, request))
+        return Subscription(42, kind)
+
+    monkeypatch.setattr(client, "_subscribe", fake_subscribe)
+    await client.block_subscribe()
+    await client.block_subscribe(filter_=RpcBlockSubscribeFilterMentions(Pubkey.default()))
+
+    assert [kind for kind, _ in captured] == [SubscriptionKind.BLOCK, SubscriptionKind.BLOCK]
+    assert '"all"' in captured[0][1].to_json()
+    assert "mentionsAccountOrProgram" in captured[1][1].to_json()
 
 
 def test_unsubscribe_request_uses_subscription_kind():
