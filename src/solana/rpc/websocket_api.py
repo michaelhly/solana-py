@@ -16,6 +16,7 @@ from typing import Any, Generic, TypeVar, cast
 from solders.rpc.config import (
     RpcAccountInfoConfig,
     RpcBlockSubscribeFilter,
+    RpcBlockSubscribeFilterMentions,
     RpcBlockSubscribeConfig,
     RpcProgramAccountsConfig,
     RpcSignatureSubscribeConfig,
@@ -626,7 +627,7 @@ class SolanaWsClient:
     async def block_subscribe(
         self,
         *,
-        filter_: RpcBlockSubscribeFilter = RpcBlockSubscribeFilter.All,
+        filter_: (RpcBlockSubscribeFilter | RpcBlockSubscribeFilterMentions) = RpcBlockSubscribeFilter.All,
         commitment: Commitment | None = None,
         encoding: str | None = None,
         transaction_details: TransactionDetails | None = None,
