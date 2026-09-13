@@ -22,7 +22,7 @@ class SolanaExceptionBase(Exception):
         *args: Any,  # noqa: ARG004
         **kwargs: Any,  # noqa: ARG004
     ) -> str:
-        return f"{type(exc)} raised in {func} invokation"
+        return f"{type(exc)} raised in {func} invocation"
 
 
 class SolanaRpcException(SolanaExceptionBase):

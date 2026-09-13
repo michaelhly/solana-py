@@ -1,10 +1,8 @@
-# pylint: disable=too-many-arguments
 """Helper code for api.py and async_api.py."""
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import List, Optional, Tuple, Union
 
 from solders.account_decoder import UiAccountEncoding, UiDataSliceConfig
 from solders.commitment_config import CommitmentLevel
@@ -135,7 +133,7 @@ class TransactionExpiredBlockheightExceededError(Exception):
     """Raise when confirming an expired transaction that exceeded the blockheight."""
 
 
-class _ClientCore:  # pylint: disable=too-few-public-methods
+class _ClientCore:
     _comm_key = "commitment"
     _encoding_key = "encoding"
     _data_slice_key = "dataSlice"
@@ -157,7 +155,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def __init__(
         self,
-        commitment: Optional[Commitment] = None,
+        commitment: Commitment | None = None,
     ):
         self._commitment = commitment or Finalized
 
@@ -169,16 +167,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_health_body(self) -> GetHealth:
         return GetHealth()
 
-    def _get_balance_body(self, pubkey: Pubkey, commitment: Optional[Commitment]) -> GetBalance:
+    def _get_balance_body(self, pubkey: Pubkey, commitment: Commitment | None) -> GetBalance:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetBalance(pubkey, RpcContextConfig(commitment=commitment_to_use))
 
     def _get_account_info_body(
         self,
         pubkey: Pubkey,
-        commitment: Optional[Commitment],
+        commitment: Commitment | None,
         encoding: str,
-        data_slice: Optional[DataSliceOpts],
+        data_slice: DataSliceOpts | None,
     ) -> GetAccountInfo:
         data_slice_to_use = (
             None if data_slice is None else UiDataSliceConfig(offset=data_slice.offset, length=data_slice.length)
@@ -204,10 +202,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         slot: int,
         encoding: str,
-        max_supported_transaction_version: Optional[int],
-        transaction_details: Optional[TransactionDetails],
-        rewards: Optional[bool],
-        commitment: Optional[Commitment],
+        max_supported_transaction_version: int | None,
+        transaction_details: TransactionDetails | None,
+        rewards: bool | None,
+        commitment: Commitment | None,
     ) -> GetBlock:
         encoding_to_use = _TX_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -220,28 +218,28 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         )
         return GetBlock(slot=slot, config=config)
 
-    def _get_block_height_body(self, commitment: Optional[Commitment]) -> GetBlockHeight:
+    def _get_block_height_body(self, commitment: Commitment | None) -> GetBlockHeight:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetBlockHeight(RpcContextConfig(commitment=commitment_to_use))
 
     @staticmethod
     def _get_recent_performance_samples_body(
-        limit: Optional[int],
+        limit: int | None,
     ) -> GetRecentPerformanceSamples:
         return GetRecentPerformanceSamples(limit)
 
     @staticmethod
-    def _get_blocks_body(start_slot: int, end_slot: Optional[int]) -> GetBlocks:
+    def _get_blocks_body(start_slot: int, end_slot: int | None) -> GetBlocks:
         return GetBlocks(start_slot, end_slot)
 
     def _get_signatures_for_address_body(
         self,
         address: Pubkey,
-        before: Optional[Signature],
-        until: Optional[Signature],
-        limit: Optional[int],
-        commitment: Optional[Commitment],
-        min_context_slot: Optional[int] = None,
+        before: Signature | None,
+        until: Signature | None,
+        limit: int | None,
+        commitment: Commitment | None,
+        min_context_slot: int | None = None,
     ) -> GetSignaturesForAddress:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcSignaturesForAddressConfig(
@@ -257,8 +255,8 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         tx_sig: Signature,
         encoding: str = "json",
-        commitment: Union[Commitment, None] = None,
-        max_supported_transaction_version: Optional[int] = None,
+        commitment: Commitment | None = None,
+        max_supported_transaction_version: int | None = None,
     ) -> GetTransaction:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         encoding_to_use = _TX_ENCODING_TO_SOLDERS[encoding]
@@ -269,43 +267,41 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         )
         return GetTransaction(tx_sig, config)
 
-    def _get_epoch_info_body(self, commitment: Optional[Commitment]) -> GetEpochInfo:
+    def _get_epoch_info_body(self, commitment: Commitment | None) -> GetEpochInfo:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcContextConfig(commitment=commitment_to_use)
         return GetEpochInfo(config)
 
-    def _get_fee_for_message_body(self, message: MessageV0, commitment: Optional[Commitment]) -> GetFeeForMessage:
+    def _get_fee_for_message_body(self, message: MessageV0, commitment: Commitment | None) -> GetFeeForMessage:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetFeeForMessage(message, commitment_to_use)
 
-    def _get_inflation_governor_body(self, commitment: Optional[Commitment]) -> GetInflationGovernor:
+    def _get_inflation_governor_body(self, commitment: Commitment | None) -> GetInflationGovernor:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetInflationGovernor(commitment_to_use)
 
-    def _get_largest_accounts_body(
-        self, filter_opt: Optional[str], commitment: Optional[Commitment]
-    ) -> GetLargestAccounts:
+    def _get_largest_accounts_body(self, filter_opt: str | None, commitment: Commitment | None) -> GetLargestAccounts:
         filter_to_use = None if filter_opt is None else _LARGEST_ACCOUNTS_FILTER_TO_SOLDERS[filter_opt]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetLargestAccounts(commitment=commitment_to_use, filter_=filter_to_use)
 
-    def _get_leader_schedule_body(self, slot: Optional[int], commitment: Optional[Commitment]) -> GetLeaderSchedule:
+    def _get_leader_schedule_body(self, slot: int | None, commitment: Commitment | None) -> GetLeaderSchedule:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcLeaderScheduleConfig(commitment=commitment_to_use)
         return GetLeaderSchedule(slot, config)
 
     def _get_minimum_balance_for_rent_exemption_body(
-        self, usize: int, commitment: Optional[Commitment]
+        self, usize: int, commitment: Commitment | None
     ) -> GetMinimumBalanceForRentExemption:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetMinimumBalanceForRentExemption(usize, commitment_to_use)
 
     def _get_multiple_accounts_body(
         self,
-        pubkeys: List[Pubkey],
-        commitment: Optional[Commitment],
+        pubkeys: list[Pubkey],
+        commitment: Commitment | None,
         encoding: str,
-        data_slice: Optional[DataSliceOpts],
+        data_slice: DataSliceOpts | None,
     ) -> GetMultipleAccounts:
         encoding_to_use = _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -322,11 +318,11 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     def _get_program_accounts_body(
         self,
         pubkey: Pubkey,
-        commitment: Optional[Commitment],
-        encoding: Optional[str],
-        data_slice: Optional[DataSliceOpts],
-        filters: Optional[Sequence[Union[int, MemcmpOpts]]] = None,
-    ) -> GetProgramAccounts:  # pylint: disable=too-many-arguments
+        commitment: Commitment | None,
+        encoding: str | None,
+        data_slice: DataSliceOpts | None,
+        filters: Sequence[int | MemcmpOpts] | None = None,
+    ) -> GetProgramAccounts:
         encoding_to_use = None if encoding is None else _ACCOUNT_ENCODING_TO_SOLDERS[encoding]
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         data_slice_to_use = (
@@ -337,7 +333,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             commitment=commitment_to_use,
             data_slice=data_slice_to_use,
         )
-        filters_to_use: Optional[List[Union[int, Memcmp]]] = (
+        filters_to_use: list[int | Memcmp] | None = (
             None
             if filters is None
             else [x if isinstance(x, int) else Memcmp(offset=x.offset, bytes_=x.bytes) for x in filters]
@@ -345,22 +341,22 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         config = RpcProgramAccountsConfig(account_config, filters_to_use)
         return GetProgramAccounts(pubkey, config)
 
-    def _get_latest_blockhash_body(self, commitment: Optional[Commitment]) -> GetLatestBlockhash:
+    def _get_latest_blockhash_body(self, commitment: Commitment | None) -> GetLatestBlockhash:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetLatestBlockhash(RpcContextConfig(commitment_to_use))
 
     @staticmethod
     def _get_signature_statuses_body(
-        signatures: List[Signature], search_transaction_history: bool
+        signatures: list[Signature], search_transaction_history: bool
     ) -> GetSignatureStatuses:
         config = RpcSignatureStatusConfig(search_transaction_history)
         return GetSignatureStatuses(signatures, config)
 
-    def _get_slot_body(self, commitment: Optional[Commitment]) -> GetSlot:
+    def _get_slot_body(self, commitment: Commitment | None) -> GetSlot:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetSlot(RpcContextConfig(commitment_to_use))
 
-    def _get_slot_leader_body(self, commitment: Optional[Commitment]) -> GetSlotLeader:
+    def _get_slot_leader_body(self, commitment: Commitment | None) -> GetSlotLeader:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetSlotLeader(RpcContextConfig(commitment_to_use))
 
@@ -376,16 +372,16 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
 
     def _get_inflation_reward_body(
         self,
-        pubkeys: List[Pubkey],
-        epoch: Optional[int],
-        commitment: Optional[Commitment],
+        pubkeys: list[Pubkey],
+        epoch: int | None,
+        commitment: Commitment | None,
     ) -> GetInflationReward:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetInflationReward(pubkeys, RpcEpochConfig(epoch, commitment_to_use))
 
     def _get_supply_body(
         self,
-        commitment: Optional[Commitment],
+        commitment: Commitment | None,
         exclude_non_circulating_accounts_list: bool = False,
     ) -> GetSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -396,9 +392,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
             )
         )
 
-    def _get_token_account_balance_body(
-        self, pubkey: Pubkey, commitment: Optional[Commitment]
-    ) -> GetTokenAccountBalance:
+    def _get_token_account_balance_body(self, pubkey: Pubkey, commitment: Commitment | None) -> GetTokenAccountBalance:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTokenAccountBalance(pubkey, commitment_to_use)
 
@@ -406,10 +400,10 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         pubkey: Pubkey,
         opts: TokenAccountOpts,
-        commitment: Optional[Commitment],
-    ) -> Tuple[
+        commitment: Commitment | None,
+    ) -> tuple[
         Pubkey,
-        Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId],
+        RpcTokenAccountsFilterMint | RpcTokenAccountsFilterProgramId,
         RpcAccountInfoConfig,
     ]:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
@@ -422,7 +416,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         )
         maybe_mint = opts.mint
         maybe_program_id = opts.program_id
-        filter_to_use: Union[RpcTokenAccountsFilterMint, RpcTokenAccountsFilterProgramId]
+        filter_to_use: RpcTokenAccountsFilterMint | RpcTokenAccountsFilterProgramId
         if maybe_mint is not None:
             filter_to_use = RpcTokenAccountsFilterMint(maybe_mint)
         elif maybe_program_id is not None:
@@ -440,7 +434,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         delegate: Pubkey,
         opts: TokenAccountOpts,
-        commitment: Optional[Commitment],
+        commitment: Commitment | None,
     ) -> GetTokenAccountsByDelegate:
         pubkey, filter_, config = self._get_token_accounts_convert(delegate, opts, commitment)
         return GetTokenAccountsByDelegate(pubkey, filter_, config)
@@ -449,7 +443,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         owner: Pubkey,
         opts: TokenAccountOpts,
-        commitment: Optional[Commitment],
+        commitment: Commitment | None,
     ) -> GetTokenAccountsByOwner:
         pubkey, filter_, config = self._get_token_accounts_convert(owner, opts, commitment)
         return GetTokenAccountsByOwner(pubkey, filter_, config)
@@ -458,7 +452,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         delegate: Pubkey,
         opts: TokenAccountOpts,
-        commitment: Optional[Commitment],
+        commitment: Commitment | None,
     ) -> GetTokenAccountsByDelegate:
         opts_to_use = TokenAccountOpts(
             mint=opts.mint,
@@ -473,7 +467,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         self,
         owner: Pubkey,
         opts: TokenAccountOpts,
-        commitment: Optional[Commitment],
+        commitment: Commitment | None,
     ) -> GetTokenAccountsByOwner:
         opts_to_use = TokenAccountOpts(
             mint=opts.mint,
@@ -485,25 +479,25 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         return GetTokenAccountsByOwner(pubkey, filter_, config)
 
     def _get_token_largest_accounts_body(
-        self, pubkey: Pubkey, commitment: Optional[Commitment]
+        self, pubkey: Pubkey, commitment: Commitment | None
     ) -> GetTokenLargestAccounts:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTokenLargestAccounts(pubkey, commitment_to_use)
 
-    def _get_token_supply_body(self, pubkey: Pubkey, commitment: Optional[Commitment]) -> GetTokenSupply:
+    def _get_token_supply_body(self, pubkey: Pubkey, commitment: Commitment | None) -> GetTokenSupply:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTokenSupply(pubkey, commitment_to_use)
 
-    def _get_transaction_count_body(self, commitment: Optional[Commitment]) -> GetTransactionCount:
+    def _get_transaction_count_body(self, commitment: Commitment | None) -> GetTransactionCount:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return GetTransactionCount(RpcContextConfig(commitment_to_use))
 
     def _get_vote_accounts_body(
         self,
-        vote_pubkey: Optional[Pubkey] = None,
-        commitment: Optional[Commitment] = None,
-        keep_unstaked_delinquents: Optional[bool] = None,
-        delinquent_slot_distance: Optional[int] = None,
+        vote_pubkey: Pubkey | None = None,
+        commitment: Commitment | None = None,
+        keep_unstaked_delinquents: bool | None = None,
+        delinquent_slot_distance: int | None = None,
     ) -> GetVoteAccounts:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         config = RpcGetVoteAccountsConfig(
@@ -514,7 +508,7 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
         )
         return GetVoteAccounts(config)
 
-    def _request_airdrop_body(self, pubkey: Pubkey, lamports: int, commitment: Optional[Commitment]) -> RequestAirdrop:
+    def _request_airdrop_body(self, pubkey: Pubkey, lamports: int, commitment: Commitment | None) -> RequestAirdrop:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         return RequestAirdrop(pubkey, lamports, RpcRequestAirdropConfig(commitment=commitment_to_use))
 
@@ -533,18 +527,18 @@ class _ClientCore:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _send_raw_transaction_post_send_args(
         resp: SendTransactionResp, opts: TxOptsModel
-    ) -> Tuple[SendTransactionResp, Commitment, Optional[int]]:
+    ) -> tuple[SendTransactionResp, Commitment, int | None]:
         return resp, opts.preflight_commitment, opts.last_valid_block_height
 
     def _simulate_transaction_body(
         self,
         txn: VersionedTransaction,
         sig_verify: bool,
-        commitment: Optional[Commitment],
+        commitment: Commitment | None,
         replace_recent_blockhash: bool,
-        min_context_slot: Optional[int],
+        min_context_slot: int | None,
         inner_instructions: bool,
-        accounts_addresses: Optional[Sequence[Pubkey]],
+        accounts_addresses: Sequence[Pubkey] | None,
         accounts_encoding: str,
     ) -> SimulateVersionedTransaction:
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]

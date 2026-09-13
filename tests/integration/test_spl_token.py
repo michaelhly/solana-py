@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence, cast
+from collections.abc import Mapping, Sequence
+from typing import Any, cast
 
 import pytest
 import solders.system_program as sp

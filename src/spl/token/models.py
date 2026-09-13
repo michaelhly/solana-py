@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import List, Optional
 
 from solders.pubkey import Pubkey
 
@@ -14,7 +13,7 @@ class AuthorityType(IntEnum):
     """Specifies the authority type for SetAuthority instructions."""
 
     MINT_TOKENS = 0
-    """"Authority to mint new tokens."""
+    """Authority to mint new tokens."""
     FREEZE_ACCOUNT = 1
     """Authority to freeze any account associated with the Mint."""
     ACCOUNT_OWNER = 2
@@ -32,31 +31,31 @@ class AccountInfo(PydanticModel):
     """Owner of this account."""
     amount: int
     """Amount of tokens this account holds."""
-    delegate: Optional[Pubkey]
+    delegate: Pubkey | None
     """The delegate for this account."""
     delegated_amount: int
     """The amount of tokens the delegate authorized to the delegate."""
     is_initialized: bool
-    """ Is this account initialized."""
+    """Is this account initialized."""
     is_frozen: bool
     """Is this account frozen."""
     is_native: bool
     """Is this a native token account."""
-    rent_exempt_reserve: Optional[int]
+    rent_exempt_reserve: int | None
     """If this account is a native token, it must be rent-exempt.
 
     This value logs the rent-exempt reserve which must remain in the balance
     until the account is closed.
     """
-    close_authority: Optional[Pubkey]
+    close_authority: Pubkey | None
     """Optional authority to close the account."""
 
 
 class MintInfo(PydanticModel):
     """Information about the mint."""
 
-    mint_authority: Optional[Pubkey]
-    """"Optional authority used to mint new tokens.
+    mint_authority: Pubkey | None
+    """Optional authority used to mint new tokens.
 
     The mint authority may only be provided during mint creation. If no mint
     authority is present then the mint has a fixed supply and no further tokens
@@ -68,8 +67,8 @@ class MintInfo(PydanticModel):
     """Number of base 10 digits to the right of the decimal place."""
     is_initialized: bool
     """Is this mint initialized."""
-    freeze_authority: Optional[Pubkey]
-    """ Optional authority to freeze token accounts."""
+    freeze_authority: Pubkey | None
+    """Optional authority to freeze token accounts."""
 
 
 class InitializeMintParams(PydanticModel):
@@ -83,7 +82,7 @@ class InitializeMintParams(PydanticModel):
     """Public key of the minter account."""
     mint_authority: Pubkey
     """The authority/multisignature to mint tokens."""
-    freeze_authority: Optional[Pubkey] = None
+    freeze_authority: Pubkey | None = None
     """The freeze authority/multisignature of the mint."""
 
 
@@ -98,7 +97,7 @@ class InitializeMint2Params(PydanticModel):
     """Public key of the minter account."""
     mint_authority: Pubkey
     """The authority/multisignature to mint tokens."""
-    freeze_authority: Optional[Pubkey] = None
+    freeze_authority: Pubkey | None = None
     """The freeze authority/multisignature of the mint."""
 
 
@@ -150,7 +149,7 @@ class InitializeMultisigParams(PydanticModel):
     """New multisig account address."""
     m: int
     """The number of signers (M) required to validate this multisignature account."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Addresses of multisig signers."""
 
 
@@ -163,7 +162,7 @@ class InitializeMultisig2Params(PydanticModel):
     """New multisig account address."""
     m: int
     """The number of signers (M) required to validate this multisignature account."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Addresses of multisig signers."""
 
 
@@ -180,7 +179,7 @@ class TransferParams(PydanticModel):
     """Owner of the source account."""
     amount: int
     """Number of tokens to transfer."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -197,7 +196,7 @@ class ApproveParams(PydanticModel):
     """Owner of the source account."""
     amount: int
     """Maximum number of tokens the delegate may transfer."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -210,7 +209,7 @@ class RevokeParams(PydanticModel):
     """Source account for which transfer authority is being revoked."""
     owner: Pubkey
     """Owner of the source account."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -225,9 +224,9 @@ class SetAuthorityParams(PydanticModel):
     """The type of authority to update."""
     current_authority: Pubkey
     """Current authority of the specified type."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `current_authority` is a multiSig."""
-    new_authority: Optional[Pubkey] = None
+    new_authority: Pubkey | None = None
     """New authority of the account."""
 
 
@@ -244,7 +243,7 @@ class MintToParams(PydanticModel):
     """The mint authority."""
     amount: int
     """Amount to mint."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `mint_authority` is a multiSig."""
 
 
@@ -261,7 +260,7 @@ class BurnParams(PydanticModel):
     """Owner of the account."""
     amount: int
     """Amount to burn."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
 
@@ -276,7 +275,7 @@ class CloseAccountParams(PydanticModel):
     """Address of account to receive the remaining balance of the closed account."""
     owner: Pubkey
     """Owner of the account."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
 
@@ -291,7 +290,7 @@ class FreezeAccountParams(PydanticModel):
     """Public key of the minter account."""
     authority: Pubkey
     """Mint freeze authority"""
-    multi_signers: List[Pubkey] = []
+    multi_signers: list[Pubkey] = []
     """Signing accounts if `authority` is a multiSig"""
 
 
@@ -306,7 +305,7 @@ class ThawAccountParams(PydanticModel):
     """Public key of the minter account."""
     authority: Pubkey
     """Mint freeze authority"""
-    multi_signers: List[Pubkey] = []
+    multi_signers: list[Pubkey] = []
     """Signing accounts if `authority` is a multiSig"""
 
 
@@ -327,7 +326,7 @@ class TransferCheckedParams(PydanticModel):
     """Number of tokens to transfer."""
     decimals: int
     """Amount decimals."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -348,7 +347,7 @@ class ApproveCheckedParams(PydanticModel):
     """Maximum number of tokens the delegate may transfer."""
     decimals: int
     """Amount decimals."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig."""
 
 
@@ -367,7 +366,7 @@ class MintToCheckedParams(PydanticModel):
     """Amount to mint."""
     decimals: int
     """Amount decimals."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `mint_authority` is a multiSig."""
 
 
@@ -386,7 +385,7 @@ class BurnCheckedParams(PydanticModel):
     """Amount to burn."""
     decimals: int
     """Amount decimals."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `owner` is a multiSig"""
 
 
@@ -424,9 +423,9 @@ class InitializeTransferFeeConfigParams(PydanticModel):
     """SPL Token 2022 program account."""
     mint: Pubkey
     """Mint to initialize transfer fee config for."""
-    transfer_fee_config_authority: Optional[Pubkey]
+    transfer_fee_config_authority: Pubkey | None
     """Authority that may update the transfer fee config."""
-    withdraw_withheld_authority: Optional[Pubkey]
+    withdraw_withheld_authority: Pubkey | None
     """Authority that may withdraw withheld tokens."""
     transfer_fee_basis_points: int
     """Amount of transfer collected as fees, expressed in basis points."""
@@ -445,9 +444,9 @@ class WithdrawWithheldTokensFromAccountsParams(PydanticModel):
     """Fee receiver token account."""
     authority: Pubkey
     """Withdraw withheld authority."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `authority` is a multiSig."""
-    sources: List[Pubkey] = []
+    sources: list[Pubkey] = []
     """Token accounts to withdraw withheld tokens from."""
 
 
@@ -462,7 +461,7 @@ class WithdrawWithheldTokensFromMintParams(PydanticModel):
     """Fee receiver token account."""
     authority: Pubkey
     """Withdraw withheld authority."""
-    signers: List[Pubkey] = []
+    signers: list[Pubkey] = []
     """Signing accounts if `authority` is a multiSig."""
 
 
@@ -473,7 +472,7 @@ class HarvestWithheldTokensToMintParams(PydanticModel):
     """SPL Token 2022 program account."""
     mint: Pubkey
     """Mint to harvest withheld tokens to."""
-    sources: List[Pubkey] = []
+    sources: list[Pubkey] = []
     """Token accounts to harvest withheld tokens from."""
 
 

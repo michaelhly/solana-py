@@ -6,9 +6,7 @@ In descending order of commitment (most finalized to least finalized), clients m
 """
 
 from enum import StrEnum
-from typing import Literal
-
-from typing_extensions import assert_never
+from typing import Literal, assert_never
 
 
 class Commitment(StrEnum):

@@ -3,9 +3,9 @@
 import os
 import shutil
 import time
+from collections.abc import AsyncGenerator, Generator
 from contextlib import suppress
 from pathlib import Path
-from typing import AsyncGenerator, Generator
 
 import pytest
 from solders.keypair import Keypair

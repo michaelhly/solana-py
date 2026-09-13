@@ -5,9 +5,9 @@
 ---
 
 [![Actions
-Status](https://github.com/michaelhly/solanapy/workflows/CI/badge.svg)](https://github.com/michaelhly/solanapy/actions?query=workflow%3ACI)
+Status](https://github.com/michaelhly/solana-py/workflows/CI/badge.svg)](https://github.com/michaelhly/solana-py/actions?query=workflow%3ACI)
 [![PyPI version](https://badge.fury.io/py/solana.svg)](https://badge.fury.io/py/solana)
-[![Python versions](https://img.shields.io/pypi/pyversions/solana.svg)]( https://pypi.python.org/pypi/solana)
+[![Python versions](https://img.shields.io/pypi/pyversions/solana.svg)](https://pypi.python.org/pypi/solana)
 [![Codecov](https://codecov.io/gh/michaelhly/solana-py/branch/master/graph/badge.svg)](https://codecov.io/gh/michaelhly/solana-py/branch/master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/michaelhly/solana-py/blob/master/LICENSE)
 [![PyPI Downloads](https://static.pepy.tech/badge/solana/month)](https://clickpy.clickhouse.com/dashboard/solana)
@@ -81,37 +81,39 @@ asyncio.run(main())
 ```py
 import asyncio
 from asyncstdlib import enumerate
-from solana.rpc.websocket_api import connect
+from solana.rpc.websocket_api import SolanaWsClient
 
 
 async def main():
-    async with connect("wss://api.devnet.solana.com") as websocket:
-        await websocket.logs_subscribe()
-        first_resp = await websocket.recv()
-        subscription_id = first_resp[0].result
-        next_resp = await websocket.recv()
-        print(next_resp)
-        await websocket.logs_unsubscribe(subscription_id)
+    async with SolanaWsClient("wss://api.devnet.solana.com") as websocket:
+        # Returns once the server has confirmed the subscription.
+        subscription = await websocket.logs_subscribe()
+        msg = await websocket.recv()
+        print(msg)
+        await websocket.unsubscribe(subscription)
 
     # Alternatively, use the client as an infinite asynchronous iterator:
-    async with connect("wss://api.devnet.solana.com") as websocket:
-        await websocket.logs_subscribe()
-        first_resp = await websocket.recv()
-        subscription_id = first_resp[0].result
+    async with SolanaWsClient("wss://api.devnet.solana.com") as websocket:
+        subscription = await websocket.logs_subscribe()
         async for idx, msg in enumerate(websocket):
             if idx == 3:
                 break
             print(msg)
-        await websocket.logs_unsubscribe(subscription_id)
+        await websocket.unsubscribe(subscription)
 
 
 asyncio.run(main())
 ```
 
-`*_unsubscribe()` takes the server-assigned subscription ID (`first_resp[0].result`, as above).
-As a convenience it also accepts the request ID returned by the matching `*_subscribe()` helper,
-which is translated once the subscription confirmation has been received. Server-assigned IDs are
-resolved first, so prefer that form when you have it.
+Each `*_subscribe()` helper awaits the server confirmation and returns a `Subscription`
+handle that carries the server-assigned subscription ID and its kind. Pass that handle to
+`unsubscribe()`; there are no per-method `*_unsubscribe()` helpers and no raw subscription
+IDs in the public API. A handle belongs to the connection that created it, and
+`recv()` yields notifications only — subscription confirmations never appear in the stream.
+
+`signature_subscribe()` is one-shot: the server cancels it after the notification, so the
+client drops its local handle once the `SignatureNotification` arrives. Calling
+`unsubscribe()` for it afterwards raises `ValueError`.
 
 ## 🔨 Development
 

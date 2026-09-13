@@ -1,4 +1,4 @@
-"""Async API client to interact with the Solana JSON RPC Endpoint."""  # pylint: disable=too-many-lines
+"""Async API client to interact with the Solana JSON RPC Endpoint."""
 
 from __future__ import annotations
 
@@ -91,7 +91,7 @@ from .jsonrpc import (
 from . import async_http_provider
 
 
-class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
+class AsyncClient(_ClientCore):
     """Async client class.
 
     Args:
@@ -226,11 +226,12 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkey: Pubkey of account to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or
+            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", "base64+zstd", or
                 "jsonParsed". Default is "base64".
 
                 - "base58" is limited to Account data of less than 128 bytes.
                 - "base64" will return base64 encoded data for Account data of any size.
+                - "base64+zstd" will return Zstandard-compressed data, base64 encoded.
                 - "jsonParsed" encoding attempts to use program-specific state parsers to return more human-readable and explicit account state data.
 
                 If jsonParsed is requested but a parser cannot be found, the field falls back to base64 encoding,
@@ -251,7 +252,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                     rent_epoch: 371,
                 },
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         body = self._get_account_info_body(
             pubkey=pubkey,
             commitment=commitment,
@@ -379,7 +380,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
                     sample_period_secs: 60,
                 },
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         body = self._get_recent_performance_samples_body(limit)
         return await self._provider.make_request(body, GetRecentPerformanceSamplesResp)
 
@@ -479,9 +480,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """Returns transaction details for a confirmed transaction.
 
         Args:
-            tx_sig: Transaction signature as base-58 encoded string N encoding attempts to use program-specific
-                instruction parsers to return more human-readable and explicit data in the
-                `transaction.message.instructions` list.
+            tx_sig: Transaction signature as base-58 encoded string.
             encoding: (optional) Encoding for the returned Transaction, either "json", "jsonParsed",
                 "base58" (slow), or "base64". If parameter not provided, the default encoding is JSON.
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
@@ -494,7 +493,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> sig = Signature.from_string("3PtGYH77LhhQqTXP4SmDVJ85hmDieWsgXCUbn14v7gYyVYPjZzygUQhTk3bSTYnfA48vCM1rmWY7zWL3j1EVKmEy")
             >>> (await solana_client.get_transaction(sig)).value.block_time # doctest: +SKIP
             1234
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         body = self._get_transaction_body(tx_sig, encoding, commitment, max_supported_transaction_version)
         return await self._provider.make_request(body, GetTransactionResp)
 
@@ -620,11 +619,13 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkeys: An array of addresses to query, as base-58 encoded strings
             epoch: (optional) An epoch for which the reward occurs. If omitted, the previous epoch will be used
-            commitment: Bank state to query. It can be either "finalized" or "confirmed".
+            commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
 
         Example:
+            >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
-            >>> (await solana_client.get_inflation_reward()).value.amount # doctest: +SKIP
+            >>> pubkey = Pubkey([0] * 31 + [1])
+            >>> (await solana_client.get_inflation_reward([pubkey])).value[0].amount # doctest: +SKIP
             2500
         """
         body = self._get_inflation_reward_body(pubkeys, epoch, commitment)
@@ -697,10 +698,11 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkeys: list of Pubkeys to query
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            encoding: (optional) Encoding for Account data, either "base58" (slow) or "base64".
+            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", or "base64+zstd".
 
                 - "base58" is limited to Account data of less than 128 bytes.
                 - "base64" will return base64 encoded data for Account data of any size.
+                - "base64+zstd" will return Zstandard-compressed data, base64 encoded.
 
             data_slice: (optional) Option to limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
@@ -711,7 +713,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), Pubkey.from_string("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
             >>> (await solana_client.get_multiple_accounts(pubkeys)).value[0].lamports # doctest: +SKIP
             1
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         body = self._get_multiple_accounts_body(
             pubkeys=pubkeys,
             commitment=commitment,
@@ -735,9 +737,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> from solders.pubkey import Pubkey
             >>> solana_client = AsyncClient("http://localhost:8899")
             >>> pubkeys = [Pubkey.from_string("6ZWcsUiWJ63awprYmbZgBQSreqYZ4s6opowP4b7boUdh"), Pubkey.from_string("HkcE9sqQAnjJtECiFsqGMNmUho3ptXkapUPAqgZQbBSY")]
-            >>> asyncio.run(solana_client.get_multiple_accounts(pubkeys)).value[0].lamports # doctest: +SKIP
+            >>> (await solana_client.get_multiple_accounts_json_parsed(pubkeys)).value[0].lamports # doctest: +SKIP
             1
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         body = self._get_multiple_accounts_body(
             pubkeys=pubkeys,
             commitment=commitment,
@@ -746,7 +748,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         )
         return await self._provider.make_request(body, GetMultipleAccountsMaybeJsonParsedResp)
 
-    async def get_program_accounts(  # pylint: disable=too-many-arguments
+    async def get_program_accounts(
         self,
         pubkey: Pubkey,
         commitment: Commitment | None = None,
@@ -759,8 +761,8 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         Args:
             pubkey: Pubkey of program
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
-            encoding: (optional) Encoding for the returned Transaction, either jsonParsed",
-                "base58" (slow), or "base64".
+            encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", "base64+zstd", or
+                "jsonParsed".
             data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
             filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
@@ -774,7 +776,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> filters: list[int | MemcmpOpts] = [17, memcmp_opts]
             >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         body = self._get_program_accounts_body(
             pubkey=pubkey,
             commitment=commitment,
@@ -784,7 +786,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         )
         return await self._provider.make_request(body, GetProgramAccountsResp)
 
-    async def get_program_accounts_json_parsed(  # pylint: disable=too-many-arguments
+    async def get_program_accounts_json_parsed(
         self,
         pubkey: Pubkey,
         commitment: Commitment | None = None,
@@ -804,9 +806,9 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             >>> memcmp_opts = MemcmpOpts(offset=4, bytes="3Mc6vR")
             >>> pubkey = Pubkey.from_string("4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T")
             >>> filters: list[int | MemcmpOpts] = [17, memcmp_opts]
-            >>> (await solana_client.get_program_accounts(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
+            >>> (await solana_client.get_program_accounts_json_parsed(pubkey, filters=filters)).value[0].account.lamports # doctest: +SKIP
             1
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         body = self._get_program_accounts_body(
             pubkey=pubkey,
             commitment=commitment,
@@ -1130,7 +1132,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
             Signature(
                 1111111111111111111111111111111111111111111111111111111111111111,
             )
-        """  # noqa: E501 # pylint: disable=line-too-long
+        """  # noqa: E501
         opts_to_use = TxOptsModel(preflight_commitment=self._commitment) if opts is None else opts
         body = self._send_raw_transaction_body(txn, opts_to_use)
 
@@ -1268,7 +1270,7 @@ class AsyncClient(_ClientCore):  # pylint: disable=too-many-public-methods
         """
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         commitment_rank = int(commitment_to_use)
-        if last_valid_block_height:  # pylint: disable=no-else-return
+        if last_valid_block_height:
             current_blockheight = (await self.get_block_height(commitment)).value
             while current_blockheight <= last_valid_block_height:
                 resp = await self.get_signature_statuses([tx_sig])

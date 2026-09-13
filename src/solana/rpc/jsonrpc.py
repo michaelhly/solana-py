@@ -116,11 +116,11 @@ class SolanaJsonRpcError(Exception):
         message: str,
         data: Any | None = None,
         *,
-        request_id: str | int,
+        request_id: str | int | None,
         method: str | None = None,
         name: str | None = None,
     ) -> None:
-        """Initialize JSON-RPC error."""
+        """Initialize JSON-RPC error; ``request_id`` is null when the server could not read the request."""
         self.code = code
         self.message = message
         self.data = data
@@ -154,9 +154,9 @@ class SolanaJsonRpcError(Exception):
         cls,
         error: JsonRpcErrorObject,
         *,
-        request_id: str | int,
+        request_id: str | int | None,
         method: str | None = None,
-    ) -> "SolanaJsonRpcError":
+    ) -> SolanaJsonRpcError:
         """Create an exception from a JSON-RPC error object."""
         name = _get_error_name(error.code)
         return cls(
@@ -202,7 +202,7 @@ class JsonRpcResponseEnvelope(PydanticModel):
     error: JsonRpcErrorObject | None = None
 
     @model_validator(mode="after")
-    def _validate_result_or_error(self) -> "JsonRpcResponseEnvelope":
+    def _validate_result_or_error(self) -> JsonRpcResponseEnvelope:
         fields_set = self.model_fields_set
         has_result = "result" in fields_set
         has_error = "error" in fields_set and self.error is not None

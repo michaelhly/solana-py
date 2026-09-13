@@ -13,7 +13,6 @@ FOOTER = "=======END SECURITY.TXT V1=======\0"
 class SecurityTxt:
     """Security txt data."""
 
-    # pylint: disable=too-many-instance-attributes
     name: str
     project_url: str
     contacts: str

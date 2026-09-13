@@ -1,8 +1,8 @@
-"""SPL token instructions."""  # pylint: disable=too-many-lines
+"""SPL token instructions."""
 
 from __future__ import annotations
 
-from typing import Any, List, Union
+from typing import Any
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYS_PROGRAM_ID
@@ -146,7 +146,7 @@ def decode_initialize_multisig2(
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_MULTISIG2)
     num_signers = parsed_data.args.m
     validate_instruction_keys(instruction, 1 + num_signers)
-    signers: List[Pubkey] = [signer.pubkey for signer in instruction.accounts[-num_signers:]] if num_signers else []
+    signers: list[Pubkey] = [signer.pubkey for signer in instruction.accounts[-num_signers:]] if num_signers else []
     return models.InitializeMultisig2Params(
         program_id=instruction.program_id,
         multisig=instruction.accounts[0].pubkey,
@@ -417,7 +417,7 @@ def decode_burn_checked(instruction: Instruction) -> models.BurnCheckedParams:
 
 
 def decode_sync_native(instruction: Instruction) -> models.SyncNativeParams:
-    """Decode a burn_checked token transaction and retrieve the instruction params.
+    """Decode a sync_native token transaction and retrieve the instruction params.
 
     Args:
         instruction: The instruction to decode.
@@ -556,7 +556,7 @@ def decode_ui_amount_to_amount(
     )
 
 
-def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey]) -> None:
+def __add_signers(keys: list[AccountMeta], owner: Pubkey, signers: list[Pubkey]) -> None:
     if signers:
         keys.append(AccountMeta(pubkey=owner, is_signer=False, is_writable=False))
         for signer in signers:
@@ -565,7 +565,7 @@ def __add_signers(keys: List[AccountMeta], owner: Pubkey, signers: List[Pubkey])
         keys.append(AccountMeta(pubkey=owner, is_signer=True, is_writable=False))
 
 
-def __burn_instruction(params: Union[models.BurnParams, models.BurnCheckedParams], data: Any) -> Instruction:
+def __burn_instruction(params: models.BurnParams | models.BurnCheckedParams, data: Any) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.account, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
@@ -584,7 +584,7 @@ def __sync_native_instruction(params: models.SyncNativeParams, data: Any) -> Ins
 
 
 def __freeze_or_thaw_instruction(
-    params: Union[models.FreezeAccountParams, models.ThawAccountParams],
+    params: models.FreezeAccountParams | models.ThawAccountParams,
     instruction_type: InstructionType,
 ) -> Instruction:
     data = INSTRUCTIONS_LAYOUT.build({"instruction_type": instruction_type, "args": None})
@@ -597,7 +597,7 @@ def __freeze_or_thaw_instruction(
     return Instruction(accounts=keys, program_id=params.program_id, data=data)
 
 
-def __mint_to_instruction(params: Union[models.MintToParams, models.MintToCheckedParams], data: Any) -> Instruction:
+def __mint_to_instruction(params: models.MintToParams | models.MintToCheckedParams, data: Any) -> Instruction:
     keys = [
         AccountMeta(pubkey=params.mint, is_signer=False, is_writable=True),
         AccountMeta(pubkey=params.dest, is_signer=False, is_writable=True),

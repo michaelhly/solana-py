@@ -36,7 +36,7 @@ plugins:
         python:
           options:
             filters:
-              - "!^_" # exlude all members starting with _
+              - "!^_" # exclude all members starting with _
               - "^__init__$" # but always include __init__ modules and methods
             show_root_heading: true
             show_bases: false
