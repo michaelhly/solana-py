@@ -143,7 +143,9 @@ Two waits are not affected:
 - **logs_subscribe**: Listen to transaction logs
 - **program_subscribe**: Monitor program account changes
 - **signature_subscribe**: Track transaction confirmations (one-shot; the server cancels it
-  after the notification and the client drops its local handle)
+  after the notification and the client drops its local handle). With
+  `enable_received_notification=True`, a `SignatureReceivedNotification` arrives first and the
+  subscription stays active until the processed notification
 - **slot_subscribe**: Monitor slot changes
 
 ## Key Concepts
