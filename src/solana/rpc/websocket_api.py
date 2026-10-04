@@ -155,6 +155,20 @@ class UnsubscribeError(Exception):
         super().__init__(f"Unsubscribe returned false for {subscription.kind.value} {subscription.subscription_id}")
 
 
+@dataclass(frozen=True, slots=True)
+class SignatureReceivedNotification:
+    """The node received a subscribed signature; it has not been processed yet.
+
+    Sent only when ``signature_subscribe`` asks for ``enable_received_notification``,
+    ahead of the final :class:`~solders.rpc.responses.SignatureNotification`. The
+    subscription stays active until that final notification. solders can't parse
+    this notification's ``"receivedSignature"`` value, so the client builds it.
+    """
+
+    subscription: int
+    slot: int
+
+
 @dataclass(slots=True)
 class _PendingRequest(Generic[T]):
     request_id: int
@@ -171,15 +185,29 @@ def _positive_timeout(value: float, name: str) -> float:
     return float(value)
 
 
-def _parse_frame(text: str) -> list[JsonRpcResponseEnvelope | WebsocketMessage]:
+def _received_signature(item: Any) -> SignatureReceivedNotification | None:
+    """Return the ``"receivedSignature"`` notification in *item*, if that's what it is."""
+    try:
+        params = item["params"]
+        result = params["result"]
+        if item["method"] != "signatureNotification" or result["value"] != "receivedSignature":
+            return None
+        return SignatureReceivedNotification(subscription=params["subscription"], slot=result["context"]["slot"])
+    except (KeyError, TypeError):
+        return None
+
+
+def _parse_frame(text: str) -> list[JsonRpcResponseEnvelope | WebsocketMessage | SignatureReceivedNotification]:
     """Parse one frame, keeping error envelopes away from solders.
 
     solders resolves the numeric code into a typed error and keeps only the
     message, and it panics outright on errors that omit ``data`` -- a panic is
-    not an ``Exception``, so the reader could not even record it.
+    not an ``Exception``, so the reader could not even record it. solders also
+    rejects the ``"receivedSignature"`` signature notification, which would
+    otherwise end the connection, so that one is parsed here too.
     """
     payload = json.loads(text)
-    parsed: list[JsonRpcResponseEnvelope | WebsocketMessage] = []
+    parsed: list[JsonRpcResponseEnvelope | WebsocketMessage | SignatureReceivedNotification] = []
     for item in payload if isinstance(payload, list) else [payload]:
         if isinstance(item, dict) and "error" in item:
             # JSON-RPC 2.0 section 5 requires a null id when the server could not read
@@ -190,6 +218,8 @@ def _parse_frame(text: str) -> list[JsonRpcResponseEnvelope | WebsocketMessage]:
                     JsonRpcErrorObject.model_validate(item["error"]), request_id=None
                 )
             parsed.append(JsonRpcResponseEnvelope.model_validate(item))
+        elif (received := _received_signature(item)) is not None:
+            parsed.append(received)
         else:
             parsed.extend(parse_websocket_message(json.dumps(item)))
     return parsed
@@ -245,7 +275,7 @@ class SolanaWsClient:
         self._notification_queue_size = notification_queue_size
         self._overflow = OverflowPolicy(overflow)
         self._dropped_notifications = 0
-        self._notifications: deque[Notification] = deque()
+        self._notifications: deque[Notification | SignatureReceivedNotification] = deque()
         self._notification_ready = asyncio.Event()
         self._receiving = False
         self._connect_lock = asyncio.Lock()
@@ -342,7 +372,7 @@ class SolanaWsClient:
             self._abandon(exc_value)
         await self.close()
 
-    async def recv(self) -> Notification:
+    async def recv(self) -> Notification | SignatureReceivedNotification:
         """Receive one notification; cancellation leaves queued notifications intact.
 
         Only one caller may receive at a time. Notifications already received
@@ -365,7 +395,7 @@ class SolanaWsClient:
         finally:
             self._receiving = False
 
-    async def __aiter__(self) -> AsyncIterator[Notification]:
+    async def __aiter__(self) -> AsyncIterator[Notification | SignatureReceivedNotification]:
         """Iterate over notifications until a normal connection closure."""
         try:
             while True:
@@ -388,7 +418,7 @@ class SolanaWsClient:
                     elif isinstance(envelope, (SubscriptionResult, UnsubscribeResult)):
                         self._dispatch_response(envelope)
                     else:
-                        self._dispatch_notification(cast(Notification, envelope))
+                        self._dispatch_notification(cast(Notification | SignatureReceivedNotification, envelope))
         # The reader records every failure of this connection.
         except Exception as exc:  # noqa: BLE001
             self._abandon(exc)
@@ -421,8 +451,9 @@ class SolanaWsClient:
             # No kind means an unsubscribe, whose result is the server's boolean.
             pending.future.set_result(envelope.result)
 
-    def _dispatch_notification(self, notification: Notification) -> None:
+    def _dispatch_notification(self, notification: Notification | SignatureReceivedNotification) -> None:
         subscription_id = notification.subscription
+        # Only the processed notification ends a signature subscription, not a received one.
         if isinstance(notification, SignatureNotification):
             self._subscriptions.pop(subscription_id, None)
         if len(self._notifications) >= self._notification_queue_size:
@@ -656,7 +687,12 @@ class SolanaWsClient:
         commitment: Commitment | None = None,
         enable_received_notification: bool | None = None,
     ) -> Subscription:
-        """Subscribe to signature status notifications."""
+        """Subscribe to signature status notifications.
+
+        The server cancels the subscription after the processed notification. With
+        ``enable_received_notification``, a :class:`SignatureReceivedNotification`
+        arrives first.
+        """
         config = None
         if commitment is not None or enable_received_notification is not None:
             signature_commitment = _COMMITMENT_TO_SOLDERS[commitment] if commitment is not None else None
