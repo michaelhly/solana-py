@@ -2,10 +2,31 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add `Subscription`, a frozen handle carrying the server-assigned subscription ID and its `SubscriptionKind`, returned by every `*_subscribe()` helper and accepted by `unsubscribe()`. Ownership is checked by object identity, so a copied, reconstructed, or borrowed handle cannot cancel a live subscription [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- Add `SolanaWsClient` options `request_timeout` (10 seconds), `notification_queue_size` (10,000), and `overflow` (`OverflowPolicy.RAISE`, `DROP_OLDEST`, or `DROP_NEWEST`), all validated at construction. Notifications discarded by a lossy policy are counted in `SolanaWsClient.dropped_notifications` [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- Add `SolanaWsClient.connection_state` (`ConnectionState.OPEN` / `CLOSED`), which describes the RPC dispatcher independently of the wire state [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- Add `UnsubscribeError`, raised when the server explicitly refuses to cancel a subscription [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- Add `min_context_slot` and `data_slice` to `account_subscribe`, `min_context_slot`, `with_context`, and `sort_results` to `program_subscribe`, and `enable_received_notification` to `signature_subscribe` [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+
 ### Changed
 
-- **BREAKING**: Rewrite the websocket client around a typed `Subscription` handle. `solana.rpc.websocket_api.connect()` and `SolanaWsClientProtocol` are replaced by `SolanaWsClient`, which owns its connection instead of subclassing it. Each `*_subscribe()` helper now awaits the server confirmation and returns a `Subscription`; the nine `*_unsubscribe(int)` helpers are replaced by a single `unsubscribe(subscription)`, so request IDs and server-assigned subscription IDs can no longer be confused. `recv()` and async iteration yield notifications only.
-- **BREAKING**: A `*_subscribe()`/`unsubscribe()` call whose request already reached the wire tears down the whole connection if its wait ends early — either the `request_timeout` (10s default) expiring or the awaiting task being cancelled. Every other in-flight request fails with the same exception, every `Subscription` is dropped, and the client cannot be reused. The server may have created a subscription whose ID never arrived, and an orphaned subscription cannot be cancelled without it, so the connection is dropped instead. Cancelling `recv()` is still safe, and `close()` is shielded against cancellation. See [Subscribing to Events](https://michaelhly.github.io/solana-py/cookbook/development-guides/subscribing-to-events/) for details.
+- **BREAKING**: Rewrite the websocket client around a typed `Subscription` handle. `solana.rpc.websocket_api.connect()` and `SolanaWsClientProtocol` are replaced by `SolanaWsClient`, which owns its connection instead of subclassing it. Each `*_subscribe()` helper now awaits the server confirmation and returns a `Subscription`; the nine `*_unsubscribe(int)` helpers are replaced by a single `unsubscribe(subscription)`, so request IDs and server-assigned subscription IDs can no longer be confused. `recv()` and async iteration yield notifications only [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- **BREAKING**: A `*_subscribe()`/`unsubscribe()` call whose request already reached the wire tears down the whole connection if its wait ends early — either the `request_timeout` (10s default) expiring or the awaiting task being cancelled. Every other in-flight request fails with the same exception, every `Subscription` is dropped, and the client cannot be reused. The server may have created a subscription whose ID never arrived, and an orphaned subscription cannot be cancelled without it, so the connection is dropped instead. Cancelling `recv()` is still safe, and `close()` is shielded against cancellation. See [Subscribing to Events](https://michaelhly.github.io/solana-py/cookbook/development-guides/subscribing-to-events/) for details [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- **BREAKING**: Every `*_subscribe()` helper now takes keyword-only arguments, so positional calls such as `account_subscribe(pubkey)` must become `account_subscribe(pubkey=pubkey)` [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- **BREAKING**: `send_request()` and raw request batching are no longer exposed; use the typed subscribe helpers [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- A server error now surfaces as `SolanaJsonRpcError` from the call that caused it, rather than out of an unrelated later `recv()`. Only one receiver may run at a time (`ConcurrencyError`), and cancelling a `recv()` leaves queued notifications in place for the next receiver [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- `signatureSubscribe` handles are dropped automatically when the notification arrives, since the server cancels that subscription itself. No unsubscribe request is sent, and calling `unsubscribe()` afterwards raises `ValueError` [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+- Modernize internal type hints (`Optional[X]` and `Union[X, Y]` to `X | None` and `X | Y`) and drop stale `pylint` disables and `ruff` per-file ignores [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+
+### Docs
+
+- Rewrite the "Subscribing to Events" cookbook page around `SolanaWsClient`, covering connection lifecycle and the cancellation and timeout semantics above [(#703)](https://github.com/michaelhly/solana-py/pull/703).
+
+### Dependencies
+
+- Refresh development dependencies in `uv.lock`; runtime requirements are unchanged [(#703)](https://github.com/michaelhly/solana-py/pull/703).
 
 ## [0.40.3] - 2026-08-26
 
