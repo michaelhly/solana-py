@@ -32,4 +32,7 @@ def cluster_api_url(cluster: Cluster | None = None, tls: bool = True) -> str:
     urls = ENDPOINT.https if tls else ENDPOINT.http
     if cluster is None:
         return urls.devnet
+    if cluster == "mainnet":
+        # The cluster was renamed to "mainnet"; the ClusterUrls field kept its old name.
+        return urls.mainnet_beta
     return getattr(urls, cluster)
