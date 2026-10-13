@@ -29,7 +29,7 @@ from solana.rpc.commitment import Finalized
                 "last_valid_block_height",
             ],
         ),
-        (rpc_models.ClusterUrls, ["devnet", "testnet", "mainnet_beta"]),
+        (rpc_models.ClusterUrls, ["devnet", "testnet", "mainnet"]),
         (rpc_models.Endpoint, ["http", "https"]),
         (
             solana_models.WithdrawFromVoteAccountParams,
