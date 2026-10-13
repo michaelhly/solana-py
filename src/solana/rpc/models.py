@@ -48,7 +48,7 @@ class ClusterUrls(PydanticModel):
 
     devnet: str
     testnet: str
-    mainnet_beta: str
+    mainnet: str
 
 
 class Endpoint(PydanticModel):
