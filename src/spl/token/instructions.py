@@ -129,13 +129,13 @@ def decode_initialize_multisig(
         The decoded instruction.
     """
     parsed_data = __parse_and_validate_instruction(instruction, 2, InstructionType.INITIALIZE_MULTISIG)
-    num_signers = parsed_data.args.m
-    validate_instruction_keys(instruction, 2 + num_signers)
+    m = parsed_data.args.m
+    validate_instruction_keys(instruction, 2 + m)
     return models.InitializeMultisigParams(
         program_id=instruction.program_id,
         multisig=instruction.accounts[0].pubkey,
-        signers=[signer.pubkey for signer in instruction.accounts[-num_signers:]],
-        m=num_signers,
+        signers=[signer.pubkey for signer in instruction.accounts[2:]],
+        m=m,
     )
 
 
@@ -144,14 +144,14 @@ def decode_initialize_multisig2(
 ) -> models.InitializeMultisig2Params:
     """Decode an initialize multisig2 account token instruction and retrieve the instruction params."""
     parsed_data = __parse_and_validate_instruction(instruction, 1, InstructionType.INITIALIZE_MULTISIG2)
-    num_signers = parsed_data.args.m
-    validate_instruction_keys(instruction, 1 + num_signers)
-    signers: list[Pubkey] = [signer.pubkey for signer in instruction.accounts[-num_signers:]] if num_signers else []
+    m = parsed_data.args.m
+    validate_instruction_keys(instruction, 1 + m)
+    signers: list[Pubkey] = [signer.pubkey for signer in instruction.accounts[1:]]
     return models.InitializeMultisig2Params(
         program_id=instruction.program_id,
         multisig=instruction.accounts[0].pubkey,
         signers=signers,
-        m=num_signers,
+        m=m,
     )
 
 
