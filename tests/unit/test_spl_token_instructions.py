@@ -130,6 +130,34 @@ def test_initialize_multisig2():
     assert spl_token.decode_initialize_multisig2(instruction) == params
 
 
+def test_initialize_multisig_m_of_n():
+    """Test initialize multisig where fewer signatures are required than there are signers."""
+    new_multisig = Pubkey([0] * 31 + [0])
+    signers = [Pubkey([0] * 31 + [i + 1]) for i in range(3)]
+    params = token_models.InitializeMultisigParams(
+        program_id=TOKEN_PROGRAM_ID,
+        multisig=new_multisig,
+        signers=signers,
+        m=2,
+    )
+    instruction = spl_token.initialize_multisig(params)
+    assert spl_token.decode_initialize_multisig(instruction) == params
+
+
+def test_initialize_multisig2_m_of_n():
+    """Test initialize multisig2 where fewer signatures are required than there are signers."""
+    new_multisig = Pubkey([0] * 31 + [0])
+    signers = [Pubkey([0] * 31 + [i + 1]) for i in range(3)]
+    params = token_models.InitializeMultisig2Params(
+        program_id=TOKEN_PROGRAM_ID,
+        multisig=new_multisig,
+        signers=signers,
+        m=2,
+    )
+    instruction = spl_token.initialize_multisig2(params)
+    assert spl_token.decode_initialize_multisig2(instruction) == params
+
+
 def test_transfer(stubbed_receiver, stubbed_sender):
     """Test transfer."""
     params = token_models.TransferParams(
