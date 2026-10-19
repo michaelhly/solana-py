@@ -11,6 +11,7 @@
 
 - `cluster_api_url("mainnet")` raised `AttributeError: 'ClusterUrls' object has no attribute 'mainnet'`. The cluster was renamed in 0.40.2, but the lookup still used the cluster name as the field name, and the `ClusterUrls` field is `mainnet_beta`.
 - `decode_initialize_multisig()` and `decode_initialize_multisig2()` dropped signers when `m` was less than the number of signers. They kept only the last `m` signer accounts, treating the required-signature count as the signer count, so an M-of-N multisig instruction did not decode back to its params.
+- `decode_initialize_mint()`, `decode_initialize_mint2()` and `decode_set_authority()` raised `StreamError` on instructions with no freeze authority or new authority as packed by the token program, where the `None` option is a single `0` byte with no pubkey after it. The encoders now pack it the same way instead of appending 32 zero bytes.
 
 ## [0.40.3] - 2026-08-26
 
