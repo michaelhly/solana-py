@@ -33,6 +33,7 @@ def test_initialize_mint(stubbed_sender):
         mint_authority=mint_authority,
     )
     instruction = spl_token.initialize_mint(params_no_freeze)
+    assert instruction.data == bytes([0, 18]) + bytes(mint_authority) + bytes([0])
     decoded_params = spl_token.decode_initialize_mint(instruction)
     assert not decoded_params.freeze_authority
     assert decoded_params == params_no_freeze
@@ -58,6 +59,7 @@ def test_initialize_mint2(stubbed_sender):
         mint_authority=mint_authority,
     )
     instruction = spl_token.initialize_mint2(params_no_freeze)
+    assert instruction.data == bytes([20, 18]) + bytes(mint_authority) + bytes([0])
     decoded_params = spl_token.decode_initialize_mint2(instruction)
     assert not decoded_params.freeze_authority
     assert decoded_params == params_no_freeze
@@ -253,6 +255,7 @@ def test_set_authority():
         signers=[Pubkey([0] * 31 + [i]) for i in range(3, 10)],
     )
     instruction = spl_token.set_authority(multisig_params)
+    assert instruction.data == bytes([6, 1, 0])
     decoded_params = spl_token.decode_set_authority(instruction)
     assert not decoded_params.new_authority
     assert decoded_params == multisig_params

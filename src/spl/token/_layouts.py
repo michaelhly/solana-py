@@ -52,7 +52,7 @@ _INITIALIZE_MINT_LAYOUT = cStruct(
     "decimals" / Int8ul,
     "mint_authority" / PUBLIC_KEY_LAYOUT,
     "freeze_authority_option" / Int8ul,
-    "freeze_authority" / PUBLIC_KEY_LAYOUT,
+    "freeze_authority" / If(lambda this: this.freeze_authority_option, PUBLIC_KEY_LAYOUT),
 )
 
 _INITIALIZE_MULTISIG_LAYOUT = cStruct("m" / Int8ul)
@@ -64,7 +64,7 @@ _AMOUNT_LAYOUT = cStruct("amount" / Int64ul)
 _SET_AUTHORITY_LAYOUT = cStruct(
     "authority_type" / Int8ul,
     "new_authority_option" / Int8ul,
-    "new_authority" / PUBLIC_KEY_LAYOUT,
+    "new_authority" / If(lambda this: this.new_authority_option, PUBLIC_KEY_LAYOUT),
 )
 
 _AMOUNT2_LAYOUT = cStruct("amount" / Int64ul, "decimals" / Int8ul)
