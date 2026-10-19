@@ -425,6 +425,7 @@ def decode_sync_native(instruction: Instruction) -> models.SyncNativeParams:
     Returns:
         The decoded instruction.
     """
+    _ = __parse_and_validate_instruction(instruction, 1, InstructionType.SYNC_NATIVE)
     return models.SyncNativeParams(
         program_id=instruction.program_id,
         account=instruction.accounts[0].pubkey,
