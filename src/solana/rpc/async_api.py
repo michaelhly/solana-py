@@ -1270,33 +1270,35 @@ class AsyncClient(_ClientCore):
         """
         commitment_to_use = _COMMITMENT_TO_SOLDERS[commitment or self._commitment]
         commitment_rank = int(commitment_to_use)
+
+        def reached_commitment(resp: GetSignatureStatusesResp) -> bool:
+            status = resp.value[0]
+            return (
+                status is not None
+                and status.confirmation_status is not None
+                and int(status.confirmation_status) >= commitment_rank
+            )
+
         if last_valid_block_height:
             current_blockheight = (await self.get_block_height(commitment)).value
             while current_blockheight <= last_valid_block_height:
                 resp = await self.get_signature_statuses([tx_sig])
-                resp_value = resp.value[0]
-                if resp_value is not None:
-                    confirmation_status = resp_value.confirmation_status
-                    if confirmation_status is not None:
-                        confirmation_rank = int(confirmation_status)
-                        if confirmation_rank >= commitment_rank:
-                            break
+                if reached_commitment(resp):
+                    break
                 current_blockheight = (await self.get_block_height(commitment)).value
                 await asyncio.sleep(sleep_seconds)
             else:
-                raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
+                # The transaction may have landed between the last status poll and the block height check.
+                resp = await self.get_signature_statuses([tx_sig])
+                if not reached_commitment(resp):
+                    raise TransactionExpiredBlockheightExceededError(f"{tx_sig} has expired: block height exceeded")
             return resp
         else:
             timeout = time() + 90
             while time() < timeout:
                 resp = await self.get_signature_statuses([tx_sig])
-                resp_value = resp.value[0]
-                if resp_value is not None:
-                    confirmation_status = resp_value.confirmation_status
-                    if confirmation_status is not None:
-                        confirmation_rank = int(confirmation_status)
-                        if confirmation_rank >= commitment_rank:
-                            break
+                if reached_commitment(resp):
+                    break
                 await asyncio.sleep(sleep_seconds)
             else:
                 raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")

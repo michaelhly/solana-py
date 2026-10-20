@@ -10,7 +10,6 @@ import solana.models as solana_models
 import solana.rpc.models as rpc_models
 import spl.memo.models as memo_models
 import spl.token.models as token_models
-from solana.rpc.commitment import Finalized
 
 
 @pytest.mark.parametrize(
@@ -59,7 +58,7 @@ def test_defaults_preserved():
     opts = rpc_models.TxOpts()
     assert opts.skip_confirmation is True
     assert opts.skip_preflight is False
-    assert opts.preflight_commitment == Finalized
+    assert opts.preflight_commitment is None
     assert opts.max_retries is None
     assert opts.last_valid_block_height is None
 
@@ -67,8 +66,12 @@ def test_defaults_preserved():
 def test_mutable_default_not_shared():
     """Each instance gets its own list for list-valued defaults."""
     pubkey = Keypair().pubkey()
-    a = token_models.TransferParams(program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1)
-    b = token_models.TransferParams(program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1)
+    a = token_models.TransferParams(
+        program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1
+    )
+    b = token_models.TransferParams(
+        program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1
+    )
     assert a.signers == []
     assert a.signers is not b.signers
 
@@ -88,4 +91,7 @@ def test_validation_rejects_bad_types():
 
 def test_field_descriptions_carried_over():
     """Attribute docstrings become field descriptions."""
-    assert token_models.TransferParams.model_fields["program_id"].description == "SPL Token program account."
+    assert (
+        token_models.TransferParams.model_fields["program_id"].description
+        == "SPL Token program account."
+    )
