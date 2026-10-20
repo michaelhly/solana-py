@@ -66,12 +66,8 @@ def test_defaults_preserved():
 def test_mutable_default_not_shared():
     """Each instance gets its own list for list-valued defaults."""
     pubkey = Keypair().pubkey()
-    a = token_models.TransferParams(
-        program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1
-    )
-    b = token_models.TransferParams(
-        program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1
-    )
+    a = token_models.TransferParams(program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1)
+    b = token_models.TransferParams(program_id=pubkey, source=pubkey, dest=pubkey, owner=pubkey, amount=1)
     assert a.signers == []
     assert a.signers is not b.signers
 
@@ -91,7 +87,4 @@ def test_validation_rejects_bad_types():
 
 def test_field_descriptions_carried_over():
     """Attribute docstrings become field descriptions."""
-    assert (
-        token_models.TransferParams.model_fields["program_id"].description
-        == "SPL Token program account."
-    )
+    assert token_models.TransferParams.model_fields["program_id"].description == "SPL Token program account."
