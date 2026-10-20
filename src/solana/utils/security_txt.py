@@ -19,6 +19,8 @@ class SecurityTxt:
     policy: str
     preferred_languages: str | None = None
     source_code: str | None = None
+    source_release: str | None = None
+    source_revision: str | None = None
     encryption: str | None = None
     auditors: str | None = None
     acknowledgements: str | None = None
