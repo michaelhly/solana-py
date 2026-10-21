@@ -52,6 +52,8 @@ def parse_security_txt(data: bytes) -> SecurityTxt:
         raise NoSecurityTxtFoundError("Program doesn't have security.txt section")
 
     e_idx = data.find(footer_bytes, s_idx + len(header_bytes))
+    if e_idx == -1:
+        raise NoSecurityTxtFoundError("Program's security.txt section has no footer")
     content_bytes = data[s_idx + len(header_bytes) : e_idx]
 
     # Split by null byte, convert each segment to string, strip trailing empty

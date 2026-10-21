@@ -34,3 +34,13 @@ def test_parse_missing_required_fields():
     data = b"=======BEGIN SECURITY.TXT V1=======\x00project_url\x00http://example.com\x00contacts\x00email:example@example.com,link:https://example.com/security,discord:example#1234\x00policy\x00https://github.com/solana-labs/solana/blob/master/SECURITY.md\x00preferred_languages\x00en,de\x00source_code\x00https://github.com/example/example\x00encryption\x00\n-----BEGIN PGP PUBLIC KEY BLOCK-----\nComment: Alice's OpenPGP certificate\nComment: https://www.ietf.org/id/draft-bre-openpgp-samples-01.html\n\nmDMEXEcE6RYJKwYBBAHaRw8BAQdArjWwk3FAqyiFbFBKT4TzXcVBqPTB3gmzlC/U\nb7O1u120JkFsaWNlIExvdmVsYWNlIDxhbGljZUBvcGVucGdwLmV4YW1wbGU+iJAE\nExYIADgCGwMFCwkIBwIGFQoJCAsCBBYCAwECHgECF4AWIQTrhbtfozp14V6UTmPy\nMVUMT0fjjgUCXaWfOgAKCRDyMVUMT0fjjukrAPoDnHBSogOmsHOsd9qGsiZpgRnO\ndypvbm+QtXZqth9rvwD9HcDC0tC+PHAsO7OTh1S1TC9RiJsvawAfCPaQZoed8gK4\nOARcRwTpEgorBgEEAZdVAQUBAQdAQv8GIa2rSTzgqbXCpDDYMiKRVitCsy203x3s\nE9+eviIDAQgHiHgEGBYIACAWIQTrhbtfozp14V6UTmPyMVUMT0fjjgUCXEcE6QIb\nDAAKCRDyMVUMT0fjjlnQAQDFHUs6TIcxrNTtEZFjUFm1M0PJ1Dng/cDW4xN80fsn\n0QEA22Kr7VkCjeAEC08VSTeV+QFsmz55/lntWkwYWhmvOgE=\n=iIGO\n-----END PGP PUBLIC KEY BLOCK-----\n\x00auditors\x00Neodyme\x00acknowledgements\x00\nThe following hackers could've stolen all our money but didn't:\n- Neodyme\n\x00=======END SECURITY.TXT V1=======\x00"  # noqa: E501
     with pytest.raises(TypeError):
         parse_security_txt(data)
+
+
+def test_parse_security_text_without_footer():
+    """A security.txt section without its footer must be rejected, not truncated by one byte."""
+    data = (
+        b"=======BEGIN SECURITY.TXT V1=======\x00name\x00Example\x00project_url\x00http://example.com"
+        b"\x00contacts\x00email:example@example.com\x00policy\x00https://example.com/policy"
+    )
+    with pytest.raises(NoSecurityTxtFoundError):
+        parse_security_txt(data)
