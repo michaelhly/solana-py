@@ -524,11 +524,14 @@ class _ClientCore:
             config,
         )
 
-    @staticmethod
     def _send_raw_transaction_post_send_args(
-        resp: SendTransactionResp, opts: TxOptsModel
+        self, resp: SendTransactionResp, opts: TxOptsModel
     ) -> tuple[SendTransactionResp, Commitment, int | None]:
-        return resp, opts.preflight_commitment, opts.last_valid_block_height
+        return (
+            resp,
+            opts.preflight_commitment or self._commitment,
+            opts.last_valid_block_height,
+        )
 
     def _simulate_transaction_body(
         self,
