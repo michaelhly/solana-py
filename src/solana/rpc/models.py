@@ -6,7 +6,7 @@ from solders.pubkey import Pubkey
 
 from solana._pydantic import PydanticModel
 
-from .commitment import Commitment, Finalized
+from .commitment import Commitment
 
 
 class DataSliceOpts(PydanticModel):
@@ -70,8 +70,8 @@ class TxOpts(PydanticModel):
     """
     skip_preflight: bool = False
     """If true, skip the preflight transaction checks."""
-    preflight_commitment: Commitment = Finalized
-    """Commitment level to use for preflight."""
+    preflight_commitment: Commitment | None = None
+    """Commitment level to use for preflight and confirmation. Defaults to the client's commitment."""
     max_retries: int | None = None
     """Maximum number of times for the RPC node to retry sending the transaction to the leader.
     If this parameter not provided, the RPC node will retry the transaction until it is finalized

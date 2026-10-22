@@ -1,7 +1,9 @@
 """Unit tests for SPL-token instructions."""
 
+import pytest
 import spl.token.instructions as spl_token
 import spl.token.models as token_models
+from solders.instruction import Instruction
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYSTEM_PROGRAM_ID
 from spl.token.constants import (
@@ -500,6 +502,31 @@ def test_sync_native(stubbed_sender):
     instruction = spl_token.sync_native(params)
     decoded_params = spl_token.decode_sync_native(instruction)
     assert params == decoded_params
+
+
+def test_decode_sync_native_rejects_other_instructions(stubbed_receiver, stubbed_sender):
+    """decode_sync_native must validate the instruction type like every other decoder."""
+    transfer = spl_token.transfer(
+        token_models.TransferParams(
+            program_id=TOKEN_PROGRAM_ID,
+            source=stubbed_sender.pubkey(),
+            dest=stubbed_receiver,
+            owner=stubbed_sender.pubkey(),
+            amount=1,
+        )
+    )
+    with pytest.raises(ValueError, match="instruction index mismatch"):
+        spl_token.decode_sync_native(transfer)
+
+
+def test_decode_sync_native_rejects_missing_account():
+    """A sync_native instruction without its account must raise ValueError, not IndexError."""
+    instruction = spl_token.sync_native(
+        token_models.SyncNativeParams(program_id=TOKEN_PROGRAM_ID, account=Pubkey([0] * 31 + [1]))
+    )
+    bare = Instruction(program_id=instruction.program_id, data=instruction.data, accounts=[])
+    with pytest.raises(ValueError, match="expected at least 1"):
+        spl_token.decode_sync_native(bare)
 
 
 def test_get_account_data_size():
