@@ -17,6 +17,7 @@
 - `decode_initialize_mint()`, `decode_initialize_mint2()` and `decode_set_authority()` raised `StreamError` on instructions with no freeze authority or new authority as packed by the token program, where the `None` option is a single `0` byte with no pubkey after it. The encoders now pack it the same way instead of appending 32 zero bytes.
 - `parse_security_txt()` dropped the optional `source_release` and `source_revision` fields. `SecurityTxt` now has both, matching the `solana-security-txt` format.
 - `decode_sync_native()` did not validate the instruction. Any token instruction, such as a transfer, decoded as `SyncNativeParams`, and one with no accounts raised `IndexError`. It now raises `ValueError` on an instruction type mismatch or a missing account, like the other token decoders.
+- `send_rpc_request()` raised a pydantic `ValidationError` on a JSON-RPC error response with `"id": null`, which JSON-RPC 2.0 requires when the server could not read the request id. It now raises `SolanaJsonRpcError` with `request_id=None`, like the websocket client.
 
 ## [0.40.3] - 2026-08-26
 

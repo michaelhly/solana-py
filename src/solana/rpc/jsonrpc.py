@@ -176,7 +176,7 @@ class JsonRpcErrorParser(Protocol):
         self,
         error: JsonRpcErrorObject,
         *,
-        request_id: str | int,
+        request_id: str | int | None,
         method: str | None = None,
     ) -> Exception:
         """Parse a JSON-RPC error object into an exception."""
@@ -186,7 +186,7 @@ class JsonRpcErrorParser(Protocol):
 def default_jsonrpc_error_parser(
     error: JsonRpcErrorObject,
     *,
-    request_id: str | int,
+    request_id: str | int | None,
     method: str | None = None,
 ) -> SolanaJsonRpcError:
     """Default JSON-RPC error parser."""
@@ -197,7 +197,7 @@ class JsonRpcResponseEnvelope(PydanticModel):
     """JSON-RPC response envelope."""
 
     jsonrpc: Literal["2.0"]
-    id: str | int
+    id: str | int | None
     result: Any | None = None
     error: JsonRpcErrorObject | None = None
 
