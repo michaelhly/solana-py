@@ -363,6 +363,15 @@ async def test_send_rpc_request_jsonrpc_error(unit_test_http_client_async):
     assert exc_info.value.name == "INVALID_PARAMS"
 
 
+async def test_send_rpc_request_jsonrpc_error_null_id(unit_test_http_client_async):
+    raw = '{"jsonrpc":"2.0","id":null,"error":{"code":-32600,"message":"Invalid request"}}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        with pytest.raises(SolanaJsonRpcError) as exc_info:
+            await unit_test_http_client_async.send_rpc_request(_TestRpcRequest(), _TestRpcResult)
+    assert exc_info.value.request_id is None
+
+
 async def test_send_rpc_request_custom_error_parser(unit_test_http_client_async):
     """Test send_rpc_request accepts a custom JSON-RPC error parser."""
 
