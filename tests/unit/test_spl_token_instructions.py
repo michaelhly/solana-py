@@ -3,7 +3,7 @@
 import pytest
 import spl.token.instructions as spl_token
 import spl.token.models as token_models
-from solders.instruction import Instruction
+from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYSTEM_PROGRAM_ID
 from spl.token.constants import (
@@ -261,6 +261,33 @@ def test_set_authority():
     decoded_params = spl_token.decode_set_authority(instruction)
     assert not decoded_params.new_authority
     assert decoded_params == multisig_params
+
+
+def test_set_authority_token_2022_authority_types():
+    """Test set authority with an authority type only Token-2022 defines."""
+    mint, current_authority, new_authority = Pubkey([1] * 32), Pubkey([2] * 32), Pubkey([3] * 32)
+    # SetAuthority (6) for TransferFeeConfig (4), as Token-2022 encodes it.
+    instruction = Instruction(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        data=bytes([6, 4, 1]) + bytes(new_authority),
+        accounts=[
+            AccountMeta(pubkey=mint, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=current_authority, is_signer=True, is_writable=False),
+        ],
+    )
+    decoded_params = spl_token.decode_set_authority(instruction)
+    assert decoded_params.authority == spl_token.AuthorityType.TRANSFER_FEE_CONFIG
+    assert decoded_params.new_authority == new_authority
+
+    params = token_models.SetAuthorityParams(
+        program_id=TOKEN_2022_PROGRAM_ID,
+        account=mint,
+        authority=spl_token.AuthorityType.WITHHELD_WITHDRAW,
+        current_authority=current_authority,
+    )
+    instruction = spl_token.set_authority(params)
+    assert instruction.data == bytes([6, 5, 0])
+    assert spl_token.decode_set_authority(instruction) == params
 
 
 def test_mint_to(stubbed_receiver):

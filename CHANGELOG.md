@@ -18,6 +18,7 @@
 - `parse_security_txt()` dropped the optional `source_release` and `source_revision` fields. `SecurityTxt` now has both, matching the `solana-security-txt` format.
 - `decode_sync_native()` did not validate the instruction. Any token instruction, such as a transfer, decoded as `SyncNativeParams`, and one with no accounts raised `IndexError`. It now raises `ValueError` on an instruction type mismatch or a missing account, like the other token decoders.
 - `send_rpc_request()` raised a pydantic `ValidationError` on a JSON-RPC error response with `"id": null`, which JSON-RPC 2.0 requires when the server could not read the request id. It now raises `SolanaJsonRpcError` with `request_id=None`, like the websocket client.
+- `decode_set_authority()` raised `ValueError: 4 is not a valid AuthorityType` on Token-2022 `SetAuthority` instructions, and `set_authority()` could not build them, because `AuthorityType` stopped at `CLOSE_ACCOUNT`. The transfer fee authorities set by `initialize_transfer_fee_config()` could not be rotated or revoked. `AuthorityType` now has every Token-2022 authority type.
 
 ## [0.40.3] - 2026-08-26
 

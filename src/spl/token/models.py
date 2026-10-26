@@ -20,6 +20,34 @@ class AuthorityType(IntEnum):
     """Owner of a given token account."""
     CLOSE_ACCOUNT = 3
     """Authority to close a token account."""
+    TRANSFER_FEE_CONFIG = 4
+    """Token-2022: authority to set the transfer fee."""
+    WITHHELD_WITHDRAW = 5
+    """Token-2022: authority to withdraw withheld tokens from a mint."""
+    CLOSE_MINT = 6
+    """Token-2022: authority to close a mint account."""
+    INTEREST_RATE = 7
+    """Token-2022: authority to set the interest rate."""
+    PERMANENT_DELEGATE = 8
+    """Token-2022: authority to transfer or burn any tokens for a mint."""
+    CONFIDENTIAL_TRANSFER_MINT = 9
+    """Token-2022: authority to update confidential transfer mint and approve accounts for confidential transfers."""
+    TRANSFER_HOOK_PROGRAM_ID = 10
+    """Token-2022: authority to set the transfer hook program id."""
+    CONFIDENTIAL_TRANSFER_FEE_CONFIG = 11
+    """Token-2022: authority to set the withdraw withheld authority encryption key."""
+    METADATA_POINTER = 12
+    """Token-2022: authority to set the metadata address."""
+    GROUP_POINTER = 13
+    """Token-2022: authority to set the group address."""
+    GROUP_MEMBER_POINTER = 14
+    """Token-2022: authority to set the group member address."""
+    SCALED_UI_AMOUNT = 15
+    """Token-2022: authority to set the UI amount scale."""
+    PAUSE = 16
+    """Token-2022: authority to pause or resume minting, transferring and burning."""
+    PERMISSIONED_BURN = 17
+    """Token-2022: authority to perform a permissioned token burn."""
 
 
 class AccountInfo(PydanticModel):
