@@ -214,6 +214,15 @@ def test_async_http_provider_passes_explicit_http_options():
     )
 
 
+def test_async_http_provider_keeps_unset_default_limits():
+    """Test AsyncHTTPProvider keeps httpx2 defaults for limits that are not set."""
+    with patch("httpx2.AsyncClient") as client_mock:
+        AsyncHTTPProvider(max_connections=8)
+    assert client_mock.call_args.kwargs["limits"] == httpx2.Limits(
+        max_connections=8, max_keepalive_connections=20, keepalive_expiry=5.0
+    )
+
+
 def test_async_client_passes_explicit_http_options():
     """Test AsyncClient forwards explicit HTTP options to the provider."""
     with patch("solana.rpc.async_http_provider.AsyncHTTPProvider") as provider_mock:
