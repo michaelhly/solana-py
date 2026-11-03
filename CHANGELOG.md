@@ -18,6 +18,7 @@
 - `parse_security_txt()` dropped the optional `source_release` and `source_revision` fields. `SecurityTxt` now has both, matching the `solana-security-txt` format.
 - `decode_sync_native()` did not validate the instruction. Any token instruction, such as a transfer, decoded as `SyncNativeParams`, and one with no accounts raised `IndexError`. It now raises `ValueError` on an instruction type mismatch or a missing account, like the other token decoders.
 - `send_rpc_request()` raised a pydantic `ValidationError` on a JSON-RPC error response with `"id": null`, which JSON-RPC 2.0 requires when the server could not read the request id. It now raises `SolanaJsonRpcError` with `request_id=None`, like the websocket client.
+- RPC errors with a code solders has no type for, such as `-32020` from `get_signatures_for_address()` with a `before` or `until` signature the node can't find, came back as a bare `int` instead of raising, so `.value` failed with `AttributeError` and the server's message was lost. They now raise `RPCException` with the code and message.
 
 ## [0.40.3] - 2026-08-26
 
