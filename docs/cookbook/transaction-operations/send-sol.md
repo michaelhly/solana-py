@@ -44,7 +44,7 @@ async def main():
             recent_blockhash=latest_blockhash.value.blockhash,
         )
 
-        # Create transaction
+        # Create and sign transaction
         transaction = VersionedTransaction(message, [sender])
 
         print(f"Sender: {sender.pubkey()}")
@@ -67,7 +67,13 @@ This example demonstrates the basic process of sending SOL from one account to a
 4. **Get Latest Blockhash**: Required for transaction validity
 5. **Create Transfer Instruction**: Use the system program's transfer function
 6. **Compile Message**: Create a message with the transfer instruction
-7. **Create Transaction**: Build a versioned transaction with the message and signatures
+7. **Create and Sign Transaction**: Build and sign a versioned transaction
+
+`VersionedTransaction(message, [sender])` creates a signed transaction: the keypairs in the second argument sign the message.
+Here, `sender` is both the fee payer and the account authorizing the SOL transfer.
+See the [solders transaction reference](https://kevinheavey.github.io/solders/api_reference/transaction.html#solders.transaction.VersionedTransaction)
+and [partial signing tutorial](https://kevinheavey.github.io/solders/tutorials/transactions.html#partial-signing)
+for details on signing with multiple parties.
 
 ## Key Concepts
 
@@ -92,4 +98,4 @@ To run this example:
    python send_sol.py
    ```
 
-Note: This example creates the transaction but doesn't submit it to the network. To actually send the transaction, you would need to call `rpc.send_transaction(transaction)`.
+Note: This example creates and signs the transaction locally but doesn't submit it to the network. To actually send the transaction, you would need to call `await rpc.send_transaction(transaction)`.

@@ -62,7 +62,7 @@ async def main():
             recent_blockhash=latest_blockhash.value.blockhash,
         )
 
-        # Create transaction
+        # Create and sign transaction
         transaction = VersionedTransaction(message, [sender])
 
         print(f"Sender: {sender.pubkey()}")
@@ -86,7 +86,13 @@ This example demonstrates how to send SPL tokens between accounts:
 4. **Transfer Parameters**: Set amount and decimals for the token
 5. **Create Transfer Instruction**: Use `transfer_checked` for secure transfers
 6. **Compile Message**: Create a message with the transfer instruction
-7. **Create Transaction**: Build a versioned transaction
+7. **Create and Sign Transaction**: Build and sign a versioned transaction
+
+`VersionedTransaction(message, [sender])` creates a signed transaction: the keypairs in the second argument sign the message.
+Here, `sender` is both the fee payer and the owner authorizing the token transfer.
+See the [solders transaction reference](https://kevinheavey.github.io/solders/api_reference/transaction.html#solders.transaction.VersionedTransaction)
+and [partial signing tutorial](https://kevinheavey.github.io/solders/tutorials/transactions.html#partial-signing)
+for details on signing with multiple parties.
 
 ## Key Concepts
 
@@ -115,4 +121,4 @@ To run this example:
    python send_tokens.py
    ```
 
-Note: This example creates the transaction but doesn't submit it. You'll need to create actual token accounts and call `rpc.send_transaction(transaction)` to execute the transfer.
+Note: This example creates and signs the transaction locally but doesn't submit it. You'll need to create actual token accounts and call `await rpc.send_transaction(transaction)` to execute the transfer.
