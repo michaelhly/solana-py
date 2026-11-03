@@ -35,6 +35,7 @@ from solana._pydantic import PydanticModel
 from solana.exceptions import SolanaRpcException
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
+from solana.rpc.core import RPCException
 from solana.rpc.async_http_provider import AsyncHTTPProvider
 from solana.rpc.jsonrpc import JsonRpcErrorObject, JsonRpcRequest, SolanaJsonRpcError
 from solana.rpc.models import DataSliceOpts, MemcmpOpts, TokenAccountOpts
@@ -288,6 +289,17 @@ async def test_async_http_provider_can_disable_transport_retries():
         assert post_mock.call_count == 1
     finally:
         await provider.close()
+
+
+async def test_rpc_error_code_without_a_solders_type_raises(unit_test_http_client_async):
+    """An error code solders has no type for comes back as a bare int, which must not reach the caller."""
+    raw = '{"jsonrpc":"2.0","error":{"code":-32020,"message":"Transaction 1111 not found"},"id":0}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        with pytest.raises(RPCException) as exc_info:
+            await unit_test_http_client_async.get_signatures_for_address(SYSTEM_PROGRAM_ID, before=Signature.default())
+    assert exc_info.value.args[0].code == -32020
+    assert exc_info.value.args[0].message == "Transaction 1111 not found"
 
 
 async def test_send_rpc_request_success(unit_test_http_client_async):

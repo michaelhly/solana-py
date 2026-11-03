@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 from typing import Any, TypeVar
@@ -13,7 +14,7 @@ from solders.rpc.responses import RPCError, RPCResult
 
 from ..exceptions import SolanaRpcException, handle_async_exceptions
 from .core import RPCException
-from .jsonrpc import JsonRpcRequestSerializer
+from .jsonrpc import JsonRpcErrorObject, JsonRpcRequestSerializer
 from .types import URI
 
 T = TypeVar("T", bound=RPCResult)
@@ -146,6 +147,9 @@ def _parse_raw(raw: str, parser: type[T]) -> T:
     parsed = parser.from_json(raw)  # type: ignore
     if isinstance(parsed, RPCError.__args__):  # type: ignore # TODO: drop py37 and use typing.get_args
         raise RPCException(parsed)
+    if isinstance(parsed, int):
+        # solders has no type for some error codes, such as -32020, and returns only the code.
+        raise RPCException(JsonRpcErrorObject.model_validate(json.loads(raw)["error"]))
     return parsed  # type: ignore
 
 
