@@ -257,6 +257,23 @@ async def test_program_subscribe_builds_configured_request(monkeypatch):
     assert '"params"' in captured[0][1].to_json()
 
 
+async def test_account_and_program_subscribe_default_to_base64(monkeypatch):
+    """The server's base58 default replaces data over 128 bytes with a string solders can't parse."""
+    client = SolanaWsClient.__new__(SolanaWsClient)
+    client._request_counter = itertools.count(1)
+    captured = []
+
+    async def fake_subscribe(kind, request):
+        captured.append(json.loads(request.to_json()))
+        return Subscription(42, kind)
+
+    monkeypatch.setattr(client, "_subscribe", fake_subscribe)
+    await client.account_subscribe(pubkey=Pubkey.default())
+    await client.program_subscribe(program_id=Pubkey.default())
+
+    assert [request["params"][1]["encoding"] for request in captured] == ["base64", "base64"]
+
+
 async def test_block_subscribe_accepts_both_filter_variants(monkeypatch):
     """``blockSubscribe`` takes ``all`` or a mentions filter, like ``logsSubscribe``."""
     client = SolanaWsClient.__new__(SolanaWsClient)
