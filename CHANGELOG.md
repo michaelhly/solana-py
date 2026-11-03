@@ -18,6 +18,7 @@
 - `parse_security_txt()` dropped the optional `source_release` and `source_revision` fields. `SecurityTxt` now has both, matching the `solana-security-txt` format.
 - `decode_sync_native()` did not validate the instruction. Any token instruction, such as a transfer, decoded as `SyncNativeParams`, and one with no accounts raised `IndexError`. It now raises `ValueError` on an instruction type mismatch or a missing account, like the other token decoders.
 - `send_rpc_request()` raised a pydantic `ValidationError` on a JSON-RPC error response with `"id": null`, which JSON-RPC 2.0 requires when the server could not read the request id. It now raises `SolanaJsonRpcError` with `request_id=None`, like the websocket client.
+- `account_subscribe()` and `program_subscribe()` left the encoding to the server, whose base58 default sends `"error: data too large for bs58 encoding"` in place of the data of any account over 128 bytes. solders can't parse that, so the first such notification closed the connection with `SerdeJSONError`. They now default to `base64`, like `get_account_info()`.
 
 ## [0.40.3] - 2026-08-26
 

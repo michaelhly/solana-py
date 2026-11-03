@@ -571,7 +571,7 @@ class SolanaWsClient:
         *,
         pubkey: Pubkey,
         commitment: Commitment | None = None,
-        encoding: str | None = None,
+        encoding: str | None = "base64",
         data_slice: DataSliceOpts | None = None,
         min_context_slot: int | None = None,
     ) -> Subscription:
@@ -599,7 +599,7 @@ class SolanaWsClient:
         *,
         program_id: Pubkey,
         commitment: Commitment | None = None,
-        encoding: str | None = None,
+        encoding: str | None = "base64",
         data_slice: DataSliceOpts | None = None,
         min_context_slot: int | None = None,
         filters: Sequence[int | MemcmpOpts] | None = None,
