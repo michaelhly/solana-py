@@ -15,6 +15,7 @@ from typing import NamedTuple
 _VALIDATOR_ARGS = [
     "--reset",
     "--rpc-pubsub-enable-vote-subscription",
+    "--rpc-pubsub-enable-block-subscription",
     "--quiet",
 ]
 
@@ -41,12 +42,20 @@ def env_int(name: str, default: int) -> int:
         return default
 
 
-def _acquire_dir_lock(lock_dir: Path, timeout_secs: int = 120) -> None:
+def validator_startup_timeout() -> int:
+    """Seconds to wait for a freshly launched validator to report healthy."""
+    return env_int("SOLANA_TEST_VALIDATOR_STARTUP_TIMEOUT", 180)
+
+
+def _acquire_dir_lock(lock_dir: Path, timeout_secs: int | None = None) -> None:
     """Acquire the validator lifecycle lock via mkdir.
 
     This lock protects shared validator lifecycle state (pid/refcount/state file)
-    and does not serialize RPC or websocket request traffic.
+    and does not serialize RPC or websocket request traffic. The holder may be
+    launching the validator, so waiters must outlast the startup timeout.
     """
+    if timeout_secs is None:
+        timeout_secs = validator_startup_timeout() + 60
     deadline = time.time() + timeout_secs
     lock_dir.parent.mkdir(parents=True, exist_ok=True)
     while time.time() < deadline:
@@ -55,7 +64,7 @@ def _acquire_dir_lock(lock_dir: Path, timeout_secs: int = 120) -> None:
             return
         except FileExistsError:
             with suppress(FileNotFoundError):
-                stale_after = 300
+                stale_after = validator_startup_timeout() + 120
                 if time.time() - lock_dir.stat().st_mtime > stale_after:
                     lock_dir.rmdir()
                     continue
@@ -167,7 +176,8 @@ def _launch_shared_validator(rpc_port: int, rpc_url: str, ws_url: str) -> dict:
             stderr=validator_log,
         )
 
-    deadline = time.time() + 60
+    startup_timeout = validator_startup_timeout()
+    deadline = time.time() + startup_timeout
     while time.time() < deadline:
         if validator_is_healthy(rpc_url):
             return {
@@ -186,13 +196,13 @@ def _launch_shared_validator(rpc_port: int, rpc_url: str, ws_url: str) -> dict:
                 f"args={validator_args}\n"
                 f"log_tail:\n{log_tail}"
             )
-        time.sleep(1)
+        time.sleep(0.25)
 
     proc.terminate()
     proc.wait(timeout=10)
     log_tail = tail_file(validator_log_path)
     raise RuntimeError(
-        f"shared solana-test-validator did not become healthy within 60 s at {rpc_url}.\n"
+        f"shared solana-test-validator did not become healthy within {startup_timeout} s at {rpc_url}.\n"
         f"args={validator_args}\n"
         f"log_tail:\n{log_tail}"
     )

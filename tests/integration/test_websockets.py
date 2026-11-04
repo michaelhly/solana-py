@@ -312,13 +312,11 @@ async def test_logs_subscribe_all_with_votes_receives_vote_log(
 
 
 @pytest.mark.integration
-@pytest.mark.skip(reason="Agave 4.0 has a known RPC blockSubscribe flag issue; re-enable after upstream fix.")
 async def test_block_subscribe(
     websocket: SolanaWsClient,
     block_subscribed: None,
 ):
     """Test block subscription."""
-    # NOTE: Keep this test force-skipped until Agave fixes blockSubscribe behavior.
     msg = await websocket.recv()
     assert isinstance(msg, BlockNotification)
     assert msg.result.value.slot >= 0

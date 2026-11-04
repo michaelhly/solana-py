@@ -75,7 +75,7 @@ jobs:
       #----------------------------------------------
       - name: Install Agave CLI
         if: matrix.os != 'windows-latest'
-        run: sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+        run: sh -c "$(curl -sSfL https://release.anza.xyz/4.4.0/install)"
 
       - name: Add Agave bin to PATH
         if: matrix.os != 'windows-latest'
