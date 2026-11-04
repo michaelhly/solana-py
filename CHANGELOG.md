@@ -20,6 +20,7 @@
 - `send_rpc_request()` raised a pydantic `ValidationError` on a JSON-RPC error response with `"id": null`, which JSON-RPC 2.0 requires when the server could not read the request id. It now raises `SolanaJsonRpcError` with `request_id=None`, like the websocket client.
 - `account_subscribe()` and `program_subscribe()` left the encoding to the server, whose base58 default sends `"error: data too large for bs58 encoding"` in place of the data of any account over 128 bytes. solders can't parse that, so the first such notification closed the connection with `SerdeJSONError`. They now default to `base64`, like `get_account_info()`.
 - RPC errors with a code solders has no type for, such as `-32020` from `get_signatures_for_address()` with a `before` or `until` signature the node can't find, came back as a bare `int` instead of raising, so `.value` failed with `AttributeError` and the server's message was lost. They now raise `RPCException` with the code and message.
+- `get_program_accounts()` left the encoding to the server, whose base58 default fails the whole call if any account is over 128 bytes. It now defaults to `base64`, like `get_account_info()` and `get_multiple_accounts()`.
 
 ## [0.40.3] - 2026-08-26
 
