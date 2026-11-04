@@ -752,7 +752,7 @@ class AsyncClient(_ClientCore):
         self,
         pubkey: Pubkey,
         commitment: Commitment | None = None,
-        encoding: str | None = None,
+        encoding: str | None = "base64",
         data_slice: DataSliceOptsModel | None = None,
         filters: Sequence[int | MemcmpOptsModel] | None = None,
     ) -> GetProgramAccountsResp:
@@ -762,7 +762,7 @@ class AsyncClient(_ClientCore):
             pubkey: Pubkey of program
             commitment: Bank state to query. It can be either "finalized", "confirmed" or "processed".
             encoding: (optional) Encoding for Account data, either "base58" (slow), "base64", "base64+zstd", or
-                "jsonParsed".
+                "jsonParsed". Default is "base64".
             data_slice: (optional) Limit the returned account data using the provided `offset`: <usize> and
                 `length`: <usize> fields; only available for "base58" or "base64" encoding.
             filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.

@@ -553,6 +553,15 @@ def test_get_program_accounts_body(unit_test_http_client_async):
     assert expected == actual
 
 
+async def test_get_program_accounts_defaults_to_base64(unit_test_http_client_async):
+    """The server's base58 default fails the whole call if any account is over 128 bytes."""
+    raw = '{"jsonrpc":"2.0","result":[],"id":0}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        await unit_test_http_client_async.get_program_accounts(SYSTEM_PROGRAM_ID)
+    assert json.loads(post_mock.call_args.kwargs["content"])["params"][1]["encoding"] == "base64"
+
+
 def test_get_token_accounts_by_owner_body(unit_test_http_client_async):
     """Test generating getTokenAccountsByOwner body from token account opts."""
     owner = Pubkey([0] * 31 + [0])
