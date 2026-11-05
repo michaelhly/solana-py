@@ -22,6 +22,16 @@
 - `account_subscribe()` and `program_subscribe()` left the encoding to the server, whose base58 default sends `"error: data too large for bs58 encoding"` in place of the data of any account over 128 bytes. solders can't parse that, so the first such notification closed the connection with `SerdeJSONError`. They now default to `base64`, like `get_account_info()`.
 - RPC errors with a code solders has no type for, such as `-32020` from `get_signatures_for_address()` with a `before` or `until` signature the node can't find, came back as a bare `int` instead of raising, so `.value` failed with `AttributeError` and the server's message was lost. They now raise `RPCException` with the code and message.
 - `get_program_accounts()` left the encoding to the server, whose base58 default fails the whole call if any account is over 128 bytes. It now defaults to `base64`, like `get_account_info()` and `get_multiple_accounts()`.
+- `parse_security_txt()` dropped the last byte of the program data instead of failing when the security.txt section had no footer. It now raises `NoSecurityTxtFoundError`.
+
+### Added
+
+- Add Python 3.15 support and test against it in CI [(#726)](https://github.com/michaelhly/solana-py/pull/726).
+
+### Docs
+
+- Fix the create PDA account cookbook example [(#713)](https://github.com/michaelhly/solana-py/pull/713).
+- Clarify transaction signing in the SOL and token transfer cookbook recipes [(#720)](https://github.com/michaelhly/solana-py/pull/720).
 
 ## [0.40.3] - 2026-08-26
 
