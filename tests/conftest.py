@@ -1,5 +1,6 @@
 """Fixtures for pytest."""
 
+import asyncio
 import os
 import shutil
 import time
@@ -51,6 +52,8 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
         return
 
     if not shutil.which("solana-test-validator"):
+        if os.environ.get("CI"):
+            pytest.fail("solana-test-validator not found in PATH on CI")
         pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
         return
     config = acquire_shared_validator(worker_id)
@@ -86,7 +89,7 @@ async def test_http_client_async(
 ) -> AsyncGenerator[AsyncClient, None]:
     """Async HTTP client pointed at the local test validator."""
     http_client = AsyncClient(endpoint=validator_rpc_url, commitment=Commitment.PROCESSED)
-    timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 120)
+    timeout_secs = env_int("SOLANA_TEST_BLOCK_READY_TIMEOUT", 180)
     deadline = time.time() + timeout_secs
     last_error: Exception | None = None
     while time.time() < deadline:
@@ -95,7 +98,7 @@ async def test_http_client_async(
             break
         except Exception as exc:  # noqa: BLE001
             last_error = exc
-        time.sleep(1)
+        await asyncio.sleep(0.5)
     else:
         slot_debug = "unknown"
         block_height_debug = "unknown"
