@@ -52,6 +52,8 @@ def solana_test_validator(worker_id: str) -> Generator[ValidatorConfig, None, No
         return
 
     if not shutil.which("solana-test-validator"):
+        if os.environ.get("CI"):
+            pytest.fail("solana-test-validator not found in PATH on CI")
         pytest.skip("solana-test-validator not found in PATH; skipping integration tests")
         return
     config = acquire_shared_validator(worker_id)
