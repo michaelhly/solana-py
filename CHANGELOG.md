@@ -22,6 +22,7 @@
 - `account_subscribe()` and `program_subscribe()` left the encoding to the server, whose base58 default sends `"error: data too large for bs58 encoding"` in place of the data of any account over 128 bytes. solders can't parse that, so the first such notification closed the connection with `SerdeJSONError`. They now default to `base64`, like `get_account_info()`.
 - RPC errors with a code solders has no type for, such as `-32020` from `get_signatures_for_address()` with a `before` or `until` signature the node can't find, came back as a bare `int` instead of raising, so `.value` failed with `AttributeError` and the server's message was lost. They now raise `RPCException` with the code and message.
 - `get_program_accounts()` left the encoding to the server, whose base58 default fails the whole call if any account is over 128 bytes. It now defaults to `base64`, like `get_account_info()` and `get_multiple_accounts()`.
+- `AsyncHTTPProvider` and `AsyncClient` passed `None` to `httpx2.Limits` for any of `max_connections`, `max_keepalive_connections` and `keepalive_expiry` left unset once one of them was set, so setting only `max_connections` also removed the keep-alive pool limit and made idle connections never expire. Unset values now keep the httpx2 defaults, as documented.
 
 ## [0.40.3] - 2026-08-26
 
