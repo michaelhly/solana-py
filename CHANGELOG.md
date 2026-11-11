@@ -1,15 +1,18 @@
 # Changelog
 
-## [Unreleased]
+## [0.42.0] - 2026-11-10
+
+### Added
+
+- Support Python 3.15 [(#726)](https://github.com/michaelhly/solana-py/pull/726).
 
 ### Changed
 
-- **BREAKING**: Rewrite the websocket client around a typed `Subscription` handle. `solana.rpc.websocket_api.connect()` and `SolanaWsClientProtocol` are replaced by `SolanaWsClient`, which owns its connection instead of subclassing it. Each `*_subscribe()` helper now awaits the server confirmation and returns a `Subscription`; the nine `*_unsubscribe(int)` helpers are replaced by a single `unsubscribe(subscription)`, so request IDs and server-assigned subscription IDs can no longer be confused. `recv()` and async iteration yield notifications only.
-- **BREAKING**: A `*_subscribe()`/`unsubscribe()` call whose request already reached the wire tears down the whole connection if its wait ends early — either the `request_timeout` (10s default) expiring or the awaiting task being cancelled. Every other in-flight request fails with the same exception, every `Subscription` is dropped, and the client cannot be reused. The server may have created a subscription whose ID never arrived, and an orphaned subscription cannot be cancelled without it, so the connection is dropped instead. Cancelling `recv()` is still safe, and `close()` is shielded against cancellation. See [Subscribing to Events](https://michaelhly.github.io/solana-py/cookbook/development-guides/subscribing-to-events/) for details.
 - `TxOpts.preflight_commitment` now defaults to `None` instead of `Finalized`, and falls back to the client commitment. Callers who relied on the implicit `Finalized` must pass it explicitly [(#712)](https://github.com/michaelhly/solana-py/issues/712).
 
 ### Fixed
 
+- `signature_subscribe()` with `enable_received_notification=True` closed the connection on the server's `"receivedSignature"` notification, which solders can't parse. The client now delivers it as a `SignatureReceivedNotification`, so `recv()` and async iteration can also yield that type, and the subscription stays active until the processed notification [(#706)](https://github.com/michaelhly/solana-py/pull/706).
 - `send_transaction()` and `send_raw_transaction()` with `TxOpts(skip_confirmation=False)` ran preflight and waited for confirmation at `Finalized`, ignoring the client commitment, so an already confirmed transaction could end in `UnconfirmedTxError`. Only `opts=None` used the client commitment [(#712)](https://github.com/michaelhly/solana-py/issues/712).
 - `confirm_transaction()` raised `TransactionExpiredBlockheightExceededError` without a final status check once the block height passed `last_valid_block_height`, so a transaction that landed between the last status poll and the block height check was reported as expired. It now checks the status once more before raising [(#712)](https://github.com/michaelhly/solana-py/issues/712).
 - `cluster_api_url("mainnet")` raised `AttributeError: 'ClusterUrls' object has no attribute 'mainnet'`. The cluster was renamed in 0.40.2, but the lookup still used the cluster name as the field name, and the `ClusterUrls` field is `mainnet_beta`.
@@ -23,6 +26,13 @@
 - RPC errors with a code solders has no type for, such as `-32020` from `get_signatures_for_address()` with a `before` or `until` signature the node can't find, came back as a bare `int` instead of raising, so `.value` failed with `AttributeError` and the server's message was lost. They now raise `RPCException` with the code and message.
 - `get_program_accounts()` left the encoding to the server, whose base58 default fails the whole call if any account is over 128 bytes. It now defaults to `base64`, like `get_account_info()` and `get_multiple_accounts()`.
 - `AsyncHTTPProvider` and `AsyncClient` passed `None` to `httpx2.Limits` for any of `max_connections`, `max_keepalive_connections` and `keepalive_expiry` left unset once one of them was set, so setting only `max_connections` also removed the keep-alive pool limit and made idle connections never expire. Unset values now keep the httpx2 defaults, as documented.
+
+## [0.41.0] - 2026-10-03
+
+### Changed
+
+- **BREAKING**: Rewrite the websocket client around a typed `Subscription` handle. `solana.rpc.websocket_api.connect()` and `SolanaWsClientProtocol` are replaced by `SolanaWsClient`, which owns its connection instead of subclassing it. Each `*_subscribe()` helper now awaits the server confirmation and returns a `Subscription`; the nine `*_unsubscribe(int)` helpers are replaced by a single `unsubscribe(subscription)`, so request IDs and server-assigned subscription IDs can no longer be confused. `recv()` and async iteration yield notifications only.
+- **BREAKING**: A `*_subscribe()`/`unsubscribe()` call whose request already reached the wire tears down the whole connection if its wait ends early — either the `request_timeout` (10s default) expiring or the awaiting task being cancelled. Every other in-flight request fails with the same exception, every `Subscription` is dropped, and the client cannot be reused. The server may have created a subscription whose ID never arrived, and an orphaned subscription cannot be cancelled without it, so the connection is dropped instead. Cancelling `recv()` is still safe, and `close()` is shielded against cancellation. See [Subscribing to Events](https://michaelhly.github.io/solana-py/cookbook/development-guides/subscribing-to-events/) for details.
 
 ## [0.40.3] - 2026-08-26
 
