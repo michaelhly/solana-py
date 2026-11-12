@@ -8,7 +8,7 @@ from solders.transaction_status import ParsedInstruction, UiTransaction
 
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized
-from solana.spl.memo import MEMO_PROGRAM_ID, AddMemoParams, add_memo
+from solana.spl.memo import MEMO_V4_PROGRAM_ID, AddMemoParams, add_memo
 
 from ..utils import AIRDROP_AMOUNT, assert_valid_response
 
@@ -58,4 +58,4 @@ async def test_send_memo_in_transaction(test_http_client_async: AsyncClient):
     ixn = resp2_transaction.transaction.message.instructions[0]
     assert isinstance(ixn, ParsedInstruction)
     assert ixn.parsed == raw_message
-    assert ixn.program_id == MEMO_PROGRAM_ID
+    assert ixn.program_id == MEMO_V4_PROGRAM_ID

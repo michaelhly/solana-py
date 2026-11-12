@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **BREAKING**: Replace `spl.memo` with `solana.spl.memo`, modelled after the Codama-generated Rust/TS clients. `create_memo(MemoParams)` becomes `add_memo(AddMemoParams)` and `decode_create_memo()` becomes `parse_add_memo()`. `memo` is now a `str` instead of `bytes`, `signer` becomes `signers`, and signers are read-only instead of writable. `parse_add_memo()` returns `ParsedAddMemoInstruction(program_id, data=AddMemoInstructionData(memo))`, without the signers. `program_id` defaults to the Memo v4 program (`MEMO_PROGRAM_ID`); the previous default is `MEMO_V3_PROGRAM_ID`, which is wire-compatible. `spl.memo.constants` is replaced by `solana.spl.memo.programs`.
+
 ## [0.42.0] - 2026-11-10
 
 ### Added
@@ -8,9 +14,6 @@
 
 ### Changed
 
-- **BREAKING**: Replace `spl.memo` with `solana.spl.memo`, modelled after the Codama-generated Rust/TS clients. `create_memo(MemoParams)` becomes `add_memo(AddMemoParams)` and `decode_create_memo()` becomes `parse_add_memo()`. `memo` is now a `str` instead of `bytes`, `signer` becomes `signers`, and signers are read-only instead of writable. `program_id` defaults to the Memo v4 program (`MEMO_PROGRAM_ID`); the previous default is `MEMO_V3_PROGRAM_ID`, which is wire-compatible. `spl.memo.constants` is replaced by `solana.spl.memo.programs`.
-- **BREAKING**: Rewrite the websocket client around a typed `Subscription` handle. `solana.rpc.websocket_api.connect()` and `SolanaWsClientProtocol` are replaced by `SolanaWsClient`, which owns its connection instead of subclassing it. Each `*_subscribe()` helper now awaits the server confirmation and returns a `Subscription`; the nine `*_unsubscribe(int)` helpers are replaced by a single `unsubscribe(subscription)`, so request IDs and server-assigned subscription IDs can no longer be confused. `recv()` and async iteration yield notifications only.
-- **BREAKING**: A `*_subscribe()`/`unsubscribe()` call whose request already reached the wire tears down the whole connection if its wait ends early — either the `request_timeout` (10s default) expiring or the awaiting task being cancelled. Every other in-flight request fails with the same exception, every `Subscription` is dropped, and the client cannot be reused. The server may have created a subscription whose ID never arrived, and an orphaned subscription cannot be cancelled without it, so the connection is dropped instead. Cancelling `recv()` is still safe, and `close()` is shielded against cancellation. See [Subscribing to Events](https://michaelhly.github.io/solana-py/cookbook/development-guides/subscribing-to-events/) for details.
 - `TxOpts.preflight_commitment` now defaults to `None` instead of `Finalized`, and falls back to the client commitment. Callers who relied on the implicit `Finalized` must pass it explicitly [(#712)](https://github.com/michaelhly/solana-py/issues/712).
 
 ### Fixed
@@ -28,16 +31,14 @@
 - `account_subscribe()` and `program_subscribe()` left the encoding to the server, whose base58 default sends `"error: data too large for bs58 encoding"` in place of the data of any account over 128 bytes. solders can't parse that, so the first such notification closed the connection with `SerdeJSONError`. They now default to `base64`, like `get_account_info()`.
 - RPC errors with a code solders has no type for, such as `-32020` from `get_signatures_for_address()` with a `before` or `until` signature the node can't find, came back as a bare `int` instead of raising, so `.value` failed with `AttributeError` and the server's message was lost. They now raise `RPCException` with the code and message.
 - `get_program_accounts()` left the encoding to the server, whose base58 default fails the whole call if any account is over 128 bytes. It now defaults to `base64`, like `get_account_info()` and `get_multiple_accounts()`.
-- `parse_security_txt()` dropped the last byte of the program data instead of failing when the security.txt section had no footer. It now raises `NoSecurityTxtFoundError`.
+- `AsyncHTTPProvider` and `AsyncClient` passed `None` to `httpx2.Limits` for any of `max_connections`, `max_keepalive_connections` and `keepalive_expiry` left unset once one of them was set, so setting only `max_connections` also removed the keep-alive pool limit and made idle connections never expire. Unset values now keep the httpx2 defaults, as documented.
 
-### Added
+## [0.41.0] - 2026-10-03
 
-- Add Python 3.15 support and test against it in CI [(#726)](https://github.com/michaelhly/solana-py/pull/726).
+### Changed
 
-### Docs
-
-- Fix the create PDA account cookbook example [(#713)](https://github.com/michaelhly/solana-py/pull/713).
-- Clarify transaction signing in the SOL and token transfer cookbook recipes [(#720)](https://github.com/michaelhly/solana-py/pull/720).
+- **BREAKING**: Rewrite the websocket client around a typed `Subscription` handle. `solana.rpc.websocket_api.connect()` and `SolanaWsClientProtocol` are replaced by `SolanaWsClient`, which owns its connection instead of subclassing it. Each `*_subscribe()` helper now awaits the server confirmation and returns a `Subscription`; the nine `*_unsubscribe(int)` helpers are replaced by a single `unsubscribe(subscription)`, so request IDs and server-assigned subscription IDs can no longer be confused. `recv()` and async iteration yield notifications only.
+- **BREAKING**: A `*_subscribe()`/`unsubscribe()` call whose request already reached the wire tears down the whole connection if its wait ends early — either the `request_timeout` (10s default) expiring or the awaiting task being cancelled. Every other in-flight request fails with the same exception, every `Subscription` is dropped, and the client cannot be reused. The server may have created a subscription whose ID never arrived, and an orphaned subscription cannot be cancelled without it, so the connection is dropped instead. Cancelling `recv()` is still safe, and `close()` is shielded against cancellation. See [Subscribing to Events](https://michaelhly.github.io/solana-py/cookbook/development-guides/subscribing-to-events/) for details.
 
 ## [0.40.3] - 2026-08-26
 
