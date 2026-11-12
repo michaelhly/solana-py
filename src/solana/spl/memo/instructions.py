@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from pydantic import model_validator
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 
 from solana._pydantic import PydanticModel
-from solana.spl.memo.programs import MEMO_V4_PROGRAM_ID
+from solana.spl.memo.programs import MEMO_V1_PROGRAM_ID, MEMO_V4_PROGRAM_ID
 
 
 class AddMemoParams(PydanticModel):
@@ -18,6 +19,13 @@ class AddMemoParams(PydanticModel):
     """Accounts that must sign the transaction to attest the memo."""
     program_id: Pubkey = MEMO_V4_PROGRAM_ID
     """Memo program to invoke."""
+
+    @model_validator(mode="after")
+    def _check_v1_has_no_signers(self) -> AddMemoParams:
+        # Memo v1 takes no accounts, so the program fails if any signer is passed.
+        if self.program_id == MEMO_V1_PROGRAM_ID and self.signers:
+            raise ValueError("The Memo v1 program does not accept signers.")
+        return self
 
 
 class AddMemoInstructionData(PydanticModel):

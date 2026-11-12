@@ -4,7 +4,7 @@
 
 ### Changed
 
-- **BREAKING**: Replace `spl.memo` with `solana.spl.memo`, modelled after the Codama-generated Rust/TS clients. `create_memo(MemoParams)` becomes `add_memo(AddMemoParams)` and `decode_create_memo()` becomes `parse_add_memo()`. `memo` is now a `str` instead of `bytes`, `signer` becomes `signers`, and signers are read-only instead of writable. `parse_add_memo()` returns `ParsedAddMemoInstruction(program_id, data=AddMemoInstructionData(memo))`, without the signers. `program_id` defaults to the Memo v4 program (`MEMO_PROGRAM_ID`); the previous default is `MEMO_V3_PROGRAM_ID`, which is wire-compatible. `spl.memo.constants` is replaced by `solana.spl.memo.programs`.
+- **BREAKING**: Replace `spl.memo` with `solana.spl.memo`, modelled after the Codama-generated Rust/TS clients. `create_memo(MemoParams)` becomes `add_memo(AddMemoParams)` and `decode_create_memo()` becomes `parse_add_memo()`. `memo` is now a `str` instead of `bytes`, `signer` becomes `signers`, and signers are read-only instead of writable. `parse_add_memo()` returns `ParsedAddMemoInstruction(program_id, data=AddMemoInstructionData(memo))`, without the signers. `program_id` defaults to the Memo v4 program (`MEMO_V4_PROGRAM_ID`); the previous default is `MEMO_V3_PROGRAM_ID`, which is wire-compatible. `spl.memo.constants` is replaced by `solana.spl.memo.programs`.
 
 ## [0.42.0] - 2026-11-10
 

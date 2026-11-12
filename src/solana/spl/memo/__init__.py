@@ -10,9 +10,9 @@ from solana.spl.memo.instructions import (
 from solana.spl.memo.programs import MEMO_V4_PROGRAM_ID, MEMO_V1_PROGRAM_ID, MEMO_V3_PROGRAM_ID
 
 __all__ = [
-    "MEMO_V4_PROGRAM_ID",
     "MEMO_V1_PROGRAM_ID",
     "MEMO_V3_PROGRAM_ID",
+    "MEMO_V4_PROGRAM_ID",
     "AddMemoInstructionData",
     "AddMemoParams",
     "ParsedAddMemoInstruction",
