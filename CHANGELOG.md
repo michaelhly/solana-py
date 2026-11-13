@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `AsyncClient` and `AsyncHTTPProvider` with a `rate_limit` below 1, such as `0.5` for one request every two seconds, raised `ValueError` from aiolimiter on every request, because the limiter's bucket held less than one request. Such limits now allow one request per `1 / rate_limit` seconds.
+
 ## [0.42.0] - 2026-11-10
 
 ### Added
