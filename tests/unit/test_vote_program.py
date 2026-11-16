@@ -106,3 +106,29 @@ def test_withdraw_from_vote_account():
 
     assert serialized_message
     assert serialized_message == expected_wire_msg
+
+
+def test_withdraw_from_vote_account_withdrawer_is_readonly_signer():
+    """The withdrawer signs but is not written, as in the vote program's `withdraw` instruction."""
+    vote_account, receiver, withdrawer, payer = (Pubkey.new_unique() for _ in range(4))
+    params = models.WithdrawFromVoteAccountParams(
+        vote_account_from_pubkey=vote_account,
+        to_pubkey=receiver,
+        withdrawer=withdrawer,
+        lamports=1,
+    )
+    ix = vp.withdraw_from_vote_account(params)
+
+    assert [(m.pubkey, m.is_signer, m.is_writable) for m in ix.accounts] == [
+        (vote_account, False, True),
+        (receiver, False, True),
+        (withdrawer, True, False),
+    ]
+
+    msg = MessageV0.try_compile(
+        payer=payer,
+        instructions=[ix],
+        address_lookup_table_accounts=[],
+        recent_blockhash=Hash.default(),
+    )
+    assert not msg.is_maybe_writable(msg.account_keys.index(withdrawer))
