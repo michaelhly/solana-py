@@ -1,3 +1,3 @@
 # Memo Program
 
-:::spl.memo.instructions
+:::solana.spl.memo.instructions

@@ -60,9 +60,8 @@ nav:
           - spl/token/models.md
       - Memo Program:
           - spl/memo/intro.md
-          - spl/memo/constants.md
+          - spl/memo/programs.md
           - spl/memo/instructions.md
-          - spl/memo/models.md
   - Cookbook:
       - cookbook/index.md
       - Development Guides:

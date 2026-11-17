@@ -16,9 +16,7 @@ from solders.keypair import Keypair
 from solders.system_program import transfer, TransferParams
 from solders.transaction import VersionedTransaction
 from solders.message import MessageV0
-from spl.memo.instructions import create_memo
-from spl.memo.models import MemoParams
-from solders.pubkey import Pubkey
+from solana.spl.memo import AddMemoParams, add_memo
 
 
 async def main():
@@ -40,13 +38,7 @@ async def main():
         )
 
         # Create memo instruction
-        memo_instruction = create_memo(
-            MemoParams(
-                program_id=Pubkey.from_string("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-                signer=sender.pubkey(),
-                message=memo_text.encode("utf-8"),
-            )
-        )
+        memo_instruction = add_memo(AddMemoParams(memo=memo_text, signers=(sender.pubkey(),)))
 
         # Create message with both instructions
         message = MessageV0.try_compile(
@@ -77,7 +69,7 @@ This example demonstrates how to add a memo to a Solana transaction:
 1. **Create Standard Transaction**: Build a regular transfer transaction
 2. **Create Memo Instruction**: Use the SPL Memo program to create a memo instruction
 3. **Combine Instructions**: Include both transfer and memo instructions in the same transaction
-4. **Encode Message**: Convert the memo text to bytes for the instruction
+4. **Sign the Memo**: Pass the signer in `signers` so the program logs it as having approved the memo
 5. **Create Transaction**: Build a versioned transaction with both instructions
 
 ## Key Concepts

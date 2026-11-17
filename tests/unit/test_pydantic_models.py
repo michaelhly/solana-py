@@ -8,7 +8,7 @@ from solders.keypair import Keypair
 
 import solana.models as solana_models
 import solana.rpc.models as rpc_models
-import spl.memo.models as memo_models
+import solana.spl.memo.instructions as memo_instructions
 import spl.token.models as token_models
 
 
@@ -34,7 +34,7 @@ import spl.token.models as token_models
             solana_models.WithdrawFromVoteAccountParams,
             ["vote_account_from_pubkey", "to_pubkey", "lamports", "withdrawer"],
         ),
-        (memo_models.MemoParams, ["program_id", "signer", "message"]),
+        (memo_instructions.AddMemoParams, ["memo", "signers", "program_id"]),
         (
             token_models.TransferParams,
             ["program_id", "source", "dest", "owner", "amount", "signers"],
