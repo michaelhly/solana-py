@@ -49,7 +49,7 @@ def withdraw_from_vote_account(
                 is_writable=True,
             ),
             AccountMeta(pubkey=params.to_pubkey, is_signer=False, is_writable=True),
-            AccountMeta(pubkey=params.withdrawer, is_signer=True, is_writable=True),
+            AccountMeta(pubkey=params.withdrawer, is_signer=True, is_writable=False),
         ],
         program_id=VOTE_PROGRAM_ID,
         data=data,
