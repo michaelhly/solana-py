@@ -287,6 +287,16 @@ async def test_async_http_provider_does_not_retry_http_status_error(
     assert exc_info.value.error_msg == "<class 'httpx2.HTTPStatusError'> raised in \"_TestRpcRequest\" endpoint request"
 
 
+async def test_async_http_provider_rate_limit_below_one():
+    """Test a rate limit under one request per second still lets requests through."""
+    provider = AsyncHTTPProvider(rate_limit=0.5)
+    raw = '{"jsonrpc":"2.0","id":1,"result":{"value":42}}'
+    with patch("httpx2.AsyncClient.post") as post_mock:
+        post_mock.return_value = _mock_response(raw)
+        await provider.make_request_unparsed(_TestRpcRequest())
+    assert post_mock.call_count == 1
+
+
 async def test_async_http_provider_can_disable_transport_retries():
     """Test max_transport_retries=0 disables transport retries."""
     provider = AsyncHTTPProvider(max_transport_retries=0)

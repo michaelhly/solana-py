@@ -92,7 +92,11 @@ class AsyncHTTPProvider:
                 keepalive_expiry=DEFAULT_LIMITS.keepalive_expiry if keepalive_expiry is None else keepalive_expiry,
             )
         self.session = httpx2.AsyncClient(**client_kwargs)
-        self._limiter: AsyncLimiter | None = AsyncLimiter(rate_limit, time_period=1) if rate_limit > 0 else None
+        self._limiter: AsyncLimiter | None = None
+        if rate_limit > 0:
+            # aiolimiter can't acquire from a bucket smaller than one request.
+            capacity = max(rate_limit, 1)
+            self._limiter = AsyncLimiter(capacity, time_period=capacity / rate_limit)
 
     def __str__(self) -> str:
         """String definition for HTTPProvider."""
