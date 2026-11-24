@@ -5,6 +5,7 @@
 ### Fixed
 
 - `AsyncClient` and `AsyncHTTPProvider` with a `rate_limit` below 1, such as `0.5` for one request every two seconds, raised `ValueError` from aiolimiter on every request, because the limiter's bucket held less than one request. Such limits now allow one request per `1 / rate_limit` seconds.
+- `commitment_comparator()` returned `1` instead of `0` for equal commitments when one of them was a plain string, such as `"confirmed"` against `Commitment.CONFIRMED`, because it compared by identity. Plain strings are accepted everywhere else, so `AsyncClient(commitment="confirmed").commitment` compared as more finalized than `Confirmed`. It now compares by value.
 
 ## [0.42.0] - 2026-11-10
 
