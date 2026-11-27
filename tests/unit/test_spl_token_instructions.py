@@ -6,6 +6,7 @@ import spl.token.models as token_models
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 from solders.system_program import ID as SYSTEM_PROGRAM_ID
+from solders.sysvar import RENT
 from spl.token.constants import (
     TOKEN_PROGRAM_ID,
     TOKEN_2022_PROGRAM_ID,
@@ -807,3 +808,50 @@ def test_create_idempotent_token_account(stubbed_receiver, stubbed_sender):
     assert instruction.accounts[5].pubkey == TOKEN_PROGRAM_ID
     assert not instruction.accounts[5].is_signer
     assert not instruction.accounts[5].is_writable
+
+
+@pytest.mark.parametrize("token_program_id", [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID])
+def test_create_associated_token_account(stubbed_receiver, stubbed_sender, token_program_id):
+    """Test Create associated token account."""
+    mint = Pubkey([0] * 31 + [0])
+    token_account = get_associated_token_address(stubbed_receiver, mint, token_program_id)
+    instruction = spl_token.create_associated_token_account(
+        payer=stubbed_sender.pubkey(),
+        owner=stubbed_receiver,
+        mint=mint,
+        token_program_id=token_program_id,
+    )
+
+    assert instruction.program_id == ASSOCIATED_TOKEN_PROGRAM_ID
+    assert instruction.data == bytes(0)
+    assert len(instruction.accounts) == 7
+    assert instruction.accounts[0] == AccountMeta(pubkey=stubbed_sender.pubkey(), is_signer=True, is_writable=True)
+    assert instruction.accounts[1] == AccountMeta(pubkey=token_account, is_signer=False, is_writable=True)
+    assert instruction.accounts[2] == AccountMeta(pubkey=stubbed_receiver, is_signer=False, is_writable=False)
+    assert instruction.accounts[3] == AccountMeta(pubkey=mint, is_signer=False, is_writable=False)
+    assert instruction.accounts[4] == AccountMeta(pubkey=SYSTEM_PROGRAM_ID, is_signer=False, is_writable=False)
+    assert instruction.accounts[5] == AccountMeta(pubkey=token_program_id, is_signer=False, is_writable=False)
+    assert instruction.accounts[6] == AccountMeta(pubkey=RENT, is_signer=False, is_writable=False)
+
+
+@pytest.mark.parametrize(
+    "builder",
+    [
+        spl_token.create_associated_token_account,
+        spl_token.create_idempotent_associated_token_account,
+    ],
+)
+def test_create_associated_token_account_rejects_invalid_token_program_id(stubbed_receiver, stubbed_sender, builder):
+    """Test associated token account builders reject unsupported token_program_id."""
+    mint = Pubkey([0] * 31 + [0])
+    invalid_program_id = Pubkey.new_unique()
+    with pytest.raises(
+        ValueError,
+        match=r"token_program_id must be one of TOKEN_PROGRAM_ID or TOKEN_2022_PROGRAM_ID\.",
+    ):
+        builder(
+            payer=stubbed_sender.pubkey(),
+            owner=stubbed_receiver,
+            mint=mint,
+            token_program_id=invalid_program_id,
+        )
