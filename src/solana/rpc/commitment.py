@@ -88,6 +88,6 @@ def commitment_comparator(a: Commitment, b: Commitment) -> Literal[-1, 0, 1]:
         >>> commitment_comparator(Commitment.CONFIRMED, Commitment.CONFIRMED)
         0
     """
-    if a is b:
+    if a == b:
         return 0
     return -1 if get_commitment_score(a) < get_commitment_score(b) else 1
