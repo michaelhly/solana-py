@@ -26,7 +26,7 @@ from spl.token.models import (
     SyncNativeParams,
     CloseAccountParams,
 )
-from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import TOKEN_PROGRAM_ID
 from solders.pubkey import Pubkey
 
 # Native mint address for wrapped SOL
@@ -55,7 +55,6 @@ async def main():
             owner=owner.pubkey(),
             mint=NATIVE_MINT,
             token_program_id=TOKEN_PROGRAM_ID,
-            associated_token_program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
         )
 
         # Transfer SOL to the wrapped SOL account
@@ -79,8 +78,8 @@ async def main():
             recent_blockhash=recent_blockhash.value.blockhash,
         )
 
-        # Create transaction
-        wrap_transaction = VersionedTransaction(wrap_message, [payer, owner])
+        # Create transaction. Only the payer signs here, the owner signs the unwrap below
+        wrap_transaction = VersionedTransaction(wrap_message, [payer])
 
         print(f"Wrapped SOL Account: {wrapped_sol_account}")
         print(f"Amount to wrap: {amount_to_wrap / 1000000000} SOL")
