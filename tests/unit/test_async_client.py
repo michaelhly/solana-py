@@ -248,6 +248,25 @@ def test_async_client_passes_explicit_http_options():
     )
 
 
+@pytest.mark.parametrize("header_name", ["Content-Type", "content-type", "CONTENT-TYPE"])
+async def test_async_http_provider_overrides_content_type_case_insensitively(header_name):
+    headers = {header_name: "application/json; charset=utf-8", "X-Client": "test-client"}
+    requests = []
+
+    def handle_request(request):
+        requests.append(request)
+        return httpx2.Response(200, json={"jsonrpc": "2.0", "id": "1", "result": 42})
+
+    session = httpx2.AsyncClient(transport=httpx2.MockTransport(handle_request))
+    with patch("httpx2.AsyncClient", return_value=session):
+        async with AsyncHTTPProvider(extra_headers=headers) as provider:
+            await provider.make_request_unparsed(_TestRpcRequest())
+
+    assert requests[0].headers.get_list("content-type") == ["application/json; charset=utf-8"]
+    assert requests[0].headers["x-client"] == "test-client"
+    assert headers == {header_name: "application/json; charset=utf-8", "X-Client": "test-client"}
+
+
 async def test_async_client_http_exception(unit_test_http_client_async):
     """Test AsyncClient raises native Solana-py exceptions."""
     with patch("httpx2.AsyncClient.post") as post_mock:

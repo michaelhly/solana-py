@@ -111,13 +111,13 @@ class AsyncHTTPProvider:
     @handle_async_exceptions(SolanaRpcException, httpx2.HTTPError)
     async def make_request_unparsed(self, body: JsonRpcRequestSerializer) -> str:
         """Make an async HTTP request to an http rpc endpoint."""
-        headers = {"Content-Type": "application/json"}
+        headers = httpx2.Headers({"Content-Type": "application/json"})
         if self.extra_headers:
             headers.update(self.extra_headers)
         raw_response = await self._post_request(body.to_json(), headers)
         return _after_request_unparsed(raw_response)
 
-    async def _post_request(self, content: str, headers: dict[str, str]) -> httpx2.Response:
+    async def _post_request(self, content: str, headers: httpx2.Headers) -> httpx2.Response:
         retries_left = self._max_transport_retries
         while True:
             try:
@@ -132,7 +132,7 @@ class AsyncHTTPProvider:
                     exc,
                 )
 
-    async def _post_request_once(self, content: str, headers: dict[str, str]) -> httpx2.Response:
+    async def _post_request_once(self, content: str, headers: httpx2.Headers) -> httpx2.Response:
         if self._limiter is not None:
             async with self._limiter:
                 return await self.session.post(self.endpoint_uri, content=content, headers=headers)
