@@ -81,7 +81,7 @@ You can further parse account data to get more detailed information:
 
 ```python
 # Parse token account data
-from spl.token.layouts import ACCOUNT_LAYOUT
+from spl.token._layouts import ACCOUNT_LAYOUT
 
 
 def parse_token_account(account_data):

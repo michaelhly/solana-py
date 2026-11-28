@@ -28,7 +28,7 @@ from spl.token.models import (
     MintToCheckedParams,
     ApproveCheckedParams,
 )
-from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import TOKEN_PROGRAM_ID
 
 # Constants
 DECIMALS = 9
@@ -77,7 +77,6 @@ async def setup(rpc, mint_authority):
         owner=mint_authority.pubkey(),
         mint=mint.pubkey(),
         token_program_id=TOKEN_PROGRAM_ID,
-        associated_token_program_id=ASSOCIATED_TOKEN_PROGRAM_ID,
     )
 
     # Mint tokens to ATA
